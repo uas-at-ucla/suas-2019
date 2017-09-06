@@ -1,5 +1,4 @@
-# UCLA UAS 2018: Drone Code
-
+# UCLA UAS 2018 Source Code
 Code used on our drone competing in the AUVSI SUAS competition.
 
 ### What is contained in the repository:
@@ -20,12 +19,9 @@ Code used on our drone competing in the AUVSI SUAS competition.
     * Telemetry multiplexer (from Wi-Fi and serial interface)
  * Build and deployment scripts to drone
 
-
-### Stuff used to make this:
-
+### Stuff used to make this work:
  * [Arducopter](https://github.com/ArduPilot/ardupilot/tree/master/ArduCopter) as the flight controller platform
  * [Dronekit](https://github.com/dronekit/dronekit-python) for interfacing with the flight controller over serial
  * [Dronekit SITL](https://github.com/dronekit/dronekit-sitl) for flight controller simulation and testing
  * [Open CV](https://github.com/opencv/opencv) for image filtering and segmentation
  * [Tensorflow](https://github.com/tensorflow/tensorflow) for image classification
-
