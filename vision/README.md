@@ -2,7 +2,7 @@
 Code used to manage our vision system and process images to find the targets we
 want to find.
 
-### How is vision organized:
+### How is vision organized
  * Photographer
     * Interface with camera (trigger shutter/control zoom/etc)
     * Control gimbal
@@ -16,6 +16,6 @@ want to find.
     * Determine shape/letter/shape color/letter color of targets
     * Feedback from a real person about correctness (for additional training)
 
-### Stuff used to make this work:
+### Stuff used to make this work
  * [Open CV](https://github.com/opencv/opencv) for image filtering/segmentation
  * [Tensorflow](https://github.com/tensorflow/tensorflow) for classification
