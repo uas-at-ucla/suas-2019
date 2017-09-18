@@ -1,12 +1,13 @@
 import numpy as np
-#from matplotlib import pyplot as plt
-import cv
 import cv2
 import sys
 import time
 import os
 import platform
 
+# Don't show OpenCV preview windows of our segments if we're running on an
+# embedded platform.
+# TODO: This should be an option.
 TESTING = platform.platform().find("armv7") == -1
 if TESTING:
     print "NOT ON PI, TESTING MODE ENABLED"
@@ -36,7 +37,7 @@ class Segmenter:
 
         # Generate a list of contours that stand out from the image after the
         # above filters were applied.
-        contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL,
+        _, contours, hierarchy = cv2.findContours(thresh, cv2.RETR_EXTERNAL,
             cv2.CHAIN_APPROX_SIMPLE)
 
         possible_shapes = list()
@@ -126,7 +127,7 @@ class Segmenter:
             cv2.destroyAllWindows()
 
     def use_given_image(self):
-        frame = cv2.imread(sys.argv[1], cv2.CV_LOAD_IMAGE_COLOR)
+        frame = cv2.imread(sys.argv[1], cv2.IMREAD_COLOR)
         if frame is None:
             print "Image given has no data to analyze."
             sys.exit(1)
@@ -149,7 +150,7 @@ class Segmenter:
     def use_deque_stream(self, save_directory, photos):
         while True:
             if len(photos) == 0:
-                time.sleep(1 / 100.0)
+                time.sleep(1 / 10.0)
                 continue
 
             raw_image_path = photos.pop() + ".jpg"
@@ -176,6 +177,7 @@ class Segmenter:
                 i = i + 1
 
 def main():
+    # First argument is always an image, so process
     if len(sys.argv) > 1:
         segmenter = Segmenter()
         segmenter.use_given_image()
