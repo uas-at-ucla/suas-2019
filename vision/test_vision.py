@@ -1,3 +1,6 @@
+import sys
+sys.dont_write_bytecode = True
+
 from unittest import TestLoader, TestSuite, TextTestRunner
 from photographer.test_photographer import TestPhotographer
 from segmenter.test_segmenter import TestSegmenter
