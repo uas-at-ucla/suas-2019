@@ -1,7 +1,6 @@
 future==0.16.0
 Flask==0.12.2
 MAVProxy==1.6.1
-numpy==1.12.1
 pymavlink==2.2.4
 pyserial==3.4
 websocket-client==0.44.0
