@@ -7,4 +7,4 @@ websocket-client==0.44.0
 dronekit==2.9.1
 dronekit-sitl==3.2.0
 numpy==1.13.1
-opencv-python>=3.0
+opencv-python
