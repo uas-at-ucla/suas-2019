@@ -10,7 +10,7 @@ import platform
 # TODO: This should be an option.
 TESTING = platform.platform().find("armv7") == -1
 if TESTING:
-    print "NOT ON PI, TESTING MODE ENABLED"
+    print("NOT ON PI, TESTING MODE ENABLED")
 
 class Segmenter:
     def cut_from_image(self, frame, padding, x, y, w, h):
@@ -99,10 +99,10 @@ class Segmenter:
             if not reject:
                 possible_shapes.append(extracted_contour)
 
-        print str(len(possible_shapes)) \
+        print(str(len(possible_shapes)) \
                 + " good contours were found! (" \
                 + str(len(contours)) \
-                + " were filtered out)"
+                + " were filtered out)")
         if TESTING:
             cv2.imshow("Contour Locations", bounding_box_highlight_frame)
             cv2.moveWindow("Contour Locations", 400, 20)
@@ -129,7 +129,7 @@ class Segmenter:
     def use_given_image(self):
         frame = cv2.imread(sys.argv[1], cv2.IMREAD_COLOR)
         if frame is None:
-            print "Image given has no data to analyze."
+            print("Image given has no data to analyze.")
             sys.exit(1)
         grey_scale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         possible_shapes = self.process_frame(frame);
@@ -141,7 +141,7 @@ class Segmenter:
                         (i / 3) * 90)
                 i = i + 1
                 if i > 36:
-                    print "CLIPPING IMAGE SEGMENT PREVIEWS!!!"
+                    print("CLIPPING IMAGE SEGMENT PREVIEWS!!!")
                     break
 
             cv2.waitKey(0)
@@ -154,7 +154,7 @@ class Segmenter:
                 continue
 
             raw_image_path = photos.pop() + ".jpg"
-            print "Segmenting " + raw_image_path
+            print("Segmenting " + raw_image_path)
             frame = cv2.imread(raw_image_path, cv2.CV_LOAD_IMAGE_COLOR)
             grey_scale = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             possible_shapes = self.process_frame(frame);
@@ -163,9 +163,9 @@ class Segmenter:
             image_folder_name = os.path.basename(raw_image_path)
             image_folder_name = image_folder_name.replace(".jpg", "")
             image_folder_name = save_directory + "/" + image_folder_name
-            print image_folder_name
+            print(image_folder_name)
             if os.path.isdir(image_folder_name) is True:
-                print "Segments directory out of sync."
+                print("Segments directory out of sync.")
                 sys.exit(1)
             os.makedirs(image_folder_name)
 

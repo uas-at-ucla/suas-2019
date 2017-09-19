@@ -2,6 +2,10 @@ dist: trusty
 sudo: required
 
 addons:
+  apt:
+    packages:
+      - "python3"
+      - "python3-pip"
   sonarcloud:
     organization: "unmannedsystems-ucla-github"
     token:
@@ -19,8 +23,8 @@ cache:
   directories:
   - "$HOME/.sonar/cache"
 
-install:
- - pip install -r $TRAVIS_BUILD_DIR/build/pip_requirements.txt
+before_install:
+ - pip3 install -r $TRAVIS_BUILD_DIR/build/pip_requirements.txt
 
 script:
  - python $TRAVIS_BUILD_DIR/vision/test_vision.py

@@ -19,7 +19,7 @@ class Photographer:
         while 1:
             try:
                 #pixhawk = dronekit.connect(ip = "127.0.0.1:8081", baud = 57600)
-                #print pixhawk.location.global_frame
+                #print(pixhawk.location.global_frame)
 
                 # Take pictures forever.
                 camera = SonyAPI()
@@ -35,7 +35,7 @@ class Photographer:
 
                 pixhawk.close()
             except:
-                print "Error accessing camera."
+                print("Error accessing camera.")
                 time.sleep(1)
 
     def download_pictures_from_deque(self, photo_urls, save_directory, photos, \
@@ -53,11 +53,11 @@ class Photographer:
                 urllib.urlretrieve(url, image_path + ".jpg")
                 photos.append(image_path)
                 i = i + 1;
-                print "Picture #" + str(i) + " stored at " + image_path
+                print("Picture #" + str(i) + " stored at " + image_path)
             except:
-                print "################Picture download cut short##############"
+                print("################Picture download cut short##############")
                 wait_between_photos = wait_between_photos + 0.1
 
-                print "Increasing photo interval to " + \
-                        str(wait_between_photos)
+                print("Increasing photo interval to " + \
+                        str(wait_between_photos))
                 time.sleep(1)
