@@ -19,7 +19,7 @@ jdk:
 language: python
 
 python:
- - '2.7'
+ - '3.5'
 
 cache:
   directories:
