@@ -1,3 +1,15 @@
+dist: trusty
+sudo: required
+
+addons:
+  sonarcloud:
+    organization: "unmannedsystems-ucla-github"
+    token:
+      secure: "6c14648df04d064b6625595d12bab494b6d51276"
+
+jdk:
+  - oraclejdk8
+
 language: python
 
 python:
@@ -8,3 +20,8 @@ install:
 
 script:
   - python $TRAVIS_BUILD_DIR/vision/test_vision.py
+  - sonar-scanner
+
+cache:
+  directories:
+    - '$HOME/.sonar/cache'
