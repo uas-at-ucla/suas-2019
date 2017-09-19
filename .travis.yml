@@ -6,6 +6,7 @@ addons:
     packages:
       - "python3"
       - "python3-pip"
+      - "python-opencv"
   sonarcloud:
     organization: "unmannedsystems-ucla-github"
     token:
@@ -23,7 +24,7 @@ cache:
   directories:
   - "$HOME/.sonar/cache"
 
-before_install:
+install:
  - pip3 install -r $TRAVIS_BUILD_DIR/build/pip_requirements.txt
 
 script:
