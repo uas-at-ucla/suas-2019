@@ -34,15 +34,21 @@ run on any new code that is checked into this repository, which evaluates
 everything from target identification accuracy for the vision system to safety
 and reliability for the control software.
 
-Travis-CI is used to automatically build every commit that is pushed to this
-Github repository. Results from these builds can be found here:
- * [Travis-CI for UAS at UCLA](https://travis-ci.org/uas-at-ucla/suas_2018)
+[Travis-CI](https://travis-ci.org/uas-at-ucla/suas_2018) is used to
+automatically build every commit that is pushed to this Github repository.
+Results from these builds can be found here:
+
+[Sonarqube](https://travis-ci.org/uas-at-ucla/suas_2018) is also used to check
+the quality of the code in this repository and find potential bugs and "code
+smells" that may cause trouble down the line. This tool is designed to make our
+code maintainable in the long run by giving automated feedback on all the
+changes that we make.
 
 ### Installation
 Install all of the packages that you will need.
 ```bash
 sudo apt-get update
-sudo apt-get install git python2.7 python-pip python-dev build-essential 
+sudo apt-get install git python3.5 python3-pip python3-dev build-essential 
 ```
 
 Download this repository.
