@@ -1,20 +1,27 @@
 dist: trusty
 sudo: required
+
 addons:
   sonarcloud:
-    organization: unmannedsystems-ucla-github
+    organization: "unmannedsystems-ucla-github"
     token:
-      secure: TVtQRFzszMOqsD8hFkQEdodYv26lR3O1f5EBfEHCMVS8e1R7hEzuQHZu5aokYS5Vpf93xX60jMfk3bsZtcPvP5TEcv0uSEwq1E/o8LAjSqd2+MCnmyTF9x1AUqEvjC0z+FYWo0RC+hZ+R2wHVtekK9mUjYcF9jU5qem7nBioFLMvejkpOr4os78Yce4Qn859aa0744MOADE9mO0d6VLuWaJ6jaXPvsf8lrcJdSexemmnEpE23B7PHJrnnxcspQ1rnHFaeZWUfSsEh2/eWeTmg+DdtfM1M4fbze60cTXJLYWaFR1m+UGotRpDZj5Si2oEl7GOBJly1+MplzEKKC1zTcr3FcoDRyHOZYoUAynfNrjw/fOUxwIiB00sSPTJX7Xp0t+RfhdP+G/erNxserHULuB4ya0EJOIR6UJr/q2Toz2pmTuq37ggKjxmFakz/IdSb1m/NA445oDCURIo+DltDAP3yrqg6crYlYsYSaOVPqeGbWZd3+DN9ybQJoYTTV1qIr03GLch2BS082p+buLSFGqKVQTAHZhtTCwzpYjT4S9hV3igjxIJ6V6lK8jSrQpjt+fkikcCyJ+XNCGcVv1MMym2HnPMnFcfWv7xk+IOg2ptK5PHanqr2CmNcnRDNFBwR8Fd0jExVX35jY1i5VzYLADuM2t6mZx74x0LmUV3gEo=
+      secure: "TVtQRFzszMOqsD8hFkQEdodYv26lR3O1f5EBfEHCMVS8e1R7hEzuQHZu5aokYS5Vpf93xX60jMfk3bsZtcPvP5TEcv0uSEwq1E/o8LAjSqd2+MCnmyTF9x1AUqEvjC0z+FYWo0RC+hZ+R2wHVtekK9mUjYcF9jU5qem7nBioFLMvejkpOr4os78Yce4Qn859aa0744MOADE9mO0d6VLuWaJ6jaXPvsf8lrcJdSexemmnEpE23B7PHJrnnxcspQ1rnHFaeZWUfSsEh2/eWeTmg+DdtfM1M4fbze60cTXJLYWaFR1m+UGotRpDZj5Si2oEl7GOBJly1+MplzEKKC1zTcr3FcoDRyHOZYoUAynfNrjw/fOUxwIiB00sSPTJX7Xp0t+RfhdP+G/erNxserHULuB4ya0EJOIR6UJr/q2Toz2pmTuq37ggKjxmFakz/IdSb1m/NA445oDCURIo+DltDAP3yrqg6crYlYsYSaOVPqeGbWZd3+DN9ybQJoYTTV1qIr03GLch2BS082p+buLSFGqKVQTAHZhtTCwzpYjT4S9hV3igjxIJ6V6lK8jSrQpjt+fkikcCyJ+XNCGcVv1MMym2HnPMnFcfWv7xk+IOg2ptK5PHanqr2CmNcnRDNFBwR8Fd0jExVX35jY1i5VzYLADuM2t6mZx74x0LmUV3gEo="
+
 jdk:
-- oraclejdk8
+ - oraclejdk8
+
 language: python
+
 python:
-- '2.7'
+ - '2.7'
+
 install:
-- pip install -r $TRAVIS_BUILD_DIR/build/pip_requirements.txt
+ - pip install -r $TRAVIS_BUILD_DIR/build/pip_requirements.txt
+
 script:
-- python $TRAVIS_BUILD_DIR/vision/test_vision.py
-- sonar-scanner
+ - python $TRAVIS_BUILD_DIR/vision/test_vision.py
+ - sonar-scanner
+
 cache:
   directories:
   - "$HOME/.sonar/cache"
