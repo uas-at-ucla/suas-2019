@@ -15,6 +15,10 @@ language: python
 python:
  - '2.7'
 
+cache:
+  directories:
+  - "$HOME/.sonar/cache"
+
 install:
  - pip install -r $TRAVIS_BUILD_DIR/build/pip_requirements.txt
 
@@ -22,6 +26,3 @@ script:
  - python $TRAVIS_BUILD_DIR/vision/test_vision.py
  - sonar-scanner
 
-cache:
-  directories:
-  - "$HOME/.sonar/cache"
