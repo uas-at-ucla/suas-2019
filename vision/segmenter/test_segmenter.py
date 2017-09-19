@@ -1,10 +1,5 @@
 import unittest
-import logging
-import sys
 
 class TestSegmenter(unittest.TestCase):
-    def setUp(self):
-        pass
-
-    def testSample(self):
+    def test_sample(self):
         self.assertTrue(True)

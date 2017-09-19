@@ -1,4 +1,4 @@
-# UCLA UAS 2018 Source Code
+# UAS at UCLA 2018 Drone Code
 Code used on our drone competing in the AUVSI SUAS competition.
 
 [![Build Status](https://travis-ci.org/uas-at-ucla/suas_2018.svg?branch=master)](https://travis-ci.org/uas-at-ucla/suas_2018)
@@ -60,7 +60,7 @@ cd suas_2018
 
 Install Python dependencies.
 ```bash
-pip install -r build/install/requirements.txt
+pip3 install -r build/install/requirements.txt
 ```
 
 ### Platforms and Libraries Used

@@ -1,6 +1,6 @@
-# UCLA UAS 2018 Source Code: Vision
-Code used to manage our vision system and process images to find the targets we
-want to find.
+# UAS at UCLA 2018 Drone Code: Vision
+Code used to manage our vision system and process images to locate targets
+while surveying a field.
 
 ### How is vision organized
  * Photographer
