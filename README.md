@@ -1,6 +1,8 @@
 # UCLA UAS 2018 Source Code
 Code used on our drone competing in the AUVSI SUAS competition.
 
+[![Build Status](https://travis-ci.org/uas-at-ucla/suas_2018.svg?branch=master)](https://travis-ci.org/uas-at-ucla/suas_2018)
+
 ### Contents
  * Control code
     * Mission planning & surveying
