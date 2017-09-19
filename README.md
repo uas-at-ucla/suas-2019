@@ -2,6 +2,8 @@
 Code used on our drone competing in the AUVSI SUAS competition.
 
 [![Build Status](https://travis-ci.org/uas-at-ucla/suas_2018.svg?branch=master)](https://travis-ci.org/uas-at-ucla/suas_2018)
+[![Quality Gate](https://sonarcloud.io/api/badges/gate?key=suas_2018)](https://sonarcloud.io/api/badges/gate?key=suas_2018)
+[![Number of lines](https://sonarcloud.io/api/badges/measure?key=suas_2018&metric=lines)](https://sonarcloud.io/api/badges/measure?key=suas_2018&metric=lines)
 
 ### Contents
  * Control code
