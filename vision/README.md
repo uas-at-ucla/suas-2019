@@ -17,5 +17,5 @@ while surveying a field.
     * Feedback from a real person about correctness (for additional training)
 
 ### Stuff used to make this work
- * [Open CV](https://github.com/opencv/opencv) for image filtering/segmentation
+ * [OpenCV](https://github.com/opencv/opencv) for image filtering/segmentation
  * [Tensorflow](https://github.com/tensorflow/tensorflow) for classification

@@ -38,7 +38,7 @@ and reliability for the control software.
 automatically build every commit that is pushed to this Github repository.
 Results from these builds can be found here:
 
-[Sonarqube](https://travis-ci.org/uas-at-ucla/suas_2018) is also used to check
+[Sonarqube](https://sonarcloud.io/dashboard?id=suas_2018) is also used to check
 the quality of the code in this repository and find potential bugs and "code
 smells" that may cause trouble down the line. This tool is designed to make our
 code maintainable in the long run by giving automated feedback on all the
@@ -67,5 +67,5 @@ pip3 install -r build/install/requirements.txt
  * [Arducopter](https://github.com/ArduPilot/ardupilot/tree/master/ArduCopter) as the flight controller platform
  * [Dronekit](https://github.com/dronekit/dronekit-python) for interfacing with the flight controller over serial
  * [Dronekit SITL](https://github.com/dronekit/dronekit-sitl) for flight controller simulation and testing
- * [Open CV](https://github.com/opencv/opencv) for image filtering and segmentation
+ * [OpenCV](https://github.com/opencv/opencv) for image filtering and segmentation
  * [Tensorflow](https://github.com/tensorflow/tensorflow) for image classification
