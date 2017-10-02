@@ -14,91 +14,102 @@ from datetime import datetime
 from pymavlink import mavutil
 
 class Sensor:
+    def __init__(self, value_type):
+        # Keep track of the value's variable type that will be provided later
+        # on.
+        self.value_type = value_type
+        self.value = None
+        self.last_update = None
+
     def set(self, value):
+        # Update the sensor value, and record the time at which it was updated.
         if value is None:
             return
 
-        print("SETTING: " + str(value))
         self.last_update = time.time()
-        self.value = value
+        self.value = self.value_type(value)
 
 class Sensors:
     def __init__(self):
-        self.telemetry = {
-                "state": Sensor(),
-                "armed": Sensor(),
-                "voltage": Sensor(),
-                "last_heartbeat": Sensor(),
-                "gps_lat": Sensor(),
-                "gps_lng": Sensor(),
-                "gps_alt": Sensor(),
-                "gps_rel_alt": Sensor(),
-                "gps_satellites": Sensor(),
-                "velocity_x": Sensor(),
-                "velocity_y": Sensor(),
-                "velocity_z": Sensor(),
-                "pitch": Sensor(),
-                "roll": Sensor(),
-                "yaw": Sensor(),
-                "heading": Sensor(),
-                "ground_speed": Sensor(),
-                "air_speed": Sensor()
-        }
+        self.telemetry_lock = threading.Lock()
+
+        with self.telemetry_lock:
+            self.telemetry = {
+                    "state": Sensor(str),
+                    "armed": Sensor(str),
+                    "voltage": Sensor(float),
+                    "last_heartbeat": Sensor(float),
+                    "gps_lat": Sensor(float),
+                    "gps_lng": Sensor(float),
+                    "gps_alt": Sensor(float),
+                    "gps_rel_alt": Sensor(float),
+                    "gps_satellites": Sensor(int),
+                    "velocity_x": Sensor(float),
+                    "velocity_y": Sensor(float),
+                    "velocity_z": Sensor(float),
+                    "pitch": Sensor(float),
+                    "roll": Sensor(float),
+                    "yaw": Sensor(float),
+                    "heading": Sensor(int),
+                    "ground_speed": Sensor(float),
+                    "air_speed": Sensor(float)
+            }
 
     def set(self, vehicle):
-        self.time = time.time()
+        # Thread-safe method to set telemetry data by providing a Dronekit
+        # vehicle instance.
+        with self.telemetry_lock:
+            self.telemetry["state"].set(vehicle.system_status.state)
+            self.telemetry["armed"].set(vehicle.armed)
+            self.telemetry["voltage"].set(self.__cut_from_string(str( \
+                    vehicle.battery), "Battery:voltage="))
+            self.telemetry["last_heartbeat"].set(int(vehicle.last_heartbeat))
+            self.telemetry["gps_lat"].set(self.__cut_from_string(str( \
+                    vehicle.location.global_frame), "lat="))
+            self.telemetry["gps_lng"].set(self.__cut_from_string(str( \
+                    vehicle.location.global_frame), "lon="))
+            self.telemetry["gps_alt"].set(self.__cut_from_string(str( \
+                    vehicle.location.global_frame), "alt="))
+            self.telemetry["gps_rel_alt"].set(self.__cut_from_string(str( \
+                            vehicle.location.global_relative_frame), \
+                            "alt="))
+            self.telemetry["gps_satellites"].set(self.__cut_from_string(str( \
+                            vehicle.gps_0), "num_sat="))
+            self.telemetry["velocity_x"].set(vehicle.velocity[0])
+            self.telemetry["velocity_y"].set(vehicle.velocity[1])
+            self.telemetry["velocity_z"].set(vehicle.velocity[2])
+            self.telemetry["pitch"].set(self.__cut_from_string(str( \
+                            vehicle.attitude), "pitch="))
+            self.telemetry["roll"].set(self.__cut_from_string(str( \
+                            vehicle.attitude), "roll="))
+            self.telemetry["yaw"].set(self.__cut_from_string(str( \
+                            vehicle.attitude), "yaw="))
+            self.telemetry["heading"].set(vehicle.heading)
+            self.telemetry["ground_speed"].set(vehicle.groundspeed)
+            self.telemetry["air_speed"].set(vehicle.airspeed)
 
-        self.telemetry["state"].set(vehicle.system_status.state)
-        self.telemetry["armed"].set(vehicle.armed)
-        self.telemetry["voltage"].set(self.cut_from_string(str( \
-                vehicle.battery), "Battery:voltage="))
-#       self.last_heartbeat = int(vehicle.last_heartbeat)
+    def get(self):
+        # Returns a thread-safe copy of the telemetry data.
+        with self.telemetry_lock:
+            return self.telemetry.copy()
 
-#       self.gps_lat = float(self.cut_from_string(str( \
-#                       vehicle.location.global_frame), "lat="))
-#       self.gps_lng = float(self.cut_from_string(str( \
-#                       vehicle.location.global_frame), "lon="))
-#       self.gps_alt = float(self.cut_from_string(str( \
-#                       vehicle.location.global_frame), "alt="))
-#       self.gps_rel_alt = float(self.cut_from_string(str( \
-#                       vehicle.location.global_relative_frame), \
-#                       "alt="))
-#       self.gps_satellites = int(self.cut_from_string(str( \
-#                       vehicle.gps_0), "num_sat="))
-#       self.velocity_x = vehicle.velocity[0]
-#       self.velocity_y = vehicle.velocity[1]
-#       self.velocity_z = vehicle.velocity[2]
-#       self.roll = float(self.cut_from_string(str( \
-#                       vehicle.attitude), "roll="))
-#       self.set_if_not_none(self.cut_from_string(str( \
-#                       vehicle.attitude), "roll="), self.roll, float)
-#       print(self.roll)
-#       self.pitch = float(self.cut_from_string(str( \
-#                       vehicle.attitude), "pitch="))
-#       self.yaw = float(self.cut_from_string(str( \
-#                       vehicle.attitude), "yaw="))
-#       self.heading = int(vehicle.heading)
-#       self.ground_speed = float(vehicle.groundspeed)
-#       self.air_speed = float(vehicle.airspeed)
-
-    def set_if_not_none(self, value, destination, destination_type):
-        if value == None:
-            return
-        print("PASS!")
-
-        destination = destination_type(value)
-
-    def cut_from_string(self, raw, key):
+    def __cut_from_string(self, raw, key):
+        # Extract telemetry values from a string by searching for the key as
+        # a prefix and copying everything up to the comma, designating the
+        # next value.
         start = raw.find(key) + len(key)
         end = raw.find(",", start)
         if end is -1:
             end = len(raw)
 
         return_str = raw[start:end]
+
+        # Return the python None type if the string returned is None or our
+        # telemetry string is empty.
         if str(return_str) == "None" or str(return_str) == "":
             return None
-        else:
-            return return_str
+
+        return return_str
 
 class SensorReader:
     def __init__(self, vehicle):
@@ -106,12 +117,19 @@ class SensorReader:
         self.sensors = Sensors()
 
         thread.start_new_thread(self.read_telemetry, ())
+        thread.start_new_thread(self.print_telemetry, ())
 
     def read_telemetry(self):
         while True:
-            print("run!")
+            print("Reading telemetry @ time " + str(time.time()))
             self.sensors.set(self.vehicle)
             time.sleep(0.1)
+
+    def print_telemetry(self):
+        while True:
+            sensors = self.sensors.get()
+            print sensors["roll"].value
+            time.sleep(0.001)
 
 def connect_to_drone(address):
     # Initializes a Dronekit instance to interface with the flight controller
