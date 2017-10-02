@@ -1,5 +1,6 @@
 import sys
 sys.dont_write_bytecode = True
+
 import signal
 import subprocess
 
@@ -15,11 +16,11 @@ class ProcessManager:
             proc = subprocess.Popen(command, shell=True)
             self.procs.append(proc)
         except:
-            print "FAILED " + command
+            print("FAILED TO RUN " + command)
             pass
 
     def terminate_all(self, signal, frame):
-        print "Attempting to terminate all spawned processes."
+        print("Attempting to terminate all spawned processes.")
         for proc in self.procs:
             proc.send_signal(1)
         exit(0)
