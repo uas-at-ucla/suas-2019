@@ -58,7 +58,8 @@ class TestControl(unittest.TestCase):
         time.sleep(1.0)
 
     def spawn_simulated_drone(self, lat, lng, alt, instance):
-        self.test_drone.spawn_process("python ./flight_control/simulate_copter.py " + \
+        self.test_drone.spawn_process("python " + \
+                dname + "/flight_control/simulate_copter.py " + \
                 "copter " + \
                 "--home " + str(lat) + "," + str(lng) + "," + str(alt) + ",0 " + \
                 "--instance " + str(instance))
