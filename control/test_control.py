@@ -29,7 +29,7 @@ class TestControl(unittest.TestCase):
         drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
         copter = copter_interface.CopterInterface(drone_address)
 
-        time.sleep(12.0)
+        time.sleep(13.0)
 
         sensors = copter.sensor_reader.sensors.get()
         copter.stop()
@@ -40,11 +40,6 @@ class TestControl(unittest.TestCase):
         self.assertTrue(sensors["armed"].get() is not None)
         self.assertTrue(sensors["voltage"].get() is not None)
         self.assertTrue(sensors["last_heartbeat"].get() is not None)
-#       self.assertTrue(sensors["gps_lat"].get() is not None)
-#       self.assertTrue(sensors["gps_lng"].get() is not None)
-#       self.assertTrue(sensors["gps_alt"].get() is not None)
-#       self.assertTrue(sensors["gps_rel_alt"].get() is not None)
-#       self.assertTrue(sensors["gps_satellites"].get() is not None)
         self.assertTrue(sensors["velocity_x"].get() is not None)
         self.assertTrue(sensors["velocity_y"].get() is not None)
         self.assertTrue(sensors["velocity_z"].get() is not None)
@@ -55,13 +50,37 @@ class TestControl(unittest.TestCase):
         self.assertTrue(sensors["ground_speed"].get() is not None)
         self.assertTrue(sensors["air_speed"].get() is not None)
 
-        time.sleep(1.0)
+    def test_sensors(self):
+        drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
+        copter = copter_interface.CopterInterface(drone_address)
+
+        time.sleep(20.0)
+
+        # Make sure we get stable values after flight controller initialization.
+        for i in range(0, 10):
+            sensors = copter.sensor_reader.sensors.get()
+
+            self.assertTrue(sensors["state"].get() == "STANDBY")
+            self.assertTrue(sensors["armed"].get() == "False")
+            self.assertGreater(sensors["voltage"].get(), 12.3)
+            self.assertLess(abs(sensors["velocity_x"].get()), 0.3)
+            self.assertLess(abs(sensors["velocity_y"].get()), 0.3)
+            self.assertLess(abs(sensors["velocity_z"].get()), 0.3)
+            self.assertLess(abs(sensors["gps_rel_alt"].get()), 0.1)
+            self.assertGreater(sensors["gps_satellites"].get(), 8)
+            self.assertLess(abs(sensors["ground_speed"].get()), 0.1)
+            self.assertLess(abs(sensors["air_speed"].get()), 0.1)
+            time.sleep(1)
+
+        copter.stop()
 
     def spawn_simulated_drone(self, lat, lng, alt, instance):
         self.test_drone.spawn_process("python " + \
                 dname + "/flight_control/simulate_copter.py " + \
                 "copter " + \
-                "--home " + str(lat) + "," + str(lng) + "," + str(alt) + ",0 " + \
+                "--home " + str(lat) + "," \
+                          + str(lng) + "," \
+                          + str(alt) + ",0 " + \
                 "--instance " + str(instance))
 
         port = 5760 + 10 * instance
