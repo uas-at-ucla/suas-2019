@@ -1,3 +1,8 @@
+import os
+abspath = os.path.abspath(__file__)
+dname = os.path.dirname(abspath)
+os.chdir(dname)
+
 import sys
 sys.dont_write_bytecode = True
 sys.path.insert(0, '../util')
