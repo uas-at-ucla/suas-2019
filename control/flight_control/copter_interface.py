@@ -122,20 +122,32 @@ class SensorReader:
     def __init__(self, vehicle):
         self.vehicle = vehicle
         self.sensors = Sensors()
+        self.should_run = True
 
-        thread.start_new_thread(self.read_telemetry, ())
+        self.reading_thread = thread.start_new_thread(self.read_telemetry, ())
+
+    def __del__(self):
+        self.stop()
+
+    def stop(self):
+        self.should_run = False
 
     def read_telemetry(self):
-        while True:
+        while self.should_run: 
             self.sensors.set(self.vehicle)
             time.sleep(0.1)
 
-class DroneInterface:
+class CopterInterface:
     def __init__(self, address):
         self.vehicle = self.__connect_to_drone(address)
         self.sensor_reader = SensorReader(self.vehicle)
 
-        signal.pause()
+    def __del__(self):
+        self.stop()
+
+    def stop(self):
+        self.sensor_reader.stop()
+        self.vehicle.close()
 
     def __connect_to_drone(self, address):
         # Initializes a Dronekit instance to interface with the flight
@@ -166,7 +178,9 @@ def main():
         parser.print_help()
         return
 
-    drone_interface = DroneInterface(args.address)
+    drone_interface = CopterInterface(args.address)
+
+    signal.pause()
 
 if __name__ == "__main__":
     main()

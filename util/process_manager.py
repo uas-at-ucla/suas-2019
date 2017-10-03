@@ -1,26 +1,28 @@
 import sys
 sys.dont_write_bytecode = True
 
-import signal
 import subprocess
+import os
+import signal
 
 # This class assists in spawning multiple processes and terminating all these
 # processes when a program exits.
 class ProcessManager:
     def __init__(self):
         self.procs = list()
-        signal.signal(signal.SIGINT, self.terminate_all)
 
     def spawn_process(self, command):
-        try:
-            proc = subprocess.Popen(command, shell=True)
-            self.procs.append(proc)
-        except:
-            print("FAILED TO RUN " + command)
-            pass
+        proc = subprocess.Popen(command, \
+                                shell = True, \
+                                preexec_fn = os.setsid)
 
-    def terminate_all(self, signal, frame):
-        print("Attempting to terminate all spawned processes.")
+        self.procs.append(proc)
+
+    def killall(self):
         for proc in self.procs:
-            proc.send_signal(1)
+            os.killpg(os.getpgid(proc.pid), signal.SIGINT)
+
+    def killall_signalled(self, signal, frame):
+        self.killall()
+
         exit(0)

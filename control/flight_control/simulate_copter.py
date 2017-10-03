@@ -3,7 +3,6 @@
 # -*- coding: utf-8 -*-
 import re
 import sys
-
 from dronekit_sitl.__init__ import main
 
 if __name__ == '__main__':
