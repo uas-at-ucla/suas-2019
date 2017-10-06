@@ -47,7 +47,12 @@ python ./file_name.py
 ```
 
 ### Windows Setup
+#### Virtual Machine
+See MacOS Setup.
 
+#### Ubuntu Bash
+I am not entirely sure if this will work. I'll do further testing later whether
+it can imitate the same libraries as a Linux machine.
 
 ### MacOS Setup
 #### Virtual Machine
