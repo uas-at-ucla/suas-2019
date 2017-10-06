@@ -26,7 +26,6 @@ class TestControl(unittest.TestCase):
         self.test_drone.killall()
 
     def test_init(self):
-        return
         drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
         copter = copter_interface.CopterInterface(drone_address)
 
