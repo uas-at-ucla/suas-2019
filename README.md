@@ -60,7 +60,7 @@ cd suas_2018
 
 Install Python dependencies.
 ```bash
-pip3 install -r build/install/requirements.txt
+pip3 install -r build/pip-requirements.txt
 ```
 
 ### Platforms and Libraries Used
