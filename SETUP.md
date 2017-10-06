@@ -46,7 +46,11 @@ Executing Python scripts.
 python ./file_name.py
 ```
 
-## Virtual Machine
+### Windows Setup
+
+
+### MacOS Setup
+#### Virtual Machine
 Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
 
 Get the ISO image.
