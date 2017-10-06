@@ -38,12 +38,17 @@ cd suas_2018
 
 Install Python dependencies.
 ```bash
-pip3 install -r build/install/requirements.txt
+pip3 install -r /path/to/suas_2018/build/pip_requirements.txt
 ```
-
+Executing Python scripts.
+'''bash
+python ./file_name.py
+'''
 
 ## Virtual Machine
 Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
+
+Get the ISO image.
 
 
 ## Git Control
