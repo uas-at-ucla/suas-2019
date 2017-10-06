@@ -45,23 +45,7 @@ code maintainable in the long run by giving automated feedback on all the
 changes that we make.
 
 ### Installation
-Install all of the packages that you will need.
-```bash
-sudo apt-get update
-sudo apt-get install git python3.5 python3-pip python3-dev build-essential 
-```
-
-Download this repository.
-```bash
-cd ~/Documents
-git clone https://github.com/uas-at-ucla/suas_2018.git
-cd suas_2018
-```
-
-Install Python dependencies.
-```bash
-pip3 install -r build/install/requirements.txt
-```
+Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/SETUP.md).
 
 ### Platforms and Libraries Used
  * [Arducopter](https://github.com/ArduPilot/ardupilot/tree/master/ArduCopter) as the flight controller platform
