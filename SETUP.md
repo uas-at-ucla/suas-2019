@@ -1,7 +1,28 @@
 # Setting Up UAS Development Environment
 Please read through the entire documentation first before running anything on your machine.
 
-## Linux Set-up
+## Contents
+ * Operating System Setup
+   * Linux Setup
+   * Windows Setup
+   * MacOS Setup
+ * Git Control
+   * GitHub
+   * SSH Setup
+   * Cloning
+   * Branching
+    * Pulling
+    * Pushing and Merge Conflicts 
+   * Pull Request Process
+ * Compiling Programs
+
+## Operating System Setup
+
+### Linux Setup
+Linux is the premiere way we would like to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You can install Linux in two ways:
+1. Install a virtual machine.
+2. If you have a working Windows machine, you can dual boot it to run Ubuntu natively on your own machine.
+
 Install all of the packages that you will need.
 ```bash
 sudo apt-get update
@@ -25,7 +46,7 @@ pip3 install -r build/install/requirements.txt
 Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
 
 
-## Setting Up Git Control
+## Git Control
 1. Create a Git Account
 2. Add SSH-key onto your local machine or VM
    https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/
