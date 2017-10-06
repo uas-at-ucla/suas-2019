@@ -2,7 +2,7 @@
 Please read through the entire documentation first before running anything on your machine.
 
 ## Contents
- * Operating System Setup
+ * Operating System
    * Linux Setup
    * Windows Setup
    * MacOS Setup
@@ -11,12 +11,12 @@ Please read through the entire documentation first before running anything on yo
    * SSH Setup
    * Cloning
    * Branching
-    * Pulling
-    * Pushing and Merge Conflicts 
+     * Pulling
+     * Pushing and Merge Conflicts
    * Pull Request Process
  * Compiling Programs
 
-## Operating System Setup
+## Operating System
 
 ### Linux Setup
 Linux is the premiere way we would like to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You can install Linux in two ways:
@@ -26,7 +26,7 @@ Linux is the premiere way we would like to develop all of our code. Ubuntu 16.04
 Install all of the packages that you will need.
 ```bash
 sudo apt-get update
-sudo apt-get install git python3.5 python3-pip python3-dev build-essential 
+sudo apt-get install git python3.5 python3-pip python3-dev build-essential
 ```
 
 Download this repository.
