@@ -22,7 +22,7 @@ pip3 install -r build/install/requirements.txt
 
 
 ## Virtual Machine
-https://www.virtualbox.org/wiki/Downloads
+Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
 
 
 ## Setting Up Git Control
