@@ -45,7 +45,7 @@ code maintainable in the long run by giving automated feedback on all the
 changes that we make.
 
 ### Installation
-Please see the [Set-Up](https://github.com/uas-at-ucla/suas_2018/blob/master/SET-UP.md) section.
+Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/SETUP.md).
 
 ### Platforms and Libraries Used
  * [Arducopter](https://github.com/ArduPilot/ardupilot/tree/master/ArduCopter) as the flight controller platform
