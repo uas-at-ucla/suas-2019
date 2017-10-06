@@ -316,8 +316,9 @@ class Controller:
             elif current_state == "LANDING":
                 # Wait until vehicle disarms after landing.
                 if self.vehicle.armed:
-                    self.print_debug("Altitude: " +
-                        str(self.vehicle.location.global_relative_frame.alt))
+                    pass
+                    #self.print_debug("Altitude: " +
+                    #    str(self.vehicle.location.global_relative_frame.alt))
                 else:
                     self.set_state("LANDED")
             elif current_state == "LANDED":

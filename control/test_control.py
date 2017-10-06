@@ -111,6 +111,22 @@ class TestControl(unittest.TestCase):
 
             time.sleep(1.0)
 
+        print "Landing!"
+        copter.controller.set_state("LAND")
+
+        for i in range(0, 12):
+            sensors = copter.sensor_reader.sensors.get()
+
+            print "Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
+                  " Lng: " + '%9s' % str(sensors["gps_lng"].get()) + \
+                  " Alt: " + '%9s' % str(sensors["gps_alt"].get()) + \
+                  " Ground speed: " + '%9s' % str(sensors["ground_speed"].get())
+
+            time.sleep(1.0)
+
+        self.assertTrue(sensors["state"].get() == "LANDED")
+        self.assertLess(abs(sensors["gps_rel_alt"].get()), 0.3)
+
         copter.stop()
 
     def spawn_simulated_drone(self, lat, lng, alt, instance):
