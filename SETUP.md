@@ -28,8 +28,8 @@ Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the r
    actually start tinkering your device. Moreover, you will need to [disable
    secure
    boot](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/boot-to-uefi-mode-or-legacy-bios-mode)
-   and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c). I strongly
-   encourage you to message on Slack if you have any confusions or unsure of
+   and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c). It is strongly
+   encouraged you to message on Slack if you have any confusions or unsure of
    anything. Make sure to back-up your sensitive documents and files - if your
    operating system gets corrupted, we can help reinstall a fresh Windows OS
    onto your machine again.
