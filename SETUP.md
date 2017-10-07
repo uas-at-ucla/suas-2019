@@ -18,15 +18,14 @@ Please read through the entire documentation first before running anything on yo
 ## Operating System
 
 ### Windows Setup
-#### Virtual Machine
-See MacOS Setup.
+There are two options:
+1. Install a Virtual Machine. See MacOS Setup.
+2. Ubuntu Bash.
 
-#### Ubuntu Bash
 I am not entirely sure if this will work. I'll do further testing later whether
 it can imitate the same libraries as a Linux machine.
 
 ### MacOS Setup
-#### Virtual Machine
 Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
 
 Get the ISO image.
