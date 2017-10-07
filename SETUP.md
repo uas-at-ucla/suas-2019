@@ -4,7 +4,6 @@ Please read through the entire documentation first before running anything on yo
 ## Contents
  * Operating System
    * Windows Setup
-     * Windows Built-in Ubuntu Bash
    * Virtual Machine
  * Git Control
    * Initial Setup
