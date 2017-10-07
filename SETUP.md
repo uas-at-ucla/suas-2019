@@ -4,6 +4,7 @@ Please read through the entire documentation first before running anything on yo
 ## Contents
  * Operating System
    * Windows Setup
+     * Windows Built-in Ubuntu Bash
    * Virtual Machine
  * Git Control
    * Initial Setup
@@ -21,20 +22,16 @@ Linux is the premiere way we want to develop all of our code. Ubuntu 16.04 is th
 
 1. Install a Virtual Machine. See below. If you are unsure whether you
    want to pursue a career in Computer Science, then it's highly recommended to
-   just stick with a virtual machine client and to ignore the other options.
-2. Use the Ubuntu Bash.
-   More info to be released.
+   follow this option.
+2. Use the Ubuntu Bash. See below.
 3. [Dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) Windows and Ubuntu in order to 
-   natively run Linux on your own machine. If you had never setup a Linux installation
-   before, it's recommended to watch the whole video first before you
-   actually start tinkering your device. Moreover, you will need to [disable
-   secure
-   boot](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/boot-to-uefi-mode-or-legacy-bios-mode)
+   natively run Linux on your own machine. You will need to [disable
+   secure boot](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/boot-to-uefi-mode-or-legacy-bios-mode)
    and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c) before starting the video. It is strongly
    encouraged that you message on Slack if you have any confusions or are unsure of
-   anything. Make sure to back-up your sensitive documents and files - if your
-   operating system gets corrupted, we can help reinstall a fresh Windows OS
-   onto your machine again.
+   anything.
+
+#### Windows Built-in Ubuntu Bash
 
 ### Virtual Machine
 You will need a Linux setup for MacOS machines.
@@ -71,9 +68,9 @@ You will need a Linux setup for MacOS machines.
 ### Branching
 Branching is a system we use so that we can constantly develop our code in
 increments. After you successfully clone the repository, do not edit the files
-directly. You need to create your own branch off of <MASTER>.
+directly. You need to create your own branch off of MASTER.
 
-The <MASTER> branch is the final product we release to for our drone. Our branching
+The MASTER branch is the final product we release to for our drone. Our branching
 system will look like this:
 
 ............................ --------------- ivan
@@ -82,7 +79,7 @@ system will look like this:
 
 ............................ --------------- yaacov
 
-MASTER Branch --------------- vansh
+MASTER Branch ------------ vansh
 
 ............................ --------------- .
 
@@ -100,9 +97,9 @@ approval and merging. The purpose of this is to make sure your code does not bre
 #### Creating Your Own Branch
 1. Create the remote branch. In the [UAS Repository](https://github.com/uas-at-ucla/suas_2018), by the
    left-side section you should see a box that says 'Branch: master'. Click on it,
-   and create the remote branch. You should name it by your first name. This
-   remote branch is the cloud where you store your newly edited files on and
-   what everyone else can see.
+   and create the remote branch. Name the branch by your first name. The
+   remote branch is the cloud where you store your newly edited files and
+   allow everyone else to see your edits.
 2. In the suas_2018 directory, run the following:
    ```bash
    git fetch
@@ -117,14 +114,14 @@ approval and merging. The purpose of this is to make sure your code does not bre
    git diff
    ```
 2. It is good practice to develop your code incrementally and back-up your edits
-   on GitHub - it is very common for people to accidentally lose all their
-   data. Save your local changes on GitHub.
+   onto GitHub - it is very common for people to accidentally lose all their
+   data.
    ```bash
    git add FILE_NAME
    git commit -m "Enter commit message"
    git push
    ```
-3. If you work on two separate machines or want to obtain the latest <MASTER>
+3. If you work on two separate machines or want to obtain the latest MASTER
    updates, you can simply pull all the content from the GitHub repository.
    ```bash
    git checkout master
@@ -132,13 +129,12 @@ approval and merging. The purpose of this is to make sure your code does not bre
    git checkout FIRST_NAME
    git merge master
    ```
-4. If a merge conflict exists, the log should alert you. Simply edit the files
-   and fix them. If you are unsure what to delete or fix, simply ask for help
-   from others.
+4. If a merge conflict exists, a 'MERGE CONFLICT' message will appear immediately after the merge. Simply edit the files
+   and fix them. If you are unsure what to delete or fix, ask others for help.
 
 ### Pull Request Process
 Pull requests are what you submit for people to review your code. Reviewers will
-see the latest file edits you made that do not exist in the <MASTER> branch.
+see the latest file edits you made that do not exist in the MASTER branch.
 
 1. Go to the [UAS Repository](https://github.com/uas-at-ucla/suas_2018).
 2. Near the top section, you should see a series of tabs: Code, Issues, Pull
@@ -146,7 +142,7 @@ see the latest file edits you made that do not exist in the <MASTER> branch.
 3. On the right-side, click on 'New Pull Request'.
 4. Choose your branch. Check the diffs to make sure the branch contains the
    changes you want. Do not push any more changes until the PR has been approved.
-5. After the PR has been approved, pull from <MASTER> and compile.
+5. After the PR has been approved, pull from MASTER and compile.
    ```bash
    git checkout master
    git pull
