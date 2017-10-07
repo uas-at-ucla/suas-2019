@@ -63,12 +63,19 @@ The <MASTER> branch is the final product we release to for our drone. Our branch
 system will look like this:
 
 ............. --------------- ivan
+
 ............. --------------- comran
+
 ............. --------------- yaacov
+
 MASTER Branch --------------- vansh
+
 ............. --------------- .
+
 ............. --------------- .
+
 ............. --------------- .
+
 ............. --------------- and so on
 
 Everyone on the team will have their own branch to work on - you can think of
