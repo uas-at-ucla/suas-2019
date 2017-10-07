@@ -32,7 +32,17 @@ If you are running on MacOS, will need a Virtual Machine.
 0. If you are using a Windows machine, be sure to [enable virtualization in your BIOS](http://bce.berkeley.edu/enabling-virtualization-in-your-pc-bios.html).
 1. Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
 2. Download the [Virtual Box Appliance for UAS](https://drive.google.com/uc?export=download&confirm=Fn7m&id=0Bx9wIeK4Bxa_bTJ5UzhOWGdsUzQ).
+3. Open Oracle VM VirtualBox.
+4. On the top-left corner, press File > Import Appliance...
+5. Locate the 'UAS at UCLA Virtualbox (Ubuntu).ova' file and press 'Next'. Then press 'Import'.
+6. A new virtual machine should show up in VirtualBox, which will be the machine that you can develop code on. To start this machine, click on the machine in the left-hand bar, and click Start. 
 
+   Note: VirtualBox has a variety of escape keys to manage transitioning from the virtual machine to your host machine. This key should be displayed at the bottom right of the window. To escape from the virtual machine environment, you should be able to press this key, release it, and then move your mouse out of the environment or use your native machine’s shortcuts to change windows
+7. Default user credentials:
+user: uas
+pass: password
+
+Final Note: We will update this virtual machine as more dependencies or a change in build environment are needed. Pay attention to version numbers as these will be used to track the types of virtual machines being posted.
 
 ## Git Control
 
