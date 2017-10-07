@@ -4,7 +4,7 @@ Please read through the entire documentation first before running anything on yo
 ## Contents
  * Operating System
    * Windows Setup
-   * Virtual Machine or MacOS Setup
+   * Virtual Machine
  * Git Control
    * Initial Setup
    * Branching
@@ -36,7 +36,8 @@ Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the r
    operating system gets corrupted, we can help reinstall a fresh Windows OS
    onto your machine again.
 
-### Virtual Machine or MacOS Setup
+### Virtual Machine
+You will need a Linux setup for MacOS machines.
 0. If you are using a Windows machine, be sure to [enable virtualization in your BIOS](http://bce.berkeley.edu/enabling-virtualization-in-your-pc-bios.html).
 1. Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
 2. Get the ISO image file from Comran.
