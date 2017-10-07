@@ -42,7 +42,7 @@ You will need a Linux setup for MacOS machines.
 0. If you are using a Windows machine, be sure to [enable virtualization in your BIOS](http://bce.berkeley.edu/enabling-virtualization-in-your-pc-bios.html).
 1. Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
 2. Get the ISO image file from Comran.
-3. On the Oracle VM VirtualBox Manager client, click the 'New' button located on the top-left corner.
+3. In the Oracle VM VirtualBox Manager client, click the 'New' button located on the top-left corner.
 4. Give whatever name you want and choose type 'Linux'. For version, choose 'Ubuntu (64-bit)'. If you do not see the (64-bit) option and you have a 64-bit machine, then go back to step 0. Press 'next'.
 5. For memory size: it is recommended to give the machine half the [RAM](http://quehow.com/how-to-check-ram-size-and-system-type-in-windows-10/4263.html) your computer has. Press 'next'.
 6. Press 'Create a virtual hard disk now' and press 'create'.
