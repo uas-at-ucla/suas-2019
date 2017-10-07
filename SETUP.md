@@ -22,10 +22,10 @@ Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the r
 1. Install a Virtual Machine. See below. If you are unsure whether you
    want to pursue a career in Computer Science, then it's highly recommended to
    just stick with a virtual machine client and to ignore the other options.
-2. Using the Ubuntu Bash.
+2. Use the Ubuntu Bash.
    More info to be released.
-3. If you have a working Windows machine, you can [dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) it to run Ubuntu
-   natively on your own machine. If you had never setup a Linux installation
+3. [Dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) Windows and Ubuntu in order to 
+   natively run Linux on your own machine. If you had never setup a Linux installation
    before, it's recommended to watch the whole video first before you
    actually start tinkering your device. Moreover, you will need to [disable
    secure
