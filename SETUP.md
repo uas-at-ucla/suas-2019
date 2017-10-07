@@ -12,6 +12,7 @@ Please read through the entire documentation first before running anything on yo
      * Creating Your Own Branch
      * Pulling, Pushing, and Merge Conflicts
    * Pull Request Process
+ * Compiling
  * Other Reads
 
 ## Operating System
@@ -36,29 +37,6 @@ Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the r
 2. If you have a working Windows machine, you can dual boot it to run Ubuntu
    natively on your own machine.
 
-(From Ivan: I need to move all the stuff below AFTER the git controls section)
-Install all of the packages that you will need.
-```bash
-sudo apt-get update
-sudo apt-get install git python3.5 python3-pip python3-dev build-essential
-```
-
-Download this repository.
-```bash
-cd ~/Documents
-git clone https://github.com/uas-at-ucla/suas_2018.git
-cd suas_2018
-```
-
-Install Python dependencies.
-```bash
-pip3 install -r /path/to/suas_2018/build/pip_requirements.txt
-```
-
-Executing Python scripts.
-```bash
-python ./file_name.py
-```
 ## Git Control
 
 ### Initial Setup
@@ -85,12 +63,19 @@ The <MASTER> branch is the final product we release to for our drone. Our branch
 system will look like this:
 
 .           --- comran
-            --- ivan
-            --- vansh
-  MASTER    --- yaacov
-            ---   .
-            ---   .
-            ---   .
+
+.           --- ivan
+
+.           --- vansh
+
+MASTER      --- yaacov
+
+.           ---   .
+
+.           ---   .
+
+.           ---   .
+
 .           --- and so on
 
 Everyone on the team will have their own branch to work on - you can think of
@@ -153,6 +138,23 @@ see the latest file edits you made that do not exist in the <MASTER> branch.
    git pull
    ```
 And that's all the commonly used git controls. There are other useful commands you can google if you ever run into special situations.
+
+## Compiling
+Install all of the packages that you will need.
+```bash
+sudo apt-get update
+sudo apt-get install git python3.5 python3-pip python3-dev build-essential
+```
+
+Install Python dependencies.
+```bash
+pip3 install -r /path/to/suas_2018/build/pip_requirements.txt
+```
+
+Executing Python scripts.
+```bash
+python ./file_name.py
+```
 
 ## Other Reads
 Each directory - control, vision, ground - contains their own README.md
