@@ -35,14 +35,15 @@ If you are running on MacOS, will need a Virtual Machine.
 3. Open Oracle VM VirtualBox.
 4. On the top-left corner, press File > Import Appliance...
 5. Locate the 'UAS at UCLA Virtualbox (Ubuntu).ova' file and press 'Next'. Then press 'Import'.
-6. A new virtual machine should show up in VirtualBox, which will be the machine that you can develop code on. To start this machine, click on the machine in the left-hand bar, and click Start. 
+6. A new virtual machine should show up in VirtualBox, which will be the machine that you can develop code on. Click on the machine in the left-hand bar, and click Start. 
 
-   Note: VirtualBox has a variety of escape keys to manage transitioning from the virtual machine to your host machine. This key should be displayed at the bottom right of the window. To escape from the virtual machine environment, you should be able to press this key, release it, and then move your mouse out of the environment or use your native machine’s shortcuts to change windows
-7. Default user credentials:
+   Note: VirtualBox has a variety of escape keys to manage transitioning from the virtual machine to your host machine. This key should be displayed at the bottom right of the window. To escape from the virtual machine environment, you should be able to press this key, release it, and then move your mouse out of the environment or use your native machine’s shortcuts to change windows.
+8. If you have a 1440p or 1080p screen, you may need to [scale the resolution](https://askubuntu.com/questions/823529/how-do-you-set-scaling-for-a-high-dpi-monitor-and-low-dpi-monitor-independently) so that everything does not look so tiny.
+9. Default user credentials:
 user: uas
 pass: password
 
-Final Note: We will update this virtual machine as more dependencies or a change in build environment are needed. Pay attention to version numbers as these will be used to track the types of virtual machines being posted.
+We will update this virtual machine as more dependencies or a change in build environment are needed. Pay attention to version numbers as these will be used to track the types of virtual machines being posted.
 
 ## Git Control
 
