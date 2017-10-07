@@ -41,9 +41,9 @@ If you are running on MacOS, will need a Virtual Machine.
 8. If you have a 1440p or 1080p screen, you may need to [scale the resolution](https://askubuntu.com/questions/823529/how-do-you-set-scaling-for-a-high-dpi-monitor-and-low-dpi-monitor-independently) so that everything does not look so tiny.
 9. Default user credentials
 
-   *user:* uas
+   **user:** uas
 
-   *pass:* password
+   **pass:** password
 
 We will update this virtual machine as more dependencies or a change in build environment are needed. Pay attention to version numbers as these will be used to track the types of virtual machines being posted.
 
