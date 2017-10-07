@@ -15,13 +15,6 @@ Please read through the entire documentation first before running anything on yo
  * Other Reads
 
 ## Operating System
-<<<<<<< HEAD
-test
-### Linux Setup
-Linux is the premiere way we would like to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You can install Linux in two ways:
-1. Install a virtual machine.
-2. If you have a working Windows machine, you can dual boot it to run Ubuntu natively on your own machine.
-=======
 
 ### Windows Setup
 Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You can install Linux in three ways:
@@ -89,7 +82,6 @@ MASTER Branch --------------- vansh
 ............................ --------------- .
 
 ............................ --------------- and so on
->>>>>>> 816802b0558a91581f80c90961820dc493626a8a
 
 Everyone on the team will have their own branch to work on - you can think of
 the branch as your own sandbox. You will submit your code through a 'Pull
