@@ -28,8 +28,7 @@ Linux is the premiere way we want to develop all of our code. Ubuntu 16.04 is th
    natively run Linux on your own machine. You will need to [disable
    secure boot](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/boot-to-uefi-mode-or-legacy-bios-mode)
    and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c) before starting the video. It is strongly
-   encouraged that you message on Slack if you have any confusions or are unsure of
-   anything.
+   encouraged that you message us on Slack if there are any confusions.
 
 #### Windows Built-in Ubuntu Bash
 
