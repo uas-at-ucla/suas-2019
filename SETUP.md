@@ -62,21 +62,14 @@ directly. You need to create your own branch off of <MASTER>.
 The <MASTER> branch is the final product we release to for our drone. Our branching
 system will look like this:
 
-.           --- comran
-
-.           --- ivan
-
-.           --- vansh
-
-MASTER      --- yaacov
-
-.           ---   .
-
-.           ---   .
-
-.           ---   .
-
-.           --- and so on
+............. --------------- ivan
+............. --------------- comran
+............. --------------- yaacov
+MASTER Branch --------------- vansh
+............. --------------- .
+............. --------------- .
+............. --------------- .
+............. --------------- and so on
 
 Everyone on the team will have their own branch to work on - you can think of
 the branch as your own sandbox. You will submit your code through a 'Pull
