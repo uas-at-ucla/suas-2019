@@ -4,7 +4,7 @@ Please read through the entire documentation first before running anything on yo
 ## Contents
  * Operating System
    * Windows Setup
-   * MacOS Setup
+   * Virtual Machine or MacOS Setup
  * Git Control
    * Initial Setup
    * Branching
@@ -19,10 +19,12 @@ Please read through the entire documentation first before running anything on yo
 ### Windows Setup
 Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You can install Linux in three ways:
 
-1. Install a Virtual Machine. See MacOS Setup. If you are unsure whether you
+1. Install a Virtual Machine. See below. If you are unsure whether you
    want to pursue a career in Computer Science, then it's highly recommended to
    just stick with a virtual machine client and to ignore the other options.
-2. If you have a working Windows machine, you can [dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) it to run Ubuntu
+2. Using the Ubuntu Bash.
+   More info to be released.
+3. If you have a working Windows machine, you can [dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) it to run Ubuntu
    natively on your own machine. If you had never setup a Linux installation
    before, it's recommended to watch the whole video first before you
    actually start tinkering your device. Moreover, you will need to [disable
@@ -33,14 +35,13 @@ Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the r
    anything. Make sure to back-up your sensitive documents and files - if your
    operating system gets corrupted, we can help reinstall a fresh Windows OS
    onto your machine again.
-3. Using the Ubuntu Bash.
-   I am not entirely sure if this will work. I'll do further testing later whether
-   it can imitate the same libraries as a Linux machine.
 
-### MacOS Setup
-Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
-
-Get the ISO image from Comran.
+### Virtual Machine or MacOS Setup
+0. If you are using a Windows machine, be sure to [enable virtualization in your BIOS](http://bce.berkeley.edu/enabling-virtualization-in-your-pc-bios.html).
+1. Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
+2. Get the ISO image file from Comran.
+3. On the Oracle VM VirtualBox Manager client, click the 'New' button located on the top-left corner.
+4. Give whatever name you want and choose type 'Linux'.
 
 ## Git Control
 
