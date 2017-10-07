@@ -41,7 +41,13 @@ Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the r
 1. Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
 2. Get the ISO image file from Comran.
 3. On the Oracle VM VirtualBox Manager client, click the 'New' button located on the top-left corner.
-4. Give whatever name you want and choose type 'Linux'.
+4. Give whatever name you want and choose type 'Linux'. For version, choose 'Ubuntu (64-bit)'. If you do not see the (64-bit) option and you have a 64-bit machine, then go back to step 0. Press 'next'.
+5. For memory size: it is recommended to give the machine half the [RAM](http://quehow.com/how-to-check-ram-size-and-system-type-in-windows-10/4263.html) your computer has. Press 'next'.
+6. Press 'Create a virtual hard disk now' and press 'create'.
+7. Leave the option as 'VDI' and press 'next'.
+8. Choose the 'Fixed size' option and press 'next'.
+9. On the right-hand side, enter 30 GB for the virtual machine. If you are running tight on memory, 15 GB should be fine. However, beware: reallocating memory to the virtual machine is a very painful process.
+10. To be updated. Upload Comran's ISO image.
 
 ## Git Control
 
