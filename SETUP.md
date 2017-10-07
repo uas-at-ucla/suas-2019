@@ -20,14 +20,11 @@ Please read through the entire documentation first before running anything on yo
 ### Windows Setup
 Linux is the premiere way we want to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You have two options to install Linux:
 
-1. Install a Virtual Machine. See below. If you are unsure whether you
-   want to pursue a career in Computer Science, then it's highly recommended to
-   follow this option.
+1. Install a Virtual Machine. This is the easiest option
 2. [Dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) Windows and Ubuntu in order to 
    natively run Linux on your own machine. You will need to [disable
    secure boot](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/boot-to-uefi-mode-or-legacy-bios-mode)
-   and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c) before starting the video. It is strongly
-   encouraged that you message us on Slack if there are any confusions.
+   and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c) before starting the video.
 
 ### Virtual Machine
 You will need a Linux setup for MacOS machines.
