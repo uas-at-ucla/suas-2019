@@ -84,7 +84,7 @@ Request', in which the respective leadership committee will review the code for
 approval and merging. The purpose of this is to make sure your code does not break anything severe on the master branch.
 
 #### Creating Your Own Branch
-1. Create the remote branch. On the [UAS_Repository](https://github.com/uas-at-ucla/suas_2018), by the
+1. Create the remote branch. In the [UAS Repository](https://github.com/uas-at-ucla/suas_2018), by the
    left-side section you should see a box that says 'Branch: master'. Click on it,
    and create the remote branch. You should name it by your first name. This
    remote branch is the cloud where you store your newly edited files on and
