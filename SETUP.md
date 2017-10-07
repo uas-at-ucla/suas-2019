@@ -5,7 +5,6 @@ Please read through the entire documentation first before running anything on yo
  * Operating System
    * Windows Setup
    * MacOS Setup
-   * Linux Setup
  * Git Control
    * Initial Setup
    * Branching
