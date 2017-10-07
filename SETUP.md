@@ -17,7 +17,7 @@ Please read through the entire documentation first before running anything on yo
 ## Operating System
 
 ### Windows Setup
-Linux is the premiere way we want to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You have two options to install Linux:
+Linux is the premier way we want to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You have two options to install Linux:
 
 1. Install a Virtual Machine. This is the easiest option.
 2. [Dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) Windows and Ubuntu in order to 
