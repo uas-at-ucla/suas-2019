@@ -32,7 +32,9 @@ Get the ISO image.
 
 ### Linux Setup
 Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You can install Linux in two ways:
-1. Install a virtual machine - see MacOS Setup.
+1. Install a virtual machine - see MacOS Setup. If you are unsure whether you
+   want to pursue a career in Computer Science, then it's highly recommended to
+   just stick with a virtual machine client and to ignore the dual-boot option.
 2. If you have a working Windows machine, you can [dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) it to run Ubuntu
    natively on your own machine. If you had never setup a Linux installation
    before, it's recommended to to watch the whole video first before you
