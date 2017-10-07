@@ -21,7 +21,7 @@ Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the r
 
 1. Install a Virtual Machine. See MacOS Setup. If you are unsure whether you
    want to pursue a career in Computer Science, then it's highly recommended to
-   just stick with a virtual machine client and to ignore the dual-boot option.
+   just stick with a virtual machine client and to ignore the other options.
 2. If you have a working Windows machine, you can [dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) it to run Ubuntu
    natively on your own machine. If you had never setup a Linux installation
    before, it's recommended to watch the whole video first before you
