@@ -59,7 +59,7 @@ class TestControl(unittest.TestCase):
         time.sleep(4.0)
 
         sensors = copter.sensor_reader.sensors.get()
-        print sensors["state"].get() 
+        print sensors["state"].get()
         self.assertTrue(sensors["state"].get() == "STANDBY")
         self.assertTrue(sensors["armed"].get() == "False")
 
@@ -147,4 +147,6 @@ if __name__ == "__main__":
     ))
 
     runner = TextTestRunner(verbosity = 2)
-    runner.run(suite)
+
+    ret = not runner.run(suite).wasSuccessful()
+    sys.exit(ret)
