@@ -68,7 +68,7 @@ system will look like this:
 
 .......................... --------------- yaacov
 
-MASTER Branch.... --------------- vansh
+MASTER Branch --------------- vansh
 
 .......................... --------------- .
 
