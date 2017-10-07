@@ -17,7 +17,7 @@ Please read through the entire documentation first before running anything on yo
 ## Operating System
 
 ### Windows Setup
-Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You can install Linux in three ways:
+Linux is the premiere way we want to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You can install Linux in three ways:
 
 1. Install a Virtual Machine. See below. If you are unsure whether you
    want to pursue a career in Computer Science, then it's highly recommended to
@@ -30,14 +30,15 @@ Linux is the premiere way want to develop all of our code. Ubuntu 16.04 is the r
    actually start tinkering your device. Moreover, you will need to [disable
    secure
    boot](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/boot-to-uefi-mode-or-legacy-bios-mode)
-   and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c). It is strongly
-   encouraged you to message on Slack if you have any confusions or unsure of
+   and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c) before starting the video. It is strongly
+   encouraged that you message on Slack if you have any confusions or are unsure of
    anything. Make sure to back-up your sensitive documents and files - if your
    operating system gets corrupted, we can help reinstall a fresh Windows OS
    onto your machine again.
 
 ### Virtual Machine
 You will need a Linux setup for MacOS machines.
+
 0. If you are using a Windows machine, be sure to [enable virtualization in your BIOS](http://bce.berkeley.edu/enabling-virtualization-in-your-pc-bios.html).
 1. Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
 2. Get the ISO image file from Comran.
