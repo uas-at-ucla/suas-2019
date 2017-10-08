@@ -145,7 +145,9 @@ see the latest file edits you made that do not exist in the MASTER branch.
    git checkout master
    git pull
    ```
-And that's all the commonly used git controls. There are other useful commands you can google if you ever run into special situations.
+6. DO NOT delete your branch after a successful merge. The reason being is for convenience. It is easier for you to constantly merge the master branch into your own branch. See step 3.
+
+And that's all the commonly used git controls. There are other useful commands you can google if you ever run into special situations. If you are new or not well-familiar with git, you will grow use to it after consecutive use and it will become almost second nature to you.
 
 ## Compiling
 Install all of the packages that you will need.
