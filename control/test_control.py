@@ -25,9 +25,6 @@ class TestControl(unittest.TestCase):
     def tearDownModule(self):
         self.test_drone.killall()
 
-    def test_fail(self):
-        assertTrue(False)
-
     def test_init(self):
         drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
         copter = copter_interface.CopterInterface(drone_address)
