@@ -26,7 +26,7 @@ Linux is the premier way we want to develop all of our code. Ubuntu 16.04 is the
    and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c) before starting the video.
 
 ### Virtual Machine
-If you are running on MacOS, will need a Virtual Machine.
+If you are running on MacOS, you will need a Virtual Machine.
 
 0. If you are using a Windows machine, be sure to [enable virtualization in your BIOS](http://bce.berkeley.edu/enabling-virtualization-in-your-pc-bios.html).
 1. Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
