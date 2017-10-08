@@ -130,9 +130,6 @@ class SensorReader:
 
         self.reading_thread = thread.start_new_thread(self.read_telemetry, ())
 
-    def __del__(self):
-        self.stop()
-
     def read_telemetry(self):
         while self.should_run:
             self.sensors.set(self.vehicle, self.controller)
@@ -344,9 +341,6 @@ class CopterInterface:
         self.vehicle = self.__connect_to_drone(address)
         self.controller = Controller(self.vehicle)
         self.sensor_reader = SensorReader(self.vehicle, self.controller)
-
-    def __del__(self):
-        self.stop()
 
     def stop(self):
         self.sensor_reader.stop()
