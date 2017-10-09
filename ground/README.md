@@ -8,8 +8,9 @@ This documentation entails all the information you need for the Ground Control S
 
 ## Framework
 * To be determined. Use [this site](http://ardupilot.org/copter/docs/common-choosing-a-ground-station.html) for inspiration.
-* MySQL, Node.js, Express.js, and React.js is a possibility. Best part of React.js: if we make this a single-page application, building the user interface in React.js will be very easy.
-* Flask (python back-end) and regular HTML/CSS.
+* Proposal: MySQL, Node.js, Express.js, and React.js is a possibility. Best part of React.js: if we make this a single-page application, building the user interface in React.js will be very easy. Chrome will already serve as our GUI.
+  * All telemetry can be stored in MySQL and have server-side rendering.
+* Biggest problem I fear: firmware integration. We will have to learn the flight controller's API's and load its libraries.
 
 ## Competition Rules
 * [Competition rules](http://www.auvsi-suas.org/competitions/2018/) pertaining to the ground station. Read the following pages:
