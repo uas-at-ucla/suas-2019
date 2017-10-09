@@ -39,10 +39,13 @@ This documentation entails all the information you need for the Ground Control S
 ## Timeline
 * Quarter 1: Research, construct a solid plan on firmware integration with the software, have a prototyping Node.js and React.js framework ready.
   * Goal: Have a working ground control software that communicates with the plane and can be tested.
+  * Features: timer for flight time, a maps API loaded (Google Maps?), and a skeleton front-end interface with some server-side rendering from MySQL.
 * Quarter 2: Code, code, and code.
   * Goal: Have a complete ground control software by end of February.
-* Quarter 3: Testing, debugging, and adding extra features.
+  * Features: All firmware is soundly integrated. Software allows the drone to fly autonomously.
+* Quarter 3: Testing, debugging, and accomplishing other objectives.
   * Goal: Software should be able to complete all the objectives laid out by the competition rules.
+  * Features: Obstacle avoidance, user login feature, all noticeable bugs addressed.
 
 ## Back-up Plan
 * Use an open source Linux ground control software.
