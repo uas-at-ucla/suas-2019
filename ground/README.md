@@ -8,7 +8,7 @@ This documentation entails all the information you need for the Ground Control S
 
 ## Framework
 * To be determined. Use [this site](http://ardupilot.org/copter/docs/common-choosing-a-ground-station.html) for inspiration.
-* MySQL, Node.js, Express.js, and React.js is a possibility.
+* MySQL, Node.js, Express.js, and React.js is a possibility. Best part of React.js: if we make this a single-page application, building the user interface in React.js will be very easy.
 * Flask (python back-end) and regular HTML/CSS.
 
 ## Competition Rules
