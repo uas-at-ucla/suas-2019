@@ -42,7 +42,7 @@ This documentation entails all the information you need for the Ground Control S
   * Features: timer for flight time, a maps API loaded (Google Maps?), and a skeleton front-end interface with some server-side rendering from MySQL.
 * Quarter 2: Code, code, and code.
   * Goal: Have a complete ground control software by end of February.
-  * Features: All firmware is soundly integrated. Software allows the drone to fly autonomously.
+  * Features: All firmware is soundly integrated. Software allows the drone to fly autonomously. Include battery percentage.
 * Quarter 3: Testing, debugging, and accomplishing other objectives.
   * Goal: Software should be able to complete all the objectives laid out by the competition rules.
   * Features: Obstacle avoidance, user login feature, all noticeable bugs addressed.
