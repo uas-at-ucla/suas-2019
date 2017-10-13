@@ -158,7 +158,7 @@ sudo apt-get install git python3.5 python3-pip python3-dev build-essential
 
 Install Python dependencies.
 ```bash
-pip3 install -r /path/to/suas_2018/build/pip_requirements.txt
+pip3 install -r /path/to/suas_2018/build/pip-requirements.txt
 ```
 
 Execute Python scripts.
