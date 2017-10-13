@@ -26,7 +26,7 @@ This documentation entails all the information you need for the Ground Control S
 ## Other Teams Ground Control Software
 * Look at the ground control software that other teams have used in the past through the [AUVSI SUAS website](http://www.auvsi-suas.org/competitions/2017/).
 
-* These are the teams that built their own custom ground control softwarE:
+* These are the teams that built their own custom ground control software:
   * 2nd Place: [Cornell's custom ground control software](http://www.auvsi-suas.org/static/competitions/2017/journals/auvsi_suas-2017-journals-cornell_university.pdf) is on page 7.
   * 10th Place: [BYU's custom ground control software](http://www.auvsi-suas.org/static/competitions/2017/journals/auvsi_suas-2017-journals-cornell_university.pdf) is on page 8.
   * 11th Place: [Alberta's custom ground control software](http://www.auvsi-suas.org/static/competitions/2017/journals/auvsi_suas-2017-journals-university_of_alberta.pdf). See pages 9, 10, 16.
