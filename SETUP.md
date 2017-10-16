@@ -50,7 +50,7 @@ We will update this virtual machine as more dependencies or a change in build en
 
 ### Initial Setup
 1. Create a GitHub Account and log in.
-2. [Email your GitHub username](http://uclauas.com/contact.php) in order to be
+2. Message in Slack Comran or in the #random channel your GitHub username in order to be
    added onto the SUAS repository. If you do not have access to the SUAS
    repository, the rest of the procedure below will not work.
 3. Install the 'Git' package if your machine does not already have it.
