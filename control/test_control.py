@@ -6,6 +6,7 @@ import sys
 sys.dont_write_bytecode = True
 sys.path.insert(0, dname + '/../util')
 sys.path.insert(0, dname + '/flight_control')
+sys.path.insert(0, dname + '/commander')
 import time
 import signal
 import unittest
@@ -13,6 +14,7 @@ from unittest import TestLoader, TestSuite, TextTestRunner
 
 import process_manager
 import copter_interface
+import commander
 
 class TestControl(unittest.TestCase):
     def setUp(self):
@@ -25,7 +27,18 @@ class TestControl(unittest.TestCase):
     def tearDownModule(self):
         self.test_drone.killall()
 
-    def test_init(self):
+    def test_commander(self):
+        drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
+        copter = commander.Commander(drone_address)
+        self.assertTrue(True)
+
+        copter.add_command(commander.TakeoffCommand())
+        copter.add_command(commander.GotoCommand(0.002, 0.001, 100))
+        copter.start_mission()
+
+        copter.stop()
+
+    def test_copter_interface_init(self):
         drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
         copter = copter_interface.CopterInterface(drone_address)
 
@@ -52,14 +65,14 @@ class TestControl(unittest.TestCase):
 
         copter.stop()
 
-    def test_takeoff_and_land(self):
+    def test_copter_interface_takeoff_and_land(self):
         drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
         copter = copter_interface.CopterInterface(drone_address)
 
         time.sleep(4.0)
 
         sensors = copter.sensor_reader.sensors.get()
-        print sensors["state"].get()
+        print(sensors["state"].get())
         self.assertTrue(sensors["state"].get() == "STANDBY")
         self.assertTrue(sensors["armed"].get() == "False")
 
@@ -67,8 +80,8 @@ class TestControl(unittest.TestCase):
 
         for i in range(0, 18):
             sensors = copter.sensor_reader.sensors.get()
-            print "Last heartbeat: " + str(sensors["last_heartbeat"].get()) + \
-                  " State: " + copter.controller.get_state()
+            print("Last heartbeat: " + str(sensors["last_heartbeat"].get()) + \
+                  " State: " + copter.controller.get_state())
             time.sleep(1.0)
 
         # Make sure we get stable values after flight controller initialization.
@@ -82,44 +95,47 @@ class TestControl(unittest.TestCase):
 
         copter.controller.set_state("TAKEOFF")
 
-        print "Taking off!"
+        print("Taking off!")
 
         for i in range(0, 10):
             sensors = copter.sensor_reader.sensors.get()
 
-            print "Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
+            print("Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
                   " Lng: " + '%9s' % str(sensors["gps_lng"].get()) + \
                   " Alt: " + '%9s' % str(sensors["gps_alt"].get()) + \
-                  " Ground speed: " + '%9s' % str(sensors["ground_speed"].get())
+                  " Ground speed: " + '%9s' % str( \
+                      sensors["ground_speed"].get()))
 
             time.sleep(1.0)
 
         self.assertLess(abs(3.0 - abs(sensors["gps_rel_alt"].get())), 0.1)
 
-        copter.controller.set_state("VELOCITY_CONTROL")
+        copter.controller.set_state("VELOCITY CONTROL")
 
-        print "Switching to velocity control!"
+        print("Switching to velocity control!")
 
         for i in range(0, 10):
             sensors = copter.sensor_reader.sensors.get()
 
-            print "Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
+            print("Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
                   " Lng: " + '%9s' % str(sensors["gps_lng"].get()) + \
                   " Alt: " + '%9s' % str(sensors["gps_alt"].get()) + \
-                  " Ground speed: " + '%9s' % str(sensors["ground_speed"].get())
+                  " Ground speed: " + '%9s' % str(
+                      sensors["ground_speed"].get()))
 
             time.sleep(1.0)
 
-        print "Landing!"
+        print("Landing!")
         copter.controller.set_state("LAND")
 
         for i in range(0, 12):
             sensors = copter.sensor_reader.sensors.get()
 
-            print "Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
+            print("Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
                   " Lng: " + '%9s' % str(sensors["gps_lng"].get()) + \
                   " Alt: " + '%9s' % str(sensors["gps_alt"].get()) + \
-                  " Ground speed: " + '%9s' % str(sensors["ground_speed"].get())
+                  " Ground speed: " + '%9s' % str(
+                      sensors["ground_speed"].get()))
 
             time.sleep(1.0)
 
