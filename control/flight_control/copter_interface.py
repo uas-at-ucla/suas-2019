@@ -201,7 +201,7 @@ class Controller:
             return False
 
     def set_velocity(self, velocity_x, velocity_y, velocity_z):
-	# Move vehicle in direction based on specified velocity vectors.
+        # Move vehicle in direction based on specified velocity vectors.
         # velocity_x is latitude
         # velocity_y is longitude
         # velocity_z is altitude (positive is down)
@@ -250,7 +250,6 @@ class Controller:
             current_state = self.get_state()
 
             # Log any change in state.
-#           self.print_debug("Drone state: " + current_state)
 
             if current_state != "STANDBY" and self.check_velocity_control():
                 self.set_state("FAILSAFE")
@@ -352,7 +351,8 @@ class CopterInterface:
         print("Connecting to drone at " + address)
 
         vehicle = dronekit.connect(ip = address, \
-                                   baud = 115200)
+                                   baud = 115200, \
+                                   wait_ready = True)
 
         vehicle.wait_ready("autopilot_version")
 
