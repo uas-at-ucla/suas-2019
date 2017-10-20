@@ -153,6 +153,8 @@ class TestControl(unittest.TestCase):
                           + str(alt) + ",0 " + \
                 "--instance " + str(instance))
 
+        time.sleep(1.0) # Wait to make sure the simulated drone is completely set up before continuing.
+
         port = 5760 + 10 * instance
         return "tcp:127.0.0.1:" + str(port)
 
