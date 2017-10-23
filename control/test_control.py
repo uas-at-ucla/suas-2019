@@ -155,7 +155,7 @@ class TestControl(unittest.TestCase):
 
         # Wait to make sure the simulated drone is completely set up before
         # continuing.
-        time.sleep(1.0)
+        time.sleep(2.0)
 
         port = 5760 + 10 * instance
         return "tcp:127.0.0.1:" + str(port)
