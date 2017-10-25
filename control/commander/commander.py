@@ -48,4 +48,4 @@ class Commander:
             elif command.command_type == "goto":
                 self.copter.goto(command.lat, command.lng, command.alt)
             elif command.command_type == "unknown":
-                print "UNKNOWN COMMAND!!!"
+                print("UNKNOWN COMMAND!!!")
