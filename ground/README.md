@@ -15,7 +15,7 @@ drone will take that flight route.
 * Platforms and Libraries
 
 ## Installation
-Please see the [Setup documentation]().
+Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/ground/SETUP.md).
 
 ## Framework
 * Hardware: Communications system and firmware
@@ -30,7 +30,7 @@ Please see the [Setup documentation]().
     applications. Google Chrome will already serve as our GUI.
 
 ## Competition Rules
-* [Competition rules]() pertaining to the ground station. Read the following pages:
+* [Competition rules](https://github.com/uas-at-ucla/suas_2018/blob/master/ground/pdfs/comp_rules.pdf) pertaining to the ground station. Read the following pages:
   * 10-11
   * 13
   * 16-17 (on obstacle avoidance section if we are including this in ground station)
@@ -48,7 +48,10 @@ Please see the [Setup documentation]().
   * All other schools mainly uesd either QGroundControl or Mission Planner.
 
 ## Extra Objectives
-* For cyber security we can include mandatory account login if we are making our ground station through the web - it will ask for username and password.
+* For cyber security we can include mandatory account login if we are making our
+  ground station through the web - it will ask for username and password.
+* We would like to have a SQL database installed to store account information
+  and passwords, along with flight logs and history.
 
 ## Timeline
 * Quarter 1: Research, construct a solid plan on firmware integration with the software, have a prototyping Flask and React.js framework ready.
