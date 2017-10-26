@@ -25,9 +25,7 @@ Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/bl
 * Back-end: [Interoperability
   System](http://auvsi-suas-competition-interoperability-system.readthedocs.io/en/latest/),
   Flask Framework
-* Front-end: React.js
-  * React.js is the easiest framework to use for single-page
-    applications. Google Chrome will already serve as our GUI.
+* Front-end: TBD
 
 ## Competition Rules
 * [Competition rules](https://github.com/uas-at-ucla/suas_2018/blob/master/ground/pdfs/comp_rules.pdf) pertaining to the ground station. Read the following pages:
@@ -54,7 +52,7 @@ Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/bl
   and passwords, along with flight logs and history.
 
 ## Timeline
-* Quarter 1: Research, construct a solid plan on firmware integration with the software, have a prototyping Flask and React.js framework ready.
+* Quarter 1: Research, construct a solid plan on firmware integration with the software, have a prototyping Flask framework ready.
   * Goal: Have a working ground control software that communicates with the plane and can be tested.
 * Quarter 2: Code, code, and code.
   * Goal: Have a complete ground control software by end of February.
