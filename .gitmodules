@@ -1,0 +1,3 @@
+[submodule "interop"]
+	path = interop
+	url = https://github.com/auvsi-suas/interop.git
