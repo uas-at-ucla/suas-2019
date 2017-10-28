@@ -53,5 +53,3 @@ Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/bl
  * [Dronekit SITL](https://github.com/dronekit/dronekit-sitl) for flight controller simulation and testing
  * [OpenCV](https://github.com/opencv/opencv) for image filtering and segmentation
  * [Tensorflow](https://github.com/tensorflow/tensorflow) for image classification
-
-:)

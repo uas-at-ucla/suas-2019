@@ -1,8 +1,8 @@
 class MapUi {
   constructor(ground_interface) {
     this.map = new google.maps.Map(document.getElementById('map'), {
-      center : {lat : 0.0, lng : 0.0},
-      zoom : 3,
+      center : {lat : 38.1470000, lng : -76.4284722},
+      zoom : 16,
       tilt : 0,
       disableDefaultUI : true,
       scrollwheel : false,
