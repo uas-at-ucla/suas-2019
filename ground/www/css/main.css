@@ -1,6 +1,4 @@
 html, body {
-  min-width: 800px;
-  min-height: 600px;
   width: 100%;
   height: 100%;
 }
@@ -32,19 +30,15 @@ html, body, button, p, h1, h2, h3, h4, h5, a, li {
 }
 
 #title {
-  background-size: 625px 96px;
-  background-repeat: no-repeat;
-  width: 625px;
-  height: 96px;
   pointer-events: none
 }
 
 #logo {
   margin-top: 10px;
   background: url('/css/vector_logo.svg');
-  background-size: 240px 68px;
-  width: 240px;
-  height: 68px;
+  background-size: 360px 102px;
+  width: 360px;
+  height: 102px;
   display: inline-block;
 }
 
