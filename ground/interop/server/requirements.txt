@@ -1,0 +1,25 @@
+Django>=1.8,<1.9
+PyYAML # for loaddata
+django-debug-toolbar>=1.3
+django-sendfile
+enum34
+ipaddress
+iso8601
+matplotlib
+networkx
+numpy
+pillow
+protobuf>=3.2
+psycopg2
+pyproj
+python-memcached
+requests
+retrying
+scipy
+simplekml==1.2.7
+
+# yapf is used for automated formatting of Python files.
+# Since it can be finicky from version to version, we fix
+# it at one version. Updating this is fine, but it may require
+# reformatting some files.
+yapf==0.16.2
