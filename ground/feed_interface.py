@@ -1,6 +1,7 @@
 from flask import Flask, render_template
 import flask_socketio, socketIO_client
 import signal
+import _thread
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'flappy'
@@ -22,9 +23,17 @@ class CommunicationsNamespace(socketIO_client.BaseNamespace):
     def disconnect():
         print('Disconnected')
 
-if __name__ == '__main__':
+def on_telemetry(*args):
+    print('Ground Station Received Telemetry!', args)
+
+def listen_for_communications():
     communications = socketIO_client.SocketIO('0.0.0.0', 8085, \
             CommunicationsNamespace)
+    communications.on('telemetry', on_telemetry)
+    communications.wait()
+
+if __name__ == '__main__':
+    _thread.start_new_thread(listen_for_communications, ())
 
     signal.signal(signal.SIGINT, signal_received)
 
