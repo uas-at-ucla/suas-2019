@@ -39,6 +39,8 @@ class Commander:
         self.communications = SocketIO('0.0.0.0', 8085, \
                 self.CommunicationsNamespace)
 
+        self.copter.sensor_reader.set_communications_socket(self.communications)
+
     def stop(self):
         self.copter.stop()
 
