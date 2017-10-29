@@ -4,9 +4,10 @@ dname = os.path.dirname(abspath)
 
 import sys
 sys.dont_write_bytecode = True
-sys.path.insert(0, dname + '../flight_control')
+sys.path.insert(0, dname + '/../flight_control')
 
 import threading
+from socketIO_client import SocketIO, BaseNamespace
 
 import copter_interface
 
@@ -22,11 +23,21 @@ class GotoCommand:
         self.alt = alt
 
 class Commander:
+    class CommunicationsNamespace(BaseNamespace):
+        def on_connect():
+            print('Commander connected to drone_communications!')
+
+        def disconnect():
+            print('Disconnected')
+
     def __init__(self, drone_address):
         self.copter = copter_interface.CopterInterface(drone_address)
 
         self.commands = list()
         self.commands_lock = threading.Lock()
+
+        self.communications = SocketIO('0.0.0.0', 8085, \
+                self.CommunicationsNamespace)
 
     def stop(self):
         self.copter.stop()
@@ -48,4 +59,4 @@ class Commander:
             elif command.command_type == "goto":
                 self.copter.goto(command.lat, command.lng, command.alt)
             elif command.command_type == "unknown":
-                print "UNKNOWN COMMAND!!!"
+                print("UNKNOWN COMMAND!!!")
