@@ -16,6 +16,10 @@ def signal_received(signal, frame):
 def connect():
     print("Someone connected to drone_communications!")
 
+@socketio.on('send_telemetry')
+def broadcast_telemetry(data):
+    emit('telemetry', data, broadcast=True, include_self=False) 
+
 def main():
     signal.signal(signal.SIGINT, signal_received)
 
