@@ -1,12 +1,13 @@
 import os
-abspath = os.path.abspath(__file__)
-dname = os.path.dirname(abspath)
+# Start off fresh by making sure that our working directory is the same as the
+# directory that this script is in.
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 import sys
 sys.dont_write_bytecode = True
-sys.path.insert(0, dname + '/../util')
-sys.path.insert(0, dname + '/flight_control')
-sys.path.insert(0, dname + '/commander')
+sys.path.insert(0, '../util')
+sys.path.insert(0, 'flight_control')
+sys.path.insert(0, 'commander')
 import time
 import signal
 import unittest
@@ -19,24 +20,32 @@ import commander
 class TestControl(unittest.TestCase):
     def setUp(self):
         self.test_drone = process_manager.ProcessManager()
+
         signal.signal(signal.SIGINT, self.test_drone.killall_signalled)
 
     def tearDown(self):
         self.test_drone.killall()
 
     def tearDownModule(self):
+        print("\n\n\nTEARDOWN\n\n\n\n")
         self.test_drone.killall()
 
     def test_commander(self):
+        unittest.installHandler()
+
+        self.test_drone.spawn_process("python ../ground/run_ground.py")
+        self.test_drone.spawn_process( \
+                "python commander/drone_communications.py")
+
         drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
-        copter = commander.Commander(drone_address)
-        self.assertTrue(True)
+        test_commander = commander.Commander(drone_address)
+        unittest.registerResult(test_commander)
 
-        copter.add_command(commander.TakeoffCommand())
-        copter.add_command(commander.GotoCommand(0.002, 0.001, 100))
-        copter.start_mission()
+        test_commander.add_command(commander.TakeoffCommand())
+        test_commander.add_command(commander.GotoCommand(0.002, 0.001, 100))
+        test_commander.start_mission()
 
-        copter.stop()
+        unittest.removeHandler()
 
     def test_copter_interface_init(self):
         drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
@@ -146,7 +155,7 @@ class TestControl(unittest.TestCase):
 
     def spawn_simulated_drone(self, lat, lng, alt, instance):
         self.test_drone.spawn_process("python " + \
-                dname + "/flight_control/simulate_copter.py " + \
+                "flight_control/simulate_copter.py " + \
                 "copter " + \
                 "--home " + str(lat) + "," \
                           + str(lng) + "," \
