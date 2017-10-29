@@ -1,0 +1,39 @@
+/**
+ * Styles for the Target Review page.
+ */
+
+#odlc-list {
+    padding: 0 20px 0 20px;
+}
+
+.odlc-list-item {
+    margin: 0;
+    width: 100%;
+}
+
+#odlc-img-holder {
+    padding: 20px;
+}
+
+#odlc-img-holder div {
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+}
+
+#odlc-detail {
+    margin-top: 20px;
+    padding: 20px;
+}
+
+#odlc-detail div {
+    padding: 10px;
+}
+
+#odlc-detail div h4 {
+    text-decoration: underline;
+}
+
+#odlc-review button {
+    display: inline-block;
+}

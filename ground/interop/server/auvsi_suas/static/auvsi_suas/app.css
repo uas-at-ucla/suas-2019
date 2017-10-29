@@ -1,0 +1,11 @@
+/**
+ * Styles for the main application.
+ */
+
+.row {
+    max-width: 100%;
+}
+
+hr {
+    margin: 0;
+}

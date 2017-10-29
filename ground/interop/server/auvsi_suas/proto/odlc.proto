@@ -1,0 +1,55 @@
+// Descriptors for evaluation of object detection.
+
+package auvsi_suas.proto;
+
+// Evaluation data for multiple odlcs.
+message MultiOdlcEvaluation {
+    // Total ratio of points for objects.
+    optional double score_ratio = 1;
+    // Ratio of points from matched odlcs.
+    optional double matched_score_ratio = 2;
+    // Ratio of penalty points from unmatched odlcs.
+    optional double extra_object_penalty_ratio = 3;
+
+    // Number of odlcs which weren't matched.
+    optional int32 unmatched_odlc_count = 4;
+
+    // Individual odlc evaluation data.
+    repeated OdlcEvaluation odlcs = 5;
+}
+
+// Evaluation data for a single odlc.
+message OdlcEvaluation {
+    // Identifier for the real odlc.
+    optional int64 real_odlc = 1;
+    // Identifier for the submitted odlc.
+    optional int64 submitted_odlc = 2;
+
+    // Ratio of points for the odlc [0, 1].
+    optional double score_ratio = 3;
+    // Ratio of points for similar characteristics.
+    optional double classifications_score_ratio = 4;
+    // Ratio of points for geolocation accuracy.
+    optional double geolocation_score_ratio = 5;
+    // Ratio of points for actionable.
+    optional double actionable_score_ratio = 6;
+    // Ratio of points for autonomy.
+    optional double autonomous_score_ratio = 7;
+    // Ratio of points for interop submission.
+    optional double interop_score_ratio = 8;
+
+    // Whether the image was approved by judge.
+    optional bool image_approved = 9;
+    // Whether the emergent description was approved by judge.
+    optional bool description_approved = 10;
+    // Ratio of classifications which matched.
+    optional double classifications_ratio = 11;
+    // Distance of real and submitted odlc positions (feet).
+    optional double geolocation_accuracy_ft = 12;
+    // Whether the submission is actionable.
+    optional bool actionable_submission = 13;
+    // Whether the submission was autonomous.
+    optional bool autonomous_submission = 14;
+    // Whether the submission was over interop.
+    optional bool interop_submission = 15;
+}

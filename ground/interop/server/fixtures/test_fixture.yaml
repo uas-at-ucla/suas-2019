@@ -1,0 +1,105 @@
+- model: auth.user
+  pk: 1
+  fields:
+    username: testadmin
+    first_name: test
+    last_name: admin
+    email: testadmin@test.com
+    password: pbkdf2_sha256$20000$b1wK6sC01uOZ$OXpjiHaCKqJJgvxtq4Ds1rZJPI2iOEeea3lAZmyBJLI=
+    date_joined: "2015-05-25T17:01:28.183Z"
+    is_active: true
+    is_superuser: true
+    is_staff: true
+    last_login: null
+    groups: []
+    user_permissions: []
+- model: auth.user
+  pk: 2
+  fields:
+    date_joined: 2015-07-31 05:13:16.704351+00:00
+    email: ''
+    first_name: ''
+    groups: []
+    is_active: true
+    is_staff: false
+    is_superuser: false
+    last_login: 2015-07-31 05:13:44.875561+00:00
+    last_name: ''
+    password: pbkdf2_sha256$20000$6hErQuM8Gxni$zLDQHSFgpGUiPMfQqGJjIyp9Q1VcHzIhM7Z3P81SwaY=
+    user_permissions: []
+    username: testuser
+- model: auvsi_suas.stationaryobstacle
+  pk: 1
+  fields: {cylinder_height: 200.0, cylinder_radius: 150.0, gps_position: 1}
+- model: auvsi_suas.stationaryobstacle
+  pk: 2
+  fields: {cylinder_height: 300.0, cylinder_radius: 50.0, gps_position: 2}
+- model: auvsi_suas.movingobstacle
+  pk: 1
+  fields:
+    speed_avg: 30.0
+    sphere_radius: 50.0
+    waypoints: [1, 2, 3]
+- model: auvsi_suas.odlc
+  pk: 1
+  fields:
+      creation_time: 2015-07-31 05:13:44.875561+00:00
+      description: 'SUAS Judge'
+      last_modified_time: 2015-07-31 05:13:44.875561+00:00
+      location: 1
+      odlc_type: 4
+      thumbnail_approved: True
+      user: 2
+- model: auvsi_suas.flyzone
+  pk: 1
+  fields:
+    altitude_msl_max: 750
+    altitude_msl_min: 0
+    boundary_pts: [1, 2, 3]
+- model: auvsi_suas.waypoint
+  pk: 1
+  fields: {order: 1, position: 1}
+- model: auvsi_suas.waypoint
+  pk: 2
+  fields: {order: 2, position: 2}
+- model: auvsi_suas.waypoint
+  pk: 3
+  fields: {order: 3, position: 3}
+- model: auvsi_suas.aerialposition
+  pk: 1
+  fields: {altitude_msl: 200.0, gps_position: 3}
+- model: auvsi_suas.aerialposition
+  pk: 2
+  fields: {altitude_msl: 300.0, gps_position: 4}
+- model: auvsi_suas.aerialposition
+  pk: 3
+  fields: {altitude_msl: 100.0, gps_position: 5}
+- model: auvsi_suas.gpsposition
+  pk: 1
+  fields: {latitude: 38.14792, longitude: -76.427995}
+- model: auvsi_suas.gpsposition
+  pk: 2
+  fields: {latitude: 38.145823, longitude: -76.422396}
+- model: auvsi_suas.gpsposition
+  pk: 3
+  fields: {latitude: 38.142544, longitude: -76.434088}
+- model: auvsi_suas.gpsposition
+  pk: 4
+  fields: {latitude: 38.141833, longitude: -76.425263}
+- model: auvsi_suas.gpsposition
+  pk: 5
+  fields: {latitude: 38.144678, longitude: -76.427995}
+- model: auvsi_suas.missionconfig
+  pk: 1
+  fields:
+    air_drop_pos: 4
+    emergent_last_known_pos: 2
+    fly_zones: [1]
+    home_pos: 1
+    is_active: true
+    mission_waypoints: [1]
+    moving_obstacles: [1]
+    off_axis_odlc_pos: 3
+    search_grid_points: [1]
+    stationary_obstacles: [1, 2]
+    odlcs: [1]
