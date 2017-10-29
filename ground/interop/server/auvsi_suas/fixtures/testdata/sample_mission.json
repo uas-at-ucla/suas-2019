@@ -1,0 +1,916 @@
+[
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 317
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 318
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 319
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 320
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 321
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 322
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -77.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 323
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -79.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 324
+},
+{
+    "fields": {
+        "latitude": 37.0,
+        "longitude": -75.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 325
+},
+{
+    "fields": {
+        "latitude": 39.0,
+        "longitude": -75.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 326
+},
+{
+    "fields": {
+        "latitude": 39.0,
+        "longitude": -77.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 327
+},
+{
+    "fields": {
+        "latitude": 37.0,
+        "longitude": -77.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 328
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 329
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -77.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 330
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 331
+},
+{
+    "fields": {
+        "latitude": 39.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 332
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 333
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 334
+},
+{
+    "fields": {
+        "latitude": 39.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 335
+},
+{
+    "fields": {
+        "latitude": 39.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 336
+},
+{
+    "fields": {
+        "latitude": 38.0,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 337
+},
+{
+    "fields": {
+        "latitude": 38.0003,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 338
+},
+{
+    "fields": {
+        "latitude": 38.5,
+        "longitude": -76.0
+    },
+    "model": "auvsi_suas.gpsposition",
+    "pk": 339
+},
+{
+    "fields": {
+        "altitude_msl": 0.0,
+        "gps_position": 317
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 178
+},
+{
+    "fields": {
+        "altitude_msl": 10.0,
+        "gps_position": 318
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 179
+},
+{
+    "fields": {
+        "altitude_msl": 20.0,
+        "gps_position": 319
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 180
+},
+{
+    "fields": {
+        "altitude_msl": 30.0,
+        "gps_position": 320
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 181
+},
+{
+    "fields": {
+        "altitude_msl": 100.0,
+        "gps_position": 321
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 182
+},
+{
+    "fields": {
+        "altitude_msl": 30.0,
+        "gps_position": 322
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 183
+},
+{
+    "fields": {
+        "altitude_msl": 60.0,
+        "gps_position": 323
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 184
+},
+{
+    "fields": {
+        "altitude_msl": 1000.0,
+        "gps_position": 324
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 185
+},
+{
+    "fields": {
+        "altitude_msl": 0.0,
+        "gps_position": 325
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 186
+},
+{
+    "fields": {
+        "altitude_msl": 0.0,
+        "gps_position": 326
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 187
+},
+{
+    "fields": {
+        "altitude_msl": 0.0,
+        "gps_position": 327
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 188
+},
+{
+    "fields": {
+        "altitude_msl": 0.0,
+        "gps_position": 328
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 189
+},
+{
+    "fields": {
+        "altitude_msl": 30.0,
+        "gps_position": 329
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 190
+},
+{
+    "fields": {
+        "altitude_msl": 60.0,
+        "gps_position": 330
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 191
+},
+{
+    "fields": {
+        "altitude_msl": 0.0,
+        "gps_position": 333
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 192
+},
+{
+    "fields": {
+        "altitude_msl": 10.0,
+        "gps_position": 334
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 193
+},
+{
+    "fields": {
+        "altitude_msl": 0.0,
+        "gps_position": 335
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 194
+},
+{
+    "fields": {
+        "altitude_msl": 10.0,
+        "gps_position": 336
+    },
+    "model": "auvsi_suas.aerialposition",
+    "pk": 195
+},
+{
+    "fields": {
+        "position": 185,
+        "order": 10
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 150
+},
+{
+    "fields": {
+        "position": 186,
+        "order": 0
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 151
+},
+{
+    "fields": {
+        "position": 187,
+        "order": 1
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 152
+},
+{
+    "fields": {
+        "position": 188,
+        "order": 2
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 153
+},
+{
+    "fields": {
+        "position": 189,
+        "order": 3
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 154
+},
+{
+    "fields": {
+        "position": 190,
+        "order": 0
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 155
+},
+{
+    "fields": {
+        "position": 191,
+        "order": 1
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 156
+},
+{
+    "fields": {
+        "position": 192,
+        "order": 0
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 157
+},
+{
+    "fields": {
+        "position": 193,
+        "order": 1
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 158
+},
+{
+    "fields": {
+        "position": 194,
+        "order": 0
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 159
+},
+{
+    "fields": {
+        "position": 195,
+        "order": 1
+    },
+    "model": "auvsi_suas.waypoint",
+    "pk": 160
+},
+{
+    "fields": {
+        "altitude_msl_max": 20.0,
+        "boundary_pts": [
+            151,
+            152,
+            153,
+            154
+        ],
+        "altitude_msl_min": 0.0
+    },
+    "model": "auvsi_suas.flyzone",
+    "pk": 22
+},
+{
+    "fields": {
+        "sphere_radius": 15.0,
+        "speed_avg": 1.0,
+        "waypoints": [
+            157,
+            158
+        ]
+    },
+    "model": "auvsi_suas.movingobstacle",
+    "pk": 25
+},
+{
+    "fields": {
+        "sphere_radius": 20.0,
+        "speed_avg": 1.0,
+        "waypoints": [
+            159,
+            160
+        ]
+    },
+    "model": "auvsi_suas.movingobstacle",
+    "pk": 26
+},
+{
+    "fields": {
+        "cylinder_height": 10.0,
+        "cylinder_radius": 10.0,
+        "gps_position": 331
+    },
+    "model": "auvsi_suas.stationaryobstacle",
+    "pk": 25
+},
+{
+    "fields": {
+        "cylinder_height": 10.0,
+        "cylinder_radius": 10.0,
+        "gps_position": 332
+    },
+    "model": "auvsi_suas.stationaryobstacle",
+    "pk": 26
+},
+{
+    "fields": {
+        "mission": 3,
+        "user": 53,
+        "flight_time": "00:00:01",
+        "post_process_time": "00:00:02",
+        "used_timeout": false,
+        "safety_pilot_takeovers": 0,
+        "min_auto_flight_time": true,
+        "waypoints_captured": 2,
+        "out_of_bounds": 2,
+        "unsafe_out_of_bounds": 1,
+        "things_fell_off_uas": false,
+        "crashed": false,
+        "air_delivery_accuracy_ft": null,
+        "operational_excellence_percent": 80
+    },
+    "model": "auvsi_suas.missionjudgefeedback",
+    "pk": 1
+},
+{
+    "fields": {
+        "mission": 3,
+        "user": 54,
+        "flight_time": "00:00:02",
+        "post_process_time": "00:00:01",
+        "used_timeout": true,
+        "safety_pilot_takeovers": 1,
+        "min_auto_flight_time": true,
+        "waypoints_captured": 1,
+        "out_of_bounds": 0,
+        "unsafe_out_of_bounds": 0,
+        "things_fell_off_uas": true,
+        "crashed": true,
+        "air_delivery_accuracy_ft": 10,
+        "operational_excellence_percent": 80
+    },
+    "model": "auvsi_suas.missionjudgefeedback",
+    "pk": 2
+},
+{
+    "fields": {
+        "stationary_obstacles": [
+            25,
+            26
+        ],
+        "fly_zones": [
+            22
+        ],
+        "off_axis_odlc_pos": 324,
+        "moving_obstacles": [
+            25,
+            26
+        ],
+        "is_active": true,
+        "mission_waypoints": [
+            155,
+            156
+        ],
+        "emergent_last_known_pos": 324,
+        "search_grid_points": [
+            150
+        ],
+        "odlcs": [
+            1,
+            2,
+            3
+        ],
+        "home_pos": 324,
+        "air_drop_pos": 324
+    },
+    "model": "auvsi_suas.missionconfig",
+    "pk": 3
+},
+{
+    "fields": {
+        "username": "user0",
+        "first_name": "",
+        "last_name": "",
+        "is_active": true,
+        "is_superuser": false,
+        "is_staff": false,
+        "last_login": null,
+        "groups": [],
+        "user_permissions": [],
+        "password": "pbkdf2_sha256$20000$xk6ocPQJCnpq$yD4rXhnyL78hQI0sFuHUbVqrEcbl5CZFoY4sby3HeKY=",
+        "email": "testemail@x.com",
+        "date_joined": "2015-05-30T05:02:26.796Z"
+    },
+    "model": "auth.user",
+    "pk": 53
+},
+{
+    "fields": {
+        "username": "user1",
+        "first_name": "",
+        "last_name": "",
+        "is_active": true,
+        "is_superuser": false,
+        "is_staff": false,
+        "last_login": null,
+        "groups": [],
+        "user_permissions": [],
+        "password": "pbkdf2_sha256$20000$ZtcSnmA3obev$DA9L375735NG+xstE6NA0+DBIpA/5WICG5CJAiyXXdE=",
+        "email": "testemail@x.com",
+        "date_joined": "2015-05-30T05:02:27.063Z"
+    },
+    "model": "auth.user",
+    "pk": 54
+},
+{
+    "fields": {
+        "username": "testadmin",
+        "first_name": "",
+        "last_name": "",
+        "is_active": true,
+        "is_superuser": true,
+        "is_staff": true,
+        "last_login": "2016-05-12T04:41:01.401Z",
+        "groups": [],
+        "user_permissions": [],
+        "password": "pbkdf2_sha256$20000$RV69VeSD5TcB$0mKHBGrLECDAHYaG/VBf5RRABdzvSh2rqHGF1YLMAyg=",
+        "email": "testadmin@test.com",
+        "date_joined": "2016-03-22T11:48:10.093Z"
+    },
+    "model": "auth.user",
+    "pk": 55
+},
+{
+    "fields": {
+        "uas_position": 178,
+        "uas_heading": 0.0,
+        "timestamp": "1970-01-01T00:00:00Z",
+        "user": 53
+    },
+    "model": "auvsi_suas.uastelemetry",
+    "pk": 148
+},
+{
+    "fields": {
+        "uas_position": 179,
+        "uas_heading": 0.0,
+        "timestamp": "1970-01-01T00:00:00.100Z",
+        "user": 53
+    },
+    "model": "auvsi_suas.uastelemetry",
+    "pk": 149
+},
+{
+    "fields": {
+        "uas_position": 180,
+        "uas_heading": 0.0,
+        "timestamp": "1970-01-01T00:00:00.200Z",
+        "user": 53
+    },
+    "model": "auvsi_suas.uastelemetry",
+    "pk": 150
+},
+{
+    "fields": {
+        "uas_position": 181,
+        "uas_heading": 0.0,
+        "timestamp": "1970-01-01T00:00:00.300Z",
+        "user": 53
+    },
+    "model": "auvsi_suas.uastelemetry",
+    "pk": 151
+},
+{
+    "fields": {
+        "uas_position": 182,
+        "uas_heading": 0.0,
+        "timestamp": "1970-01-01T00:00:00.800Z",
+        "user": 53
+    },
+    "model": "auvsi_suas.uastelemetry",
+    "pk": 152
+},
+{
+    "fields": {
+        "uas_position": 183,
+        "uas_heading": 0.0,
+        "timestamp": "1970-01-01T00:00:01Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.uastelemetry",
+    "pk": 161
+},
+{
+    "fields": {
+        "uas_position": 184,
+        "uas_heading": 0.0,
+        "timestamp": "1970-01-01T00:00:02Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.uastelemetry",
+    "pk": 162
+},
+{
+    "fields": {
+        "uas_position": 184,
+        "uas_heading": 0.0,
+        "timestamp": "1970-01-01T00:00:03Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.uastelemetry",
+    "pk": 163
+},
+{
+    "fields": {
+        "orientation": 5,
+        "alphanumeric_color": 2,
+        "thumbnail_approved": null,
+        "description": "Test odlc 1",
+        "creation_time": "2016-05-12T04:44:40.701Z",
+        "odlc_type": 1,
+        "alphanumeric": "ABC",
+        "shape": 5,
+        "location": 337,
+        "last_modified_time": "2016-05-12T04:44:40.701Z",
+        "autonomous": false,
+        "background_color": 2,
+        "thumbnail": "",
+        "user": 55
+    },
+    "model": "auvsi_suas.odlc",
+    "pk": 1
+},
+{
+    "fields": {
+        "orientation": 5,
+        "alphanumeric_color": 2,
+        "thumbnail_approved": null,
+        "description": "Test odlc 2",
+        "creation_time": "2016-05-12T04:46:00.060Z",
+        "odlc_type": 1,
+        "alphanumeric": "DEF",
+        "shape": 4,
+        "location": 338,
+        "last_modified_time": "2016-05-12T04:46:00.060Z",
+        "autonomous": false,
+        "background_color": 1,
+        "thumbnail": "",
+        "user": 55
+    },
+    "model": "auvsi_suas.odlc",
+    "pk": 2
+},
+{
+    "fields": {
+        "orientation": null,
+        "alphanumeric_color": null,
+        "thumbnail_approved": null,
+        "description": "Test odlc 3",
+        "creation_time": "2016-05-12T04:46:59.370Z",
+        "odlc_type": 3,
+        "alphanumeric": "",
+        "shape": null,
+        "location": 339,
+        "last_modified_time": "2016-05-12T04:46:59.370Z",
+        "autonomous": false,
+        "background_color": null,
+        "thumbnail": "",
+        "user": 55
+    },
+    "model": "auvsi_suas.odlc",
+    "pk": 3
+},
+{
+    "fields": {
+        "orientation": 5,
+        "alphanumeric_color": 2,
+        "thumbnail_approved": true,
+        "description": "",
+        "creation_time": "1970-01-01T00:00:00.100Z",
+        "odlc_type": 1,
+        "alphanumeric": "ABC",
+        "shape": 5,
+        "location": 337,
+        "last_modified_time": "1970-01-01T00:00:00.500Z",
+        "autonomous": true,
+        "background_color": 2,
+        "thumbnail": "",
+        "user": 53
+    },
+    "model": "auvsi_suas.odlc",
+    "pk": 4
+},
+{
+    "fields": {
+        "orientation": 1,
+        "alphanumeric_color": 2,
+        "thumbnail_approved": true,
+        "description": "",
+        "creation_time": "1970-01-01T00:00:00.100Z",
+        "odlc_type": 1,
+        "alphanumeric": "ABC",
+        "shape": 1,
+        "location": 337,
+        "last_modified_time": "1970-01-01T00:00:05.000Z",
+        "autonomous": false,
+        "background_color": 1,
+        "thumbnail": "",
+        "user": 53
+    },
+    "model": "auvsi_suas.odlc",
+    "pk": 5
+},
+{
+    "fields": {
+        "orientation": null,
+        "alphanumeric_color": null,
+        "thumbnail_approved": true,
+        "description": "Incorrect description",
+        "creation_time": "1970-01-01T00:00:00.100Z",
+        "odlc_type": 3,
+        "alphanumeric": "",
+        "shape": null,
+        "location": 337,
+        "last_modified_time": "1970-01-01T00:00:05.000Z",
+        "autonomous": false,
+        "background_color": null,
+        "thumbnail": "",
+        "user": 53
+    },
+    "model": "auvsi_suas.odlc",
+    "pk": 6
+},
+{
+    "fields": {
+        "uas_in_air": true,
+        "timestamp": "1970-01-01T00:00:00Z",
+        "user": 53
+    },
+    "model": "auvsi_suas.takeofforlandingevent",
+    "pk": 137
+},
+{
+    "fields": {
+        "uas_in_air": false,
+        "timestamp": "1970-01-01T00:00:01Z",
+        "user": 53
+    },
+    "model": "auvsi_suas.takeofforlandingevent",
+    "pk": 138
+},
+{
+    "fields": {
+        "uas_in_air": true,
+        "timestamp": "1970-01-01T00:00:01Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.takeofforlandingevent",
+    "pk": 153
+},
+{
+    "fields": {
+        "uas_in_air": false,
+        "timestamp": "1970-01-01T00:00:03Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.takeofforlandingevent",
+    "pk": 154
+},
+{
+    "fields": {
+        "uas_in_air": true,
+        "timestamp": "1970-01-01T00:00:09Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.takeofforlandingevent",
+    "pk": 164
+},
+{
+    "fields": {
+        "uas_in_air": false,
+        "timestamp": "1970-01-01T00:00:11Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.takeofforlandingevent",
+    "pk": 165
+},
+{
+    "fields": {
+        "team_on_timeout": false,
+        "team_on_clock": true,
+        "timestamp": "1970-01-01T00:00:00Z",
+        "user": 53
+    },
+    "model": "auvsi_suas.missionclockevent",
+    "pk": 166
+},
+{
+    "fields": {
+        "team_on_timeout": false,
+        "team_on_clock": false,
+        "timestamp": "1970-01-01T00:00:02Z",
+        "user": 53
+    },
+    "model": "auvsi_suas.missionclockevent",
+    "pk": 167
+},
+{
+    "fields": {
+        "team_on_timeout": false,
+        "team_on_clock": true,
+        "timestamp": "1970-01-01T00:00:00Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.missionclockevent",
+    "pk": 168
+},
+{
+    "fields": {
+        "team_on_timeout": true,
+        "team_on_clock": false,
+        "timestamp": "1970-01-01T00:00:03Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.missionclockevent",
+    "pk": 169
+},
+{
+    "fields": {
+        "team_on_timeout": false,
+        "team_on_clock": true,
+        "timestamp": "1970-01-01T00:00:05Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.missionclockevent",
+    "pk": 170
+},
+{
+    "fields": {
+        "team_on_timeout": false,
+        "team_on_clock": false,
+        "timestamp": "1970-01-01T00:00:20Z",
+        "user": 54
+    },
+    "model": "auvsi_suas.missionclockevent",
+    "pk": 171
+}
+]
