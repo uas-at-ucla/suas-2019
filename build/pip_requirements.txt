@@ -7,3 +7,8 @@ websocket-client==0.44.0
 dronekit==2.9.1
 dronekit-sitl==3.2.0
 numpy==1.13.1
+Pillow==4.3.0
+socketIO-client==0.7.2
+python-socketio==1.8.1
+Flask==0.12.2
+Flask-SocketIO==2.9.2
