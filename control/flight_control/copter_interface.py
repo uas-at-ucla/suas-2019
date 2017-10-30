@@ -129,7 +129,7 @@ class SensorReader:
         self.should_run = True
 
         self.communications_socket = None
-        self.send_telemetry_interval = 10 # every 10 loops * 0.1 s = every 1 sec
+        self.send_telemetry_frequency = 3
 
         self.reading_thread = thread.start_new_thread(self.read_telemetry, ())
 
@@ -140,7 +140,7 @@ class SensorReader:
         loop_num = 0
         while self.should_run:
             self.sensors.set(self.vehicle, self.controller)
-            if (loop_num == self.send_telemetry_interval):
+            if (loop_num == self.send_telemetry_frequency):
                 loop_num = 0
                 self.send_telemetry()
             loop_num += 1
@@ -149,16 +149,13 @@ class SensorReader:
     def send_telemetry(self):
         if (self.communications_socket):
             sensors = self.sensors.get()
-            lat = sensors["gps_lat"].get()
-            lng = sensors["gps_lng"].get()
-            alt = sensors["gps_alt"].get()
-            heading = sensors["heading"].get()
-            if (lat and lng and alt and heading):
-                self.communications_socket.emit('send_telemetry', { \
-                    'lat': lat, \
-                    'lng': lng, \
-                    'alt': alt, \
-                    'heading': heading})
+
+            sensors_to_send = dict()
+
+            for key in sensors:
+                sensors_to_send[key] = sensors[key].get()
+
+            self.communications_socket.emit('send_telemetry', sensors_to_send)
 
     def stop(self):
         self.should_run = False

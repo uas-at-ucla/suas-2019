@@ -10,12 +10,14 @@ sys.path.insert(0, './interop/client')
 from flask import Flask, render_template
 import flask_socketio, socketIO_client
 import signal
+import time
 import _thread
 import interop
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'flappy'
-socketio = flask_socketio.SocketIO(app)
+interface_socketio = flask_socketio.SocketIO(app, async_mode='threading')
+stopped = False
 
 interop_url='http://localhost:8000'
 interop_username='testuser'
@@ -31,37 +33,26 @@ except Exception as e:
 
 
 def signal_received(signal, frame):
-    socketio.stop()
-
+    global stopped
+    stopped = True
     sys.exit(0)
 
-@socketio.on('connect')
+@interface_socketio.on('connect')
 def connect():
     print("Ground interface connected!")
 
-class CommunicationsNamespace(socketIO_client.BaseNamespace):
-    def on_connect():
-        print('feed_interface connected to drone_communications!')
-
-    def disconnect():
-        print('Disconnected')
-
-def on_telemetry(*args):
-    print('Ground Station Received Telemetry!', args[0])
-    #socketio.emit('telemetry', args[0])
-    telemetry = interop.Telemetry(args[0]['lat'], args[0]['lng'], args[0]['alt'], args[0]['heading'])
-    if interop_client:
-        interop_client.post_telemetry(telemetry)
+def on_telemetry(*telemetry):
+    print('Ground Station Received Telemetry: ' + str(telemetry))
+    interface_socketio.emit("telemetry", telemetry)
 
 def listen_for_communications():
-    communications = socketIO_client.SocketIO('0.0.0.0', 8085, \
-            CommunicationsNamespace)
+    communications = socketIO_client.SocketIO('0.0.0.0', 8085)
     communications.on('telemetry', on_telemetry)
     communications.wait()
 
 if __name__ == '__main__':
-    _thread.start_new_thread(listen_for_communications, ())
-
     signal.signal(signal.SIGINT, signal_received)
 
-    socketio.run(app, port = 8084)
+    _thread.start_new_thread(listen_for_communications, ())
+
+    interface_socketio.run(app, '0.0.0.0', port = 8084)

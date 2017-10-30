@@ -7,22 +7,15 @@ app.use_reloader = False
 
 socketio = SocketIO(app)
 
-def signal_received(signal, frame):
-    socketio.stop()
-
-    sys.exit(0)
-
 @socketio.on('connect')
 def connect():
     print("Someone connected to drone_communications!")
 
 @socketio.on('send_telemetry')
 def broadcast_telemetry(data):
-    emit('telemetry', data, broadcast=True, include_self=False) 
+    emit('telemetry', data, broadcast=True, include_self=False)
 
 def main():
-    signal.signal(signal.SIGINT, signal_received)
-
     socketio.run(app, port = 8085)
 
 if __name__ == "__main__":

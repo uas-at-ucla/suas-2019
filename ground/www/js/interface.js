@@ -1,7 +1,9 @@
 class MapUi {
   constructor(ground_interface) {
+    var field = {lat : 38.1470000, lng : -76.4284722};
+
     this.map = new google.maps.Map(document.getElementById('map'), {
-      center : {lat : 38.1470000, lng : -76.4284722},
+      center : field,
       zoom : 16,
       tilt : 0,
       disableDefaultUI : true,
@@ -13,6 +15,11 @@ class MapUi {
       styles : map_style,
       mapTypeId : 'hybrid'
     });
+
+    this.marker = new google.maps.Marker({
+      map: this.map,
+      position: field
+    });
   }
 }
 
@@ -21,7 +28,7 @@ class Communicator {
 
   constructor(ground_interface) {
     var SOCKET_DOMAIN = "0.0.0.0";
-    var SOCKET_PORT = 5000;
+    var SOCKET_PORT = 8084;
 
     var SOCKET_ADDRESS = "http://" + SOCKET_DOMAIN + ":" + SOCKET_PORT;
 
@@ -30,6 +37,13 @@ class Communicator {
     this.socket.on('connect', function() {
       console.log("Connected to ground interface feeder!");
     });
+
+    this.socket.on('telemetry', function(telemetry) {
+      console.log("got something!");
+      ground_interface.map_ui.marker.setPosition(
+          {lat: Number(telemetry["gps_lat"]),
+           lng: Number(telemetry["gps_lng"])});
+    });
   }
 }
 
@@ -37,9 +51,9 @@ class GroundInterface {
   // Manage all UI subcomponents that allow the interface to run.
 
   constructor() {
-    this.communicator = new Communicator(this);
-
     this.map_ui = new MapUi(this);
+
+    this.communicator = new Communicator(this);
   }
 }
 
