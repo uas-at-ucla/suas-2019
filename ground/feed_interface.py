@@ -4,32 +4,39 @@ import os
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 import sys
+
+USE_INTEROP = False
+
 sys.dont_write_bytecode = True
-sys.path.insert(0, './interop/client')
+
+if USE_INTEROP:
+    sys.path.insert(0, './interop/client')
 
 from flask import Flask, render_template
 import flask_socketio, socketIO_client
 import signal
 import time
 import _thread
-import interop
+if USE_INTEROP:
+    import interop
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'flappy'
 interface_socketio = flask_socketio.SocketIO(app, async_mode='threading')
 stopped = False
 
-interop_url='http://localhost:8000'
-interop_username='testuser'
-interop_password='testpass'
-try:
-    interop_client = interop.AsyncClient( \
-        url=interop_url, \
-        username=interop_username, \
-        password=interop_password)
-except Exception as e:
-    print('Interop Server not running!')
-    interop_client = None
+if USE_INTEROP:
+    interop_url='http://localhost:8000'
+    interop_username='testuser'
+    interop_password='testpass'
+    try:
+        interop_client = interop.AsyncClient( \
+            url=interop_url, \
+            username=interop_username, \
+            password=interop_password)
+    except Exception as e:
+        print('Interop Server not running!')
+        interop_client = None
 
 
 def signal_received(signal, frame):
