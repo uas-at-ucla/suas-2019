@@ -27,22 +27,28 @@ class TestControl(unittest.TestCase):
         self.test_drone.killall()
 
     def tearDownModule(self):
-        print("\n\n\nTEARDOWN\n\n\n\n")
         self.test_drone.killall()
 
     def test_commander(self):
         unittest.installHandler()
 
-        self.test_drone.spawn_process("python ../ground/run_ground.py")
+        self.test_drone.spawn_process("python ../ground/feed_interface.py")
+        self.test_drone.spawn_process("python ../ground/serve_www.py")
         self.test_drone.spawn_process( \
                 "python commander/drone_communications.py")
 
-        drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
+        init_lat = 38.1470000;
+        init_lng = -76.4284722;
+        drone_address = self.spawn_simulated_drone(init_lat, init_lng, 0.0, 0)
+
         test_commander = commander.Commander(drone_address)
         unittest.registerResult(test_commander)
 
         test_commander.add_command(commander.TakeoffCommand())
-        test_commander.add_command(commander.GotoCommand(0.002, 0.001, 100))
+        test_commander.add_command(commander.GotoCommand(init_lat + 0.001, \
+                                                         init_lng + 0.001, \
+                                                         100))
+
         test_commander.start_mission()
 
         unittest.removeHandler()
