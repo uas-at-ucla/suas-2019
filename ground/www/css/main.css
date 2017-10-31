@@ -75,7 +75,7 @@ html, body, button, p, h1, h2, h3, h4, h5, a, li {
 
 #bottom {
   position: absolute;
-  bottom: 35px;
+  bottom: 0px;
   display: flex;
 }
 
@@ -101,4 +101,22 @@ html, body, button, p, h1, h2, h3, h4, h5, a, li {
 
 #state_indicator {
   color: #6666FF;
+}
+
+#telemetry {
+  display: inline-block;
+  margin-bottom: 30px;
+  margin-left: 30px;
+  background: rgba(0, 0, 0, 0.7);
+  color: #FFFFFF;
+  text-align: left;
+  font-size: 25px;
+}
+
+#telemetry td {
+  padding: 8px;
+}
+
+#telemetry_important {
+  font-size: 45px;
 }

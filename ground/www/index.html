@@ -16,7 +16,6 @@
 <script>window.google && window.google.maps || document.write('<script src="gmapapi.js"><\/script>')</script>
 <script src="/js/gmapcache/webStorage.js"></script>
 <script src="/js/gmapcache/script.js"></script>
-<!--<script src="/js/gmapcache/map.js"></script>-->
 
 <script src="/js/map_style.js"></script>
 <script src="/js/interface.js"></script>
@@ -41,6 +40,37 @@
   </div>
 
   <div id="bottom">
+    <table id="telemetry">
+      <tr id="telemetry_important">
+        <td>Air Speed</td>
+        <td id="telemetry_airspeed"></td>
+      </tr>
+
+      <tr>
+        <td>Ground Speed</td>
+        <td id="telemetry_groundspeed"></td>
+      </tr>
+
+      <tr>
+        <td>Position</td>
+        <td id="telemetry_position"></td>
+      </tr>
+
+      <tr>
+        <td>Heading</td>
+        <td id="telemetry_heading"></td>
+      </tr>
+
+      <tr>
+        <td>Altitude</td>
+        <td id="telemetry_altitude"></td>
+      </tr>
+
+      <tr>
+        <td>Satellite Count</td>
+        <td id="telemetry_satellites"></td>
+      </tr>
+    </table>
   </div>
 </div>
 

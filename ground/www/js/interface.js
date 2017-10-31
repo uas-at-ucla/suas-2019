@@ -28,20 +28,35 @@ class MapUi {
 
     this.map.setMapTypeId("offline_gmap");
 
-    this.marker = new google.maps.Marker({
+    this.drone_marker = new google.maps.Marker({
       map: this.map,
-      position: field
+      position: field,
+      icon: {
+        url: "/css/drone_marker.svg",
+        anchor: new google.maps.Point(75, 75)
+      }
+    });
+
+    var self = this;
+
+    // Always keep drone in the center of view, even after resizing.
+    google.maps.event.addListener(self.map, 'bounds_changed', function() {
+      self.pan_to_drone();
     });
   }
 
   update_drone_position(new_lat, new_lng) {
     var new_position = new google.maps.LatLng(new_lat, new_lng);
 
-    this.marker.setPosition(new_position);
+    this.drone_marker.setPosition(new_position);
 
     if(this.get_distance(new_position, this.map.getCenter()) > 50.0) {
-      this.map.panTo(this.marker.getPosition());  // Fixes GMaps pan glitch.
+      this.pan_to_drone();
     }
+  }
+
+  pan_to_drone() {
+    this.map.panTo(this.drone_marker.getPosition());
   }
 
   rad(x) {
@@ -99,6 +114,21 @@ class Communicator {
 
       $("#state_indicator").text(
           self.convert_to_title_text(telemetry["state"]));
+
+      console.log(telemetry);
+      $("#telemetry_airspeed").text(
+          self.round(telemetry["air_speed"], 1) + "m/s");
+      $("#telemetry_groundspeed").text(
+          self.round(telemetry["ground_speed"], 1) + "m/s");
+      $("#telemetry_altitude").text(
+          self.round(telemetry["gps_rel_alt"], 1) + " meters");
+      $("#telemetry_position").text(
+          self.round(telemetry["gps_lat"], 7) + ", "
+          + self.round(telemetry["gps_lng"], 7));
+      $("#telemetry_satellites").text(
+          self.round(telemetry["gps_satellites"], 7));
+      $("#telemetry_heading").text(
+          self.round(telemetry["heading"], 7));
     });
   }
 
@@ -106,6 +136,11 @@ class Communicator {
     return str.replace(/\w\S*/g, function(txt){
       return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
+  }
+
+  round(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
   }
 }
 
