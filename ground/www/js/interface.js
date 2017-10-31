@@ -75,6 +75,14 @@ class Communicator {
 
     this.socket.on('connect', function() {
       console.log("Connected to ground interface feeder!");
+      $("#armed_indicator").text("Online");
+      $("#state_indicator").text("");
+    });
+
+    this.socket.on('disconnect', function() {
+      console.log("Connected to ground interface feeder!");
+        $("#armed_indicator").text("Offline");
+        $("#state_indicator").text("");
     });
 
     var self = this;
