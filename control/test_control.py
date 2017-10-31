@@ -45,8 +45,11 @@ class TestControl(unittest.TestCase):
         unittest.registerResult(test_commander)
 
         test_commander.add_command(commander.TakeoffCommand())
-        test_commander.add_command(commander.GotoCommand(init_lat + 0.01, \
-                                                         init_lng + 0.01, \
+
+        DEVIATION = 0.005
+
+        test_commander.add_command(commander.GotoCommand(init_lat + DEVIATION, \
+                                                         init_lng + DEVIATION, \
                                                          100))
 
         test_commander.start_mission()
