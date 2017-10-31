@@ -73,13 +73,11 @@ function getOsmTileImgSrc(coord, zoom) {
 }
 
 function getGmapTileImgSrc(coord, zoom) {
-  console.log("get " + coord + " at " + zoom);
   return "http://khms0.googleapis.com/kh?v=747&hl=en-US&x=" + coord.x +
          "&y=" + coord.y + "&z=" + zoom;
 }
 
 function getLocalTileImgSrc(coord, zoom) {
-  console.log("found tile in local cache");
   return "cache/" + zoom + "/" + coord.x + "_" + coord.y + ".png";
 }
 
