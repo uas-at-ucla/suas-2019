@@ -48,9 +48,18 @@ def signal_received(signal, frame):
 def connect():
     print("Ground interface connected!")
 
-def on_telemetry(*telemetry):
+def on_telemetry(*args):
+    telemetry = args[0]
     print('Ground Station Received Telemetry: ' + str(telemetry))
     interface_socketio.emit("telemetry", telemetry)
+    if USE_INTEROP and interop_client is not None:
+        lat = telemetry['gps_lat']
+        lng = telemetry['gps_lng']
+        alt = telemetry['gps_alt']
+        heading = telemetry['heading']
+        if all(val is not None for val in [lat, lng, alt, heading]):
+            interop_telemetry = interop.Telemetry(lat, lng, alt, heading)
+            interop_client.post_telemetry(interop_telemetry)
 
 def listen_for_communications():
     communications = socketIO_client.SocketIO('0.0.0.0', 8085)
