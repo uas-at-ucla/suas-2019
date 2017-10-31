@@ -60,7 +60,7 @@ We will update this virtual machine as more dependencies or a change in build en
 4. Add an [SSH-Key](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/) onto your local machine or VM.
 5. Clone the repository - assure you are cloning with an SSH key.
    ```bash
-   git clone git@github.com:uas-at-ucla/suas_2018.git
+   git clone --recursive -j8 git@github.com:uas-at-ucla/suas_2018.git
    cd suas_2018
    ```
 ### Branching
@@ -68,29 +68,12 @@ Branching is a system we use so that we can constantly develop our code in
 increments. After you successfully clone the repository, do not edit the files
 directly. You need to create your own branch off of MASTER.
 
-The MASTER branch is the final product we release to for our drone. Our branching
-system will look like this:
-
-............................ --------------- ivan
-
-............................ --------------- comran
-
-............................ --------------- yaacov
-
-MASTER Branch ------------ vansh
-
-............................ --------------- .
-
-............................ --------------- .
-
-............................ --------------- .
-
-............................ --------------- and so on
-
+The MASTER branch is the final product we release to for our drone.
 Everyone on the team will have their own branch to work on - you can think of
 the branch as your own sandbox. You will submit your code through a 'Pull
 Request', in which the respective leadership committee will review the code for
-approval and merging. The purpose of this is to make sure your code does not break anything severe on the master branch.
+approval and merging. The purpose of this is to make sure your code does not
+break anything severe on the master branch.
 
 #### Creating Your Own Branch
 1. Create the remote branch. In the [UAS Repository](https://github.com/uas-at-ucla/suas_2018), by the
@@ -102,6 +85,7 @@ approval and merging. The purpose of this is to make sure your code does not bre
    ```bash
    git fetch
    git checkout -b FIRST_NAME origin/FIRST_NAME
+   git submodule update --recursive
    ```
 
 #### Pulling, Pushing, and Merge Conflicts
