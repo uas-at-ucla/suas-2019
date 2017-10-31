@@ -9,9 +9,9 @@ class MapUi {
       disableDefaultUI : true,
       scrollwheel : false,
       navigationControl : false,
-      //mapTypeControl : false,
+      mapTypeControl : false,
       scaleControl : false,
-      //draggable : false,
+      draggable : false,
       styles : map_style,
     });
 
