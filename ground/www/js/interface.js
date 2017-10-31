@@ -4,17 +4,29 @@ class MapUi {
 
     this.map = new google.maps.Map(document.getElementById('map'), {
       center : field,
-      zoom : 18,
+      zoom : 16,
       tilt : 0,
       disableDefaultUI : true,
       scrollwheel : false,
       navigationControl : false,
-      mapTypeControl : false,
+      //mapTypeControl : false,
       scaleControl : false,
-      draggable : false,
+      //draggable : false,
       styles : map_style,
-      mapTypeId : 'hybrid'
     });
+
+    this.map.mapTypes.set("offline_gmap", new google.maps.ImageMapType({
+      getTileUrl: function(coord, zoom) {
+        return checkTileInSprites(coord, zoom) ?
+          getLocalTileImgSrc(coord, zoom) :
+          getGmapTileImgSrc(coord, zoom);
+      },
+      tileSize: new google.maps.Size(256, 256),
+      name: "LocalMyGmap",
+      maxZoom: 19
+    }));
+
+    this.map.setMapTypeId("offline_gmap");
 
     this.marker = new google.maps.Marker({
       map: this.map,
