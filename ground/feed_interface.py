@@ -57,7 +57,7 @@ def on_telemetry(*args):
         lng = telemetry['gps_lng']
         alt = telemetry['gps_alt']
         heading = telemetry['heading']
-        if (lat and lng and alt and heading):
+        if (lat is not None and lng is not None and alt is not None and heading is not None):
             interop_telemetry = interop.Telemetry(lat, lng, alt, heading)
             interop_client.post_telemetry(interop_telemetry)
 
