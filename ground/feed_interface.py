@@ -52,12 +52,12 @@ def on_telemetry(*args):
     telemetry = args[0]
     print('Ground Station Received Telemetry: ' + str(telemetry))
     interface_socketio.emit("telemetry", telemetry)
-    if interop_client:
+    if USE_INTEROP and interop_client is not None:
         lat = telemetry['gps_lat']
         lng = telemetry['gps_lng']
         alt = telemetry['gps_alt']
         heading = telemetry['heading']
-        if (lat is not None and lng is not None and alt is not None and heading is not None):
+        if all(val is not None for val in [lat, lng, alt, heading]):
             interop_telemetry = interop.Telemetry(lat, lng, alt, heading)
             interop_client.post_telemetry(interop_telemetry)
 
