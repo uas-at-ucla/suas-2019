@@ -1,0 +1,38 @@
+CACHE MANIFEST
+
+NETWORK:
+*
+
+CACHE:
+/index.html
+/css/main.css
+
+/js/gmapcache/script.js
+/js/gmapcache/gmapapi.js
+/js/gmapcache/gmap_api/main.js
+/js/gmapcache/gmap_api/components.js
+/js/gmapcache/gmap_api/empty.js
+
+/js/gmapcache/gmap_api/gstatic/arrow-down.png
+/js/gmapcache/gmap_api/gstatic/cb/mod_cb_scout/cb_scout_sprite_api_003.png
+/js/gmapcache/gmap_api/gstatic/cb/target_locking.gif
+/js/gmapcache/gmap_api/gstatic/google_white.png
+/js/gmapcache/gmap_api/gstatic/iw3.png
+/js/gmapcache/gmap_api/gstatic/iws3.png
+/js/gmapcache/gmap_api/gstatic/mapcontrols3d7.png
+/js/gmapcache/gmap_api/gstatic/markers2/marker_sprite.png
+/js/gmapcache/gmap_api/gstatic/mv/imgs8.png
+/js/gmapcache/gmap_api/gstatic/rotate2.png
+/js/gmapcache/gmap_api/gstatic/szc4.png
+/js/gmapcache/gmap_api/gstatic/transparent.png
+
+/js/gmapcache/gmap_api/gstatic/openhand_8_8.cur
+/js/gmapcache/gmap_api/gstatic/closedhand_8_8.cur
+
+FALLBACK:
+/js/gmapcache/gmap_api/googleapis/maps/api/js/AuthenticationService.Authenticate /js/gmapcache/gmap_api/empty.js
+/js/gmapcache/gmap_api/googleapis/maps/api/js/QuotaService.RecordEvent /js/gmapcache/gmap_api/empty.js
+/js/gmapcache/gmap_api/googleapis/maps/api/js/StaticMapService.GetMapImage /js/gmapcache/gmap_api/empty.js
+/js/gmapcache/gmap_api/googleapis/maps/api/js/ViewportInfoService.GetViewportInfo /js/gmapcache/gmap_api/empty.js
+/js/gmapcache/gmap_api/googleapis/maps/gen_204 /js/gmapcache/gmap_api/empty.js
+/js/gmapcache/gmap_api/googleapis/mapslt/ft /js/gmapcache/gmap_api/empty.js
