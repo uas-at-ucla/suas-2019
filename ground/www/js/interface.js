@@ -116,10 +116,10 @@ class Communicator {
           self.convert_to_title_text(telemetry["state"]));
 
       console.log(telemetry);
-      $("#telemetry_airspeed").text(
-          self.round(telemetry["air_speed"], 1) + "m/s");
-      $("#telemetry_groundspeed").text(
-          self.round(telemetry["ground_speed"], 1) + "m/s");
+      var METERS_PER_SECOND_TO_MPH = 2.23694;
+      $("#telemetry_speed").text(
+          self.round(telemetry["air_speed"] * METERS_PER_SECOND_TO_MPH, 1)
+            + "mph");
       $("#telemetry_altitude").text(
           self.round(telemetry["gps_rel_alt"], 1) + " meters");
       $("#telemetry_position").text(
