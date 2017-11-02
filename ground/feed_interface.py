@@ -47,6 +47,11 @@ def signal_received(signal, frame):
 @interface_socketio.on('connect')
 def connect():
     print("Ground interface connected!")
+    if USE_INTEROP and interop_client is not None:
+        missions = interop_client.get_missions()
+        print 'Missions: ' + str(missions.result())
+        flask_socketio.emit('mission_test', missions.result()[0].air_drop_pos.latitude)
+        # stationary_obstacles, moving_obstacles = interop_client.get_obstacles()
 
 def on_telemetry(*args):
     telemetry = args[0]
