@@ -96,6 +96,7 @@ html, body, button, p, h1, h2, h3, h4, h5, a, li {
 
 #missions {
   display: inline-block;
+  max-width: 50%;
   font-size: 20px;
   margin-top: 10px;
   margin-right: 30px;

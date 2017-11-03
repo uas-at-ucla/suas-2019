@@ -81,9 +81,9 @@ class Communicator {
           self.convert_to_title_text(telemetry["state"]));
     });
 
-    this.socket.on('mission_test', function(data) {
-      console.log("got mission data!");
-      $("#mission_test").text(data);
+    this.socket.on('missions', function(missions) {
+      console.log("got missions!");
+      $("#missions_text").text(missions);
     });
   }
 
