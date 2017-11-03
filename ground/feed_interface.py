@@ -16,6 +16,7 @@ from flask import Flask, render_template
 import flask_socketio, socketIO_client
 import signal
 import time
+import json
 import _thread
 if USE_INTEROP:
     import interop
@@ -48,9 +49,10 @@ def signal_received(signal, frame):
 def connect():
     print("Ground interface connected!")
     if USE_INTEROP and interop_client is not None:
-        missions = interop_client.get_missions()
-        print 'Missions: ' + str(missions.result())
-        flask_socketio.emit('mission_test', missions.result()[0].air_drop_pos.latitude)
+        missions = interop_client.get_missions().result()
+        missions_json = json.dumps(missions, default=lambda o: o.__dict__)
+        print 'Missions: ' + str(missions_json)
+        flask_socketio.emit('missions', missions_json)
         # stationary_obstacles, moving_obstacles = interop_client.get_obstacles()
 
 def on_telemetry(*args):
