@@ -10,9 +10,13 @@
 </head>
 <body>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c&libraries=visualization"></script>
 <script src="/js/jquery-3.2.1.min.js"></script>
-<script src="js/socket.io.min.js"></script>
+<script src="/js/socket.io.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c&libraries=visualization"></script>
+<script>window.google && window.google.maps || document.write('<script src="gmapapi.js"><\/script>')</script>
+<script src="/js/gmapcache/webStorage.js"></script>
+<script src="/js/gmapcache/script.js"></script>
+
 <script src="/js/map_style.js"></script>
 <script src="/js/interface.js"></script>
 
@@ -24,7 +28,6 @@
   </div>
 
   <div id="bottom">
-    <p>hello bottom!</p>
   </div>
 </div>
 
@@ -32,7 +35,7 @@
   <div id="top">
     <div>
       <p id="full_state">
-        <span id="armed_indicator">No state received yet</span>
+        <span id="armed_indicator">Offline</span>
         <span id="state_indicator"></span>
       </p>
     </div>
@@ -45,7 +48,32 @@
   </div>
 
   <div id="bottom">
-    <p>hello bottom!</p>
+    <table id="telemetry">
+      <tr id="telemetry_important">
+        <td>Speed</td>
+        <td id="telemetry_speed"></td>
+      </tr>
+
+      <tr>
+        <td>Position</td>
+        <td id="telemetry_position"></td>
+      </tr>
+
+      <tr>
+        <td>Heading</td>
+        <td id="telemetry_heading"></td>
+      </tr>
+
+      <tr>
+        <td>Altitude</td>
+        <td id="telemetry_altitude"></td>
+      </tr>
+
+      <tr>
+        <td>Satellite Count</td>
+        <td id="telemetry_satellites"></td>
+      </tr>
+    </table>
   </div>
 </div>
 
