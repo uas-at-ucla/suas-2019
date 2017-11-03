@@ -164,7 +164,7 @@ class TestControl(unittest.TestCase):
 
     def spawn_simulated_drone(self, lat, lng, alt, instance):
         self.test_drone.spawn_process("python " + \
-                "flight_control/simulate_copter/dronekit_sitl/__main__.py " + \
+                "flight_control/dronekit-sitl/dronekit_sitl/__main__.py " + \
                 "copter " + \
                 "--home " + str(lat) + "," \
                           + str(lng) + "," \
