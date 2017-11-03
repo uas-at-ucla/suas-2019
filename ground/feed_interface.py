@@ -57,8 +57,8 @@ def connect():
 
 def on_telemetry(*args):
     telemetry = args[0]
-    print('Ground Station Received Telemetry: ' + str(telemetry))
     interface_socketio.emit("telemetry", telemetry)
+
     if USE_INTEROP and interop_client is not None:
         lat = telemetry['gps_lat']
         lng = telemetry['gps_lng']

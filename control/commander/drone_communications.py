@@ -16,7 +16,7 @@ def broadcast_telemetry(data):
     emit('telemetry', data, broadcast=True, include_self=False)
 
 def main():
-    socketio.run(app, port = 8085)
+    socketio.run(app, port = 8085, debug = False, log_output = False)
 
 if __name__ == "__main__":
     main()

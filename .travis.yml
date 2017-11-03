@@ -23,7 +23,10 @@ python:
 
 cache:
   directories:
-  - "$HOME/.sonar/cache"
+   - "$HOME/.sonar/cache"
+
+before_install:
+ - git submodule update --init --recursive
 
 install:
  - pip install -r $TRAVIS_BUILD_DIR/build/pip_requirements.txt
@@ -32,4 +35,3 @@ script:
  - python $TRAVIS_BUILD_DIR/vision/test_vision.py
  - python $TRAVIS_BUILD_DIR/control/test_control.py
  - sonar-scanner
-
