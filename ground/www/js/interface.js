@@ -4,7 +4,7 @@ class MapUi {
 
     this.map = new google.maps.Map(document.getElementById('map'), {
       center : field,
-      zoom : 18,
+      zoom : 16,
       tilt : 0,
       disableDefaultUI : true,
       scrollwheel : false,
@@ -13,23 +13,50 @@ class MapUi {
       scaleControl : false,
       draggable : false,
       styles : map_style,
-      mapTypeId : 'hybrid'
     });
 
-    this.marker = new google.maps.Marker({
+    this.map.mapTypes.set("offline_gmap", new google.maps.ImageMapType({
+      getTileUrl: function(coord, zoom) {
+        return checkTileInSprites(coord, zoom) ?
+          getLocalTileImgSrc(coord, zoom) :
+          getGmapTileImgSrc(coord, zoom);
+      },
+      tileSize: new google.maps.Size(256, 256),
+      name: "LocalMyGmap",
+      maxZoom: 19
+    }));
+
+    this.map.setMapTypeId("offline_gmap");
+
+    this.drone_marker = new google.maps.Marker({
       map: this.map,
-      position: field
+      position: field,
+      icon: {
+        url: "/css/drone_marker.svg",
+        anchor: new google.maps.Point(75, 75)
+      }
+    });
+
+    var self = this;
+
+    // Always keep drone in the center of view, even after resizing.
+    google.maps.event.addListener(self.map, 'bounds_changed', function() {
+      self.pan_to_drone();
     });
   }
 
   update_drone_position(new_lat, new_lng) {
     var new_position = new google.maps.LatLng(new_lat, new_lng);
 
-    this.marker.setPosition(new_position);
+    this.drone_marker.setPosition(new_position);
 
     if(this.get_distance(new_position, this.map.getCenter()) > 50.0) {
-      this.map.panTo(this.marker.getPosition());  // Fixes GMaps pan glitch.
+      this.pan_to_drone();
     }
+  }
+
+  pan_to_drone() {
+    this.map.panTo(this.drone_marker.getPosition());
   }
 
   rad(x) {
@@ -63,6 +90,14 @@ class Communicator {
 
     this.socket.on('connect', function() {
       console.log("Connected to ground interface feeder!");
+      $("#armed_indicator").text("Online");
+      $("#state_indicator").text("");
+    });
+
+    this.socket.on('disconnect', function() {
+      console.log("Connected to ground interface feeder!");
+        $("#armed_indicator").text("Offline");
+        $("#state_indicator").text("");
     });
 
     var self = this;
@@ -79,6 +114,21 @@ class Communicator {
 
       $("#state_indicator").text(
           self.convert_to_title_text(telemetry["state"]));
+
+      console.log(telemetry);
+      var METERS_PER_SECOND_TO_MPH = 2.23694;
+      $("#telemetry_speed").text(
+          self.round(telemetry["air_speed"] * METERS_PER_SECOND_TO_MPH, 1)
+            + "mph");
+      $("#telemetry_altitude").text(
+          self.round(telemetry["gps_rel_alt"], 1) + " meters");
+      $("#telemetry_position").text(
+          self.round(telemetry["gps_lat"], 7) + ", "
+          + self.round(telemetry["gps_lng"], 7));
+      $("#telemetry_satellites").text(
+          self.round(telemetry["gps_satellites"], 7));
+      $("#telemetry_heading").text(
+          self.round(telemetry["heading"], 7));
     });
 
     this.socket.on('missions', function(missions) {
@@ -91,6 +141,11 @@ class Communicator {
     return str.replace(/\w\S*/g, function(txt){
       return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
+  }
+
+  round(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
   }
 }
 
