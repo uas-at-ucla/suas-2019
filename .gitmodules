@@ -4,6 +4,3 @@
 [submodule "control/flight_control/simulate_copter"]
 	path = control/flight_control/simulate_copter
 	url = https://github.com/uas-at-ucla/dronekit-sitl.git
-[submodule "control/flight_control/dronekit-sitl"]
-	path = control/flight_control/dronekit-sitl
-	url = https://github.com/uas-at-ucla/dronekit-sitl.git
