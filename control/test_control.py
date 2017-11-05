@@ -195,7 +195,7 @@ class TestControl(unittest.TestCase):
         # Start the interop server
         self.test_drone.spawn_process("docker run --rm \
             --publish 8000:80 --name interop-server auvsisuas/interop-server", \
-            cwd = "../ground/interop/server", \
+            rel_cwd = "../ground/interop/server", \
             track = False)
         self.interop_running = True
 
