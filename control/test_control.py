@@ -18,10 +18,11 @@ import process_manager
 import copter_interface
 import commander
 
-USE_INTEROP = False
-
 class TestControl(unittest.TestCase):
     def setUp(self):
+        self.USE_INTEROP = False
+        self.interop_running = False
+
         self.test_drone = process_manager.ProcessManager()
 
         signal.signal(signal.SIGINT, self.kill_processes_and_exit)
@@ -183,7 +184,7 @@ class TestControl(unittest.TestCase):
         return "tcp:127.0.0.1:" + str(port)
 
     def init_interop_server(self):
-        if USE_INTEROP == False:
+        if self.USE_INTEROP == False:
             return
 
         # First kill the interop server. We don't want a previous instance
@@ -196,6 +197,7 @@ class TestControl(unittest.TestCase):
             --publish 8000:80 --name interop-server auvsisuas/interop-server", \
             cwd = "../ground/interop/server", \
             track = False)
+        self.interop_running = True
 
         # Wait a max of 10 secs for server to be up
         for i in range(10):
@@ -207,8 +209,9 @@ class TestControl(unittest.TestCase):
                 pass
 
     def kill_processes(self):
-        if USE_INTEROP:
+        if self.USE_INTEROP and self.interop_running:
             self.test_drone.run_command("docker kill interop-server")
+            self.interop_running = False
         self.test_drone.killall()
 
     def kill_processes_and_exit(self, signal, frame):
