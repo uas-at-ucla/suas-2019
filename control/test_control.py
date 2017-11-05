@@ -10,6 +10,7 @@ sys.path.insert(0, 'flight_control')
 sys.path.insert(0, 'commander')
 import time
 import signal
+import urllib
 import unittest
 from unittest import TestLoader, TestSuite, TextTestRunner
 
@@ -17,21 +18,24 @@ import process_manager
 import copter_interface
 import commander
 
+USE_INTEROP = False
+
 class TestControl(unittest.TestCase):
     def setUp(self):
         self.test_drone = process_manager.ProcessManager()
 
-        signal.signal(signal.SIGINT, self.test_drone.killall_signalled)
+        signal.signal(signal.SIGINT, self.kill_processes_and_exit)
 
     def tearDown(self):
-        self.test_drone.killall()
+        self.kill_processes()
 
     def tearDownModule(self):
-        self.test_drone.killall()
+        self.kill_processes()
 
     def test_commander(self):
         unittest.installHandler()
 
+        self.init_interop_server()
         self.test_drone.spawn_process("python ../ground/feed_interface.py")
         self.test_drone.spawn_process("python ../ground/serve_www.py")
         self.test_drone.spawn_process( \
@@ -178,6 +182,40 @@ class TestControl(unittest.TestCase):
         port = 5760 + 10 * instance
         return "tcp:127.0.0.1:" + str(port)
 
+    def init_interop_server(self):
+        if USE_INTEROP == False:
+            return
+
+        # First kill the interop server. We don't want a previous instance
+        # running. If it is not running (the usual case), an error is returned,
+        # which can be ignored.
+        self.test_drone.run_command("docker rm -f interop-server")
+
+        # Start the interop server
+        self.test_drone.spawn_process("docker run --rm \
+            --publish 8000:80 --name interop-server auvsisuas/interop-server", \
+            cwd = "../ground/interop/server", \
+            track = False)
+
+        # Wait a max of 10 secs for server to be up
+        for i in range(10):
+            time.sleep(1.0)
+            try:
+                if urllib.urlopen("http://localhost:8000").getcode() == 200:
+                    break
+            except:
+                pass
+
+    def kill_processes(self):
+        if USE_INTEROP:
+            self.test_drone.run_command("docker kill interop-server")
+        self.test_drone.killall()
+
+    def kill_processes_and_exit(self, signal, frame):
+        print "Exiting"
+        self.kill_processes()
+        exit(0)
+            
 if __name__ == "__main__":
     loader = TestLoader()
     suite = TestSuite((
