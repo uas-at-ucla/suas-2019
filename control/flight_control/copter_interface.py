@@ -409,6 +409,58 @@ class CopterInterface:
         if not self.controller.get_state() == "VELOCITY CONTROL":
             return False
 
+        xIaccum = 0
+        yIaccum = 0
+        zIaccum = 0
+
+        while True:
+            sensors = self.sensor_reader.sensors.get()
+
+            if abs(lat - sensors["gps_lat"].get()) < 0.00001 and \
+               abs(lng - sensors["gps_lng"].get()) < 0.00001 and \
+               abs(alt - sensors["gps_rel_alt"].get()) < 0.1:
+               break
+
+            erx = lat - sensors["gps_lat"].get()        #pos error in x dir
+            ery = lng - sensors["gps_lng"].get()        #pos error in y dir
+            erz = sensors["gps_rel_alt"].get() - alt    #pos error in z dir
+
+            rho = math.sqrt(erx*erx + ery*ery + erz*erz)     #dist to setpoint
+            theta = math.atan(ery/erx)                         #angle of travel in xy plane (relative to +x axis)
+            phi = math.atan(erz/math.sqrt(erx*erx + ery*ery))     #angle of travel in threespace (relative to xy plane)
+
+            xrho = rho * math.cos(theta)
+            yrho = rho * math.sin(theta)
+            zrho = rho * math.sin(phi)
+
+            kP = 0.2
+            kI = 0
+            kD = 0
+
+            xIaccum += xrho
+            yIaccum += yrho
+            zIaccum += zrho
+
+            vx = kP * (xrho) + kI * (xrho)
+            vy = kP * (yrho) + kI * (yrho)
+            vz = kP * (zrho) + kI * (zrho)
+
+            self.controller.set_velocity(vx, vy, vz)
+
+            print("vx: " + str(vx) + "\t\tvy: " + str(vy) + "\t\tvz: " + str(vz) + \
+                  "\tlat%: " + str(erx / lat * 100) + \
+                  "\tlng%: " + str(ery / lng * 100) + \
+                  "\talt%: " + str(erz / alt * 100) )
+            print("xrho: " + str(xrho) + "\tyrho: " + str(yrho) + "\tzrho: " + str(zrho))
+
+            time.sleep(0.1)
+
+        return True
+
+        """
+        if not self.controller.get_state() == "VELOCITY CONTROL":
+            return False
+
         while True:
             sensors = self.sensor_reader.sensors.get()
 
@@ -434,7 +486,7 @@ class CopterInterface:
             time.sleep(0.1)
 
         return True
-
+        """
 def main():
     parser = argparse.ArgumentParser( \
             description = "Interface with flight controller.")
