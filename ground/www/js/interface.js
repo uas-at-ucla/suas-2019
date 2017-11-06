@@ -95,7 +95,7 @@ class Communicator {
     });
 
     this.socket.on('disconnect', function() {
-      console.log("Connected to ground interface feeder!");
+      console.log("Disconnected from ground interface feeder!");
         $("#armed_indicator").text("Offline");
         $("#state_indicator").text("");
     });
@@ -129,6 +129,11 @@ class Communicator {
           self.round(telemetry["gps_satellites"], 7));
       $("#telemetry_heading").text(
           self.round(telemetry["heading"], 7));
+    });
+
+    this.socket.on('missions', function(missions) {
+      console.log("got missions!");
+      // $("#missions_text").text(missions);
     });
   }
 
