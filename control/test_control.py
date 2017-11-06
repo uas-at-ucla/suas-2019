@@ -20,7 +20,7 @@ import commander
 
 class TestControl(unittest.TestCase):
     def setUp(self):
-        self.USE_INTEROP = False
+        self.USE_INTEROP = True
         self.interop_running = False
 
         self.test_drone = process_manager.ProcessManager()
