@@ -28,7 +28,7 @@ cache:
 
 before_install:
  - git submodule update --init --recursive
- - ./ground/interop/tools/setup_docker.sh
+ - sudo ./ground/interop/tools/setup_docker.sh
 
 install:
  - pip install -r $TRAVIS_BUILD_DIR/build/pip_requirements.txt
