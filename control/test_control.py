@@ -20,8 +20,7 @@ import commander
 
 class TestControl(unittest.TestCase):
     def setUp(self):
-        self.USE_INTEROP = True
-        self.interop_running = False
+        self.USE_INTEROP = False
 
         self.test_drone = process_manager.ProcessManager()
 
@@ -34,9 +33,10 @@ class TestControl(unittest.TestCase):
         self.kill_processes()
 
     def test_commander(self):
-        unittest.installHandler()
+        if self.USE_INTEROP:
+            self.test_drone.spawn_process("python ../ground/run_interop.py")
+            self.test_drone.wait_for_complete()
 
-        self.init_interop_server()
         self.test_drone.spawn_process("python ../ground/feed_interface.py")
         self.test_drone.spawn_process("python ../ground/serve_www.py")
         self.test_drone.spawn_process( \
@@ -58,8 +58,6 @@ class TestControl(unittest.TestCase):
                                                          100))
 
         test_commander.start_mission()
-
-        unittest.removeHandler()
 
     def test_copter_interface_init(self):
         drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
@@ -88,85 +86,6 @@ class TestControl(unittest.TestCase):
 
         copter.stop()
 
-    def test_copter_interface_takeoff_and_land(self):
-        drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
-        copter = copter_interface.CopterInterface(drone_address)
-
-        time.sleep(4.0)
-
-        sensors = copter.sensor_reader.sensors.get()
-        print(sensors["state"].get())
-        self.assertTrue(sensors["state"].get() == "STANDBY")
-        self.assertTrue(sensors["armed"].get() == "False")
-
-        copter.controller.set_state("ARM")
-
-        for i in range(0, 18):
-            sensors = copter.sensor_reader.sensors.get()
-            print("Last heartbeat: " + str(sensors["last_heartbeat"].get()) + \
-                  " State: " + copter.controller.get_state())
-            time.sleep(1.0)
-
-        # Make sure we get stable values after flight controller initialization.
-        sensors = copter.sensor_reader.sensors.get()
-
-        self.assertTrue(sensors["state"].get() == "ARMED")
-        self.assertTrue(sensors["armed"].get() == "True")
-        self.assertGreater(sensors["voltage"].get(), 12.3)
-        self.assertLess(abs(sensors["gps_rel_alt"].get()), 0.1)
-        self.assertGreater(sensors["gps_satellites"].get(), 8)
-
-        copter.controller.set_state("TAKEOFF")
-
-        print("Taking off!")
-
-        for i in range(0, 10):
-            sensors = copter.sensor_reader.sensors.get()
-
-            print("Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
-                  " Lng: " + '%9s' % str(sensors["gps_lng"].get()) + \
-                  " Alt: " + '%9s' % str(sensors["gps_alt"].get()) + \
-                  " Ground speed: " + '%9s' % str( \
-                      sensors["ground_speed"].get()))
-
-            time.sleep(1.0)
-
-        self.assertLess(abs(3.0 - abs(sensors["gps_rel_alt"].get())), 0.1)
-
-        copter.controller.set_state("VELOCITY CONTROL")
-
-        print("Switching to velocity control!")
-
-        for i in range(0, 10):
-            sensors = copter.sensor_reader.sensors.get()
-
-            print("Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
-                  " Lng: " + '%9s' % str(sensors["gps_lng"].get()) + \
-                  " Alt: " + '%9s' % str(sensors["gps_alt"].get()) + \
-                  " Ground speed: " + '%9s' % str(
-                      sensors["ground_speed"].get()))
-
-            time.sleep(1.0)
-
-        print("Landing!")
-        copter.controller.set_state("LAND")
-
-        for i in range(0, 12):
-            sensors = copter.sensor_reader.sensors.get()
-
-            print("Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
-                  " Lng: " + '%9s' % str(sensors["gps_lng"].get()) + \
-                  " Alt: " + '%9s' % str(sensors["gps_alt"].get()) + \
-                  " Ground speed: " + '%9s' % str(
-                      sensors["ground_speed"].get()))
-
-            time.sleep(1.0)
-
-        self.assertTrue(sensors["state"].get() == "LANDED")
-        self.assertLess(abs(sensors["gps_rel_alt"].get()), 0.3)
-
-        copter.stop()
-
     def spawn_simulated_drone(self, lat, lng, alt, instance):
         self.test_drone.spawn_process("python " + \
                 "flight_control/dronekit-sitl/dronekit_sitl/__init__.py " + \
@@ -183,42 +102,14 @@ class TestControl(unittest.TestCase):
         port = 5760 + 10 * instance
         return "tcp:127.0.0.1:" + str(port)
 
-    def init_interop_server(self):
-        if self.USE_INTEROP == False:
-            return
-
-        # First kill the interop server. We don't want a previous instance
-        # running. If it is not running (the usual case), an error is returned,
-        # which can be ignored.
-        self.test_drone.run_command("docker rm -f interop-server")
-
-        # Start the interop server
-        self.test_drone.spawn_process("docker run --rm \
-            --publish 8000:80 --name interop-server auvsisuas/interop-server", \
-            rel_cwd = "../ground/interop/server", \
-            track = False)
-        self.interop_running = True
-
-        # Wait a max of 10 secs for server to be up
-        for i in range(10):
-            time.sleep(1.0)
-            try:
-                if urllib.urlopen("http://localhost:8000").getcode() == 200:
-                    break
-            except:
-                pass
-
     def kill_processes(self):
-        if self.USE_INTEROP and self.interop_running:
-            self.test_drone.run_command("docker kill interop-server")
-            self.interop_running = False
         self.test_drone.killall()
 
     def kill_processes_and_exit(self, signal, frame):
         print "Exiting"
         self.kill_processes()
         exit(0)
-            
+
 if __name__ == "__main__":
     loader = TestLoader()
     suite = TestSuite((

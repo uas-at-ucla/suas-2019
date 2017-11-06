@@ -10,16 +10,14 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 #                                                                              #
 ################################################################################
 import sys
-old_stdout, old_stderr = sys.stdout, sys.stderr
-sys.stdout = open('/dev/null', 'w')
 sys.stderr = open('/dev/null', 'w')
 
-USE_INTEROP = True
+USE_INTEROP = False
 
 sys.dont_write_bytecode = True
 
 if USE_INTEROP:
-    sys.path.insert(0, './interop/client')
+    sys.path.insert(0, 'interop/client')
 
 from flask import Flask, render_template
 import flask_socketio, socketIO_client
@@ -34,6 +32,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'flappy'
 interface_socketio = flask_socketio.SocketIO(app, async_mode='threading')
 stopped = False
+interop_client = None
 
 if USE_INTEROP:
     interop_url='http://localhost:8000'
