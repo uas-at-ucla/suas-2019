@@ -1,3 +1,8 @@
+import os
+# Start off fresh by making sure that our working directory is the same as the
+# directory that this script is in.
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
 import sys
 import random, string
 import glob, os
@@ -7,13 +12,11 @@ import numpy as np
 import math
 
 #TODO: Two folders: images, txt files: one w vertices of images
-
 class ImageSimulator:
     def __init__(self):
         self.targets = dict()
         self.fields = list()
 
-        os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
         os.chdir("targets")
         for file_name in glob.glob("*.png"):
@@ -24,12 +27,12 @@ class ImageSimulator:
         for file_name in glob.glob("*.jpg"):
             name = file_name.replace('.jpg', '')
             self.fields.append(Image.open(file_name).convert("RGBA"))
+        os.chdir("..")
 
         background = self.fields[0]
         backgroundWidth,backgroundHeight = background.size
 
         for i in self.targets:
-
             #make background copy, rotate to random angle
             backgroundCopy = background.copy()
             angle = random.randint(0,359)
@@ -73,7 +76,8 @@ class ImageSimulator:
 
             #paste target on field and display
             backgroundCopy.paste(target, (xPos, yPos), target)
-            backgroundCopy.show()
+            backgroundCopy = backgroundCopy.convert("RGB")
+            backgroundCopy.save("output/images/output_" + str(i) + ".jpg")
 
 
     def random_filename(self, length):
