@@ -435,10 +435,12 @@ class CopterInterface:
 
             self.controller.set_velocity(vx, vy, vz)
 
-            print("vx: " + str(vx) + " vy: " + str(vy) + " vz: " + str(vz) + \
-                  " lat: " + str(gps_lat) + \
-                  " lng: " + str(gps_lng) + \
-                  " alt: " + str(gps_rel_alt))
+            print("vx: " + "%6s" % str("%0.1f" % vx) + \
+                  " vy: " + "%6s" % str("%0.1f" % vy) + \
+                  " vz: " + "%6s" % str("%0.1f" % vz) + \
+                  " lat: " + "%11s" % str("%0.7f" % gps_lat) + \
+                  " lng: " + "%11s" % str("%0.7f" % gps_lng) + \
+                  " alt: " + "%6s" % str("%0.2f" % gps_rel_alt))
 
             time.sleep(0.1)
 

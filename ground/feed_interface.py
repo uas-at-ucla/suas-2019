@@ -3,7 +3,16 @@ import os
 # directory that this script is in.
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
+################################################################################
+#                                                                              #
+#           NOTE: ALL ERROR OUTPUT IS BEING PIPED TO /dev/null                 #
+#                 IF THIS CODE HAS ERRORS, THEN THEY WILL NOT APPEAR!          #
+#                                                                              #
+################################################################################
 import sys
+old_stdout, old_stderr = sys.stdout, sys.stderr
+sys.stdout = open('/dev/null', 'w')
+sys.stderr = open('/dev/null', 'w')
 
 USE_INTEROP = True
 
