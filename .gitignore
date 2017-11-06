@@ -1,3 +1,4 @@
 *.pyc
 *.swp
 .DS_STORE
+vision/image_simulator/output/
