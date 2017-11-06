@@ -8,6 +8,7 @@ addons:
       - "python-pip"
       - "python-setuptools"
       - "python-opencv"
+      - "docker"
   sonarcloud:
     organization: "unmannedsystems-ucla-github"
     token:
@@ -27,6 +28,8 @@ cache:
 
 before_install:
  - git submodule update --init --recursive
+ - sudo ./ground/interop/tools/setup_docker.sh
+ - sudo docker pull auvsisuas/interop-server
 
 install:
  - pip install -r $TRAVIS_BUILD_DIR/build/pip_requirements.txt

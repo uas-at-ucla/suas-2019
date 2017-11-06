@@ -411,15 +411,24 @@ class CopterInterface:
 
         while True:
             sensors = self.sensor_reader.sensors.get()
+            gps_lat = sensors["gps_lat"].get()
+            gps_lng = sensors["gps_lng"].get()
+            gps_rel_alt = sensors["gps_rel_alt"].get()
 
-            if abs(lat - sensors["gps_lat"].get()) < 0.00001 and \
-               abs(lng - sensors["gps_lng"].get()) < 0.00001 and \
-               abs(alt - sensors["gps_rel_alt"].get()) < 0.1:
+            if gps_lat is None or \
+               gps_lng is None or \
+               gps_rel_alt is None:
+                time.sleep(0.1)
+                continue
+
+            if abs(lat - gps_lat) < 0.00001 and \
+               abs(lng - gps_lng) < 0.00001 and \
+               abs(alt - gps_rel_alt) < 0.1:
                break
 
-            vx = lat - sensors["gps_lat"].get()
-            vy = lng - sensors["gps_lng"].get()
-            vz = sensors["gps_rel_alt"].get() - alt
+            vx = lat - gps_lat
+            vy = lng - gps_lng
+            vz = gps_rel_alt - alt
 
             vx *= 20000
             vy *= 20000
@@ -427,9 +436,9 @@ class CopterInterface:
             self.controller.set_velocity(vx, vy, vz)
 
             print("vx: " + str(vx) + " vy: " + str(vy) + " vz: " + str(vz) + \
-                  " lat: " + str(sensors["gps_lat"].get()) + \
-                  " lng: " + str(sensors["gps_lng"].get()) + \
-                  " alt: " + str(sensors["gps_rel_alt"].get()))
+                  " lat: " + str(gps_lat) + \
+                  " lng: " + str(gps_lng) + \
+                  " alt: " + str(gps_rel_alt))
 
             time.sleep(0.1)
 
