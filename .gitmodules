@@ -1,3 +1,6 @@
 [submodule "ground/interop"]
 	path = ground/interop
 	url = https://github.com/auvsi-suas/interop.git
+[submodule "control/flight_control/simulate_copter"]
+	path = control/flight_control/simulate_copter
+	url = https://github.com/uas-at-ucla/dronekit-sitl.git

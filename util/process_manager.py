@@ -11,18 +11,24 @@ class ProcessManager:
     def __init__(self):
         self.procs = list()
 
-    def spawn_process(self, command):
+    def spawn_process(self, command, rel_cwd=None, track=True):
+        cwd = self.get_cwd(rel_cwd)
         proc = subprocess.Popen(command, \
                                 shell = True, \
-                                preexec_fn = os.setsid)
-
-        self.procs.append(proc)
+                                preexec_fn = os.setsid, \
+                                cwd = cwd)
+        if track:
+            self.procs.append(proc)
 
     def killall(self):
         for proc in self.procs:
             os.killpg(os.getpgid(proc.pid), signal.SIGINT)
 
-    def killall_signalled(self, signal, frame):
-        self.killall()
+    def run_command(self, command, rel_cwd=None):
+        cwd = self.get_cwd(rel_cwd)
+        subprocess.call(command, shell = True, cwd = cwd)
 
-        exit(0)
+    def get_cwd(self, rel_path):
+        if rel_path is not None:
+            return os.path.realpath(os.path.join(os.getcwd(), rel_path))
+        return None
