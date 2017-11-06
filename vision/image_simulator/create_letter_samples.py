@@ -8,8 +8,14 @@ Author: Amit Aides, Ahmad Kiswani
 License: See attached license file
 """
 
+
+
 from __future__ import division
 import argparse
+
+import sys
+sys.path.append('/Users/ruchapatki/Documents/School/COLLEGE/UAS/auvsi-targets') #the directory that contains my_pk
+
 import AUVSItargets
 import AUVSItargets.global_settings as gs
 import cv2
