@@ -8,6 +8,7 @@ addons:
       - "python-pip"
       - "python-setuptools"
       - "python-opencv"
+      - "docker"
   sonarcloud:
     organization: "unmannedsystems-ucla-github"
     token:
