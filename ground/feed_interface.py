@@ -5,7 +5,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 import sys
 
-USE_INTEROP = False
+USE_INTEROP = True
 
 sys.dont_write_bytecode = True
 
@@ -50,10 +50,30 @@ def connect():
     print("Ground interface connected!")
     if USE_INTEROP and interop_client is not None:
         missions = interop_client.get_missions().result()
-        missions_json = json.dumps(missions, default=lambda o: o.__dict__)
-        print 'Missions: ' + str(missions_json)
-        flask_socketio.emit('missions', missions_json)
-        # stationary_obstacles, moving_obstacles = interop_client.get_obstacles()
+        stationary_obstacles, moving_obstacles = \
+            interop_client.get_obstacles().result()
+        data = object_to_dict({ \
+            'missions': missions, \
+            'stationary_obstacles': stationary_obstacles, \
+            'moving_obstacles': moving_obstacles})
+        flask_socketio.emit('missions_and_obstacles', data)
+
+@interface_socketio.on('request_broadcast_moving_obstacles')
+def broadcast_moving_obstacles(moving_obstacles):
+    flask_socketio.emit('moving_obstacles', moving_obstacles, \
+        broadcast=True, include_self=False)
+
+def refresh_moving_obstacles():
+    # This is necessary to talk to the socket from a separate thread
+    interface_client = socketIO_client.SocketIO('0.0.0.0', 8084)
+    while True:
+        time.sleep(1)
+        moving_obstacles = interop_client.get_obstacles().result()[1]
+        interface_client.emit('request_broadcast_moving_obstacles', \
+            object_to_dict(moving_obstacles))
+
+def object_to_dict(my_object):
+    return json.loads(json.dumps(my_object, default=lambda o: o.__dict__))
 
 def on_telemetry(*args):
     telemetry = args[0]
@@ -77,5 +97,7 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
     _thread.start_new_thread(listen_for_communications, ())
+    if USE_INTEROP and interop_client is not None:
+        _thread.start_new_thread(refresh_moving_obstacles, ())
 
     interface_socketio.run(app, '0.0.0.0', port = 8084)
