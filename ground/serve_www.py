@@ -3,6 +3,15 @@ import signal
 import time
 import os
 
+################################################################################
+#                                                                              #
+#           NOTE: ALL ERROR OUTPUT IS BEING PIPED TO /dev/null                 #
+#                 IF THIS CODE HAS ERRORS, THEN THEY WILL NOT APPEAR!          #
+#                                                                              #
+################################################################################
+import sys
+sys.stderr = open('/dev/null', 'w')
+
 try:
     # Python 3
     from http.server import HTTPServer, SimpleHTTPRequestHandler
