@@ -38,7 +38,9 @@ class MapUi {
     });
 
     this.stationary_obstacle_markers = []
+    this.stationary_obstacle_circles = []
     this.moving_obstacle_markers = []
+    this.moving_obstacle_circles = []
 
     var self = this;
 
@@ -63,10 +65,12 @@ class MapUi {
   }
 
   set_stationary_obstacles(obstacles) {
-    for (let marker of this.stationary_obstacle_markers) {
-      marker.setMap(null);
+    for (let i = 0; i < this.stationary_obstacle_markers.length; i++) {
+      this.stationary_obstacle_markers[i].setMap(null);
+      this.stationary_obstacle_circles[i].setMap(null);
     }
     this.stationary_obstacle_markers.length = 0;
+    this.stationary_obstacle_circles.length = 0;
     for (let obstacle of obstacles) {
       let pos = {lat: obstacle.latitude, lng: obstacle.longitude};
       var marker = new google.maps.Marker({
@@ -81,14 +85,17 @@ class MapUi {
       });
       circle.bindTo('center', marker, 'position');
       this.stationary_obstacle_markers.push(marker)
+      this.stationary_obstacle_circles.push(circle)
     }
   }
 
   set_moving_obstacles(obstacles) {
-    for (let marker of this.moving_obstacle_markers) {
-      marker.setMap(null);
+    for (let i = 0; i < this.moving_obstacle_markers.length; i++) {
+      this.moving_obstacle_markers[i].setMap(null);
+      this.moving_obstacle_circles[i].setMap(null);
     }
     this.moving_obstacle_markers.length = 0;
+    this.moving_obstacle_circles.length = 0;
     for (let obstacle of obstacles) {
       let pos = {lat: obstacle.latitude, lng: obstacle.longitude};
       var marker = new google.maps.Marker({
@@ -103,6 +110,7 @@ class MapUi {
       });
       circle.bindTo('center', marker, 'position');
       this.moving_obstacle_markers.push(marker)
+      this.moving_obstacle_circles.push(circle)
     }
   }
 
