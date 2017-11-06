@@ -4,6 +4,7 @@ sys.dont_write_bytecode = True
 import subprocess
 import os
 import signal
+import time
 
 # This class assists in spawning multiple processes and terminating all these
 # processes when a program exits.
@@ -19,6 +20,10 @@ class ProcessManager:
                                 cwd = cwd)
         if track:
             self.procs.append(proc)
+
+    def wait_for_complete(self):
+        for proc in self.procs:
+            os.waitpid(proc.pid, os.WNOHANG)
 
     def killall(self):
         for proc in self.procs:

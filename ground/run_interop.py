@@ -7,8 +7,34 @@ import sys
 sys.dont_write_bytecode = True
 sys.path.insert(0, '../util')
 
+import time
+import signal
+import subprocess
+
 import process_manager
 
-process_manager.ProcessManager().run_command("docker run --rm --interactive --tty\
-    --publish 8000:80 --name interop-server auvsisuas/interop-server", \
-    rel_cwd = "interop/server")
+os.chdir("interop/server")
+
+interop_processes = None
+def signal_received(signal, frame):
+    interop_processes.run_command("docker kill interop-server")
+    interop_processes.killall()
+    sys.exit(0)
+signal.signal(signal.SIGINT, signal_received)
+
+# First kill the interop server. We don't want a previous instance
+# running. If it is not running (the usual case), an error is returned,
+# which can be ignored.
+interop_processes = process_manager.ProcessManager()
+interop_processes.spawn_process("docker rm -f interop-server")
+interop_processes.wait_for_complete()
+
+interop_processes = process_manager.ProcessManager()
+interop_processes.spawn_process("docker run " +\
+                                  "--rm " + \
+                                  "--publish 8000:80 " + \
+                                  "--name interop-server " + \
+                                  "auvsisuas/interop-server")
+interop_processes.wait_for_complete()
+
+signal.pause()
