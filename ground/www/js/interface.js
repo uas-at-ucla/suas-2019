@@ -1,3 +1,5 @@
+var METERS_PER_FOOT = 0.3048;
+
 class MapUi {
   constructor(ground_interface) {
     var field = {lat : 38.1470000, lng : -76.4284722};
@@ -28,22 +30,30 @@ class MapUi {
 
     this.map.setMapTypeId("offline_gmap");
 
+    this.drone_marker_icon = {
+      path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+      scale: 10,
+      rotation: 0,
+      anchor: new google.maps.Point(0, 2.5)
+    }
     this.drone_marker = new google.maps.Marker({
+      map: this.map,
+      position: field,
+      icon: this.drone_marker_icon
+    });
+    this.drone_background_marker = new google.maps.Marker({
       map: this.map,
       position: field,
       icon: {
         url: "/css/drone_marker.svg",
-        anchor: new google.maps.Point(75, 75)
+        anchor: new google.maps.Point(50, 50)
       }
     });
 
     this.stationary_obstacle_markers = [];
     this.stationary_obstacle_color = '#FF0000';
-    this.stationary_obstacle_opacity = 0.6;
     this.moving_obstacle_markers = [];
     this.moving_obstacle_color = '#0000FF';
-    this.moving_obstacle_opacity = 0.6;
-
 
     var self = this;
 
@@ -53,10 +63,13 @@ class MapUi {
     });
   }
 
-  update_drone_position(new_lat, new_lng) {
+  update_drone_position(new_lat, new_lng, new_heading) {
     var new_position = new google.maps.LatLng(new_lat, new_lng);
 
     this.drone_marker.setPosition(new_position);
+    this.drone_marker_icon.rotation = new_heading;
+    this.drone_marker.setIcon(this.drone_marker_icon);
+    this.drone_background_marker.setPosition(new_position);
 
     if(this.get_distance(new_position, this.map.getCenter()) > 50.0) {
       this.pan_to_drone();
@@ -74,8 +87,8 @@ class MapUi {
     }
     this.stationary_obstacle_markers.length = 0;
     for (let obstacle of obstacles) {
-      let marker = this.make_obstacle_marker(obstacle, this.stationary_obstacle_color,
-        this.stationary_obstacle_opacity);
+      let marker = this.make_obstacle_marker(obstacle, 
+        this.stationary_obstacle_color);
       this.stationary_obstacle_markers.push(marker);
     }
   }
@@ -87,38 +100,69 @@ class MapUi {
     }
     this.moving_obstacle_markers.length = 0;
     for (let obstacle of obstacles) {
-      let marker = this.make_obstacle_marker(obstacle, this.moving_obstacle_color,
-        this.moving_obstacle_opacity);
+      let marker = this.make_obstacle_marker(obstacle, 
+        this.moving_obstacle_color);
       this.moving_obstacle_markers.push(marker);
     }
   }
 
-  make_obstacle_marker(obstacle, color, opacity) {
+  make_obstacle_marker(obstacle, color) {
     let pos = {lat: obstacle.latitude, lng: obstacle.longitude};
-    var marker = new google.maps.Marker({
+    let radius_feet = obstacle.cylinder_radius || obstacle.sphere_radius
+    let marker = new google.maps.Marker({
       position: pos,
-      map: this.map
+      map: this.map,
+      opacity: 0.4,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 6
+      }
+    });
+    let infowindow = new google.maps.InfoWindow({
+      content: 'Lat: ' + obstacle.latitude + '<br>' + 
+               'Lng: ' + obstacle.longitude + '<br>' +
+               'Radius: ' + radius_feet + ' ft'
+    });
+    marker.addListener('click', function() {
+      infowindow.open(this.map, marker);
+    });
+    google.maps.event.addListener(this.map, "click", function(event) {
+      infowindow.close();
     });
     let circle = new google.maps.Circle({
       fillColor: color,
-      fillOpacity: opacity,
+      fillOpacity: 0.6,
+      strokeWeight: 2,
       map: this.map,
-      radius: obstacle.cylinder_radius || obstacle.sphere_radius
+      radius: radius_feet * METERS_PER_FOOT
     });
     circle.bindTo('center', marker, 'position');
-    return {marker: marker, circle: circle};
+    return {
+      marker: marker,
+      circle: circle,
+      infowindow: infowindow,
+      obstacle: obstacle
+    };
   }
 
   update_moving_obstacles(obstacles) {
     if (obstacles.length !== this.moving_obstacle_markers.length) {
-      console.log("ERROR: moving obstacle lists differ!");
-      return;
+      return false;
     }
     for (let i = 0; i < obstacles.length; i++) {
-      this.moving_obstacle_markers[i].marker.setPosition({
+      let marker = this.moving_obstacle_markers[i];
+      if (obstacles[i].sphere_radius !== marker.obstacle.sphere_radius)
+        return false;
+      marker.marker.setPosition({
         lat: obstacles[i].latitude, lng: obstacles[i].longitude
       });
+      marker.infowindow.setContent(
+        'Lat: ' + obstacles[i].latitude + '<br>' + 
+        'Lng: ' + obstacles[i].longitude + '<br>' +
+        'Radius: ' + obstacles[i].sphere_radius + ' ft'
+      );
     }
+    return true;
   }
 
   rad(x) {
@@ -166,7 +210,9 @@ class Communicator {
     this.socket.on('telemetry', function(telemetry) {
       console.log("got something!");
       ground_interface.map_ui.update_drone_position(
-          Number(telemetry["gps_lat"]), Number(telemetry["gps_lng"]));
+          Number(telemetry["gps_lat"]),
+          Number(telemetry["gps_lng"]),
+          Number(telemetry["heading"]));
 
       if(telemetry["armed"] == "False") {
         $("#armed_indicator").text("Disarmed");
@@ -200,7 +246,10 @@ class Communicator {
     });
 
     this.socket.on('moving_obstacles', function(moving_obstacles) {
-      ground_interface.map_ui.update_moving_obstacles(moving_obstacles)
+      if (!ground_interface.map_ui.update_moving_obstacles(moving_obstacles)) {
+        console.log("Different moving obstacles received.");
+        ground_interface.map_ui.set_moving_obstacles(moving_obstacles);
+      }
     });
   }
 
