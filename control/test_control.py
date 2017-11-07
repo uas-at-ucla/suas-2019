@@ -1,8 +1,10 @@
 import os
 # Start off fresh by making sure that our working directory is the same as the
 # directory that this script is in.
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
+dname = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dname)
 
+import pickle
 import sys
 sys.dont_write_bytecode = True
 sys.path.insert(0, '../util')
@@ -59,11 +61,20 @@ class TestControl(unittest.TestCase):
 
         test_commander.start_mission()
 
+        test_commander.stop()
+        pickle_location = dname+'/commander/mission.pickle'
+        if not os.path.isfile(pickle_location):
+            print("Did not find mission pickle!")
+        with open(pickle_location, "rb") as f:
+            mission_commands = pickle.load(f)
+            print("Found pickle")
+
     def test_copter_interface_init(self):
         drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
         copter = copter_interface.CopterInterface(drone_address)
 
-        time.sleep(12.0)
+        while not copter.vehicle.is_armable:
+            time.sleep(1.0)
 
         sensors = copter.sensor_reader.sensors.get()
 
