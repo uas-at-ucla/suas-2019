@@ -46,7 +46,7 @@ class MapUi {
       position: field,
       icon: {
         url: "/css/drone_marker.svg",
-        anchor: new google.maps.Point(75, 78)
+        anchor: new google.maps.Point(50, 50)
       }
     });
 
