@@ -37,6 +37,14 @@ class MapUi {
       }
     });
 
+    this.stationary_obstacle_markers = [];
+    this.stationary_obstacle_color = '#FF0000';
+    this.stationary_obstacle_opacity = 0.6;
+    this.moving_obstacle_markers = [];
+    this.moving_obstacle_color = '#0000FF';
+    this.moving_obstacle_opacity = 0.6;
+
+
     var self = this;
 
     // Always keep drone in the center of view, even after resizing.
@@ -57,6 +65,60 @@ class MapUi {
 
   pan_to_drone() {
     this.map.panTo(this.drone_marker.getPosition());
+  }
+
+  set_stationary_obstacles(obstacles) {
+    for (let marker of this.stationary_obstacle_markers) {
+      marker.marker.setMap(null);
+      marker.circle.setMap(null);
+    }
+    this.stationary_obstacle_markers.length = 0;
+    for (let obstacle of obstacles) {
+      let marker = this.make_obstacle_marker(obstacle, this.stationary_obstacle_color,
+        this.stationary_obstacle_opacity);
+      this.stationary_obstacle_markers.push(marker);
+    }
+  }
+
+  set_moving_obstacles(obstacles) {
+    for (let marker of this.moving_obstacle_markers) {
+      marker.marker.setMap(null);
+      marker.circle.setMap(null);
+    }
+    this.moving_obstacle_markers.length = 0;
+    for (let obstacle of obstacles) {
+      let marker = this.make_obstacle_marker(obstacle, this.moving_obstacle_color,
+        this.moving_obstacle_opacity);
+      this.moving_obstacle_markers.push(marker);
+    }
+  }
+
+  make_obstacle_marker(obstacle, color, opacity) {
+    let pos = {lat: obstacle.latitude, lng: obstacle.longitude};
+    var marker = new google.maps.Marker({
+      position: pos,
+      map: this.map
+    });
+    let circle = new google.maps.Circle({
+      fillColor: color,
+      fillOpacity: opacity,
+      map: this.map,
+      radius: obstacle.cylinder_radius || obstacle.sphere_radius
+    });
+    circle.bindTo('center', marker, 'position');
+    return {marker: marker, circle: circle};
+  }
+
+  update_moving_obstacles(obstacles) {
+    if (obstacles.length !== this.moving_obstacle_markers.length) {
+      console.log("ERROR: moving obstacle lists differ!");
+      return;
+    }
+    for (let i = 0; i < obstacles.length; i++) {
+      this.moving_obstacle_markers[i].marker.setPosition({
+        lat: obstacles[i].latitude, lng: obstacles[i].longitude
+      });
+    }
   }
 
   rad(x) {
@@ -131,9 +193,14 @@ class Communicator {
           self.round(telemetry["heading"], 7));
     });
 
-    this.socket.on('missions', function(missions) {
-      console.log("got missions!");
-      // $("#missions_text").text(missions);
+    this.socket.on('missions_and_obstacles', function(data) {
+      ground_interface.map_ui.set_stationary_obstacles(
+        data.stationary_obstacles);
+      ground_interface.map_ui.set_moving_obstacles(data.moving_obstacles)
+    });
+
+    this.socket.on('moving_obstacles', function(moving_obstacles) {
+      ground_interface.map_ui.update_moving_obstacles(moving_obstacles)
     });
   }
 
