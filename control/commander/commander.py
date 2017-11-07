@@ -2,6 +2,7 @@ import os
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
 
+import pickle
 import sys
 sys.dont_write_bytecode = True
 sys.path.insert(0, dname + '/../flight_control')
@@ -43,6 +44,11 @@ class Commander:
 
     def stop(self):
         self.copter.stop()
+        self.save_mission_to_file()
+
+    def save_mission_to_file(self):
+        with open(dname+'/mission.pickle', 'wb') as f:
+            pickle.dump(self.commands, f, pickle.HIGHEST_PROTOCOL)
 
     def add_command(self, command):
         with self.commands_lock:
