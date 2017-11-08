@@ -12,7 +12,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import sys
 sys.stderr = open('/dev/null', 'w')
 
-USE_INTEROP = True
+USE_INTEROP = False
 
 sys.dont_write_bytecode = True
 
