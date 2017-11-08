@@ -118,6 +118,12 @@ class MapUi {
         scale: 6
       }
     });
+    marker.addListener('mouseover', function() {
+      marker.setOpacity(1);
+    });
+    marker.addListener('mouseout', function() {
+      marker.setOpacity(0.4);
+    });
     let infowindow = new google.maps.InfoWindow({
       content: 'Lat: ' + obstacle.latitude + '<br>' + 
                'Lng: ' + obstacle.longitude + '<br>' +
