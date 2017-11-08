@@ -12,7 +12,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import sys
 sys.stderr = open('/dev/null', 'w')
 
-USE_INTEROP = False
+USE_INTEROP = True
 
 sys.dont_write_bytecode = True
 
@@ -38,15 +38,18 @@ if USE_INTEROP:
     interop_url='http://localhost:8000'
     interop_username='testuser'
     interop_password='testpass'
-    try:
-        interop_client = interop.AsyncClient( \
-            url=interop_url, \
-            username=interop_username, \
-            password=interop_password)
-    except Exception as e:
-        print('Interop Server not running!')
-        interop_client = None
-
+    interop_client = None
+    for i in range(20):
+        try:
+            interop_client = interop.AsyncClient( \
+                url=interop_url, \
+                username=interop_username, \
+                password=interop_password)
+            print('Ground Station connected to Interop Server!')
+            break
+        except Exception as e:
+            print('Waiting for Interop Server...')
+            time.sleep(1)
 
 def signal_received(signal, frame):
     global stopped
