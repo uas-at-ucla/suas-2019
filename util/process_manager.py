@@ -4,7 +4,6 @@ sys.dont_write_bytecode = True
 import subprocess
 import os
 import signal
-import time
 
 # This class assists in spawning multiple processes and terminating all these
 # processes when a program exits.
@@ -27,7 +26,10 @@ class ProcessManager:
 
     def killall(self):
         for proc in self.procs:
-            os.killpg(os.getpgid(proc.pid), signal.SIGINT)
+            try:
+                os.killpg(os.getpgid(proc.pid), signal.SIGINT)
+            except:
+                pass
 
     def run_command(self, command, rel_cwd=None):
         cwd = self.get_cwd(rel_cwd)
