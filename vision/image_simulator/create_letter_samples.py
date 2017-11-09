@@ -8,14 +8,8 @@ Author: Amit Aides, Ahmad Kiswani
 License: See attached license file
 """
 
-
-
 from __future__ import division
 import argparse
-
-import sys
-sys.path.append('/Users/ruchapatki/Documents/School/COLLEGE/UAS/auvsi-targets') #the directory that contains my_pk
-
 import AUVSItargets
 import AUVSItargets.global_settings as gs
 import cv2
@@ -60,6 +54,7 @@ def main(jobs):
     os.makedirs(dst_folder)
 
     img_index = 0
+    print gs.LETTER_LABELS
     for img_path, data_path in zip(imgs_paths, data_paths):
 
         print 'Extracting patches from image', img_path
@@ -97,13 +92,14 @@ def create_patch(patch, img, latitude, longitude, yaw):
     if letter_label != 'no target':
         if letter_label == 'rotated letter':
             dangle = random.randint(45, 315)
+            randomLetter = 'rotated letter'
         else:
             dangle = random.randint(-5, 5)
 
         #
         # Paste a rotatedrandom target on the patch
         #
-        target, _, _ = AUVSItargets.randomTarget(
+        target, _, _, randomLetter = AUVSItargets.randomTarget(
             altitude=0,
             longitude=longitude,
             latitude=latitude,
@@ -115,6 +111,8 @@ def create_patch(patch, img, latitude, longitude, yaw):
         br = AUVSItargets.squareCoords(br, noise=False)
         patch = patch[br[1]:br[3], br[0]:br[2], ...]
 
+    else:
+        randomLetter = 'no target'
     #
     # Mask out the letter and tight crop.
     #
@@ -131,9 +129,9 @@ def create_patch(patch, img, latitude, longitude, yaw):
         print(traceback.format_exc())
         return None, None
 
-    print gs.LETTER_LABELS.index(letter_label)
+    print gs.LETTER_LABELS.index(randomLetter)
 
-    return mask, gs.LETTER_LABELS.index(letter_label)
+    return mask, gs.LETTER_LABELS.index(randomLetter)
 
 
 if __name__ == '__main__':
