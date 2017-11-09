@@ -128,12 +128,34 @@ class SensorReader:
         self.sensors = Sensors()
         self.should_run = True
 
+        self.communications_socket = None
+        self.send_telemetry_frequency = 3
+
         self.reading_thread = thread.start_new_thread(self.read_telemetry, ())
 
+    def set_communications_socket(self, communications_socket):
+        self.communications_socket = communications_socket
+
     def read_telemetry(self):
+        loop_num = 0
         while self.should_run:
             self.sensors.set(self.vehicle, self.controller)
+            if (loop_num == self.send_telemetry_frequency):
+                loop_num = 0
+                self.send_telemetry()
+            loop_num += 1
             time.sleep(0.1)
+
+    def send_telemetry(self):
+        if (self.communications_socket):
+            sensors = self.sensors.get()
+
+            sensors_to_send = dict()
+
+            for key in sensors:
+                sensors_to_send[key] = sensors[key].get()
+
+            self.communications_socket.emit('send_telemetry', sensors_to_send)
 
     def stop(self):
         self.should_run = False
@@ -159,7 +181,7 @@ class Controller:
 
     def print_debug(self, message):
         msg = "(controller @ " + str(datetime.now()) + ") " + message
-        print msg
+        print(msg)
 
     def set_state(self, state):
         with self.state_lock:
@@ -181,24 +203,24 @@ class Controller:
                                          time.time() - last_loop))
         return time.time()
 
-    def check_velocity_control(self):
-        return # TODO(comran): Remove this later.
+#   def check_velocity_control(self):
+#       return # TODO(comran): Remove this later.
 
-        # Make sure we are not sending stale commands.
-        with self.vel_lock:
-            if self.last_velocity is not None:
-                diff = time.time() - self.last_velocity
-                self.print_debug("Age of last velocity control from server: "
-                        + str(diff))
+#       # Make sure we are not sending stale commands.
+#       with self.vel_lock:
+#           if self.last_velocity is not None:
+#               diff = time.time() - self.last_velocity
+#               self.print_debug("Age of last velocity control from server: "
+#                       + str(diff))
 
-                if diff > 0.25:
-                    # Warn when velocity control starts to lag.
-                    self.print_debug("Velocity control is lagging... " \
-                            + "diff: " + str(diff))
-                if diff > 0.50:
-                    self.print_debug("VELOCITY CONTROL IS STALE, FS ENABLED")
-                    return True
-            return False
+#               if diff > 0.25:
+#                   # Warn when velocity control starts to lag.
+#                   self.print_debug("Velocity control is lagging... " \
+#                           + "diff: " + str(diff))
+#               if diff > 0.50:
+#                   self.print_debug("VELOCITY CONTROL IS STALE, FS ENABLED")
+#                   return True
+#           return False
 
     def set_velocity(self, velocity_x, velocity_y, velocity_z):
         # Move vehicle in direction based on specified velocity vectors.
@@ -251,9 +273,9 @@ class Controller:
 
             # Log any change in state.
 
-            if current_state != "STANDBY" and self.check_velocity_control():
-                self.set_state("FAILSAFE")
-                current_state = "FAILSAFE"
+#           if current_state != "STANDBY" and self.check_velocity_control():
+#               self.set_state("FAILSAFE")
+#               current_state = "FAILSAFE"
 
             # Drone state machine.
             if current_state == "STANDBY":
@@ -368,7 +390,7 @@ class CopterInterface:
                 break
             time.sleep(0.1)
 
-        print "Armed!"
+        print("Armed!")
 
         self.controller.set_state("TAKEOFF")
 
@@ -377,7 +399,7 @@ class CopterInterface:
                 break
             time.sleep(0.1)
 
-        print "Taken off!"
+        print("Taken off!")
 
         self.controller.set_state("VELOCITY CONTROL")
 
@@ -389,25 +411,36 @@ class CopterInterface:
 
         while True:
             sensors = self.sensor_reader.sensors.get()
+            gps_lat = sensors["gps_lat"].get()
+            gps_lng = sensors["gps_lng"].get()
+            gps_rel_alt = sensors["gps_rel_alt"].get()
 
-            if abs(lat - sensors["gps_lat"].get()) < 0.00001 and \
-               abs(lng - sensors["gps_lng"].get()) < 0.00001 and \
-               abs(alt - sensors["gps_rel_alt"].get()) < 0.1:
+            if gps_lat is None or \
+               gps_lng is None or \
+               gps_rel_alt is None:
+                time.sleep(0.1)
+                continue
+
+            if abs(lat - gps_lat) < 0.00001 and \
+               abs(lng - gps_lng) < 0.00001 and \
+               abs(alt - gps_rel_alt) < 0.1:
                break
 
-            vx = lat - sensors["gps_lat"].get()
-            vy = lng - sensors["gps_lng"].get()
-            vz = sensors["gps_rel_alt"].get() - alt
+            vx = lat - gps_lat
+            vy = lng - gps_lng
+            vz = gps_rel_alt - alt
 
             vx *= 20000
             vy *= 20000
 
             self.controller.set_velocity(vx, vy, vz)
 
-            print "vx: " + str(vx) + " vy: " + str(vy) + " vz: " + str(vz) + \
-                  " lat: " + str(sensors["gps_lat"].get()) + \
-                  " lng: " + str(sensors["gps_lng"].get()) + \
-                  " alt: " + str(sensors["gps_rel_alt"].get())
+            print("vx: " + "%6s" % str("%0.1f" % vx) + \
+                  " vy: " + "%6s" % str("%0.1f" % vy) + \
+                  " vz: " + "%6s" % str("%0.1f" % vz) + \
+                  " lat: " + "%11s" % str("%0.7f" % gps_lat) + \
+                  " lng: " + "%11s" % str("%0.7f" % gps_lng) + \
+                  " alt: " + "%6s" % str("%0.2f" % gps_rel_alt))
 
             time.sleep(0.1)
 

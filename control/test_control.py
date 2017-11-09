@@ -1,14 +1,18 @@
 import os
-abspath = os.path.abspath(__file__)
-dname = os.path.dirname(abspath)
+# Start off fresh by making sure that our working directory is the same as the
+# directory that this script is in.
+dname = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dname)
 
+import pickle
 import sys
 sys.dont_write_bytecode = True
-sys.path.insert(0, dname + '/../util')
-sys.path.insert(0, dname + '/flight_control')
-sys.path.insert(0, dname + '/commander')
+sys.path.insert(0, '../util')
+sys.path.insert(0, 'flight_control')
+sys.path.insert(0, 'commander')
 import time
 import signal
+import urllib
 import unittest
 from unittest import TestLoader, TestSuite, TextTestRunner
 
@@ -18,31 +22,58 @@ import commander
 
 class TestControl(unittest.TestCase):
     def setUp(self):
+        self.USE_INTEROP = False
+
         self.test_drone = process_manager.ProcessManager()
-        signal.signal(signal.SIGINT, self.test_drone.killall_signalled)
+
+        signal.signal(signal.SIGINT, self.kill_processes_and_exit)
 
     def tearDown(self):
-        self.test_drone.killall()
+        self.kill_processes()
 
     def tearDownModule(self):
-        self.test_drone.killall()
+        self.kill_processes()
 
     def test_commander(self):
-        drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
-        copter = commander.Commander(drone_address)
-        self.assertTrue(True)
+        if self.USE_INTEROP:
+            self.test_drone.spawn_process("python ../ground/run_interop.py")
 
-        copter.add_command(commander.TakeoffCommand())
-        copter.add_command(commander.GotoCommand(0.002, 0.001, 100))
-        copter.start_mission()
+        self.test_drone.spawn_process("python ../ground/feed_interface.py")
+        self.test_drone.spawn_process("python ../ground/serve_www.py")
+        self.test_drone.spawn_process( \
+                "python commander/drone_communications.py")
 
-        copter.stop()
+        init_lat = 38.1470000;
+        init_lng = -76.4284722;
+        drone_address = self.spawn_simulated_drone(init_lat, init_lng, 0.0, 0)
+
+        test_commander = commander.Commander(drone_address)
+        unittest.registerResult(test_commander)
+
+        test_commander.add_command(commander.TakeoffCommand())
+
+        DEVIATION = 0.005
+
+        test_commander.add_command(commander.GotoCommand(init_lat + DEVIATION, \
+                                                         init_lng + DEVIATION, \
+                                                         100))
+
+        test_commander.start_mission()
+
+        test_commander.stop()
+        pickle_location = dname+'/commander/mission.pickle'
+        if not os.path.isfile(pickle_location):
+            print("Did not find mission pickle!")
+        with open(pickle_location, "rb") as f:
+            mission_commands = pickle.load(f)
+            print("Found pickle")
 
     def test_copter_interface_init(self):
         drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
         copter = copter_interface.CopterInterface(drone_address)
 
-        time.sleep(12.0)
+        while not copter.vehicle.is_armable:
+            time.sleep(1.0)
 
         sensors = copter.sensor_reader.sensors.get()
 
@@ -65,96 +96,29 @@ class TestControl(unittest.TestCase):
 
         copter.stop()
 
-    def test_copter_interface_takeoff_and_land(self):
-        drone_address = self.spawn_simulated_drone(0.0, 0.0, 0.0, 0)
-        copter = copter_interface.CopterInterface(drone_address)
-
-        time.sleep(4.0)
-
-        sensors = copter.sensor_reader.sensors.get()
-        print(sensors["state"].get())
-        self.assertTrue(sensors["state"].get() == "STANDBY")
-        self.assertTrue(sensors["armed"].get() == "False")
-
-        copter.controller.set_state("ARM")
-
-        for i in range(0, 18):
-            sensors = copter.sensor_reader.sensors.get()
-            print("Last heartbeat: " + str(sensors["last_heartbeat"].get()) + \
-                  " State: " + copter.controller.get_state())
-            time.sleep(1.0)
-
-        # Make sure we get stable values after flight controller initialization.
-        sensors = copter.sensor_reader.sensors.get()
-
-        self.assertTrue(sensors["state"].get() == "ARMED")
-        self.assertTrue(sensors["armed"].get() == "True")
-        self.assertGreater(sensors["voltage"].get(), 12.3)
-        self.assertLess(abs(sensors["gps_rel_alt"].get()), 0.1)
-        self.assertGreater(sensors["gps_satellites"].get(), 8)
-
-        copter.controller.set_state("TAKEOFF")
-
-        print("Taking off!")
-
-        for i in range(0, 10):
-            sensors = copter.sensor_reader.sensors.get()
-
-            print("Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
-                  " Lng: " + '%9s' % str(sensors["gps_lng"].get()) + \
-                  " Alt: " + '%9s' % str(sensors["gps_alt"].get()) + \
-                  " Ground speed: " + '%9s' % str( \
-                      sensors["ground_speed"].get()))
-
-            time.sleep(1.0)
-
-        self.assertLess(abs(3.0 - abs(sensors["gps_rel_alt"].get())), 0.1)
-
-        copter.controller.set_state("VELOCITY CONTROL")
-
-        print("Switching to velocity control!")
-
-        for i in range(0, 10):
-            sensors = copter.sensor_reader.sensors.get()
-
-            print("Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
-                  " Lng: " + '%9s' % str(sensors["gps_lng"].get()) + \
-                  " Alt: " + '%9s' % str(sensors["gps_alt"].get()) + \
-                  " Ground speed: " + '%9s' % str(
-                      sensors["ground_speed"].get()))
-
-            time.sleep(1.0)
-
-        print("Landing!")
-        copter.controller.set_state("LAND")
-
-        for i in range(0, 12):
-            sensors = copter.sensor_reader.sensors.get()
-
-            print("Lat: " + '%9s' % str(sensors["gps_lat"].get()) + \
-                  " Lng: " + '%9s' % str(sensors["gps_lng"].get()) + \
-                  " Alt: " + '%9s' % str(sensors["gps_alt"].get()) + \
-                  " Ground speed: " + '%9s' % str(
-                      sensors["ground_speed"].get()))
-
-            time.sleep(1.0)
-
-        self.assertTrue(sensors["state"].get() == "LANDED")
-        self.assertLess(abs(sensors["gps_rel_alt"].get()), 0.3)
-
-        copter.stop()
-
     def spawn_simulated_drone(self, lat, lng, alt, instance):
         self.test_drone.spawn_process("python " + \
-                dname + "/flight_control/simulate_copter.py " + \
+                "flight_control/dronekit-sitl/dronekit_sitl/__init__.py " + \
                 "copter " + \
                 "--home " + str(lat) + "," \
                           + str(lng) + "," \
                           + str(alt) + ",0 " + \
                 "--instance " + str(instance))
 
+        # Wait to make sure the simulated drone is completely set up before
+        # continuing.
+        time.sleep(2.0)
+
         port = 5760 + 10 * instance
         return "tcp:127.0.0.1:" + str(port)
+
+    def kill_processes(self):
+        self.test_drone.killall()
+
+    def kill_processes_and_exit(self, signal, frame):
+        print "Exiting"
+        self.kill_processes()
+        exit(0)
 
 if __name__ == "__main__":
     loader = TestLoader()
