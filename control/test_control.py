@@ -12,7 +12,6 @@ sys.path.insert(0, 'flight_control')
 sys.path.insert(0, 'commander')
 import time
 import signal
-import urllib
 import unittest
 from unittest import TestLoader, TestSuite, TextTestRunner
 
@@ -22,7 +21,7 @@ import commander
 
 class TestControl(unittest.TestCase):
     def setUp(self):
-        self.USE_INTEROP = False
+        self.USE_INTEROP = True
 
         self.test_drone = process_manager.ProcessManager()
 
