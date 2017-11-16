@@ -150,6 +150,20 @@ Execute Python scripts.
 python ./file_name.py
 ```
 
+### Interoperability System
+The Interoperability System is provided by AUVSI. Read about it [here](https://github.com/auvsi-suas/interop).
+
+To use the interop server, first install Docker:
+- On Linux, run ```./ground/interop/tools/setup_docker.sh```
+- On other operating systems, install Docker from [docker.com](https://www.docker.com)
+
+Next, retrieve the Docker image:
+```bash
+docker pull auvsisuas/interop-server
+```
+To start the interop server, run ```python ground/run_interop.py```.
+To stop it, type CTRL+C.
+
 ## Other Reads
 Each directory - control, vision, ground - contains their own README.md
 file. Depending on what sub-team you are in, those README.md files will list out
