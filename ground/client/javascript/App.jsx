@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
 class App extends Component {
 
@@ -6,6 +6,7 @@ class App extends Component {
     return (
       <div className="App">
         <h1>Hello from React!</h1>
+        <h2>This needs to sync automatically</h2>
       </div>
     );
   }

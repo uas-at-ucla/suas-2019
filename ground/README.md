@@ -5,10 +5,27 @@ intuitive web application, in which the user click on points in the map and the
 drone will take that flight route.
 
 # Content
+* Installation
+* Compilation
 * Framework
 * Competition Rules
 * Other Teams Ground Control Software
 * Platforms and Libraries
+
+## Installation
+   Needs to be updated to automatically install Python dependencies and such.
+   ```bash
+   chmod +x install.sh
+   ./install.sh
+   ```
+
+## Compilation
+   Problem: React.js webpack needs to be fixed so front-end edits are
+   instantaneously displayed.
+   ```bash
+   chmod +x launch.sh
+   ./launch.sh
+   ```
 
 ## Framework
 * Hardware: Communications system and firmware
@@ -17,8 +34,8 @@ drone will take that flight route.
     code for other ground control applications. See MavProxy.
 * Back-end: [Interoperability
   System](http://auvsi-suas-competition-interoperability-system.readthedocs.io/en/latest/),
-  Flask Framework
-* Front-end: TBD
+  Flask Framework, MySQL (future expansion)
+* Front-end: React.js
 
 ## Competition Rules
 * [Competition rules](https://github.com/uas-at-ucla/suas_2018/blob/master/ground/pdfs/comp_rules.pdf) pertaining to the ground station. Read the following pages:
