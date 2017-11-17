@@ -1,0 +1,4 @@
+todo:
+
+Move all python files to server for cleaner directory
+Need to remove www directory when successful transfer is complete
