@@ -69,7 +69,7 @@ def connect():
             'moving_obstacles': moving_obstacles})
         flask_socketio.emit('missions_and_obstacles', data)
 
-@interface_socketio.on('request_broadcast_moving_obstacles')
+@interface_socketio.on('moving_obstacles')
 def broadcast_moving_obstacles(moving_obstacles):
     flask_socketio.emit('moving_obstacles', moving_obstacles, \
         broadcast=True, include_self=False)
@@ -79,9 +79,10 @@ def refresh_moving_obstacles():
     interface_client = socketIO_client.SocketIO('0.0.0.0', 8084)
     while True:
         time.sleep(1)
-        moving_obstacles = interop_client.get_obstacles().result()[1]
-        interface_client.emit('request_broadcast_moving_obstacles', \
-            object_to_dict(moving_obstacles))
+        if interop_client is not None:
+            moving_obstacles = interop_client.get_obstacles().result()[1]
+            interface_client.emit('moving_obstacles', \
+                object_to_dict(moving_obstacles))
 
 def object_to_dict(my_object):
     return json.loads(json.dumps(my_object, default=lambda o: o.__dict__))
@@ -108,7 +109,7 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
     _thread.start_new_thread(listen_for_communications, ())
-    if USE_INTEROP and interop_client is not None:
+    if USE_INTEROP:
         _thread.start_new_thread(refresh_moving_obstacles, ())
 
     interface_socketio.run(app, '0.0.0.0', port = 8084)
