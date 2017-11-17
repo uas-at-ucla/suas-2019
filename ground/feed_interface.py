@@ -10,7 +10,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 #                                                                              #
 ################################################################################
 import sys
-sys.stderr = open('/dev/null', 'w')
+# sys.stderr = open('/dev/null', 'w')
 
 USE_INTEROP = True
 
@@ -60,18 +60,43 @@ def signal_received(signal, frame):
 def connect():
     print("Ground interface connected!")
     if USE_INTEROP and interop_client is not None:
-        missions = interop_client.get_missions().result()
-        stationary_obstacles, moving_obstacles = \
-            interop_client.get_obstacles().result()
-        data = object_to_dict({ \
-            'missions': missions, \
-            'stationary_obstacles': stationary_obstacles, \
-            'moving_obstacles': moving_obstacles})
-        flask_socketio.emit('missions_and_obstacles', data)
+        try:
+            missions = interop_client.get_missions().result()
+            stationary_obstacles, moving_obstacles = \
+                interop_client.get_obstacles().result()
+            data = object_to_dict({ \
+                'missions': missions, \
+                'stationary_obstacles': stationary_obstacles, \
+                'moving_obstacles': moving_obstacles, \
+                'interop_connected': True})
+            flask_socketio.emit('initial_data', data)
+            return
+        except:
+            global interop_client
+            interop_client = None
+    flask_socketio.emit('initial_data', {'interop_connected': False})
+
+@interface_socketio.on('connect_to_interop')
+def connect_to_interop():
+    if USE_INTEROP:
+        try:
+            global interop_client
+            interop_client = interop.AsyncClient( \
+                url=interop_url, \
+                username=interop_username, \
+                password=interop_password)
+            flask_socketio.emit('interop_connected', True)
+        except:
+            flask_socketio.emit('interop_connected', False)      
 
 @interface_socketio.on('moving_obstacles')
 def broadcast_moving_obstacles(moving_obstacles):
     flask_socketio.emit('moving_obstacles', moving_obstacles, \
+        broadcast=True, include_self=False)
+
+@interface_socketio.on('interop_disconnected')
+def interop_disconnected():
+    flask_socketio.emit('interop_connected', False, \
         broadcast=True, include_self=False)
 
 def refresh_moving_obstacles():
@@ -80,9 +105,14 @@ def refresh_moving_obstacles():
     while True:
         time.sleep(1)
         if interop_client is not None:
-            moving_obstacles = interop_client.get_obstacles().result()[1]
-            interface_client.emit('moving_obstacles', \
+            try:
+                moving_obstacles = interop_client.get_obstacles().result()[1]
+                interface_client.emit('moving_obstacles', \
                 object_to_dict(moving_obstacles))
+            except:
+                global interop_client
+                interop_client = None
+                interface_client.emit('interop_disconnected')
 
 def object_to_dict(my_object):
     return json.loads(json.dumps(my_object, default=lambda o: o.__dict__))

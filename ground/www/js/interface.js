@@ -282,13 +282,16 @@ class Communicator {
           self.round(telemetry["heading"], 7));
     });
 
-    this.socket.on('missions_and_obstacles', function(data) {
-      ground_interface.map_ui.set_stationary_obstacles(
-        data.stationary_obstacles);
-      ground_interface.map_ui.set_moving_obstacles(data.moving_obstacles);
-      var mission = data.missions[0];
-      for (var fly_zone of mission.fly_zones) {
-        ground_interface.map_ui.draw_boundary(fly_zone.boundary_pts);
+    this.socket.on('initial_data', (data) => {
+      this.received_interop_status(data.interop_connected);
+      if (data.interop_connected) {
+        ground_interface.map_ui.set_stationary_obstacles(
+          data.stationary_obstacles);
+        ground_interface.map_ui.set_moving_obstacles(data.moving_obstacles);
+        var mission = data.missions[0];
+        for (var fly_zone of mission.fly_zones) {
+          ground_interface.map_ui.draw_boundary(fly_zone.boundary_pts);
+        }
       }
     });
 
@@ -298,6 +301,26 @@ class Communicator {
         ground_interface.map_ui.set_moving_obstacles(moving_obstacles);
       }
     });
+
+    $('#interop_btn').click(() => {
+      $('#interop_btn').text("Connecting...");
+      $('#interop_btn').addClass('disabled');
+      this.socket.emit('connect_to_interop');
+    });
+
+    this.socket.on('interop_connected', (is_interop_connected) => 
+      this.received_interop_status(is_interop_connected));
+  }
+
+  received_interop_status(is_interop_connected) {
+    if (is_interop_connected) {
+      $('#interop_btn').text("Connected to Interop");
+      $('#interop_btn').addClass('disabled');
+    } else {
+      $('#interop_btn').text("Cannot Connect to Interop Server!");
+      $('#interop_btn').removeClass('disabled');
+      setTimeout(() => $('#interop_btn').text("Connect to Interop"), 1000); 
+    }
   }
 
   convert_to_title_text(str) {
