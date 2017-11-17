@@ -12,7 +12,6 @@ sys.path.insert(0, 'flight_control')
 sys.path.insert(0, 'commander')
 import time
 import signal
-import urllib
 import unittest
 from unittest import TestLoader, TestSuite, TextTestRunner
 
