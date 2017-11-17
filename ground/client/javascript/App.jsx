@@ -5,8 +5,12 @@ class App extends Component {
   render() {
     return (
       <div className="App">
-        <h1>Hello from React!</h1>
-        <h2>This needs to sync automatically</h2>
+
+        <p>Hot reload</p>
+        <p>Hello!</p>
+        <p>Testing</p>
+        <p>Test</p>
+        <p>Test</p>
       </div>
     );
   }
