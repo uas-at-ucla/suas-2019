@@ -9,11 +9,11 @@ class MapUi {
       zoom : 16,
       tilt : 0,
       disableDefaultUI : true,
-      scrollwheel : false,
+      scrollwheel : true,
       navigationControl : false,
       mapTypeControl : false,
-      scaleControl : false,
-      draggable : false,
+      scaleControl : true,
+      draggable : true,
       styles : map_style,
     });
 
@@ -25,10 +25,17 @@ class MapUi {
       },
       tileSize: new google.maps.Size(256, 256),
       name: "LocalMyGmap",
-      maxZoom: 19
+      maxZoom: 16,
+      minZoom: 0
     }));
 
     this.map.setMapTypeId("offline_gmap");
+
+    $('#map').resize(() => {
+      var center = this.map.getCenter();
+      google.maps.event.trigger(this.map, "resize");
+      this.map.panTo(center);
+    });
 
     this.drone_marker_icon = {
       path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
@@ -53,13 +60,24 @@ class MapUi {
     this.stationary_obstacle_markers = [];
     this.stationary_obstacle_color = '#FF0000';
     this.moving_obstacle_markers = [];
-    this.moving_obstacle_color = '#0000FF';
+    this.moving_obstacle_color = '#FFA500';
 
     var self = this;
 
+    this.follow_drone = true;
+    $('#follow_drone_btn').click(() => {
+      this.follow_drone = true;
+      self.pan_to_drone();
+    });
+    this.map.addListener('dragstart', function() {
+      this.follow_drone = false;
+    });
+
     // Always keep drone in the center of view, even after resizing.
     google.maps.event.addListener(self.map, 'bounds_changed', function() {
-      self.pan_to_drone();
+      if (this.follow_drone) {
+        self.pan_to_drone();
+      }
     });
   }
 
@@ -72,12 +90,31 @@ class MapUi {
     this.drone_background_marker.setPosition(new_position);
 
     if(this.get_distance(new_position, this.map.getCenter()) > 50.0) {
-      this.pan_to_drone();
+      if (this.follow_drone) {
+        this.pan_to_drone();
+      }
     }
   }
 
   pan_to_drone() {
     this.map.panTo(this.drone_marker.getPosition());
+  }
+
+  draw_boundary(boundary_pts) {
+    var boundary_coordinates = []
+    for (var pt of boundary_pts) {
+      boundary_coordinates.push({lat: pt.latitude, lng: pt.longitude});
+    }
+    var first_pt = boundary_pts[0];
+    boundary_coordinates.push({lat: first_pt.latitude, lng: first_pt.longitude});
+    var boundary = new google.maps.Polyline({
+      path: boundary_coordinates,
+      geodesic: true,
+      strokeColor: '#FF0000',
+      strokeOpacity: 0.7,
+      strokeWeight: 3,
+    });
+    boundary.setMap(this.map);
   }
 
   set_stationary_obstacles(obstacles) {
@@ -137,7 +174,7 @@ class MapUi {
     });
     let circle = new google.maps.Circle({
       fillColor: color,
-      fillOpacity: 0.6,
+      fillOpacity: 0.7,
       strokeWeight: 2,
       map: this.map,
       radius: radius_feet * METERS_PER_FOOT
@@ -248,7 +285,11 @@ class Communicator {
     this.socket.on('missions_and_obstacles', function(data) {
       ground_interface.map_ui.set_stationary_obstacles(
         data.stationary_obstacles);
-      ground_interface.map_ui.set_moving_obstacles(data.moving_obstacles)
+      ground_interface.map_ui.set_moving_obstacles(data.moving_obstacles);
+      var mission = data.missions[0];
+      for (var fly_zone of mission.fly_zones) {
+        ground_interface.map_ui.draw_boundary(fly_zone.boundary_pts);
+      }
     });
 
     this.socket.on('moving_obstacles', function(moving_obstacles) {
@@ -271,12 +312,32 @@ class Communicator {
   }
 }
 
+class BasicUi {
+  constructor() {
+    $('#sidebar').on('transitionend', (event) => {
+      if (event.target.id === 'sidebar') {
+        $('#map').trigger('resize');
+      }
+    });
+    $('#show_sidebar_btn').click(() => {
+      $('#sidebar').removeClass('hidden');
+      $('#sidebar_container').removeClass('hidden');
+      $('#show_sidebar_btn').addClass('hidden');
+    });
+    $('#hide_sidebar_btn').click(() => {
+      $('#sidebar').addClass('hidden');
+      $('#sidebar_container').addClass('hidden');
+      $('#show_sidebar_btn').removeClass('hidden');
+    });
+  }
+}
+
 class GroundInterface {
   // Manage all UI subcomponents that allow the interface to run.
 
   constructor() {
+    this.basic_ui = new BasicUi(this);
     this.map_ui = new MapUi(this);
-
     this.communicator = new Communicator(this);
   }
 }

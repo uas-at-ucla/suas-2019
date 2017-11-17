@@ -51,7 +51,6 @@ def main():
 def on_start_mission():
     drone_commander.start_mission()
     drone_commander.clear_commands()
-    drone_commander.add_command(commander.TakeoffCommand())
 
 def on_goto_command(*args):
     position = args[0]
