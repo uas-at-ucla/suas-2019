@@ -6,4 +6,7 @@
 # todo: Need to get map cached offline on react
 # todo: this needs to be updated when most python files are moved into server directory
 
-cd client && npm run build && cd .. && python run_ground.py
+cd client &&
+    npm run build &&
+    cd .. &&
+    python server/run_ground.py
