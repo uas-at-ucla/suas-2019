@@ -5,17 +5,10 @@ intuitive web application, in which the user click on points in the map and the
 drone will take that flight route.
 
 # Content
-* Installation
 * Framework
 * Competition Rules
 * Other Teams Ground Control Software
-* Extra Objectives
-* Timeline
-* Back-up Plan
 * Platforms and Libraries
-
-## Installation
-Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/ground/SETUP.md).
 
 ## Framework
 * Hardware: Communications system and firmware
@@ -44,23 +37,6 @@ Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/bl
   * 11th Place: [Alberta's custom ground control software](http://www.auvsi-suas.org/static/competitions/2017/journals/auvsi_suas-2017-journals-university_of_alberta.pdf). See pages 9, 10, 16.
   * 15th Place: [A school from Karnataka, India](http://www.auvsi-suas.org/static/competitions/2017/journals/auvsi_suas-2017-journals-ms_ramaiah.pdf). See pages 12, 13-14, 17.
   * All other schools mainly uesd either QGroundControl or Mission Planner.
-
-## Extra Objectives
-* For cyber security we can include mandatory account login if we are making our
-  ground station through the web - it will ask for username and password.
-* We would like to have a SQL database installed to store account information
-  and passwords, along with flight logs and history.
-
-## Timeline
-* Quarter 1: Research, construct a solid plan on firmware integration with the software, have a prototyping Flask framework ready.
-  * Goal: Have a working ground control software that communicates with the plane and can be tested.
-* Quarter 2: Code, code, and code.
-  * Goal: Have a complete ground control software by end of February.
-* Quarter 3: Testing, debugging, and adding extra features.
-  * Goal: Software should be able to complete all the objectives laid out by the competition rules.
-
-## Back-up Plan
-* Use an open source Linux ground control software.
 
 ## Platforms and Libraries
 See [other open source ground control
