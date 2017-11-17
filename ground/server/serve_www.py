@@ -24,7 +24,7 @@ except ImportError:
 # CONSTANTS ####################################################################
 SERVER_DOMAIN = "0.0.0.0"
 SERVER_PORT = 8080
-WWW_DIRECTORY_RELATIVE_LOCATION = "client" # Changed to client; www is temp
+WWW_DIRECTORY_RELATIVE_LOCATION = "../client" # Changed to client; www is temp
 ################################################################################
 
 # Start off fresh by making sure that our working directory is the same as the
