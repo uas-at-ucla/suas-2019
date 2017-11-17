@@ -3,3 +3,4 @@
 .DS_STORE
 *.pickle
 vision/image_simulator/output/
+ground/client/node_modules/
