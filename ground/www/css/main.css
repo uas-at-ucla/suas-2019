@@ -1,17 +1,31 @@
 html, body {
   width: 100%;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
-button {
+/*button {
   border: 0px;
   margin: 0px;
   padding: 5px;
   color: #FFFFFF;
+}*/
+
+/*html, body, button, p, h1, h2, h3, h4, h5, a, li {
+  font-family: lato;
+}*/
+
+.navbar {
+  -webkit-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.75);
+  box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.75);
+  background-color: #1e65ea;
+  z-index: 100;
 }
 
-html, body, button, p, h1, h2, h3, h4, h5, a, li {
-  font-family: lato;
+.navbar button {
+  margin-left: 10px;
 }
 
 .overlay {
@@ -29,94 +43,148 @@ html, body, button, p, h1, h2, h3, h4, h5, a, li {
   user-select: none;
 }
 
-#title {
-  pointer-events: none
-}
-
-#logo {
-  display: inline-block;
-
-  width: 360px;
-  height: 102px;
-
-  padding: 8px 0px 0px 2px;
-  margin-top: 30px;
-  margin-left: 30px;
-
-  background: url('/css/vector_logo.svg');
-  background-size: 360px 102px;
-  background-repeat: no-repeat;
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
 #title_description {
   text-align: center;
   position: relative;
   top: -5px;
 }
 
-#left_side {
-  position: absolute;
-  z-index: 10;
-  height: 100%;
-  margin: 0px 5px 0px 5px;
-  pointer-events: none;
-}
-
-#right_side {
-  position: absolute;
-  display: block;
-  width: 100%;
-  z-index: 10;
-  height: 100%;
-  text-align: right;
-  pointer-events: none;
-}
-
-#bottom {
-  position: absolute;
-  bottom: 0px;
+#content {
+  flex-grow: 1;
   display: flex;
-}
-
-#map {
+  flex-direction: row;
   width: 100%;
   height: 100%;
   z-index: 1;
 }
 
+#sidebar_container {
+  height: 100%;
+  width: 25vw;
+  min-width: 300px;
+  -webkit-box-shadow: 3px 0px 10px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 3px 0px 10px 0px rgba(0, 0, 0, 0.75);
+  box-shadow: 3px 0px 10px 0px rgba(0, 0, 0, 0.75);
+  z-index: 2;
+  transition: width 0.2s, min-width 0.2s;
+}
+
+#sidebar_container.hidden {
+  min-width: 0;
+  width: 0;
+}
+
+#sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 25vw;
+  min-width: 300px;
+  left: 0;
+  transition: 0.2s;
+}
+
+#sidebar.hidden {
+  transform: translateX(-100%);
+  overflow: hidden;
+}
+
+#screen {
+  position: relative;
+  height: 100%;
+  flex-grow: 1;
+}
+
+#map_buttons {
+  position: absolute;
+  z-index: 10;
+  margin: 5px;
+}
+
+#follow_drone_btn {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+#show_sidebar_btn {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+#show_sidebar_btn.hidden {
+  display: none;
+}
+
+#sidebar_title {
+  display:inline-block;
+  width: 100%;
+  background-color: #f8f9fa;
+  margin-bottom: 0;
+  -webkit-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.38);
+  -moz-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.38);
+  box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.38);
+  z-index: 10;
+}
+
+#sidebar_title_text {
+  display: inline-block;
+  margin: 8px;
+}
+
+#hide_sidebar_btn {
+  margin: 5px;
+  float: right;
+}
+
+#sidebar_content {
+  flex-grow: 1;
+  padding: 10px;
+  overflow: auto;
+}
+
+#sidebar .card {
+  margin-bottom: 10px;
+  border-color: #e2c63b;
+  border-width: 2px;
+  -webkit-box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.45);
+  -moz-box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.45);
+  box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.45);
+}
+
+#map {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+#telemetry {
+  position: absolute;
+  z-index: 10;
+  margin-top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  font-size: 16px;
+}
+
 #full_state {
   display: inline-block;
-  font-size: 50px;
-  margin-top: 30px;
-  margin-right: 30px;
-  background: rgba(0, 0, 0, 0.7);
-  padding:8px;
+  font-size: 24px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 #armed_indicator {
-  color: #FF6666;
+  color: #e2c63b;
   font-weight:bold;
 }
 
 #state_indicator {
-  color: #6666FF;
-}
-
-#telemetry {
-  display: inline-block;
-  margin-bottom: 30px;
-  margin-left: 30px;
-  background: rgba(0, 0, 0, 0.7);
-  color: #FFFFFF;
-  text-align: left;
-  font-size: 25px;
+  color: #4286f4;
 }
 
 #telemetry td {
-  padding: 8px;
+  padding-left: 8px;
+  padding-right: 8px;
 }
 
 #telemetry_important {
-  font-size: 45px;
+  font-size: 24px;
 }
