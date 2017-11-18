@@ -3,3 +3,6 @@
 .DS_STORE
 *.pickle
 vision/image_simulator/output/
+ground/client/node_modules/
+ground/client/dist/
+.tern-port

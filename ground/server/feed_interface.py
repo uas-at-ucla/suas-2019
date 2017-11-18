@@ -17,7 +17,7 @@ USE_INTEROP = True
 sys.dont_write_bytecode = True
 
 if USE_INTEROP:
-    sys.path.insert(0, 'interop/client')
+    sys.path.insert(0, '../interop/client')
 
 from flask import Flask, render_template
 import flask_socketio, socketIO_client
