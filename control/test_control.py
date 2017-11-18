@@ -35,10 +35,10 @@ class TestControl(unittest.TestCase):
 
     def test_commander(self):
         if self.USE_INTEROP:
-            self.test_drone.spawn_process("python ../ground/run_interop.py")
+            self.test_drone.spawn_process("python ../ground/server/run_interop.py")
 
-        self.test_drone.spawn_process("python ../ground/feed_interface.py")
-        self.test_drone.spawn_process("python ../ground/serve_www.py")
+        self.test_drone.spawn_process("python ../ground/server/feed_interface.py")
+        self.test_drone.spawn_process("python ../ground/server/serve_www.py")
         self.test_drone.spawn_process( \
                 "python commander/drone_communications.py")
 
