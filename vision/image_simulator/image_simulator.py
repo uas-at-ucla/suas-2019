@@ -39,18 +39,29 @@ class ImageSimulator:
 
     def generate_image(self, shape, i):
         background = self.fields[0]
-        backgroundWidth,backgroundHeight = background.size
+        backgroundWidth, backgroundHeight = background.size
+
+        scale = 0.15
+        backgroundWidth = int(float(backgroundWidth) * scale)
+        backgroundHeight = int(float(backgroundHeight) * scale)
+        background = background.resize(\
+                (backgroundWidth, backgroundHeight), \
+                Image.ANTIALIAS)
+
+        print("Image width: " + str(backgroundWidth) \
+                + " image heigth: " + str(backgroundHeight))
 
         # Make background copy, rotate to random angle
         backgroundCopy = background.copy()
-        angle = random.randint(0, 359)
+        #angle = random.randint(0, 359)
+        angle = 0
         target = self.targets[shape].rotate(angle)
 
         # Scale target size
-        scale = (random.randint(1, 15)) * 0.1
+        scale = (random.randint(12, 15)) * 0.1
         targetWidth, targetHeight = target.size
-        targetWidth = int(targetWidth * scale)
-        targetHeight = int(targetHeight * scale)
+        targetWidth = 100 #int(targetWidth * scale)
+        targetHeight = 100 #int(targetHeight * scale)
 
         targetSize = targetWidth, targetHeight
         target = target.resize((targetWidth, targetHeight), Image.ANTIALIAS)
@@ -87,31 +98,38 @@ class ImageSimulator:
         backgroundCopy = backgroundCopy.convert("RGB")
 
         # Track where the object was placed.
-        backgroundWidth = float(backgroundWidth)
-        backgroundHeight = float(backgroundHeight)
-        target_label = str(self.targets_class[shape]) + " "
-        target_label += str(xPos / backgroundWidth) + " "
-        target_label += str(yPos / backgroundHeight) + " "
-        target_label += str(targetWidth / backgroundWidth) + " "
-        target_label += str(targetHeight / backgroundHeight)
-
-        filename = str(i).zfill(6)
+        filename = shape + "_" + str(i).zfill(6)
 
         # Create directory structure.
         self.create_directory("output")
         self.create_directory("output/images")
-        self.create_directory("output/images/" + shape)
 
         self.create_directory("output/labels")
-        self.create_directory("output/labels/" + shape)
 
         # Write image to file
-        output_image_file = "output/images/" + shape + "/" + filename + ".jpg"
+        output_image_file = "output/images/" + filename + ".jpg"
         backgroundCopy.save(output_image_file)
 
         # Write label to file
-        output_label_file = "output/labels/" + shape + "/" + filename + ".txt"
+        output_label_file = "output/labels/" + filename + ".xml"
         text_file = open(output_label_file, "w")
+        target_label = \
+"<annotation>\n" \
+"    <filename>" + filename + ".jpg</filename>\n" \
+"   <size>\n" \
+"       <width>" + str(int(backgroundWidth)) + "</width>\n" \
+"       <height>" + str(int(backgroundHeight)) + "</height>\n" \
+"   </size>\n" \
+"   <object>\n" \
+"       <name>" + shape + "</name>\n" \
+"       <bndbox>\n" \
+"           <xmin>" + str(xPos) + "</xmin>\n" \
+"           <ymin>" + str(yPos) + "</ymin>\n" \
+"           <xmax>" + str(xPos + targetWidth) + "</xmax>\n" \
+"           <ymax>" + str(yPos + targetHeight) + "</ymax>\n" \
+"       </bndbox>\n" \
+"   </object>\n" \
+"</annotation>"
         text_file.write(target_label)
         text_file.close()
 
@@ -179,7 +197,7 @@ def main():
                 break
             else:
                 time.sleep(0.5)
-    
+
     print("Finished generating " + str(total_images) + " images!")
 
     killed = True
