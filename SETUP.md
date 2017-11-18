@@ -153,6 +153,12 @@ python ./file_name.py
 ### Interoperability System
 The Interoperability System is provided by AUVSI. Read about it [here](https://github.com/auvsi-suas/interop).
 
+Make sure you have the interop git submodule (located in the 'ground' folder):
+```bash
+git submodule init
+git submodule update
+```
+
 To use the interop server, first install Docker:
 - On Linux, run ```./ground/interop/tools/setup_docker.sh```
 - On other operating systems, install Docker from [docker.com](https://www.docker.com)
@@ -161,8 +167,9 @@ Next, retrieve the Docker image:
 ```bash
 docker pull auvsisuas/interop-server
 ```
-To start the interop server, run ```python ground/run_interop.py```.
-To stop it, type CTRL+C.
+To start the interop server, run ```python ground/run_interop.py```. Check it out at http://localhost:8000.
+
+Use username 'testadmin' and password 'testpass'.
 
 ## Other Reads
 Each directory - control, vision, ground - contains their own README.md
