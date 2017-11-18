@@ -1,20 +1,18 @@
 html, body {
   width: 100%;
   height: 100%;
+}
+
+#root {
+  height: 100vh;
+}
+
+.App {
+  width: 100%;
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
-
-/*button {
-  border: 0px;
-  margin: 0px;
-  padding: 5px;
-  color: #FFFFFF;
-}*/
-
-/*html, body, button, p, h1, h2, h3, h4, h5, a, li {
-  font-family: lato;
-}*/
 
 .navbar {
   -webkit-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.75);
@@ -49,7 +47,7 @@ html, body {
   top: -5px;
 }
 
-#content {
+.Home {
   flex-grow: 1;
   display: flex;
   flex-direction: row;
@@ -89,7 +87,7 @@ html, body {
   overflow: hidden;
 }
 
-#screen {
+.Screen {
   position: relative;
   height: 100%;
   flex-grow: 1;
@@ -107,6 +105,7 @@ html, body {
 
 #show_sidebar_btn {
   background-color: rgba(0, 0, 0, 0.7);
+  margin-right: 5px;
 }
 
 #show_sidebar_btn.hidden {
