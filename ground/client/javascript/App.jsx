@@ -1,4 +1,8 @@
+// Home Interface
 import React, { Component } from "react";
+import Navbar from "./Navbar";
+import Panel from "./Panel";
+import Screen from "./Screen";
 
 class App extends Component {
 
@@ -6,11 +10,10 @@ class App extends Component {
     return (
       <div className="App">
 
-        <p>Hot reload</p>
-        <p>Hello!</p>
-        <p>Testing</p>
-        <p>Test</p>
-        <p>Test</p>
+        <Navbar/>
+        <Panel/>
+        <Screen/>
+
       </div>
     );
   }
