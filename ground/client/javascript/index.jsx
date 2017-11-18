@@ -6,6 +6,7 @@ import App from "./App";
 import "../styles/styles.css";
 import "../styles/reset.css";
 import "../styles/tippy.css";
-// todo: import bootstrap here
+import "../libraries/bootstrap-4.0.0-beta/css/bootstrap.min.css";
+import "../styles/main.css";
 
 ReactDOM.render(<App />, document.getElementById('root'));
