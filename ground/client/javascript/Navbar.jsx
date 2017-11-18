@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import ReactDOM from 'react-dom';
 
 class Navbar extends Component {
 
@@ -6,7 +7,7 @@ class Navbar extends Component {
     return(
       <nav className="navbar navbar-expand-sm navbar-dark">
         <a className="navbar-brand" href="#">
-          <img src="vector_logo.svg" height="45px" alt=""/>
+          <img src="/vector_logo.svg" height="45px" alt=""/>
         </a>
         <button className="navbar-toggler" type="button" data-toggle="collapse"
                 data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup"
