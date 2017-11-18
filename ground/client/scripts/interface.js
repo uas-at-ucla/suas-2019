@@ -52,7 +52,7 @@ class MapUi {
       map: this.map,
       position: field,
       icon: {
-        url: "/css/drone_marker.svg",
+        url: "/public/drone_marker.svg",
         anchor: new google.maps.Point(50, 50)
       }
     });
