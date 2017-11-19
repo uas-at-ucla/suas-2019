@@ -127,8 +127,13 @@ def on_telemetry(*args):
         alt = telemetry['gps_alt']
         heading = telemetry['heading']
         if all(val is not None for val in [lat, lng, alt, heading]):
-            interop_telemetry = interop.Telemetry(lat, lng, alt, heading)
-            interop_client.post_telemetry(interop_telemetry)
+            try:
+                interop_telemetry = interop.Telemetry(lat, lng, alt, heading)
+                interop_client.post_telemetry(interop_telemetry)
+            except:
+                global interop_client
+                interop_client = None
+                interface_socketio.emit('interop_connected', False)
 
 def listen_for_communications():
     communications = socketIO_client.SocketIO('0.0.0.0', 8085)
