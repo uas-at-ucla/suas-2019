@@ -1,0 +1,39 @@
+.Home {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+#sidebar_container {
+  height: 100%;
+  width: 25vw;
+  min-width: 300px;
+  -webkit-box-shadow: 3px 0px 10px 0px rgba(0, 0, 0, 0.75);
+  -moz-box-shadow: 3px 0px 10px 0px rgba(0, 0, 0, 0.75);
+  box-shadow: 3px 0px 10px 0px rgba(0, 0, 0, 0.75);
+  z-index: 2;
+  transition: width 0.2s, min-width 0.2s;
+}
+
+#sidebar_container.hidden {
+  min-width: 0;
+  width: 0;
+}
+
+#sidebar {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 25vw;
+  min-width: 300px;
+  left: 0;
+  transition: 0.2s;
+}
+
+#sidebar.hidden {
+  transform: translateX(-100%);
+  overflow: hidden;
+}
