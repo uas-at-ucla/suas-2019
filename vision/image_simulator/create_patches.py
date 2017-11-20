@@ -53,7 +53,7 @@ def main(visualize):
         imgs_paths,
         data_paths):
 
-        print 'Extracting patches from image', shape_img_path
+        print('Extracting patches from image', shape_img_path)
 
         shape_img = AUVSItargets.Image(shape_img_path,
             shape_data_path,
