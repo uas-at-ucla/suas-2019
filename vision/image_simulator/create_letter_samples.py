@@ -62,7 +62,7 @@ def main(jobs):
     img_index = 0
     for img_path, data_path in zip(imgs_paths, data_paths):
 
-        print 'Extracting patches from image', img_path
+        print('Extracting patches from image', img_path)
 
         img = AUVSItargets.Image(img_path, data_path, K=K)
         patches = img.createPatches(patch_size=gs.PATCH_SIZE, patch_shift=1000)
@@ -131,7 +131,7 @@ def create_patch(patch, img, latitude, longitude, yaw):
         print(traceback.format_exc())
         return None, None
 
-    print gs.LETTER_LABELS.index(letter_label)
+    print(gs.LETTER_LABELS.index(letter_label))
 
     return mask, gs.LETTER_LABELS.index(letter_label)
 
