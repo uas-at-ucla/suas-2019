@@ -1,0 +1,58 @@
+.MapScreen {
+  position: relative;
+  height: 100%;
+  flex-grow: 1;
+}
+
+#map_buttons {
+  position: absolute;
+  z-index: 10;
+  margin: 5px;
+}
+
+#follow_drone_btn {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+#show_sidebar_btn {
+  background-color: rgba(0, 0, 0, 0.7);
+  margin-right: 5px;
+}
+
+#show_sidebar_btn.hidden {
+  display: none;
+}
+
+#telemetry {
+  position: absolute;
+  z-index: 10;
+  margin-top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.7);
+  font-size: 16px;
+}
+
+#full_state {
+  display: inline-block;
+  font-size: 24px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+#armed_indicator {
+  color: #e2c63b;
+  font-weight:bold;
+}
+
+#state_indicator {
+  color: #4286f4;
+}
+
+#telemetry td {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+#telemetry_important {
+  font-size: 24px;
+}
