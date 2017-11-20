@@ -26,7 +26,7 @@ signal.signal(signal.SIGINT, signal_received)
 interop_processes = process_manager.ProcessManager()
 interop_processes.run_command("docker rm -f interop-server")
 
-print "SPAWN interop"
+print("SPAWN interop")
 interop_processes.spawn_process("docker run " +\
                                   "--rm " + \
                                   "--publish 8000:80 " + \

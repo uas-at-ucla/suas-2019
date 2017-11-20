@@ -115,7 +115,7 @@ class TestControl(unittest.TestCase):
         self.test_drone.killall()
 
     def kill_processes_and_exit(self, signal, frame):
-        print "Exiting"
+        print("Exiting")
         self.kill_processes()
         exit(0)
 
