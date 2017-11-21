@@ -52,4 +52,4 @@ Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/bl
  * [Dronekit](https://github.com/dronekit/dronekit-python) for interfacing with the flight controller over serial
  * [Dronekit SITL](https://github.com/dronekit/dronekit-sitl) for flight controller simulation and testing
  * [OpenCV](https://github.com/opencv/opencv) for image filtering and segmentation
- * [Tensorflow](https://github.com/tensorflow/tensorflow) for image classification
+ * [Darkflow](https://github.com/thtrieu/darkflow) for image classification

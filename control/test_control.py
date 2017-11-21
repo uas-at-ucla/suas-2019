@@ -22,7 +22,7 @@ import commander
 
 class TestControl(unittest.TestCase):
     def setUp(self):
-        self.USE_INTEROP = False
+        self.USE_INTEROP = True
 
         self.test_drone = process_manager.ProcessManager()
 
@@ -116,7 +116,7 @@ class TestControl(unittest.TestCase):
         self.test_drone.killall()
 
     def kill_processes_and_exit(self, signal, frame):
-        print "Exiting"
+        print("Exiting")
         self.kill_processes()
         exit(0)
 
