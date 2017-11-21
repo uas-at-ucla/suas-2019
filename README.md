@@ -5,8 +5,8 @@ Code used on our drone competing in the AUVSI SUAS competition.
 [![Bugs](https://sonarcloud.io/api/badges/measure?key=suas_2018&metric=bugs)](https://sonarcloud.io/dashboard?id=suas_2018)
 [![Vulnerabilities](https://sonarcloud.io/api/badges/measure?key=suas_2018&metric=vulnerabilities)](https://sonarcloud.io/dashboard?id=suas_2018)
 [![Code Smells](https://sonarcloud.io/api/badges/measure?key=suas_2018&metric=code_smells)](https://sonarcloud.io/dashboard?id=suas_2018)  
-[![Comment Line Density](https://sonarcloud.io/api/badges/measure?key=suas_2018&metric=comment_lines_density)](https://sonarcloud.io/dashboard?id=suas_2018)
 [![Number of lines](https://sonarcloud.io/api/badges/measure?key=suas_2018&metric=ncloc)](https://sonarcloud.io/dashboard?id=suas_2018)
+[![Comment Line Density](https://sonarcloud.io/api/badges/measure?key=suas_2018&metric=comment_lines_density)](https://sonarcloud.io/dashboard?id=suas_2018)
 
 ### Contents
  * Control code
