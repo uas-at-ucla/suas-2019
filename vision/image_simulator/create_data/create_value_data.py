@@ -1,7 +1,7 @@
 import os
 from PIL import Image
 import cPickle as pickle
-rootdir = '/home/uas/auvsi-targets/DATA/test_letter'
+rootdir = '' #path to directory of letter images in auvsi-targets
 extension = '.jpg'
 
 imageValue = []
@@ -14,4 +14,4 @@ for subdir, dirs, files in os.walk(rootdir):
 		data = list(img.getdata())
 		imageValue.append(data)
 
-pickle.dump(imageValue, open("test_values.p", "wb"))
+pickle.dump(imageValue, open("train_values.p", "wb"))

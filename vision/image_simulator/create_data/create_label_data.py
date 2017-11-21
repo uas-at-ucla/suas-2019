@@ -1,7 +1,7 @@
 import os
 from PIL import Image
 import cPickle as pickle
-rootdir = '/home/uas/auvsi-targets/DATA/test_letter'
+rootdir = '' #path to directory of letter images in auvsi-targets
 extension = '.txt'
 
 labels = []
@@ -17,4 +17,4 @@ for subdir, dirs, files in os.walk(rootdir):
 		            	line = int(i)
 		            labels.append(line)
 
-pickle.dump(labels, open("test_labels.p", "wb"))
+pickle.dump(labels, open("train_labels.p", "wb"))
