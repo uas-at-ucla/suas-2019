@@ -108,19 +108,24 @@ class Map extends Component {
   }
 
   draw_boundary(boundary_pts) {
-    var boundary_coordinates = []
+    var boundary_coordinates = [];
+
     for (var pt of boundary_pts) {
       boundary_coordinates.push({lat: pt.latitude, lng: pt.longitude});
     }
+
     var first_pt = boundary_pts[0];
     boundary_coordinates.push({lat: first_pt.latitude, lng: first_pt.longitude});
-    var boundary = new google.maps.Polyline({
+
+    var boundary = new google.maps.Polygon({
       path: boundary_coordinates,
-      geodesic: true,
       strokeColor: '#FF0000',
       strokeOpacity: 0.7,
       strokeWeight: 3,
+      fillColor: '#FF0000',
+      fillOpacity: 0.35
     });
+
     boundary.setMap(this.map);
   }
 
@@ -131,7 +136,7 @@ class Map extends Component {
     }
     this.stationary_obstacle_markers.length = 0;
     for (let obstacle of obstacles) {
-      let marker = this.make_obstacle_marker(obstacle, 
+      let marker = this.make_obstacle_marker(obstacle,
         this.stationary_obstacle_color);
       this.stationary_obstacle_markers.push(marker);
     }
@@ -144,7 +149,7 @@ class Map extends Component {
     }
     this.moving_obstacle_markers.length = 0;
     for (let obstacle of obstacles) {
-      let marker = this.make_obstacle_marker(obstacle, 
+      let marker = this.make_obstacle_marker(obstacle,
         this.moving_obstacle_color);
       this.moving_obstacle_markers.push(marker);
     }
@@ -169,7 +174,7 @@ class Map extends Component {
       marker.setOpacity(0.4);
     });
     let infowindow = new google.maps.InfoWindow({
-      content: 'Lat: ' + obstacle.latitude + '<br>' + 
+      content: 'Lat: ' + obstacle.latitude + '<br>' +
                'Lng: ' + obstacle.longitude + '<br>' +
                'Radius: ' + radius_feet + ' ft'
     });
