@@ -8,7 +8,6 @@ const METERS_PER_FOOT = 0.3048;
 const google = window.google;
 
 class Map extends Component {
-
   render() {
     return (
       <div className="Map" ref="map"></div>
@@ -26,8 +25,8 @@ class Map extends Component {
       scrollwheel : true,
       navigationControl : false,
       mapTypeControl : false,
-      scaleControl : true,
-      draggable : true,
+      scaleControl : false,
+      draggable : false,
       styles : map_style
     });
 
@@ -51,11 +50,13 @@ class Map extends Component {
       rotation: 0,
       anchor: new google.maps.Point(0, 2.5)
     }
+
     this.drone_marker = new google.maps.Marker({
       map: this.map,
       position: field,
       icon: this.drone_marker_icon
     });
+
     this.drone_background_marker = new google.maps.Marker({
       map: this.map,
       position: field,
@@ -65,10 +66,8 @@ class Map extends Component {
       }
     });
 
-    this.stationary_obstacle_markers = [];
-    this.stationary_obstacle_color = '#FF0000';
-    this.moving_obstacle_markers = [];
-    this.moving_obstacle_color = '#FFA500';
+    this.stationary_obstacles = [];
+    this.moving_obstacles = [];
 
     this.follow_drone = true;
     this.map.addListener('dragstart', () => {
@@ -119,104 +118,94 @@ class Map extends Component {
 
     var boundary = new google.maps.Polygon({
       path: boundary_coordinates,
-      strokeColor: '#FF0000',
+      strokeColor: '#00FF00',
       strokeOpacity: 0.7,
       strokeWeight: 3,
-      fillColor: '#FF0000',
-      fillOpacity: 0.35
+      fillColor: '#00FF00',
+      fillOpacity: 0.25,
+      zIndex: 1
     });
 
     boundary.setMap(this.map);
   }
 
   set_stationary_obstacles(obstacles) {
-    for (let marker of this.stationary_obstacle_markers) {
-      marker.marker.setMap(null);
-      marker.circle.setMap(null);
+    // Remove any old stationary obstacles that existed before update.
+    for(let stationary_obstacle of this.stationary_obstacles) {
+      stationary_obstacle.circle.setMap(null);
     }
-    this.stationary_obstacle_markers.length = 0;
+
+    this.stationary_obstacles.length = 0;
+
+    // Add in the new stationary obstacles.
     for (let obstacle of obstacles) {
-      let marker = this.make_obstacle_marker(obstacle,
-        this.stationary_obstacle_color);
-      this.stationary_obstacle_markers.push(marker);
+      console.log("making static obstacle");
+      let stationary_obstacle = this.make_obstacle_map_object(obstacle);
+
+      this.stationary_obstacles.push(stationary_obstacle);
     }
   }
 
   set_moving_obstacles(obstacles) {
-    for (let marker of this.moving_obstacle_markers) {
-      marker.marker.setMap(null);
-      marker.circle.setMap(null);
+    // Remove any old moving obstacles.
+    for (let moving_obstacle of this.moving_obstacles) {
+      moving_obstacle.circle.setMap(null);
     }
-    this.moving_obstacle_markers.length = 0;
+
+    this.moving_obstacles.length = 0;
+
+    // Add in the new moving obstacles.
     for (let obstacle of obstacles) {
-      let marker = this.make_obstacle_marker(obstacle,
-        this.moving_obstacle_color);
-      this.moving_obstacle_markers.push(marker);
+      console.log("making moving obstacle");
+      let moving_obstacle = this.make_obstacle_map_object(obstacle);
+
+      this.moving_obstacles.push(moving_obstacle);
     }
   }
 
-  make_obstacle_marker(obstacle, color) {
+  make_obstacle_map_object(obstacle) {
     let pos = {lat: obstacle.latitude, lng: obstacle.longitude};
     let radius_feet = obstacle.cylinder_radius || obstacle.sphere_radius
-    let marker = new google.maps.Marker({
-      position: pos,
-      map: this.map,
-      opacity: 0.4,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 6
-      }
-    });
-    marker.addListener('mouseover', function() {
-      marker.setOpacity(1);
-    });
-    marker.addListener('mouseout', function() {
-      marker.setOpacity(0.4);
-    });
-    let infowindow = new google.maps.InfoWindow({
-      content: 'Lat: ' + obstacle.latitude + '<br>' +
-               'Lng: ' + obstacle.longitude + '<br>' +
-               'Radius: ' + radius_feet + ' ft'
-    });
-    marker.addListener('click', function() {
-      infowindow.open(this.map, marker);
-    });
-    google.maps.event.addListener(this.map, "click", function(event) {
-      infowindow.close();
-    });
+
+    console.log(obstacle);
+    console.log(radius_feet);
     let circle = new google.maps.Circle({
-      fillColor: color,
-      fillOpacity: 0.7,
-      strokeWeight: 2,
+      center: pos,
       map: this.map,
-      radius: radius_feet * METERS_PER_FOOT
+      fillColor: "#FF0000",
+      fillOpacity: 0.7,
+      strokeWeight: 0,
+      radius: radius_feet * METERS_PER_FOOT,
+      zIndex: 3
     });
-    circle.bindTo('center', marker, 'position');
+
     return {
-      marker: marker,
       circle: circle,
-      infowindow: infowindow,
       obstacle: obstacle
     };
   }
 
   update_moving_obstacles(obstacles) {
-    if (obstacles.length !== this.moving_obstacle_markers.length) {
+    if (obstacles.length !== this.moving_obstacles.length) {
       return false;
     }
+
     for (let i = 0; i < obstacles.length; i++) {
-      let marker = this.moving_obstacle_markers[i];
-      if (obstacles[i].sphere_radius !== marker.obstacle.sphere_radius)
+      let moving_obstacle = this.moving_obstacles[i];
+
+      if (obstacles[i].sphere_radius !==
+          moving_obstacle.obstacle.sphere_radius) {
         return false;
-      marker.marker.setPosition({
-        lat: obstacles[i].latitude, lng: obstacles[i].longitude
-      });
-      marker.infowindow.setContent(
-        'Lat: ' + obstacles[i].latitude + '<br>' + 
-        'Lng: ' + obstacles[i].longitude + '<br>' +
-        'Radius: ' + obstacles[i].sphere_radius + ' ft'
-      );
+      }
+
+      let pos = {
+        lat: obstacles[i].latitude,
+        lng: obstacles[i].longitude
+      };
+
+      moving_obstacle.circle.setCenter(pos);
     }
+
     return true;
   }
 
