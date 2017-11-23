@@ -5,6 +5,14 @@ import './App.css';
 import io from 'socket.io-client/dist/socket.io.js';
 
 class App extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      optionSelected: 'Home', // Default is Home
+    };
+    this.handleTab = this.handleTab.bind(this);
+
+  }
 
   state = {
     droneArmedStatus: "Offline",
@@ -14,11 +22,27 @@ class App extends Component {
     interopBtnEnabled: true
   }
 
+  getOptions() {
+    return [
+      { _id: 1, section: 'Home' },
+      { _id: 2, section: 'Analytics' },
+    ];
+  }
+
+  handleTab(option) {
+    this.setState({
+      optionSelected: option,
+    });
+  }
+
+
+
+
   render() {
     return (
       <div className="App">
-        <Navbar interopBtnClick={this.interopBtnClick.bind(this)} 
-          interopBtnText={this.state.interopBtnText} 
+        <Navbar interopBtnClick={this.interopBtnClick.bind(this)}
+          interopBtnText={this.state.interopBtnText}
           interopBtnEnabled={this.state.interopBtnEnabled}/>
         <Home ref="home" telemetryText={this.state.telemetryText}
           droneState={this.state.droneState}
@@ -99,7 +123,7 @@ class App extends Component {
       }
     });
 
-    this.socket.on('interop_connected', (is_interop_connected) => 
+    this.socket.on('interop_connected', (is_interop_connected) =>
       this.received_interop_status(is_interop_connected)
     );
   }
