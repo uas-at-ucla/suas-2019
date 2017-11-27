@@ -1,32 +1,40 @@
 import React, { Component } from 'react';
 import Navbar from './Navbar/Navbar'
-import Home from './Home/Home'
 import './App.css';
 import io from 'socket.io-client/dist/socket.io.js';
+
+import Home from './Home/Home';
+import Analytics from './Analytics/Analytics';
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       optionSelected: 'Home', // Default is Home
+      droneArmedStatus: "Offline",
+      droneState: "",
+      telemetryText: {},
+      interopBtnText: "Connect to Interop",
+      interopBtnEnabled: true
     };
     this.handleTab = this.handleTab.bind(this);
-
+    this.interopBtnClick = this.interopBtnClick.bind(this);
   }
 
-  state = {
-    droneArmedStatus: "Offline",
-    droneState: "",
-    telemetryText: {},
-    interopBtnText: "Connect to Interop",
-    interopBtnEnabled: true
-  }
-
-  getOptions() {
-    return [
-      { _id: 1, section: 'Home' },
-      { _id: 2, section: 'Analytics' },
-    ];
+  // Render based on button clicks in Navbar
+  renderSelection() {
+    if (this.state.optionSelected === "Home") {
+      return (
+        <Home ref="home" telemetryText={this.state.telemetryText}
+              droneState={this.state.droneState}
+              droneArmedStatus={this.state.droneArmedStatus}/>
+      );
+    }
+    else if (this.state.optionSelected === "Analytics") {
+      return (
+        <Analytics/>
+      );
+    }
   }
 
   handleTab(option) {
@@ -35,18 +43,14 @@ class App extends Component {
     });
   }
 
-
-
-
   render() {
     return (
       <div className="App">
-        <Navbar interopBtnClick={this.interopBtnClick.bind(this)}
-          interopBtnText={this.state.interopBtnText}
-          interopBtnEnabled={this.state.interopBtnEnabled}/>
-        <Home ref="home" telemetryText={this.state.telemetryText}
-          droneState={this.state.droneState}
-          droneArmedStatus={this.state.droneArmedStatus}/>
+        <Navbar interopBtnClick={this.interopBtnClick}
+                interopBtnText={this.state.interopBtnText}
+                interopBtnEnabled={this.state.interopBtnEnabled}
+                handleTab={this.handleTab}/>
+        {this.renderSelection()}
       </div>
     );
   }
@@ -81,7 +85,7 @@ class App extends Component {
         Number(telemetry["heading"])
       );
 
-      if(telemetry["armed"] == "False") {
+      if(telemetry["armed"] === "False") {
         this.setState({droneArmedStatus: "Disarmed"});
       } else {
         this.setState({droneArmedStatus: "Armed"});
