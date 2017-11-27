@@ -7,7 +7,7 @@ import time
 # directory that this script is in.
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-sys.path.insert(0, '../util')
+sys.path.insert(0, '../../util')
 import process_manager
 
 processes = None
@@ -19,9 +19,9 @@ def signal_received(signal, frame):
 if __name__ == "__main__":
     processes = process_manager.ProcessManager()
 
-    processes.run_command("npm run build", rel_cwd="client")
-    processes.spawn_process("python server/run_interop.py")
-    processes.spawn_process("python server/run_ground.py")
+    processes.run_command("npm run build", rel_cwd="../client")
+    processes.spawn_process("python ./run_interop.py")
+    processes.spawn_process("python ./run_ground.py")
 
     signal.signal(signal.SIGINT, signal_received)
 

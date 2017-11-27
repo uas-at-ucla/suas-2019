@@ -1,16 +1,29 @@
-import React from 'react';
+import React, { Component } from 'react';
 import './Navbar.css'
 import logo from '../images/vector_logo.svg';
 
+import Option from './Option';
 
-class navbar extends Component {
+class Navbar extends Component {
+  constructor(props) {
+    super(props);
 
+  }
 
+  // Display tab titles here
+  getOptions() {
+    return [
+      { _id: 1, section: 'Home' },
+      { _id: 2, section: 'Analytics' },
+    ];
+  }
 
-
-
-
-
+  renderOptions() {
+    return this.getOptions().map((option) => (
+      <Option key={option._id} option={option}
+              handleTab={this.props.handleTab}/>
+    ));
+  }
 
   render() {
     return (
@@ -26,11 +39,10 @@ class navbar extends Component {
           </button>
           <div className="collapse navbar-collapse" id="nav_container">
             <div className="navbar-nav">
-              <a className="nav-item nav-link active" href="#">Home <span className="sr-only">(current)</span></a>
-              <a className="nav-item nav-link" href="#">Analytics</a>
+              {this.renderOptions()}
             </div>
-            <button className={`btn btn-sm align-middle btn-outline-light ${!props.interopBtnEnabled ? 'disabled' : null}`}
-                    id="interop_btn" onClick={props.interopBtnClick}>{props.interopBtnText}</button>
+            <button className={`btn btn-sm align-middle btn-outline-light ${!this.props.interopBtnEnabled ? 'disabled' : null}`}
+                    id="interop_btn" onClick={this.props.interopBtnClick}>{this.props.interopBtnText}</button>
           </div>
         </nav>
       </div>
@@ -38,4 +50,4 @@ class navbar extends Component {
   }
 }
 
-export default navbar;
+export default Navbar;
