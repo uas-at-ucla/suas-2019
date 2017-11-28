@@ -51,6 +51,7 @@
 #armed_indicator {
   color: #FF6666;
   font-weight:bold;
+  padding-right: 5px;
 }
 
 #state_indicator {
