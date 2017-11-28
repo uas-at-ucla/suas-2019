@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './Dashboard.css'
 
-class dashboard extends Component {
+class Dashboard extends Component {
   render() {
     return (
 <div className="Dashboard">
@@ -27,4 +27,4 @@ class dashboard extends Component {
   }
 }
 
-export default dashboard;
+export default Dashboard;
