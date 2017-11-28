@@ -19,6 +19,7 @@ def signal_received(signal, frame):
 if __name__ == "__main__":
     ground_processes = process_manager.ProcessManager()
 
+    ground_processes.spawn_process("python run_interop.py")
     ground_processes.spawn_process("python feed_interface.py")
     ground_processes.spawn_process("python serve_www.py")
 
