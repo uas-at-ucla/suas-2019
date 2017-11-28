@@ -13,18 +13,45 @@ drone will take that flight route.
 * Platforms and Libraries
 
 ## Installation
-   Needs to be updated to automatically install Python dependencies and such.
+   Make sure you have all of the Python dependencies:
+   ```bash
+   pip install -r ../build/pip_requirements.txt
+   ```
+   
+   Install Node from [nodejs.org](https://nodejs.org)
+   
+   Install Node Modules:
    ```bash
    chmod +x install.sh
    ./install.sh
    ```
 
 ## Compilation
-   Problem: React.js webpack needs to be fixed so front-end edits are
-   instantaneously displayed.
+   To make a static build and launch it:
    ```bash
    chmod +x launch.sh
    ./launch.sh
+   ```
+   
+   To build without launching:
+   ```bash
+   cd client
+   npm run build
+   ```
+   
+   To launch an existing build:
+   ```
+   python server/run_ground.py
+   ```
+   
+   To develop with hot reloading:
+   ```bash
+   cd client
+   npm start
+   ```
+   Then in another shell:
+   ```bash
+   python sever/run_backend.py
    ```
 
 ## Framework
