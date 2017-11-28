@@ -25,8 +25,8 @@ class Map extends Component {
       scrollwheel : true,
       navigationControl : false,
       mapTypeControl : false,
-      scaleControl : false,
-      draggable : false,
+      scaleControl : true,
+      draggable : true,
       styles : map_style
     });
 
