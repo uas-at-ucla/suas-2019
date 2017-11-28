@@ -19,7 +19,7 @@ def signal_received(signal, frame):
 if __name__ == "__main__":
     processes = process_manager.ProcessManager()
 
-    processes.run_command("npm run build", rel_cwd="../client")
+    processes.run_command("npm start", rel_cwd="../client")
     processes.spawn_process("python ./run_interop.py")
     processes.spawn_process("python ./run_ground.py")
 

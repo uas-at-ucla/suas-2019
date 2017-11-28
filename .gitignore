@@ -4,3 +4,4 @@
 *.pickle
 vision/image_simulator/output/
 ground/client/package-lock.json
+**/node_modules

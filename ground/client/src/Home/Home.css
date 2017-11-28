@@ -1,21 +1,20 @@
 .Home {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: row;
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+
   z-index: 1;
 }
 
 #sidebar_container {
+  position: absolute;
+  top: 150px;
+  left: 20px;
   height: 100%;
-  width: 25vw;
-  min-width: 300px;
-  -webkit-box-shadow: 3px 0px 10px 0px rgba(0, 0, 0, 0.75);
-  -moz-box-shadow: 3px 0px 10px 0px rgba(0, 0, 0, 0.75);
-  box-shadow: 3px 0px 10px 0px rgba(0, 0, 0, 0.75);
-  z-index: 2;
-  transition: width 0.2s, min-width 0.2s;
+  width: 100%;
+  z-index: 5;
 }
 
 #sidebar_container.hidden {
@@ -24,13 +23,9 @@
 }
 
 #sidebar {
-  display: flex;
-  flex-direction: column;
   height: 100%;
-  width: 25vw;
-  min-width: 300px;
+  width: 355px;
   left: 0;
-  transition: 0.2s;
 }
 
 #sidebar.hidden {

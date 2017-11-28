@@ -1,17 +1,17 @@
 #sidebar_title {
   display:inline-block;
   width: 100%;
-  background-color: #f8f9fa;
+  color: #FFFFFF;
+  font-size: 35px;
+
   margin-bottom: 0;
-  -webkit-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.38);
-  -moz-box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.38);
-  box-shadow: 0px 3px 10px 0px rgba(0, 0, 0, 0.38);
   z-index: 10;
 }
 
 #sidebar_title_text {
   display: inline-block;
   margin: 8px;
+  font-weight: bold;
 }
 
 #hide_sidebar_btn {
@@ -20,16 +20,19 @@
 }
 
 #sidebar_content {
-  flex-grow: 1;
-  padding: 10px;
   overflow: auto;
+  padding-left: 10px;
+  padding-right: 10px;
+
+  background: rgba(0, 0, 0, 0.7);
 }
 
 #sidebar .card {
+  color: #FFFFFF;
+  background: none;
   margin-bottom: 10px;
-  border-color: #e2c63b;
-  border-width: 2px;
-  -webkit-box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.45);
-  -moz-box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.45);
-  box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.45);
+}
+
+#sidebar .card:not(:last-child) {
+  border-bottom: 2px solid #FFFFFF;
 }

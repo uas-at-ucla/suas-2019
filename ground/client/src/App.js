@@ -9,6 +9,7 @@ import Analytics from './Analytics/Analytics';
 class App extends Component {
   constructor(props) {
     super(props);
+
     this.state = {
       optionSelected: 'Home', // Default is Home
       droneArmedStatus: "Offline",
@@ -17,6 +18,7 @@ class App extends Component {
       interopBtnText: "Connect to Interop",
       interopBtnEnabled: true
     };
+
     this.handleTab = this.handleTab.bind(this);
     this.interopBtnClick = this.interopBtnClick.bind(this);
   }
