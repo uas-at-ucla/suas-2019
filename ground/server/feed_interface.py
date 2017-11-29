@@ -12,7 +12,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import sys
 sys.stderr = open('/dev/null', 'w')
 
-USE_INTEROP = True
+USE_INTEROP = False if len(sys.argv) > 1 and sys.argv[1] == "nointerop" else True
 
 sys.dont_write_bytecode = True
 
@@ -94,6 +94,10 @@ def broadcast_moving_obstacles(moving_obstacles):
     flask_socketio.emit('moving_obstacles', moving_obstacles, \
         broadcast=True, include_self=False)
 
+@interface_socketio.on('execute_commands')
+def send_commands(commands):
+    communications.emit('execute_commands', commands)
+
 @interface_socketio.on('interop_disconnected')
 def interop_disconnected():
     flask_socketio.emit('interop_connected', False, \
@@ -136,6 +140,7 @@ def on_telemetry(*args):
                 interface_socketio.emit('interop_connected', False)
 
 def listen_for_communications():
+    global communications
     communications = socketIO_client.SocketIO('0.0.0.0', 8085)
     communications.on('telemetry', on_telemetry)
     communications.wait()
