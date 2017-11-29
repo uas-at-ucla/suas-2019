@@ -1,6 +1,6 @@
 .Home {
   width: 100%;
-  flex-grow: 1;
+  height: 100%;
   z-index: 1;
   display: flex;
   flex-direction: row;
@@ -22,37 +22,26 @@
   background-color: rgba(0, 0, 0, 0.7) !important;
 }
 
-#left-side {
-  height: 100%;
+#left_side {
+  display: flex;
+  flex-direction: column;
 }
 
-#right-side {
-  height: 100%;
-  flex: 1;
-}
-
-#sidebar {
+#logo {
+  float: left;
   position: relative;
-  width: 25vw;
-  min-width: 300px;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+  padding: 5px;
+  margin-left: 10px;
   margin-top: 10px;
-  padding-bottom: 58px;
-  height: 100%;
-  border-top: 1px black solid;
-  transition: 0.2s;
-}
-
-#sidebar.hidden {
-  transform: translateY(100%);
-  overflow: hidden;
 }
 
 #map_buttons {
+  position: relative;
+  display: inline-block;
   margin-top: 10px;
   margin-left: 10px;
-  display: inline-block;
-  position: relative;
-  z-index: 10;
 }
 
 #follow_drone_btn {
@@ -61,7 +50,24 @@
 
 #sidebar_btn {
   background-color: rgba(0, 0, 0, 0.7);
-  margin-right: 5px;
+  margin-top: 5px;
+}
+
+#sidebar {
+  position: relative;
+  clear: both;
+  flex: 1;
+  min-height: 0;
+  width: 25vw;
+  min-width: 338px;
+  margin-top: 10px;
+  border-top: 1px black solid;
+  transition: 0.2s;
+}
+
+#sidebar.hidden {
+  transform: translateY(100%);
+  overflow: hidden;
 }
 
 #telemetry {
@@ -79,10 +85,11 @@
 
 #armed_indicator {
   color: #e2c63b;
-  font-weight:bold;
+  font-weight: bold;
 }
 
 #state_indicator {
+  margin-left: 10px;
   color: #4286f4;
 }
 
