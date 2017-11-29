@@ -1,38 +1,15 @@
-#sidebar_title {
-  display:inline-block;
-  width: 100%;
-  color: #FFFFFF;
-  font-size: 35px;
-
-  margin-bottom: 0;
-  z-index: 10;
-}
-
-#sidebar_title_text {
-  display: inline-block;
-  margin: 8px;
-  font-weight: bold;
-}
-
-#hide_sidebar_btn {
-  margin: 5px;
-  float: right;
-}
-
-#sidebar_content {
+.Dashboard {
+  height: 100%;
   overflow: auto;
   padding-left: 10px;
   padding-right: 10px;
-
-  background: rgba(0, 0, 0, 0.7);
 }
 
 #sidebar .card {
-  color: #FFFFFF;
-  background: none;
+  margin-top: 5px;
   margin-bottom: 10px;
 }
 
-#sidebar .card:not(:last-child) {
-  border-bottom: 2px solid #FFFFFF;
+#waypoints_list {
+  padding-left: 15px;
 }

@@ -69,6 +69,9 @@ class Map extends Component {
     this.stationary_obstacles = [];
     this.moving_obstacles = [];
 
+    this.mission_waypoints = [];
+    this.waypoints = [];
+
     this.follow_drone = true;
     this.map.addListener('dragstart', () => {
       this.follow_drone = false;
@@ -85,6 +88,7 @@ class Map extends Component {
   followDrone() {
     this.follow_drone = true;
     this.pan_to_drone();
+    this.map.setZoom(16);
   }
 
   update_drone_position(new_lat, new_lng, new_heading) {
@@ -129,6 +133,49 @@ class Map extends Component {
     boundary.setMap(this.map);
   }
 
+  draw_mission_waypoints(waypoints) {
+    for (var waypoint of waypoints) {
+      var coords = {lat: waypoint.latitude, lng: waypoint.longitude};
+      var marker = new google.maps.Marker({
+        map: this.map,
+        position: coords,
+        label: {
+          fontFamily: 'Fontawesome',
+          text: '\uf192'
+        }
+      });
+      coords.alt = waypoint.altitude_msl;
+      let infowindow = new google.maps.InfoWindow({
+      content: 'Lat: ' + coords.lat + '<br>' + 
+               'Lng: ' + coords.lng + '<br>' +
+               'Alt: ' + coords.alt + ' ft'
+      });
+      marker.addListener('click', () => {
+        infowindow.open(this.map, marker);
+      });
+      google.maps.event.addListener(this.map, "click", () => {
+        infowindow.close();
+      });
+      this.mission_waypoints.push({marker: marker, coords: coords});
+    }
+  }
+
+  addMissionWaypoints(currentWaypoints) {
+    for (var waypoint of this.mission_waypoints) {
+      var firstPoint = currentWaypoints[currentWaypoints.length-1] || this.drone_marker.getPosition()
+      var line = new google.maps.Polyline({
+        path: [firstPoint, waypoint.coords],
+        geodesic: true,
+        strokeColor: '#00FF00',
+        strokeOpacity: 0.7,
+        strokeWeight: 3,
+      });
+      line.setMap(this.map);
+      currentWaypoints.push(waypoint.coords);
+    }
+    this.props.setWaypoints(currentWaypoints);
+  }
+
   set_stationary_obstacles(obstacles) {
     // Remove any old stationary obstacles that existed before update.
     for(let stationary_obstacle of this.stationary_obstacles) {
@@ -169,6 +216,32 @@ class Map extends Component {
 
     console.log(obstacle);
     console.log(radius_feet);
+    let marker = new google.maps.Marker({
+      position: pos,
+      map: this.map,
+      opacity: 0.4,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: 6
+      }
+    });
+    marker.addListener('mouseover', () => {
+      marker.setOpacity(1);
+    });
+    marker.addListener('mouseout', () => {
+      marker.setOpacity(0.4);
+    });
+    let infowindow = new google.maps.InfoWindow({
+      content: 'Lat: ' + obstacle.latitude + '<br>' + 
+               'Lng: ' + obstacle.longitude + '<br>' +
+               'Radius: ' + radius_feet + ' ft'
+    });
+    marker.addListener('click', () => {
+      infowindow.open(this.map, marker);
+    });
+    google.maps.event.addListener(this.map, "click", () => {
+      infowindow.close();
+    });
     let circle = new google.maps.Circle({
       center: pos,
       map: this.map,

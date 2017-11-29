@@ -9,7 +9,6 @@ import Analytics from './Analytics/Analytics';
 class App extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       optionSelected: 'Home', // Default is Home
       droneArmedStatus: "Offline",
@@ -18,7 +17,6 @@ class App extends Component {
       interopBtnText: "Connect to Interop",
       interopBtnEnabled: true
     };
-
     this.handleTab = this.handleTab.bind(this);
     this.interopBtnClick = this.interopBtnClick.bind(this);
   }
@@ -47,19 +45,18 @@ class App extends Component {
 
   render() {
     return (
-<div className="App">
-  <Navbar interopBtnClick={this.interopBtnClick}
-          interopBtnText={this.state.interopBtnText}
-          interopBtnEnabled={this.state.interopBtnEnabled}
-          handleTab={this.handleTab}/>
-  {this.renderSelection()}
-</div>
+      <div className="App">
+        <Navbar interopBtnClick={this.interopBtnClick}
+                interopBtnText={this.state.interopBtnText}
+                interopBtnEnabled={this.state.interopBtnEnabled}
+                handleTab={this.handleTab}/>
+        {this.renderSelection()}
+      </div>
     );
   }
 
   componentDidMount() {
-    this.map = this.refs.home.refs.mapScreen.refs.map;
-    this.map_screen = this.refs.home.refs.mapScreen;
+    this.map = this.refs.home.refs.map;
 
     var SOCKET_DOMAIN = "0.0.0.0";
     var SOCKET_PORT = 8084;
@@ -88,27 +85,25 @@ class App extends Component {
         Number(telemetry["heading"])
       );
 
-      let armed = telemetry["armed"] === "True" ? "Armed" : "Disarmed";
+      if(telemetry["armed"] === "False") {
+        this.setState({droneArmedStatus: "Disarmed"});
+      } else {
+        this.setState({droneArmedStatus: "Armed"});
+      }
 
-      this.map_screen.setState({
-        fullState: {
-          armed: armed,
-          state: this.convert_to_title_text(telemetry["state"])
-        }
-      });
+      this.setState({droneState: this.convert_to_title_text(telemetry["state"])});
 
       console.log(telemetry);
-
       var METERS_PER_SECOND_TO_MPH = 2.23694;
-      this.map_screen.setState({
+      this.setState({
         telemetryText: {
-          speed: "" + this.round(telemetry["air_speed"] * METERS_PER_SECOND_TO_MPH, 1)
+          speed: this.round(telemetry["air_speed"] * METERS_PER_SECOND_TO_MPH, 1)
             + "mph",
-          altitude: "" + this.round(telemetry["gps_rel_alt"], 1) + " meters",
-          position: "" + this.round(telemetry["gps_lat"], 7) + ", "
+          altitude: this.round(telemetry["gps_rel_alt"], 1) + " meters",
+          position: this.round(telemetry["gps_lat"], 7) + ", "
             + this.round(telemetry["gps_lng"], 7),
-          satellites: "" + this.round(telemetry["gps_satellites"], 7),
-          heading: "" + this.round(telemetry["heading"], 7)
+          satellites: this.round(telemetry["gps_satellites"], 7),
+          heading: this.round(telemetry["heading"], 7)
         }
       })
     });
@@ -122,6 +117,7 @@ class App extends Component {
         for (var fly_zone of mission.fly_zones) {
           this.map.draw_boundary(fly_zone.boundary_pts);
         }
+        this.map.draw_mission_waypoints(mission.mission_waypoints);
       }
     });
 

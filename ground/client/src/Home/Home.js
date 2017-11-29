@@ -1,45 +1,85 @@
 import React, { Component } from 'react';
 import './Home.css';
 import Dashboard from '../Dashboard/Dashboard'
-import MapScreen from '../MapScreen/MapScreen'
+import Map from '../Map/Map'
 
 class Home extends Component {
-  state = {
-    isSidebarShown: true
-  }
-
-  componentDidMount() {
-    this.refs.sidebar.addEventListener('transitionend', (event) => {
-      if (event.target.id === 'sidebar') {
-        this.refs.mapScreen.refs.map.refreshMapSize();
-      }
-    });
-  }
+	state = {
+		isSidebarShown: true,
+    waypoints: []
+	}
 
   render() {
     return (
-<div className="Home">
-  <div id="sidebar_container"
-       className={!this.state.isSidebarShown ? 'hidden' : null}>
-    <div id="sidebar"
-         ref="sidebar"
-         className={!this.state.isSidebarShown ? 'hidden' : null}>
-      <Dashboard close={this.hideSidebar.bind(this)}/>
-    </div>
-  </div>
-  <MapScreen ref="mapScreen"
-             isSidebarShown={this.state.isSidebarShown}
-             showSidebar={this.showSidebar.bind(this)}/>
-</div>
+      <div className="Home">
+        <Map ref="map" id="map" setWaypoints={this.setWaypoints.bind(this)}/>
+        <div id="left_side">
+          <div id="map_buttons">
+            <button id="sidebar_btn" className="btn btn-dark" onClick={this.toggleSidebar.bind(this)}>
+              { !this.state.isSidebarShown ? <i className="fa fa-bars" aria-hidden="true"></i> : '✕' }
+            </button>
+            <button id="follow_drone_btn" className="btn btn-dark" onClick={() => this.refs.map.followDrone()}>
+              <i className="fa fa-location-arrow" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div id="sidebar" ref="sidebar" className={!this.state.isSidebarShown ? 'hidden' : null}>
+            <Dashboard map={this.refs.map} waypoints={this.state.waypoints}
+            sendGotoWaypointsCommand={this.sendGotoWaypointsCommand.bind(this)}/>
+          </div>
+        </div>
+        <div id="right_side">
+          <div id="telemetry" className="card text-white">
+            <div id="full_state">
+              <span id="armed_indicator">{this.props.droneArmedStatus}</span>
+              <span id="state_indicator">{this.props.droneState}</span>
+            </div>
+            <table>
+              <tbody>
+                <tr id="telemetry_important">
+                  <td>Speed</td>
+                  <td id="telemetry_speed">{this.props.telemetryText.speed}</td>
+                </tr>
+                <tr>
+                  <td>Position</td>
+                  <td id="telemetry_position">{this.props.telemetryText.position}</td>
+                </tr>
+                <tr>
+                  <td>Heading</td>
+                  <td id="telemetry_heading">{this.props.telemetryText.heading}</td>
+                </tr>
+                <tr>
+                  <td>Altitude</td>
+                  <td id="telemetry_altitude">{this.props.telemetryText.altitude}</td>
+                </tr>
+                <tr>
+                  <td>Satellite Count</td>
+                  <td id="telemetry_satellites">{this.props.telemetryText.satellites}</td>
+                </tr>
+             </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     );
   }
 
-  showSidebar() {
-    this.setState({isSidebarShown: true});
+  setWaypoints(waypoints) {
+    this.setState({waypoints: waypoints});
   }
 
-  hideSidebar() {
-    this.setState({isSidebarShown: false});
+  sendGotoWaypointsCommand() {
+    var commands = [];
+    for (var waypoint of this.state.waypoints) {
+      commands.push({
+        type: 'goto',
+        pos: waypoint
+      });
+    }
+    this.props.socket.emit('execute_commands', commands);
+  }
+
+  toggleSidebar() {
+  	this.setState({isSidebarShown: !this.state.isSidebarShown});
   }
 }
 

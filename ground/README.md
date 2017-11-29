@@ -27,24 +27,14 @@ drone will take that flight route.
    ```
 
 ## Compilation
-   To make a static build and launch it:
+   Build and launch the ground station:
    ```bash
    chmod +x launch.sh
    ./launch.sh
    ```
+   To save time, this script will only rebuild the React app if you have made local changes to it, or have committed/pulled a commit that you have not built with yet. Look inside launch.sh for more details. This method is used in test_control.py because ```npm start``` does not reliably work when called within other scripts.
 
-   To build without launching:
-   ```bash
-   cd client
-   npm run build
-   ```
-
-   To launch an existing build:
-   ```
-   python server/run_ground.py
-   ```
-
-   To develop with hot reloading:
+   For development with hot reloading, do this:
    ```bash
    cd client
    npm start
