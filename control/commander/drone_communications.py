@@ -14,13 +14,9 @@ def main():
 def connect():
     print("Someone connected to drone_communications!")
 
-@socketio.on('start_mission')
-def start_mission():
-    emit('start_mission', broadcast=True, include_self=False)
-
-@socketio.on('goto_command')
-def add_goto_command(data):
-    emit('goto_command', data, broadcast=True, include_self=False)
+@socketio.on('execute_commands')
+def execute_commands(data):
+    emit('execute_commands', data, broadcast=True, include_self=False)
 
 @socketio.on('telemetry')
 def broadcast_telemetry(data):

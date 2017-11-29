@@ -16,7 +16,7 @@ class Option extends Component {
   render() {
     return (
       <li>
-        <a className="nav-item nav-link active" href="/" onClick={this.handleOptions}>
+        <a className="nav-item nav-link" href="/" onClick={this.handleOptions}>
           {this.props.option.section}
           <span className="sr-only"></span>
         </a>

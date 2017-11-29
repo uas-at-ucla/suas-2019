@@ -33,7 +33,7 @@ class Dashboard extends Component {
           <div className="card-body">
             <p className="card-text">Feature coming... eventually</p>
           </div>
-        </div>    
+        </div>
       </div>
     );
   }

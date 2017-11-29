@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './Home.css';
 import Dashboard from '../Dashboard/Dashboard'
 import Map from '../Map/Map'
+import logo from '../images/vector_logo.svg';
 
 class Home extends Component {
 	state = {
@@ -14,13 +15,20 @@ class Home extends Component {
       <div className="Home">
         <Map ref="map" id="map" setWaypoints={this.setWaypoints.bind(this)}/>
         <div id="left_side">
-          <div id="map_buttons">
-            <button id="sidebar_btn" className="btn btn-dark" onClick={this.toggleSidebar.bind(this)}>
-              { !this.state.isSidebarShown ? <i className="fa fa-bars" aria-hidden="true"></i> : '✕' }
-            </button>
-            <button id="follow_drone_btn" className="btn btn-dark" onClick={() => this.refs.map.followDrone()}>
-              <i className="fa fa-location-arrow" aria-hidden="true"></i>
-            </button>
+          <div id="top_left">
+            <img id="logo" src={logo} width="270px"/>
+            <div id="map_buttons">
+              <div>
+                <button id="follow_drone_btn" className="btn btn-dark" onClick={() => this.refs.map.followDrone()}>
+                  <i className="fa fa-location-arrow" aria-hidden="true"></i>
+                </button>
+              </div>
+              <div>
+                <button id="sidebar_btn" className="btn btn-dark" onClick={this.toggleSidebar.bind(this)}>
+                  { !this.state.isSidebarShown ? <i className="fa fa-bars" aria-hidden="true"></i> : '✕' }
+                </button>
+              </div>
+            </div>
           </div>
           <div id="sidebar" ref="sidebar" className={!this.state.isSidebarShown ? 'hidden' : null}>
             <Dashboard map={this.refs.map} waypoints={this.state.waypoints}
