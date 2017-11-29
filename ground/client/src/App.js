@@ -27,7 +27,8 @@ class App extends Component {
       return (
         <Home ref="home" telemetryText={this.state.telemetryText}
               droneState={this.state.droneState}
-              droneArmedStatus={this.state.droneArmedStatus}/>
+              droneArmedStatus={this.state.droneArmedStatus}
+              socket={this.socket}/>
       );
     }
     else if (this.state.optionSelected === "Analytics") {
@@ -78,7 +79,7 @@ class App extends Component {
     });
 
     this.socket.on('telemetry', (telemetry) => {
-      console.log("got something!");
+      // console.log("got something!");
       this.map.update_drone_position(
         Number(telemetry["gps_lat"]),
         Number(telemetry["gps_lng"]),
@@ -93,7 +94,7 @@ class App extends Component {
 
       this.setState({droneState: this.convert_to_title_text(telemetry["state"])});
 
-      console.log(telemetry);
+      // console.log(telemetry);
       var METERS_PER_SECOND_TO_MPH = 2.23694;
       this.setState({
         telemetryText: {

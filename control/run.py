@@ -19,41 +19,45 @@ import process_manager
 import copter_interface
 import commander
 
-TEST = True
+SIMULATE_DRONE = True
+RUN_GROUND = False
 drone_address = None # For when we have a real drone
+drone_commander = None
 processes = process_manager.ProcessManager()
 
 def main():
     signal.signal(signal.SIGINT, kill_processes_and_exit)
 
-    if TEST:
+    if SIMULATE_DRONE:
         init_lat = 38.1470000;
         init_lng = -76.4284722;
         drone_address = spawn_simulated_drone(init_lat, init_lng, 0.0, 0)
 
+    if RUN_GROUND:
         processes.run_command("python ../ground/client/build.py")
         processes.spawn_process("python ../ground/run_ground.py")
 
     processes.spawn_process( \
             "python commander/drone_communications.py")        
 
+    global drone_commander
     drone_commander = commander.Commander(drone_address)
     drone_commander.add_command(commander.TakeoffCommand())
 
     communications = drone_commander.get_communications_socket()
-    communications.on('goto_command', on_goto_command)
-    communications.on('start_mission', on_start_mission)
+    communications.on('execute_commands', execute_commands)
     communications.wait()
 
-def on_start_mission():
+def execute_commands(*args):
+    commands = args[0]
+    for command in commands:
+        if command['type'] == 'goto':
+            pos = command['pos']
+            drone_commander.add_command(commander.GotoCommand(pos['lat'], \
+                                                            pos['lng'], \
+                                                            pos['alt']))
     drone_commander.start_mission()
     drone_commander.clear_commands()
-
-def on_goto_command(*args):
-    position = args[0]
-    drone_commander.add_command(commander.GotoCommand(position.lat, \
-                                                      position.lng, \
-                                                      position.alt))
 
 def spawn_simulated_drone(lat, lng, alt, instance):
     processes.spawn_process("python " + \

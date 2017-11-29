@@ -216,32 +216,6 @@ class Map extends Component {
 
     console.log(obstacle);
     console.log(radius_feet);
-    let marker = new google.maps.Marker({
-      position: pos,
-      map: this.map,
-      opacity: 0.4,
-      icon: {
-        path: google.maps.SymbolPath.CIRCLE,
-        scale: 6
-      }
-    });
-    marker.addListener('mouseover', () => {
-      marker.setOpacity(1);
-    });
-    marker.addListener('mouseout', () => {
-      marker.setOpacity(0.4);
-    });
-    let infowindow = new google.maps.InfoWindow({
-      content: 'Lat: ' + obstacle.latitude + '<br>' + 
-               'Lng: ' + obstacle.longitude + '<br>' +
-               'Radius: ' + radius_feet + ' ft'
-    });
-    marker.addListener('click', () => {
-      infowindow.open(this.map, marker);
-    });
-    google.maps.event.addListener(this.map, "click", () => {
-      infowindow.close();
-    });
     let circle = new google.maps.Circle({
       center: pos,
       map: this.map,
@@ -250,6 +224,18 @@ class Map extends Component {
       strokeWeight: 0,
       radius: radius_feet * METERS_PER_FOOT,
       zIndex: 3
+    });
+    let infowindow = new google.maps.InfoWindow({
+      content: 'Lat: ' + obstacle.latitude + '<br>' + 
+               'Lng: ' + obstacle.longitude + '<br>' +
+               'Radius: ' + radius_feet + ' ft'
+    });
+    google.maps.event.addListener(circle, 'click', () => {
+      infowindow.setPosition(circle.getCenter());
+      infowindow.open(this.map);
+    });
+    google.maps.event.addListener(this.map, "click", () => {
+      infowindow.close();
     });
 
     return {
