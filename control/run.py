@@ -20,7 +20,6 @@ import copter_interface
 import commander
 
 TEST = True
-USE_INTEROP = True
 drone_address = None # For when we have a real drone
 processes = process_manager.ProcessManager()
 
@@ -32,10 +31,8 @@ def main():
         init_lng = -76.4284722;
         drone_address = spawn_simulated_drone(init_lat, init_lng, 0.0, 0)
 
-        if USE_INTEROP:
-            processes.spawn_process("python ../ground/server/run_interop.py")
-        processes.spawn_process("python ../ground/server/feed_interface.py")
-        processes.spawn_process("python ../ground/server/serve_www.py")
+        processes.run_command("python ../ground/client/build.py")
+        processes.spawn_process("python ../ground/run_ground.py")
 
     processes.spawn_process( \
             "python commander/drone_communications.py")        

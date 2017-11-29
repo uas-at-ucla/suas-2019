@@ -1,35 +1,11 @@
 .navbar {
-  position: absolute;
-  top: 0;
-  left: 0;
-
-  background-color: none;
+  -webkit-box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
+  -moz-box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
+  box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
   z-index: 100;
+  background-color: rgba(0, 0, 0, 0.7);
 }
 
 .navbar button {
   margin-left: 10px;
-}
-
-#logo {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-
-  width: 355px;
-  height: 108px;
-
-  background: url('../images/vector_logo.svg');
-  background-size: 355px 102px;
-  background-repeat: no-repeat;
-  background-color: rgba(0, 0, 0, 0.7);
-}
-
-#nav_container {
-  position: absolute;
-  top: 20px;
-  left: 400px;
-  padding: 5px;
-
-  background-color: rgba(0, 0, 0, 0.7);
 }

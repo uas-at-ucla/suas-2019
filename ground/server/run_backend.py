@@ -3,6 +3,8 @@ import os
 # directory that this script is in.
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
+USE_INTEROP = True
+
 import sys
 sys.dont_write_bytecode = True
 sys.path.insert(0, '../../util')
@@ -17,9 +19,9 @@ def signal_received(signal, frame):
     sys.exit(0)
 signal.signal(signal.SIGINT, signal_received)
 
-processes.spawn_process("python run_interop.py")
-processes.spawn_process("python feed_interface.py")
-# TODO: Figure out how to spawn npm start in a script (python or bash) and have it exit correctly.
-# processes.spawn_process("npm start", rel_cwd="client")
+if USE_INTEROP:
+	processes.spawn_process("python run_interop.py")
+processes.spawn_process("python feed_interface.py" + 
+	(" nointerop" if not USE_INTEROP else ""))
 
 signal.pause()
