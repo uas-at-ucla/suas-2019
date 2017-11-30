@@ -14,6 +14,49 @@ class Map extends Component {
     )
   }
 
+  stateDidChange(nextProps, stateProp, key) {
+    return nextProps[stateProp][key] !== this.props[stateProp][key];
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (this.stateDidChange(nextProps, 'homeState', 'followDrone')) {
+      if (nextProps.homeState.followDrone) {
+        this.pan_to_drone();
+        this.map.setZoom(16);
+      }
+    }
+
+    if (this.stateDidChange(nextProps, 'homeState', 'mission')) {
+      var mission = nextProps.homeState.mission;
+      if (mission) {
+        this.draw_mission_waypoints(mission.mission_waypoints);
+        this.draw_fly_zones(mission.fly_zones);
+      }
+    }
+
+    if (this.stateDidChange(nextProps, 'homeState', 'waypoints')) {
+      this.draw_waypoint_path(nextProps.homeState.waypoints);
+    }
+
+    if (this.stateDidChange(nextProps, 'appState', 'telemetry')) {
+      var telemetry = nextProps.appState.telemetry;
+      this.update_drone_position(telemetry.gps_lat, telemetry.gps_lng, telemetry.heading);
+    }
+
+    if (this.stateDidChange(nextProps, 'appState', 'stationary_obstacles')) {
+      var obstacles = nextProps.appState.stationary_obstacles;
+      this.set_stationary_obstacles(obstacles);
+    }
+
+    if (this.stateDidChange(nextProps, 'appState', 'moving_obstacles')) {
+      var obstacles = nextProps.appState.moving_obstacles;
+      if (!this.update_moving_obstacles(obstacles)) {
+        console.log('New moving obstacles received!');
+        this.set_moving_obstacles(obstacles);
+      }
+    }
+  }
+
   componentDidMount() {
     var field = {lat : 38.1470000, lng : -76.4284722};
 
@@ -71,24 +114,19 @@ class Map extends Component {
 
     this.mission_waypoints = [];
     this.waypoints = [];
+    this.waypoint_path = null;
+    this.fly_zones = [];
 
-    this.follow_drone = true;
     this.map.addListener('dragstart', () => {
-      this.follow_drone = false;
+      this.props.setHomeState({followDrone: false});
     });
 
     // Always keep drone in the center of view, even after resizing.
     google.maps.event.addListener(this.map, 'bounds_changed', () => {
-      if (this.follow_drone) {
+      if (this.props.homeState.followDrone) {
         this.pan_to_drone();
       }
     });
-  }
-
-  followDrone() {
-    this.follow_drone = true;
-    this.pan_to_drone();
-    this.map.setZoom(16);
   }
 
   update_drone_position(new_lat, new_lng, new_heading) {
@@ -100,7 +138,7 @@ class Map extends Component {
     this.drone_background_marker.setPosition(new_position);
 
     if(this.get_distance(new_position, this.map.getCenter()) > 50.0) {
-      if (this.follow_drone) {
+      if (this.props.homeState.followDrone) {
         this.pan_to_drone();
       }
     }
@@ -110,30 +148,42 @@ class Map extends Component {
     this.map.panTo(this.drone_marker.getPosition());
   }
 
-  draw_boundary(boundary_pts) {
-    var boundary_coordinates = [];
-
-    for (var pt of boundary_pts) {
-      boundary_coordinates.push({lat: pt.latitude, lng: pt.longitude});
+  draw_fly_zones(fly_zones) {
+    for (var polygon of this.fly_zones) {
+      polygon.setMap(null);
     }
+    this.fly_zones.length = 0;
 
-    var first_pt = boundary_pts[0];
-    boundary_coordinates.push({lat: first_pt.latitude, lng: first_pt.longitude});
+    for (var fly_zone of fly_zones) {
+      var boundary_coordinates = [];
 
-    var boundary = new google.maps.Polygon({
-      path: boundary_coordinates,
-      strokeColor: '#00FF00',
-      strokeOpacity: 0.7,
-      strokeWeight: 3,
-      fillColor: '#00FF00',
-      fillOpacity: 0.25,
-      zIndex: 1
-    });
+      for (var pt of fly_zone.boundary_pts) {
+        boundary_coordinates.push({lat: pt.latitude, lng: pt.longitude});
+      }
 
-    boundary.setMap(this.map);
+      // var first_pt = boundary_pts[0];
+      // boundary_coordinates.push({lat: first_pt.latitude, lng: first_pt.longitude});
+
+      var polygon = new google.maps.Polygon({
+        path: boundary_coordinates,
+        strokeColor: '#00FF00',
+        strokeOpacity: 0.7,
+        strokeWeight: 3,
+        fillColor: '#00FF00',
+        fillOpacity: 0.25,
+      });
+
+      polygon.setMap(this.map);
+      this.fly_zones.push(polygon);
+    }
   }
 
   draw_mission_waypoints(waypoints) {
+    for (var marker of this.mission_waypoints) {
+      marker.setMap(null);
+    }
+    this.mission_waypoints.length = 0;
+
     for (var waypoint of waypoints) {
       var coords = {lat: waypoint.latitude, lng: waypoint.longitude};
       var marker = new google.maps.Marker({
@@ -156,29 +206,55 @@ class Map extends Component {
       google.maps.event.addListener(this.map, "click", () => {
         infowindow.close();
       });
-      this.mission_waypoints.push({marker: marker, coords: coords});
+      this.mission_waypoints.push(marker);
     }
   }
 
-  addMissionWaypoints(currentWaypoints) {
-    for (var waypoint of this.mission_waypoints) {
-      var firstPoint = currentWaypoints[currentWaypoints.length-1] || this.drone_marker.getPosition()
-      var line = new google.maps.Polyline({
-        path: [firstPoint, waypoint.coords],
-        geodesic: true,
-        strokeColor: '#00FF00',
-        strokeOpacity: 0.7,
-        strokeWeight: 3,
-      });
-      line.setMap(this.map);
-      currentWaypoints.push(waypoint.coords);
+  draw_waypoint_path(waypoints) {
+    for (var marker of this.waypoints) {
+      marker.setMap(null);
     }
-    this.props.setWaypoints(currentWaypoints);
+    this.waypoints.length = 0;
+    if (this.waypoint_path) {
+      this.waypoint_path.setMap(null);
+    }
+
+    var polyline = new google.maps.Polyline({
+      path: [this.drone_marker.getPosition()].concat(waypoints),
+      geodesic: true,
+      strokeColor: '#0000FF',
+      strokeOpacity: 0.7,
+      strokeWeight: 3,
+    });
+    polyline.setMap(this.map);
+    this.waypoint_path = polyline
+
+    for (var waypoint of waypoints) {
+      if (waypoint.fromMission) {
+        continue;
+      }
+      var marker = new google.maps.Marker({
+        map: this.map,
+        position: waypoint
+      });
+      let infowindow = new google.maps.InfoWindow({
+      content: 'Lat: ' + waypoint.lat + '<br>' + 
+               'Lng: ' + waypoint.lng + '<br>' +
+               'Alt: ' + waypoint.alt + ' ft'
+      });
+      marker.addListener('click', () => {
+        infowindow.open(this.map, marker);
+      });
+      google.maps.event.addListener(this.map, "click", () => {
+        infowindow.close();
+      });
+      this.waypoints.push(marker);
+    }
   }
 
   set_stationary_obstacles(obstacles) {
     // Remove any old stationary obstacles that existed before update.
-    for(let stationary_obstacle of this.stationary_obstacles) {
+    for (let stationary_obstacle of this.stationary_obstacles) {
       stationary_obstacle.circle.setMap(null);
     }
 
@@ -283,12 +359,6 @@ class Map extends Component {
     var d = R * c;
 
     return d; // returns the distance in meter
-  }
-
-  refreshMapSize() {
-    var center = this.map.getCenter();
-    google.maps.event.trigger(this.map, "resize");
-    this.map.panTo(center);
   }
 };
 

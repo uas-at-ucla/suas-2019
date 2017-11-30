@@ -12,7 +12,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import sys
 sys.stderr = open('/dev/null', 'w')
 
-USE_INTEROP = False if len(sys.argv) > 1 and sys.argv[1] == "nointerop" else True
+USE_INTEROP = True
 
 sys.dont_write_bytecode = True
 
@@ -24,7 +24,7 @@ import flask_socketio, socketIO_client
 import signal
 import time
 import json
-import _thread
+import threading
 if USE_INTEROP:
     import interop
 
@@ -148,8 +148,8 @@ def listen_for_communications():
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
-    _thread.start_new_thread(listen_for_communications, ())
+    threading.Thread(target=listen_for_communications).start()
     if USE_INTEROP:
-        _thread.start_new_thread(refresh_moving_obstacles, ())
+        threading.Thread(target=refresh_moving_obstacles).start()
 
     interface_socketio.run(app, '0.0.0.0', port = 8084)

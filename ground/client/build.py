@@ -17,6 +17,7 @@ def signal_received(signal, frame):
 
 if __name__ == "__main__":
     processes = process_manager.ProcessManager()
+    signal.signal(signal.SIGINT, signal_received)
 
     build = False
 
@@ -41,6 +42,4 @@ if __name__ == "__main__":
             with open("build_commit.txt", 'w') as file:
                 file.write(latest_commit_id)
     else:
-        print "Build is up to date!"
-
-    signal.signal(signal.SIGINT, signal_received)
+        print "React build is up to date!"
