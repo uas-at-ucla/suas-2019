@@ -26,7 +26,7 @@ class Home extends Component {
           setHomeState={this.setHomeState} homeState={this.state}/>
         <div id="left_side">
           <div id="top_left">
-            <img id="logo" src={logo} width="270px"/>
+            <img id="logo" src={logo} width="270px" alt=""/>
             <div id="map_buttons">
               <div>
                 <button id="follow_drone_btn" className="btn btn-dark" onClick={this.followDrone}>
