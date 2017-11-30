@@ -21,6 +21,8 @@ import commander
 
 class TestControl(unittest.TestCase):
     def setUp(self):
+        self.RUN_GROUND = True;
+
         self.test_drone = process_manager.ProcessManager()
 
         signal.signal(signal.SIGINT, self.kill_processes_and_exit)
@@ -32,8 +34,10 @@ class TestControl(unittest.TestCase):
         self.kill_processes()
 
     def test_commander(self):
-        self.test_drone.run_command("python ../ground/client/build.py")
-        self.test_drone.spawn_process("python ../ground/run_ground.py")
+        if self.RUN_GROUND:
+            self.test_drone.run_command("python ../ground/client/build.py")
+            self.test_drone.spawn_process("python ../ground/run_ground.py")
+
         self.test_drone.spawn_process( \
                 "python commander/drone_communications.py")
 

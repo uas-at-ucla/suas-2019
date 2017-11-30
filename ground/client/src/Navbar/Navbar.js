@@ -4,10 +4,6 @@ import './Navbar.css'
 import Option from './Option';
 
 class Navbar extends Component {
-  constructor(props) {
-    super(props);
-
-  }
 
   // Display tab titles here
   getOptions() {
@@ -20,7 +16,7 @@ class Navbar extends Component {
   renderOptions() {
     return this.getOptions().map((option) => (
       <Option key={option._id} option={option}
-              handleTab={this.props.handleTab}/>
+              app={this.props.app}/>
     ));
   }
 
@@ -29,8 +25,8 @@ class Navbar extends Component {
       <div className="Navbar">
           <div className="nav">
             {this.renderOptions()}
-            <button className={`btn btn-sm align-middle btn-outline-light ${!this.props.interopBtnEnabled ? 'disabled' : null}`}
-              id="interop_btn" onClick={this.props.interopBtnClick}>{this.props.interopBtnText}</button>
+            <button className={`btn btn-sm align-middle btn-outline-light ${!this.props.app.state.interopBtnEnabled ? 'disabled' : null}`}
+              id="interop_btn" onClick={this.props.app.connectToInterop}>{this.props.app.state.interopBtnText}</button>
           </div>
       </div>
     );
