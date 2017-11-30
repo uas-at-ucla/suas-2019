@@ -14,16 +14,16 @@ class Home extends Component {
 	}
 
   componentWillReceiveProps(nextProps) {
-    if (!this.state.mission && nextProps.app.state.missions.length > 0) {
-      this.setState({mission: nextProps.app.state.missions[0]});
+    if (!this.state.mission && nextProps.appState.missions.length > 0) {
+      this.setState({mission: nextProps.appState.missions[0]});
     }
   }
 
   render() {
     return (
       <div className="Home">
-        <Map id="map" appState={this.props.app.state} 
-          setHomeState={this.setHomeState} homeState={this.state}/>
+        <Map id="map" appState={this.props.appState}
+             homeState={this.state} setHomeState={this.setHomeState}/>
         <div id="left_side">
           <div id="top_left">
             <img id="logo" src={logo} width="270px" alt=""/>
@@ -41,11 +41,13 @@ class Home extends Component {
             </div>
           </div>
           <div id="sidebar" ref="sidebar" className={!this.state.isSidebarShown ? 'hidden' : null}>
-            <Dashboard app={this.props.app} home={this}/>
+            <Dashboard appState={this.props.appState}
+                       homeState={this.state} setHomeState={this.setHomeState}
+                       socketEmit={this.props.socketEmit}/>
           </div>
         </div>
         <div id="right_side">
-          <Telemetry app={this.props.app}/>
+          <Telemetry appState={this.props.appState}/>
         </div>
       </div>
     );

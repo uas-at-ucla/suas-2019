@@ -18,6 +18,7 @@ class Map extends Component {
     return nextProps[stateProp][key] !== this.props[stateProp][key];
   }
 
+//TODO make dictionary with prop names as keys with functions as the values, which will systematically get called
   componentWillReceiveProps(nextProps) {
     if (this.stateDidChange(nextProps, 'homeState', 'followDrone')) {
       if (nextProps.homeState.followDrone) {
