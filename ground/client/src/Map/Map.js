@@ -8,6 +8,9 @@ const METERS_PER_FOOT = 0.3048;
 const google = window.google;
 
 class Map extends Component {
+
+  whenStateChanges = []
+
   render() {
     return (
       <div className="Map" ref="map"></div>
@@ -18,42 +21,19 @@ class Map extends Component {
     return nextProps[stateProp][key] !== this.props[stateProp][key];
   }
 
-//TODO make dictionary with prop names as keys with functions as the values, which will systematically get called
+  registerStateDepFunction(stateProp, key, func) {
+    func(this.props);
+    this.whenStateChanges.push({
+      stateProp: stateProp,
+      key: key,
+      func: func
+    })
+  }
+
   componentWillReceiveProps(nextProps) {
-    if (this.stateDidChange(nextProps, 'homeState', 'followDrone')) {
-      if (nextProps.homeState.followDrone) {
-        this.pan_to_drone();
-        this.map.setZoom(16);
-      }
-    }
-
-    if (this.stateDidChange(nextProps, 'homeState', 'mission')) {
-      let mission = nextProps.homeState.mission;
-      if (mission) {
-        this.draw_mission_waypoints(mission.mission_waypoints);
-        this.draw_fly_zones(mission.fly_zones);
-      }
-    }
-
-    if (this.stateDidChange(nextProps, 'homeState', 'waypoints')) {
-      this.draw_waypoint_path(nextProps.homeState.waypoints);
-    }
-
-    if (this.stateDidChange(nextProps, 'appState', 'telemetry')) {
-      let telemetry = nextProps.appState.telemetry;
-      this.update_drone_position(telemetry.gps_lat, telemetry.gps_lng, telemetry.heading);
-    }
-
-    if (this.stateDidChange(nextProps, 'appState', 'stationary_obstacles')) {
-      let obstacles = nextProps.appState.stationary_obstacles;
-      this.set_stationary_obstacles(obstacles);
-    }
-
-    if (this.stateDidChange(nextProps, 'appState', 'moving_obstacles')) {
-      let obstacles = nextProps.appState.moving_obstacles;
-      if (!this.update_moving_obstacles(obstacles)) {
-        console.log('New moving obstacles received!');
-        this.set_moving_obstacles(obstacles);
+    for (let item of this.whenStateChanges) {
+      if (this.stateDidChange(nextProps, item.stateProp, item.key)) {
+        item.func(nextProps);
       }
     }
   }
@@ -128,13 +108,82 @@ class Map extends Component {
         this.pan_to_drone();
       }
     });
+
+    this.registerStateDepFunction('homeState', 'followDrone', this.pan_to_drone_if_following);
+    this.registerStateDepFunction('homeState', 'mission', this.draw_mission_details);
+    this.registerStateDepFunction('homeState', 'waypoints', this.draw_waypoint_path);
+    this.registerStateDepFunction('appState', 'telemetry', this.update_drone_position);
+    this.registerStateDepFunction('appState', 'stationary_obstacles', this.set_stationary_obstacles);
+    this.registerStateDepFunction('appState', 'moving_obstacles', this.refresh_moving_obstacles);
   }
 
-  update_drone_position(new_lat, new_lng, new_heading) {
-    let new_position = new google.maps.LatLng(new_lat, new_lng);
+  pan_to_drone_if_following = (props) => {
+    if (props.homeState.followDrone) {
+      this.pan_to_drone();
+      this.map.setZoom(16);
+    }
+  }
+
+  draw_mission_details = (props) => {
+    let mission = props.homeState.mission;
+    if (mission) {
+      this.draw_mission_waypoints(mission.mission_waypoints);
+      this.draw_fly_zones(mission.fly_zones);
+    }
+  }
+
+  draw_waypoint_path = (props) => {
+    let waypoints = props.homeState.waypoints
+    for (let marker of this.waypoints) {
+      marker.setMap(null);
+    }
+    this.waypoints.length = 0;
+    if (this.waypoint_path) {
+      this.waypoint_path.setMap(null);
+    }
+
+    let polyline = new google.maps.Polyline({
+      path: [this.drone_marker.getPosition()].concat(waypoints),
+      geodesic: true,
+      strokeColor: '#0000FF',
+      strokeOpacity: 0.7,
+      strokeWeight: 3,
+    });
+    polyline.setMap(this.map);
+    this.waypoint_path = polyline
+
+    for (let waypoint of waypoints) {
+      if (waypoint.fromMission) {
+        continue;
+      }
+      let marker = new google.maps.Marker({
+        map: this.map,
+        position: waypoint
+      });
+      let infowindow = new google.maps.InfoWindow({
+      content: 'Lat: ' + waypoint.lat + '<br>' + 
+               'Lng: ' + waypoint.lng + '<br>' +
+               'Alt: ' + waypoint.alt + ' ft'
+      });
+      marker.addListener('click', () => {
+        infowindow.open(this.map, marker);
+      });
+      google.maps.event.addListener(this.map, "click", () => {
+        infowindow.close();
+      });
+      this.waypoints.push(marker);
+    }
+  }
+
+  update_drone_position = (props) => {
+    let telemetry = props.appState.telemetry;
+    if (!telemetry) {
+      return;
+    }
+    let new_position = new google.maps.LatLng(telemetry.gps_lat, telemetry.gps_lng);
 
     this.drone_marker.setPosition(new_position);
-    this.drone_marker_icon.rotation = new_heading;
+    this.drone_marker_icon.rotation = telemetry.heading;
     this.drone_marker.setIcon(this.drone_marker_icon);
     this.drone_background_marker.setPosition(new_position);
 
@@ -142,6 +191,32 @@ class Map extends Component {
       if (this.props.homeState.followDrone) {
         this.pan_to_drone();
       }
+    }
+  }
+
+  set_stationary_obstacles = (props) => {
+    let obstacles = props.appState.stationary_obstacles;
+    // Remove any old stationary obstacles that existed before update.
+    for (let stationary_obstacle of this.stationary_obstacles) {
+      stationary_obstacle.circle.setMap(null);
+    }
+
+    this.stationary_obstacles.length = 0;
+
+    // Add in the new stationary obstacles.
+    for (let obstacle of obstacles) {
+      console.log("making static obstacle");
+      let stationary_obstacle = this.make_obstacle_map_object(obstacle);
+
+      this.stationary_obstacles.push(stationary_obstacle);
+    }
+  }
+
+  refresh_moving_obstacles = (props) => {
+    let obstacles = props.appState.moving_obstacles;
+    if (!this.update_moving_obstacles(obstacles)) {
+      console.log('New moving obstacles received!');
+      this.set_moving_obstacles(obstacles);
     }
   }
 
@@ -208,65 +283,6 @@ class Map extends Component {
         infowindow.close();
       });
       this.mission_waypoints.push(marker);
-    }
-  }
-
-  draw_waypoint_path(waypoints) {
-    for (let marker of this.waypoints) {
-      marker.setMap(null);
-    }
-    this.waypoints.length = 0;
-    if (this.waypoint_path) {
-      this.waypoint_path.setMap(null);
-    }
-
-    let polyline = new google.maps.Polyline({
-      path: [this.drone_marker.getPosition()].concat(waypoints),
-      geodesic: true,
-      strokeColor: '#0000FF',
-      strokeOpacity: 0.7,
-      strokeWeight: 3,
-    });
-    polyline.setMap(this.map);
-    this.waypoint_path = polyline
-
-    for (let waypoint of waypoints) {
-      if (waypoint.fromMission) {
-        continue;
-      }
-      let marker = new google.maps.Marker({
-        map: this.map,
-        position: waypoint
-      });
-      let infowindow = new google.maps.InfoWindow({
-      content: 'Lat: ' + waypoint.lat + '<br>' + 
-               'Lng: ' + waypoint.lng + '<br>' +
-               'Alt: ' + waypoint.alt + ' ft'
-      });
-      marker.addListener('click', () => {
-        infowindow.open(this.map, marker);
-      });
-      google.maps.event.addListener(this.map, "click", () => {
-        infowindow.close();
-      });
-      this.waypoints.push(marker);
-    }
-  }
-
-  set_stationary_obstacles(obstacles) {
-    // Remove any old stationary obstacles that existed before update.
-    for (let stationary_obstacle of this.stationary_obstacles) {
-      stationary_obstacle.circle.setMap(null);
-    }
-
-    this.stationary_obstacles.length = 0;
-
-    // Add in the new stationary obstacles.
-    for (let obstacle of obstacles) {
-      console.log("making static obstacle");
-      let stationary_obstacle = this.make_obstacle_map_object(obstacle);
-
-      this.stationary_obstacles.push(stationary_obstacle);
     }
   }
 
