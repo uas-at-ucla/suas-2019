@@ -4,7 +4,7 @@ import './Dashboard.css'
 class Dashboard extends Component {
 
   render() {
-    const waypointsList = this.props.home.state.waypoints.map((waypoint) =>
+    const waypointsList = this.props.homeState.waypoints.map((waypoint) =>
       <li>{waypoint.lat + ', ' + waypoint.lng + ', ' + waypoint.alt + ' ft'}</li>
     );
 
@@ -39,8 +39,8 @@ class Dashboard extends Component {
   }
 
   addMissionWaypoints = () => {
-    let waypoints = this.props.home.state.waypoints.slice();
-    let mission_waypoints = this.props.home.state.mission.mission_waypoints;
+    let waypoints = this.props.homeState.waypoints.slice();
+    let mission_waypoints = this.props.homeState.mission.mission_waypoints;
     for (let mission_waypoint of mission_waypoints) {
       let waypoint = {
         lat: mission_waypoint.latitude,
@@ -50,18 +50,18 @@ class Dashboard extends Component {
       }
       waypoints.push(waypoint);
     }
-    this.props.home.setState({waypoints: waypoints});
+    this.props.setHomeState({waypoints: waypoints});
   }
 
   sendGotoWaypointsCommand = () => {
     let commands = [];
-    for (let waypoint of this.props.home.state.waypoints) {
+    for (let waypoint of this.props.homeState.waypoints) {
       commands.push({
         type: 'goto',
         pos: waypoint
       });
     }
-    this.props.app.socketEmit('execute_commands', commands);
+    this.props.socketEmit('execute_commands', commands);
   }
 }
 

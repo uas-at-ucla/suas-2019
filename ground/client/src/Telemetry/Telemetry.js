@@ -6,8 +6,7 @@ var METERS_PER_SECOND_TO_MPH = 2.23694;
 class Telemetry extends Component {
 
   render() {
-    this.appState = this.props.app.state;
-    this.telemetry = this.appState.telemetry;
+    this.telemetry = this.props.appState.telemetry;
     this.telemetryText = {};
     if (this.telemetry) {
       this.telemetryText = {
@@ -24,8 +23,8 @@ class Telemetry extends Component {
     return (
       <div className="Telemetry card text-white">
         <div id="full_state">
-          <span id="armed_indicator">{this.appState.droneArmedStatus}</span>
-          <span id="state_indicator">{this.appState.droneState}</span>
+          <span id="armed_indicator">{this.props.appState.droneArmedStatus}</span>
+          <span id="state_indicator">{this.props.appState.droneState}</span>
         </div>
         <table>
           <tbody>
