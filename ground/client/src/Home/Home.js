@@ -9,7 +9,7 @@ class Home extends Component {
 	state = {
 		isSidebarShown: true,
     followDrone: true,
-    mission: null,
+    mission: this.props.appState.missions[0] || null,
     waypoints: []
 	}
 
