@@ -13,22 +13,20 @@ class App extends Component {
       optionSelected: 'Home', // Default is Home
       droneArmedStatus: "Offline",
       droneState: "",
-      telemetryText: {},
+      telemetry: null,
       interopBtnText: "Connect to Interop",
-      interopBtnEnabled: true
+      interopBtnEnabled: true,
+      moving_obstacles: [],
+      stationary_obstacles: [],
+      missions: []
     };
-    this.handleTab = this.handleTab.bind(this);
-    this.interopBtnClick = this.interopBtnClick.bind(this);
   }
 
   // Render based on button clicks in Navbar
   renderSelection() {
     if (this.state.optionSelected === "Home") {
       return (
-        <Home ref="home" telemetryText={this.state.telemetryText}
-              droneState={this.state.droneState}
-              droneArmedStatus={this.state.droneArmedStatus}
-              socket={this.socket}/>
+        <Home app={this}/>
       );
     }
     else if (this.state.optionSelected === "Analytics") {
@@ -38,27 +36,20 @@ class App extends Component {
     }
   }
 
-  handleTab(option) {
-    this.setState({
-      optionSelected: option,
-    });
+  setPage(option) {
+    this.setState({optionSelected: option});
   }
 
   render() {
     return (
       <div className="App">
-        <Navbar interopBtnClick={this.interopBtnClick}
-                interopBtnText={this.state.interopBtnText}
-                interopBtnEnabled={this.state.interopBtnEnabled}
-                handleTab={this.handleTab}/>
+        <Navbar app={this}/>
         {this.renderSelection()}
       </div>
     );
   }
 
   componentDidMount() {
-    this.map = this.refs.home.refs.map;
-
     var SOCKET_DOMAIN = "0.0.0.0";
     var SOCKET_PORT = 8084;
 
@@ -79,12 +70,8 @@ class App extends Component {
     });
 
     this.socket.on('telemetry', (telemetry) => {
-      // console.log("got something!");
-      this.map.update_drone_position(
-        Number(telemetry["gps_lat"]),
-        Number(telemetry["gps_lng"]),
-        Number(telemetry["heading"])
-      );
+      // console.log(telemetry);
+      this.setState({telemetry: telemetry});
 
       if(telemetry["armed"] === "False") {
         this.setState({droneArmedStatus: "Disarmed"});
@@ -93,45 +80,28 @@ class App extends Component {
       }
 
       this.setState({droneState: this.convert_to_title_text(telemetry["state"])});
-
-      // console.log(telemetry);
-      var METERS_PER_SECOND_TO_MPH = 2.23694;
-      this.setState({
-        telemetryText: {
-          speed: this.round(telemetry["air_speed"] * METERS_PER_SECOND_TO_MPH, 1)
-            + "mph",
-          altitude: this.round(telemetry["gps_rel_alt"], 1) + " meters",
-          position: this.round(telemetry["gps_lat"], 7) + ", "
-            + this.round(telemetry["gps_lng"], 7),
-          satellites: this.round(telemetry["gps_satellites"], 7),
-          heading: this.round(telemetry["heading"], 7)
-        }
-      })
     });
 
     this.socket.on('initial_data', (data) => {
       this.received_interop_status(data.interop_connected);
       if (data.interop_connected) {
-        this.map.set_stationary_obstacles(data.stationary_obstacles);
-        this.map.set_moving_obstacles(data.moving_obstacles);
-        var mission = data.missions[0];
-        for (var fly_zone of mission.fly_zones) {
-          this.map.draw_boundary(fly_zone.boundary_pts);
-        }
-        this.map.draw_mission_waypoints(mission.mission_waypoints);
+        this.setState({stationary_obstacles: data.stationary_obstacles});
+        this.setState({moving_obstacles: data.moving_obstacles});
+        this.setState({missions: data.missions});
       }
     });
 
     this.socket.on('moving_obstacles', (moving_obstacles) => {
-      if (!this.map.update_moving_obstacles(moving_obstacles)) {
-        console.log("Different moving obstacles received.");
-        this.map.set_moving_obstacles(moving_obstacles);
-      }
+      this.setState({moving_obstacles: moving_obstacles});
     });
 
     this.socket.on('interop_connected', (is_interop_connected) =>
       this.received_interop_status(is_interop_connected)
     );
+  }
+
+  socketEmit(message, data) {
+    this.socket.emit(message, data);
   }
 
   received_interop_status(is_interop_connected) {
@@ -145,7 +115,7 @@ class App extends Component {
     }
   }
 
-  interopBtnClick() {
+  connectToInterop = () => {
     this.setState({interopBtnText: "Connecting..."});
     this.setState({interopBtnEnabled: false});
     this.socket.emit('connect_to_interop');
@@ -155,11 +125,6 @@ class App extends Component {
     return str.replace(/\w\S*/g, function(txt){
       return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
-  }
-
-  round(value, precision) {
-    var multiplier = Math.pow(10, precision || 0);
-    return Math.round(value * multiplier) / multiplier;
   }
 }
 
