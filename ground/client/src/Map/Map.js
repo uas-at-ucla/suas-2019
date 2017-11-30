@@ -27,7 +27,7 @@ class Map extends Component {
     }
 
     if (this.stateDidChange(nextProps, 'homeState', 'mission')) {
-      var mission = nextProps.homeState.mission;
+      let mission = nextProps.homeState.mission;
       if (mission) {
         this.draw_mission_waypoints(mission.mission_waypoints);
         this.draw_fly_zones(mission.fly_zones);
@@ -39,17 +39,17 @@ class Map extends Component {
     }
 
     if (this.stateDidChange(nextProps, 'appState', 'telemetry')) {
-      var telemetry = nextProps.appState.telemetry;
+      let telemetry = nextProps.appState.telemetry;
       this.update_drone_position(telemetry.gps_lat, telemetry.gps_lng, telemetry.heading);
     }
 
     if (this.stateDidChange(nextProps, 'appState', 'stationary_obstacles')) {
-      var obstacles = nextProps.appState.stationary_obstacles;
+      let obstacles = nextProps.appState.stationary_obstacles;
       this.set_stationary_obstacles(obstacles);
     }
 
     if (this.stateDidChange(nextProps, 'appState', 'moving_obstacles')) {
-      var obstacles = nextProps.appState.moving_obstacles;
+      let obstacles = nextProps.appState.moving_obstacles;
       if (!this.update_moving_obstacles(obstacles)) {
         console.log('New moving obstacles received!');
         this.set_moving_obstacles(obstacles);
@@ -58,7 +58,7 @@ class Map extends Component {
   }
 
   componentDidMount() {
-    var field = {lat : 38.1470000, lng : -76.4284722};
+    let field = {lat : 38.1470000, lng : -76.4284722};
 
     this.map = new google.maps.Map(this.refs.map, {
       center : field,
@@ -130,7 +130,7 @@ class Map extends Component {
   }
 
   update_drone_position(new_lat, new_lng, new_heading) {
-    var new_position = new google.maps.LatLng(new_lat, new_lng);
+    let new_position = new google.maps.LatLng(new_lat, new_lng);
 
     this.drone_marker.setPosition(new_position);
     this.drone_marker_icon.rotation = new_heading;
@@ -149,22 +149,22 @@ class Map extends Component {
   }
 
   draw_fly_zones(fly_zones) {
-    for (var polygon of this.fly_zones) {
+    for (let polygon of this.fly_zones) {
       polygon.setMap(null);
     }
     this.fly_zones.length = 0;
 
-    for (var fly_zone of fly_zones) {
-      var boundary_coordinates = [];
+    for (let fly_zone of fly_zones) {
+      let boundary_coordinates = [];
 
-      for (var pt of fly_zone.boundary_pts) {
+      for (let pt of fly_zone.boundary_pts) {
         boundary_coordinates.push({lat: pt.latitude, lng: pt.longitude});
       }
 
-      // var first_pt = boundary_pts[0];
+      // let first_pt = boundary_pts[0];
       // boundary_coordinates.push({lat: first_pt.latitude, lng: first_pt.longitude});
 
-      var polygon = new google.maps.Polygon({
+      let polygon = new google.maps.Polygon({
         path: boundary_coordinates,
         strokeColor: '#00FF00',
         strokeOpacity: 0.7,
@@ -179,14 +179,14 @@ class Map extends Component {
   }
 
   draw_mission_waypoints(waypoints) {
-    for (var marker of this.mission_waypoints) {
+    for (let marker of this.mission_waypoints) {
       marker.setMap(null);
     }
     this.mission_waypoints.length = 0;
 
-    for (var waypoint of waypoints) {
-      var coords = {lat: waypoint.latitude, lng: waypoint.longitude};
-      var marker = new google.maps.Marker({
+    for (let waypoint of waypoints) {
+      let coords = {lat: waypoint.latitude, lng: waypoint.longitude};
+      let marker = new google.maps.Marker({
         map: this.map,
         position: coords,
         label: {
@@ -211,7 +211,7 @@ class Map extends Component {
   }
 
   draw_waypoint_path(waypoints) {
-    for (var marker of this.waypoints) {
+    for (let marker of this.waypoints) {
       marker.setMap(null);
     }
     this.waypoints.length = 0;
@@ -219,7 +219,7 @@ class Map extends Component {
       this.waypoint_path.setMap(null);
     }
 
-    var polyline = new google.maps.Polyline({
+    let polyline = new google.maps.Polyline({
       path: [this.drone_marker.getPosition()].concat(waypoints),
       geodesic: true,
       strokeColor: '#0000FF',
@@ -229,11 +229,11 @@ class Map extends Component {
     polyline.setMap(this.map);
     this.waypoint_path = polyline
 
-    for (var waypoint of waypoints) {
+    for (let waypoint of waypoints) {
       if (waypoint.fromMission) {
         continue;
       }
-      var marker = new google.maps.Marker({
+      let marker = new google.maps.Marker({
         map: this.map,
         position: waypoint
       });
@@ -349,14 +349,14 @@ class Map extends Component {
   }
 
   get_distance(p1, p2) {
-    var R = 6378137; // Earth’s mean radius in meter
-    var dLat = this.rad(p2.lat() - p1.lat());
-    var dLong = this.rad(p2.lng() - p1.lng());
-    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    let R = 6378137; // Earth’s mean radius in meter
+    let dLat = this.rad(p2.lat() - p1.lat());
+    let dLong = this.rad(p2.lng() - p1.lng());
+    let a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(this.rad(p1.lat())) * Math.cos(this.rad(p2.lat())) *
       Math.sin(dLong / 2) * Math.sin(dLong / 2);
-    var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    var d = R * c;
+    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    let d = R * c;
 
     return d; // returns the distance in meter
   }

@@ -50,10 +50,10 @@ class App extends Component {
   }
 
   componentDidMount() {
-    var SOCKET_DOMAIN = "0.0.0.0";
-    var SOCKET_PORT = 8084;
+    const SOCKET_DOMAIN = "0.0.0.0";
+    const SOCKET_PORT = 8084;
 
-    var SOCKET_ADDRESS = "http://" + SOCKET_DOMAIN + ":" + SOCKET_PORT;
+    const SOCKET_ADDRESS = "http://" + SOCKET_DOMAIN + ":" + SOCKET_PORT;
 
     this.socket = io.connect(SOCKET_ADDRESS);
 

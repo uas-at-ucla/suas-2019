@@ -39,10 +39,10 @@ class Dashboard extends Component {
   }
 
   addMissionWaypoints = () => {
-    var waypoints = this.props.home.state.waypoints.slice();
-    var mission_waypoints = this.props.home.state.mission.mission_waypoints;
-    for (var mission_waypoint of mission_waypoints) {
-      var waypoint = {
+    let waypoints = this.props.home.state.waypoints.slice();
+    let mission_waypoints = this.props.home.state.mission.mission_waypoints;
+    for (let mission_waypoint of mission_waypoints) {
+      let waypoint = {
         lat: mission_waypoint.latitude,
         lng: mission_waypoint.longitude,
         alt: mission_waypoint.altitude_msl,
@@ -54,8 +54,8 @@ class Dashboard extends Component {
   }
 
   sendGotoWaypointsCommand = () => {
-    var commands = [];
-    for (var waypoint of this.props.home.state.waypoints) {
+    let commands = [];
+    for (let waypoint of this.props.home.state.waypoints) {
       commands.push({
         type: 'goto',
         pos: waypoint
