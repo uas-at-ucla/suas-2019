@@ -3,10 +3,9 @@ import React, { Component } from 'react';
 // Option Componeent
 class Option extends Component {
 
-  // Callback function to Parent Component
   handleOption = (e) => {
     e.preventDefault();
-    this.props.app.setPage(this.props.option.section);
+    this.props.setAppState({optionSelected: this.props.option.section});
   }
 
   render() {

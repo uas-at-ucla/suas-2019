@@ -26,7 +26,8 @@ class App extends Component {
   renderSelection() {
     if (this.state.optionSelected === "Home") {
       return (
-        <Home app={this}/>
+        <Home appState={this.state}
+              socketEmit={this.socketEmit}/>
       );
     }
     else if (this.state.optionSelected === "Analytics") {
@@ -36,14 +37,15 @@ class App extends Component {
     }
   }
 
-  setPage(option) {
-    this.setState({optionSelected: option});
+  setAppState = (newState) => {
+    this.setState(newState);
   }
 
   render() {
     return (
       <div className="App">
-        <Navbar app={this}/>
+        <Navbar appState={this.state} setAppState={this.setAppState}
+                socketEmit={this.socketEmit}/>
         {this.renderSelection()}
       </div>
     );
@@ -100,8 +102,12 @@ class App extends Component {
     );
   }
 
-  socketEmit(message, data) {
-    this.socket.emit(message, data);
+  socketEmit = (message, data) => {
+    if (data === undefined) {
+      this.socket.emit(message);
+    } else {
+      this.socket.emit(message, data);
+    }
   }
 
   received_interop_status(is_interop_connected) {
@@ -113,12 +119,6 @@ class App extends Component {
       this.setState({interopBtnEnabled: true});
       setTimeout(() => this.setState({interopBtnText: "Connect to Interop"}), 1000);
     }
-  }
-
-  connectToInterop = () => {
-    this.setState({interopBtnText: "Connecting..."});
-    this.setState({interopBtnEnabled: false});
-    this.socket.emit('connect_to_interop');
   }
 
   convert_to_title_text(str) {

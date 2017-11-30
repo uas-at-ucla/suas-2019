@@ -16,7 +16,7 @@ class Navbar extends Component {
   renderOptions() {
     return this.getOptions().map((option) => (
       <Option key={option._id} option={option}
-              app={this.props.app}/>
+              appState={this.props.appState} setAppState={this.props.setAppState}/>
     ));
   }
 
@@ -25,11 +25,17 @@ class Navbar extends Component {
       <div className="Navbar">
           <div className="nav">
             {this.renderOptions()}
-            <button className={`btn btn-sm align-middle btn-outline-light ${!this.props.app.state.interopBtnEnabled ? 'disabled' : null}`}
-              id="interop_btn" onClick={this.props.app.connectToInterop}>{this.props.app.state.interopBtnText}</button>
+            <button className={`btn btn-sm align-middle btn-outline-light ${!this.props.appState.interopBtnEnabled ? 'disabled' : null}`}
+                    id="interop_btn" onClick={this.connectToInterop}>{this.props.appState.interopBtnText}</button>
           </div>
       </div>
     );
+  }
+
+  connectToInterop = () => {
+    this.props.setAppState({interopBtnText: "Connecting..."});
+    this.props.setAppState({interopBtnEnabled: false});
+    this.props.socketEmit('connect_to_interop');
   }
 }
 
