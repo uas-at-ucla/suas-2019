@@ -13,7 +13,7 @@ def main():
 @socketio.on('connect')
 def connect():
     print("Someone connected to drone_communications!")
-    emit('did_connect')
+    emit('connect_response')
 
 @socketio.on('execute_commands')
 def execute_commands(data):
