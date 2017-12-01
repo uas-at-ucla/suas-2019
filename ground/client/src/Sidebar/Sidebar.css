@@ -13,3 +13,29 @@
 #waypoints_list {
   padding-left: 15px;
 }
+
+.panel-expand {
+	float: right;
+	background: none;
+	border: none;
+	color: white;
+}
+
+.panel-expand:focus {
+	outline: 0;
+}
+
+.Panel .modal-content {
+	background-color: rgba(35, 35, 35, 0.9) !important;
+	border-color: #444 !important;
+	color: white;
+}
+
+.Panel .modal-header {
+	border-color: #333 !important;
+}
+
+.Panel .close {
+    color: white !important;
+    text-shadow: none !important;
+}
