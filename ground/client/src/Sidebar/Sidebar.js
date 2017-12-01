@@ -21,12 +21,6 @@ class Sidebar extends Component {
                         setHomeState={this.props.setHomeState}/>
           </Panel>
         </div>
-        <div className="card text-white">
-          <h4 className="card-header">Received Images</h4>
-          <div className="card-body">
-            <p className="card-text">Feature coming... eventually</p>
-          </div>
-        </div>
       </div>
     );
   }
