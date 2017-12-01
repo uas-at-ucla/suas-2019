@@ -35,6 +35,9 @@ if __name__ == "__main__":
             if latest_commit_id != build_commit_id:
                 print "Detected new commit. Building React App..."
                 build = True
+    else:
+        print "Building React App..."
+        build = True
 
     if build:
         build_exit_code = processes.run_command("npm run build")
