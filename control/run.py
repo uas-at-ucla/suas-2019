@@ -46,7 +46,11 @@ def main():
 
     communications = drone_commander.get_communications_socket()
     communications.on('execute_commands', execute_commands)
+    communications.on('connect', drone_connected)
     communications.wait()
+
+def drone_connected():
+    pass
 
 def execute_commands(*args):
     commands = args[0]
