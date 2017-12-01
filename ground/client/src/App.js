@@ -65,6 +65,10 @@ class App extends Component {
       this.setState({droneState: ""});
     });
 
+    this.socket.on('drone_connected', () => {
+      console.log("timer started!");
+    });
+
     this.socket.on('disconnect', () => {
       console.log("Disconnected from ground interface feeder!");
       this.setState({droneArmedStatus: "Offline"});
