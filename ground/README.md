@@ -27,14 +27,14 @@ drone will take that flight route.
    ```
 
 ## Compilation
-   Build and launch the ground station:
+   Build and launch the ground station. It will be on http://0.0.0.0:8080 :
    ```bash
    chmod +x launch.sh
    ./launch.sh
    ```
    To save time, this script will only rebuild the React app if you have made local changes to it, or have committed/pulled a commit that you have not built with yet. Look inside launch.sh for more details. This method is used in test_control.py because ```npm start``` does not reliably work when called within other scripts.
 
-   For development with hot reloading, do this:
+   For development with hot reloading, do this, which will run on http://localhost:3000 :
    ```bash
    cd client
    npm start
