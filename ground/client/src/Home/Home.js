@@ -3,7 +3,7 @@ import './Home.css';
 import Sidebar from '../Sidebar/Sidebar'
 import Map from '../Map/Map'
 import Telemetry from '../Telemetry/Telemetry'
-import logo from '../images/vector_logo.svg';
+import logo from '../graphics/vector_logo.svg';
 
 class Home extends Component {
 	state = {

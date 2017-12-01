@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import './Map.css'
 import map_style from './map_style.js'
 import * as gmapcache from './gmapcache/script.js';
-import drone_marker from '../images/drone_marker.svg';
+import drone_marker from '../graphics/drone_marker.svg';
 
 const METERS_PER_FOOT = 0.3048;
 const google = window.google;
