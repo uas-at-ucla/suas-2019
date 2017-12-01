@@ -16,3 +16,9 @@ require('bootstrap/dist/js/bootstrap.min.js');
 
 ReactDOM.render(<App />, document.getElementById('root'));
 registerServiceWorker();
+
+window.onbeforeunload = function() {
+    return true;
+};
+// Comment out last line for test flights
+window.onbeforeunload = null;
