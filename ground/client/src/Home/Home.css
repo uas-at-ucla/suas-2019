@@ -51,7 +51,7 @@
   margin-top: 5px;
 }
 
-#sidebar {
+#sidebar_container {
   position: relative;
   clear: both;
   flex: 1;
@@ -62,7 +62,7 @@
   transition: 0.2s;
 }
 
-#sidebar.hidden {
+#sidebar_container.hidden {
   transform: translateY(100%);
   overflow: hidden;
 }

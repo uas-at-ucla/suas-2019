@@ -139,9 +139,14 @@ def on_telemetry(*args):
                 interop_client = None
                 interface_socketio.emit('interop_connected', False)
 
+def drone_connected():
+    print "connected to drone"
+    interface_socketio.emit('drone_connected')
+
 def listen_for_communications():
     global communications
     communications = socketIO_client.SocketIO('0.0.0.0', 8085)
+    communications.on('did_connect', drone_connected)
     communications.on('telemetry', on_telemetry)
     communications.wait()
 
