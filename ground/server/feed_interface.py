@@ -3,7 +3,14 @@ import os
 # directory that this script is in.
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
+################################################################################
+#                                                                              #
+#           NOTE: ALL ERROR OUTPUT IS BEING PIPED TO /dev/null                 #
+#                 IF THIS CODE HAS ERRORS, THEN THEY WILL NOT APPEAR!          #
+#                                                                              #
+################################################################################
 import sys
+sys.stderr = open('/dev/null', 'w')
 
 USE_INTEROP = True
 
@@ -132,9 +139,14 @@ def on_telemetry(*args):
                 interop_client = None
                 interface_socketio.emit('interop_connected', False)
 
+def drone_connected():
+    print "connected to drone"
+    interface_socketio.emit('drone_connected')
+
 def listen_for_communications():
     global communications
     communications = socketIO_client.SocketIO('0.0.0.0', 8085)
+    communications.on('did_connect', drone_connected)
     communications.on('telemetry', on_telemetry)
     communications.wait()
 
