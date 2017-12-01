@@ -1,32 +1,25 @@
 import React, { Component } from 'react';
-import './Dashboard.css'
+import './Sidebar.css'
+import Panel from './Panel'
+import MissionSelect from './MissionSelect'
+import FlightPath from './FlightPath'
 
-class Dashboard extends Component {
+class Sidebar extends Component {
 
   render() {
-    const waypointsList = this.props.homeState.waypoints.map((waypoint) =>
-      <li>{waypoint.lat + ', ' + waypoint.lng + ', ' + waypoint.alt + ' ft'}</li>
-    );
-
     return (
-      <div className="Dashboard">
+      <div className="Sidebar">
         <div id="sidebar_content">
-          <div className="card text-white">
-            <h4 className="card-header">Missions</h4>
-            <div className="card-body">
-              <p className="card-text">Mission 1</p>
-            </div>
-          </div>
-        </div>
-        <div className="card text-white">
-          <h4 className="card-header">Flight Path</h4>
-          <div className="card-body">
-            <p className="card-text"><b>Waypoints</b></p>
-            <ol id="waypoints_list">{waypointsList}</ol>
-            <button className="btn btn-outline-primary" onClick={this.addMissionWaypoints}>Add Mission Waypoints</button>
-            <button className="btn btn-outline-primary">Add New Waypoint</button>
-            <button className="btn btn-outline-success" onClick={this.sendGotoWaypointsCommand}>Execute!</button>
-          </div>
+          <Panel>
+            <MissionSelect appState={this.props.appState}
+                           homeState={this.props.homeState}
+                           setHomeState={this.props.setHomeState}/>
+          </Panel>
+          <Panel>
+            <FlightPath socketEmit={this.props.socketEmit}
+                        homeState={this.props.homeState}
+                        setHomeState={this.props.setHomeState}/>
+          </Panel>
         </div>
         <div className="card text-white">
           <h4 className="card-header">Received Images</h4>
@@ -65,4 +58,4 @@ class Dashboard extends Component {
   }
 }
 
-export default Dashboard
+export default Sidebar
