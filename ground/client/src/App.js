@@ -5,6 +5,7 @@ import io from 'socket.io-client/dist/socket.io.js';
 
 import Home from './Home/Home';
 import Analytics from './Analytics/Analytics';
+import Images from './images/Images';
 
 class App extends Component {
   constructor(props) {
@@ -33,6 +34,11 @@ class App extends Component {
     else if (this.state.optionSelected === "Analytics") {
       return (
         <Analytics/>
+      );
+    }
+    else if (this.state.optionSelected === "Images") {
+      return (
+        <Images/>
       );
     }
   }

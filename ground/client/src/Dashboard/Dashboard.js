@@ -28,12 +28,6 @@ class Dashboard extends Component {
             <button className="btn btn-outline-success" onClick={this.sendGotoWaypointsCommand}>Execute!</button>
           </div>
         </div>
-        <div className="card text-white">
-          <h4 className="card-header">Received Images</h4>
-          <div className="card-body">
-            <p className="card-text">Feature coming... eventually</p>
-          </div>
-        </div>
       </div>
     );
   }
