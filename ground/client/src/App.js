@@ -32,7 +32,7 @@ class App extends Component {
     }
     else if (this.state.optionSelected === "Analytics") {
       return (
-        <Analytics/>
+        <Analytics appState={this.state}/>
       );
     }
   }
