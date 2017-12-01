@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import './Home.css';
-import Dashboard from '../Dashboard/Dashboard'
+import Sidebar from '../Sidebar/Sidebar'
 import Map from '../Map/Map'
 import Telemetry from '../Telemetry/Telemetry'
 import logo from '../images/vector_logo.svg';
@@ -40,8 +40,8 @@ class Home extends Component {
               </div>
             </div>
           </div>
-          <div id="sidebar" ref="sidebar" className={!this.state.isSidebarShown ? 'hidden' : null}>
-            <Dashboard appState={this.props.appState}
+          <div id="sidebar_container" className={!this.state.isSidebarShown ? 'hidden' : null}>
+            <Sidebar appState={this.props.appState}
                        homeState={this.state} setHomeState={this.setHomeState}
                        socketEmit={this.props.socketEmit}/>
           </div>
