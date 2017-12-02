@@ -143,18 +143,27 @@ def drone_connected():
     print "connected to drone"
     interface_socketio.emit('drone_connected')
 
+def drone_disconnected():
+    print "disconnected from drone!"
+    listen_for_communications()
+
 def listen_for_communications():
     global communications
     communications = socketIO_client.SocketIO('0.0.0.0', 8085)
     communications.on('connect', drone_connected)
+    communications.on('disconnect', drone_disconnected)
     communications.on('telemetry', on_telemetry)
     communications.wait()
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
-    threading.Thread(target=listen_for_communications).start()
+    t = threading.Thread(target=listen_for_communications)
+    t.daemon = True
+    t.start()
     if USE_INTEROP:
-        threading.Thread(target=refresh_moving_obstacles).start()
+        t = threading.Thread(target=refresh_moving_obstacles)
+        t.daemon = True
+        t.start()
 
     interface_socketio.run(app, '0.0.0.0', port = 8084)
