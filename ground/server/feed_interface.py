@@ -145,13 +145,14 @@ def drone_connected():
 
 def drone_disconnected():
     print "disconnected from drone!"
+    communications.disconnect()
     listen_for_communications()
 
 def listen_for_communications():
     global communications
     communications = socketIO_client.SocketIO('0.0.0.0', 8085)
     communications.on('connect', drone_connected)
-    communications.on('disconnect', drone_disconnected)
+    communications.once('disconnect', drone_disconnected)
     communications.on('telemetry', on_telemetry)
     communications.wait()
 
