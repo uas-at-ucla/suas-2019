@@ -6,16 +6,43 @@ drone will take that flight route.
 
 # Content
 * Installation
+* Compilation
 * Framework
 * Competition Rules
 * Other Teams Ground Control Software
-* Extra Objectives
-* Timeline
-* Back-up Plan
 * Platforms and Libraries
 
 ## Installation
-Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/ground/SETUP.md).
+   Make sure you have all of the Python dependencies:
+   ```bash
+   pip install -r ../build/pip_requirements.txt
+   ```
+
+   Install Node from [nodejs.org](https://nodejs.org)
+
+   Install Node Modules:
+   ```bash
+   chmod +x install.sh
+   ./install.sh
+   ```
+
+## Compilation
+   Build and launch the ground station. It will be on http://0.0.0.0:8080 :
+   ```bash
+   chmod +x launch.sh
+   ./launch.sh
+   ```
+   To save time, this script will only rebuild the React app if you have made local changes to it, or have committed/pulled a commit that you have not built with yet. Look inside launch.sh for more details. This method is used in test_control.py because ```npm start``` does not reliably work when called within other scripts.
+
+   For development with hot reloading, do this, which will run on http://localhost:3000 :
+   ```bash
+   cd client
+   npm start
+   ```
+   Then in another shell:
+   ```bash
+   python sever/run_backend.py
+   ```
 
 ## Framework
 * Hardware: Communications system and firmware
@@ -24,8 +51,8 @@ Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/bl
     code for other ground control applications. See MavProxy.
 * Back-end: [Interoperability
   System](http://auvsi-suas-competition-interoperability-system.readthedocs.io/en/latest/),
-  Flask Framework
-* Front-end: TBD
+  Flask Framework, MySQL (future expansion)
+* Front-end: React.js
 
 ## Competition Rules
 * [Competition rules](https://github.com/uas-at-ucla/suas_2018/blob/master/ground/pdfs/comp_rules.pdf) pertaining to the ground station. Read the following pages:
@@ -44,23 +71,6 @@ Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/bl
   * 11th Place: [Alberta's custom ground control software](http://www.auvsi-suas.org/static/competitions/2017/journals/auvsi_suas-2017-journals-university_of_alberta.pdf). See pages 9, 10, 16.
   * 15th Place: [A school from Karnataka, India](http://www.auvsi-suas.org/static/competitions/2017/journals/auvsi_suas-2017-journals-ms_ramaiah.pdf). See pages 12, 13-14, 17.
   * All other schools mainly uesd either QGroundControl or Mission Planner.
-
-## Extra Objectives
-* For cyber security we can include mandatory account login if we are making our
-  ground station through the web - it will ask for username and password.
-* We would like to have a SQL database installed to store account information
-  and passwords, along with flight logs and history.
-
-## Timeline
-* Quarter 1: Research, construct a solid plan on firmware integration with the software, have a prototyping Flask framework ready.
-  * Goal: Have a working ground control software that communicates with the plane and can be tested.
-* Quarter 2: Code, code, and code.
-  * Goal: Have a complete ground control software by end of February.
-* Quarter 3: Testing, debugging, and adding extra features.
-  * Goal: Software should be able to complete all the objectives laid out by the competition rules.
-
-## Back-up Plan
-* Use an open source Linux ground control software.
 
 ## Platforms and Libraries
 See [other open source ground control
