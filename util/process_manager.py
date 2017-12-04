@@ -33,7 +33,11 @@ class ProcessManager:
 
     def run_command(self, command, rel_cwd=None):
         cwd = self.get_cwd(rel_cwd)
-        subprocess.call(command, shell = True, cwd = cwd)
+        return subprocess.call(command, shell = True, cwd = cwd)
+
+    def return_output(self, command, rel_cwd=None):
+        cwd = self.get_cwd(rel_cwd)
+        return subprocess.check_output(command, shell = True, cwd = cwd)
 
     def get_cwd(self, rel_path):
         if rel_path is not None:

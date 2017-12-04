@@ -12,7 +12,6 @@ sys.path.insert(0, 'flight_control')
 sys.path.insert(0, 'commander')
 import time
 import signal
-import urllib
 import unittest
 from unittest import TestLoader, TestSuite, TextTestRunner
 
@@ -22,7 +21,7 @@ import commander
 
 class TestControl(unittest.TestCase):
     def setUp(self):
-        self.USE_INTEROP = True
+        self.RUN_GROUND = True;
 
         self.test_drone = process_manager.ProcessManager()
 
@@ -35,11 +34,10 @@ class TestControl(unittest.TestCase):
         self.kill_processes()
 
     def test_commander(self):
-        if self.USE_INTEROP:
-            self.test_drone.spawn_process("python ../ground/run_interop.py")
+        if self.RUN_GROUND:
+            self.test_drone.run_command("python ../ground/client/build.py")
+            self.test_drone.spawn_process("python ../ground/run_ground.py")
 
-        self.test_drone.spawn_process("python ../ground/feed_interface.py")
-        self.test_drone.spawn_process("python ../ground/serve_www.py")
         self.test_drone.spawn_process( \
                 "python commander/drone_communications.py")
 
