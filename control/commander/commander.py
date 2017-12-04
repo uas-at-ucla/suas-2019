@@ -42,6 +42,9 @@ class Commander:
 
         self.copter.sensor_reader.set_communications_socket(self.communications)
 
+    def get_communications_socket(self):
+        return self.communications
+
     def stop(self):
         self.copter.stop()
         self.save_mission_to_file()
@@ -57,6 +60,9 @@ class Commander:
     def get_commands(self):
         with self.commands_lock:
             return self.commands[:]
+
+    def clear_commands(self):
+        self.commands = list()
 
     def start_mission(self):
         commands = self.get_commands()
