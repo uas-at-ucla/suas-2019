@@ -5,7 +5,7 @@ import io from 'socket.io-client/dist/socket.io.js';
 
 import Home from './Home/Home';
 import Analytics from './Analytics/Analytics';
-import Images from './Images/Images';
+import Images from './images/Images.js';
 
 class App extends Component {
   constructor(props) {
