@@ -1,0 +1,31 @@
+.Telemetry {
+  z-index: 10;
+  margin: 10px;
+  font-size: 16px;
+}
+
+#full_state {
+  display: inline-block;
+  font-size: 24px;
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+#armed_indicator {
+  color: #e2c63b;
+  font-weight: bold;
+}
+
+#state_indicator {
+  margin-left: 10px;
+  color: #4286f4;
+}
+
+.Telemetry td {
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+#telemetry_important {
+  font-size: 24px;
+}

@@ -155,7 +155,7 @@ class SensorReader:
             for key in sensors:
                 sensors_to_send[key] = sensors[key].get()
 
-            self.communications_socket.emit('send_telemetry', sensors_to_send)
+            self.communications_socket.emit('telemetry', sensors_to_send)
 
     def stop(self):
         self.should_run = False

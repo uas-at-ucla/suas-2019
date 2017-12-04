@@ -7,16 +7,21 @@ app.use_reloader = False
 
 socketio = SocketIO(app)
 
+def main():
+    socketio.run(app, port = 8085, debug = False, log_output = False)
+
 @socketio.on('connect')
 def connect():
     print("Someone connected to drone_communications!")
+    emit('connect_response')
 
-@socketio.on('send_telemetry')
+@socketio.on('execute_commands')
+def execute_commands(data):
+    emit('execute_commands', data, broadcast=True, include_self=False)
+
+@socketio.on('telemetry')
 def broadcast_telemetry(data):
     emit('telemetry', data, broadcast=True, include_self=False)
-
-def main():
-    socketio.run(app, port = 8085, debug = False, log_output = False)
 
 if __name__ == "__main__":
     main()

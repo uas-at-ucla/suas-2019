@@ -1,0 +1,67 @@
+.Home {
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+#map {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+.Home .card {
+  -webkit-box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.7);
+  -moz-box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.7);
+  box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.7);
+  background-color: rgba(0, 0, 0, 0.7) !important;
+}
+
+#left_side {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+#logo {
+  float: left;
+  position: relative;
+  background: rgba(0, 0, 0, 0.7);
+  border-radius: 5px;
+  padding: 5px;
+  margin: 10px 0 10px 10px;
+}
+
+#map_buttons {
+  position: relative;
+  display: inline-block;
+  padding: 10px 5px 10px 10px;
+}
+
+#follow_drone_btn {
+  background-color: rgba(0, 0, 0, 0.7);
+}
+
+#sidebar_btn {
+  background-color: rgba(0, 0, 0, 0.7);
+  margin-top: 5px;
+}
+
+#sidebar_container {
+  position: relative;
+  clear: both;
+  flex: 1;
+  min-height: 0;
+  width: 25vw;
+  min-width: 338px;
+  transition: 0.2s;
+}
+
+#sidebar_container.hidden {
+  transform: translateY(100%);
+  overflow: hidden;
+}
