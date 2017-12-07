@@ -1,6 +1,3 @@
 [submodule "ground/interop"]
 	path = ground/interop
 	url = https://github.com/auvsi-suas/interop.git
-[submodule "vision/image_simulator/auvsi-targets"]
-	path = vision/image_simulator/auvsi-targets
-	url = ../../amitibo/auvsi-targets.git

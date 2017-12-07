@@ -29,7 +29,7 @@ else:
     SUB_PATH = 'renamed_images'
 
 
-def main(jobs):
+def main(jobs, numIter):
     #
     # Setup the paths.
     #
@@ -54,22 +54,24 @@ def main(jobs):
     os.makedirs(dst_folder)
 
     img_index = 0
-    print gs.LETTER_LABELS
     for img_path, data_path in zip(imgs_paths, data_paths):
 
-        print 'Extracting patches from image', img_path
+        results = []
+        for x in range(0,numIter):
+            print 'Extracting patches from image', img_path
 
-        img = AUVSItargets.Image(img_path, data_path, K=K)
-        patches = img.createPatches(patch_size=gs.PATCH_SIZE, patch_shift=1000)
+            img = AUVSItargets.Image(img_path, data_path, K=K)
+            patches = img.createPatches(patch_size=gs.PATCH_SIZE, patch_shift=1000)
 
-        results = Parallel(n_jobs=jobs)(
-            delayed(create_patch)(patch,
-                                 img,
-                                 img.latitude,
-                                 img.longitude,
-                                 img.yaw) for patch in patches
-        )
-        print(results)
+
+            results.extend( Parallel(n_jobs=jobs)(
+                delayed(create_patch)(patch,
+                                     img,
+                                     img.latitude,
+                                     img.longitude,
+                                     img.yaw) for patch in patches
+            ))
+
         for mask, letter_label in results:
             if mask is None:
                 continue
@@ -145,6 +147,14 @@ if __name__ == '__main__':
                          dest="jobs",
                          default=1)
 
+    cmdline.add_argument("--iterations",
+                         "-i",
+                         action="store",
+                         help="Number of iterations (each iteration is about 115 images).",
+                         type=int,
+                         dest="numIter",
+                         default=1)
+
     args = cmdline.parse_args()
 
-    main(jobs=args.jobs)
+    main(jobs=args.jobs, numIter=args.numIter)
