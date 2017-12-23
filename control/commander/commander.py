@@ -12,6 +12,12 @@ from socketIO_client import SocketIO, BaseNamespace
 
 import copter_interface
 
+class Command:
+    def __init__(self, data):
+        self.command_type = "unknown"
+        for key, value in data.items():
+            setattr(self, key, value)
+
 class TakeoffCommand:
     def __init__(self):
         self.command_type = "takeoff"
@@ -44,6 +50,9 @@ class Commander:
 
     def get_communications_socket(self):
         return self.communications
+
+    def failsafe(self):
+        self.copter.controller.set_state("FAILSAFE")
 
     def stop(self):
         self.copter.stop()

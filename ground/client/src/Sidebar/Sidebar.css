@@ -42,3 +42,7 @@
   color: white !important;
   text-shadow: none !important;
 }
+
+.card-body .btn, .modal-body .btn {
+  margin-bottom: 5px;
+}

@@ -48,6 +48,7 @@ class Home extends Component {
         </div>
         <div id="right_side">
           <Telemetry appState={this.props.appState}/>
+          <button id="failsafe_btn" className="btn btn-danger" onClick={this.failsafe}>Failsafe</button>
         </div>
       </div>
     );
@@ -63,6 +64,11 @@ class Home extends Component {
 
   toggleSidebar = () => {
   	this.setState({isSidebarShown: !this.state.isSidebarShown});
+  }
+
+  failsafe = () => {
+    console.log('Failsafe button clicked!');
+    this.props.socketEmit('failsafe');
   }
 }
 

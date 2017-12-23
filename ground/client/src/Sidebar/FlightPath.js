@@ -11,9 +11,15 @@ class FlightPath extends Component {
       <div>
         <p className="card-text"><b>Waypoints</b></p>
         <ol id="waypoints_list">{waypointsList}</ol>
-        <button className="btn btn-outline-primary" onClick={this.addMissionWaypoints}>Add Mission Waypoints</button>
-        <button className="btn btn-outline-primary">Add New Waypoint</button>
-        <button className="btn btn-outline-success" onClick={this.sendGotoWaypointsCommand}>Execute!</button>
+        <div>
+          <button className="btn btn-outline-primary" onClick={this.addMissionWaypoints}>Add Mission Waypoints</button>
+        </div>
+        <div>
+          <button className="btn btn-outline-primary">Add New Waypoint</button>
+        </div>
+        <div>
+          <button className="btn btn-outline-warning" onClick={this.sendGotoWaypointsCommand}>Execute!</button>
+        </div>
       </div>
     );
   }
@@ -37,8 +43,10 @@ class FlightPath extends Component {
     let commands = [];
     for (let waypoint of this.props.homeState.waypoints) {
       commands.push({
-        type: 'goto',
-        pos: waypoint
+        command_type: 'goto',
+        lat: waypoint.lat,
+        lng: waypoint.lng,
+        alt: waypoint.alt
       });
     }
     this.props.socketEmit('execute_commands', commands);

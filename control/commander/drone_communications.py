@@ -23,5 +23,9 @@ def execute_commands(data):
 def broadcast_telemetry(data):
     emit('telemetry', data, broadcast=True, include_self=False)
 
+@socketio.on('failsafe')
+def failsafe():
+    emit('failsafe', broadcast=True, include_self=False)
+
 if __name__ == "__main__":
     main()

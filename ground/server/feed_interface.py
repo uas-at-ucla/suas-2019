@@ -87,16 +87,20 @@ def connect_to_interop():
                 password=interop_password)
             flask_socketio.emit('interop_connected', True)
         except:
-            flask_socketio.emit('interop_connected', False)      
+            flask_socketio.emit('interop_connected', False)
+
+@interface_socketio.on('execute_commands')
+def send_commands(commands):
+    communications.emit('execute_commands', commands)
+
+@interface_socketio.on('failsafe')
+def failsafe():
+    communications.emit('failsafe')
 
 @interface_socketio.on('moving_obstacles')
 def broadcast_moving_obstacles(moving_obstacles):
     flask_socketio.emit('moving_obstacles', moving_obstacles, \
         broadcast=True, include_self=False)
-
-@interface_socketio.on('execute_commands')
-def send_commands(commands):
-    communications.emit('execute_commands', commands)
 
 @interface_socketio.on('interop_disconnected')
 def interop_disconnected():
