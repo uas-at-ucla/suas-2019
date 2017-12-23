@@ -34,13 +34,6 @@ and reliability for the control software.
 
 [Travis-CI](https://travis-ci.org/uas-at-ucla/suas_2018) is used to
 automatically build every commit that is pushed to this Github repository.
-Results from these builds can be found here:
-
-[Sonarqube](https://sonarcloud.io/dashboard?id=suas_2018) is also used to check
-the quality of the code in this repository and find potential bugs and "code
-smells" that may cause trouble down the line. This tool is designed to make our
-code maintainable in the long run by giving automated feedback on all the
-changes that we make.
 
 ### Installation
 Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/SETUP.md).
