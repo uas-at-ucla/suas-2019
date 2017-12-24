@@ -8,7 +8,8 @@ app.use_reloader = False
 socketio = SocketIO(app)
 
 def main():
-    socketio.run(app, port = 8085, debug = False, log_output = False)
+    print("Starting drone_communications")
+    socketio.run(app, '0.0.0.0', port = 8085, debug = False, log_output = False)
 
 @socketio.on('connect')
 def connect():

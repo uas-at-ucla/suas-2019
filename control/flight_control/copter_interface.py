@@ -203,25 +203,6 @@ class Controller:
                                          time.time() - last_loop))
         return time.time()
 
-#   def check_velocity_control(self):
-#       return # TODO(comran): Remove this later.
-
-#       # Make sure we are not sending stale commands.
-#       with self.vel_lock:
-#           if self.last_velocity is not None:
-#               diff = time.time() - self.last_velocity
-#               self.print_debug("Age of last velocity control from server: "
-#                       + str(diff))
-
-#               if diff > 0.25:
-#                   # Warn when velocity control starts to lag.
-#                   self.print_debug("Velocity control is lagging... " \
-#                           + "diff: " + str(diff))
-#               if diff > 0.50:
-#                   self.print_debug("VELOCITY CONTROL IS STALE, FS ENABLED")
-#                   return True
-#           return False
-
     def set_velocity(self, velocity_x, velocity_y, velocity_z):
         # Move vehicle in direction based on specified velocity vectors.
         # velocity_x is latitude
