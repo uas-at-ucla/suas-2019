@@ -57,9 +57,9 @@ class TestControl(unittest.TestCase):
                                                          100))
 
         test_commander.start_mission()
-
         test_commander.stop()
-        pickle_location = dname+'/commander/mission.pickle'
+
+        pickle_location = dname + "/commander/mission.pickle"
         if not os.path.isfile(pickle_location):
             print("Did not find mission pickle!")
         with open(pickle_location, "rb") as f:
