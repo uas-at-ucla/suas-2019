@@ -10,6 +10,9 @@ sys.path.insert(0, dname + '/../flight_control')
 import threading
 from socketIO_client import SocketIO, BaseNamespace
 
+import thread
+import threading
+
 import copter_interface
 
 class TakeoffCommand:
@@ -32,15 +35,20 @@ class Commander:
             print('Disconnected')
 
     def __init__(self, drone_address):
+        self.connect_to_drone_communications_thread = thread.start_new_thread( \
+                self.connect_to_drone_communications, ())
+
         self.copter = copter_interface.CopterInterface(drone_address)
+        self.copter.sensor_reader.set_communications_socket(self.communications)
 
         self.commands = list()
         self.commands_lock = threading.Lock()
 
+    def connect_to_drone_communications(self):
+        print("Trying to connect to drone communications.")
         self.communications = SocketIO('0.0.0.0', 8085, \
                 self.CommunicationsNamespace)
-
-        self.copter.sensor_reader.set_communications_socket(self.communications)
+        print("Connected to drone communications.")
 
     def get_communications_socket(self):
         return self.communications
