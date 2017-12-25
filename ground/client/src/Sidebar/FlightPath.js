@@ -16,9 +16,11 @@ class FlightPath extends Component {
 
     return (
       <div>
-        <ol id="waypoints_list">
-          {waypointsList}
-        </ol>
+        <div class="scrollbar">
+          <ol id="waypoints_list">
+            {waypointsList}
+          </ol>
+        </div>
 
         <button className="btn btn-outline-primary"
                 onClick={this.addMissionWaypoints}>
