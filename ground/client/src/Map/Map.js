@@ -8,7 +8,6 @@ const METERS_PER_FOOT = 0.3048;
 const google = window.google;
 
 class Map extends Component {
-
   whenStateChanges = []
 
   render() {
@@ -23,6 +22,7 @@ class Map extends Component {
 
   registerStateDepFunction(stateProp, key, func) {
     func(this.props);
+
     this.whenStateChanges.push({
       stateProp: stateProp,
       key: key,
@@ -46,11 +46,11 @@ class Map extends Component {
       zoom : 16,
       tilt : 0,
       disableDefaultUI : true,
-      scrollwheel : true,
+      scrollwheel : false,
       navigationControl : false,
       mapTypeControl : false,
       scaleControl : true,
-      draggable : true,
+      draggable : false,
       styles : map_style
     });
 
@@ -109,12 +109,22 @@ class Map extends Component {
       }
     });
 
-    this.registerStateDepFunction('homeState', 'followDrone', this.pan_to_drone_if_following);
-    this.registerStateDepFunction('homeState', 'mission', this.draw_mission_details);
-    this.registerStateDepFunction('homeState', 'waypoints', this.draw_waypoint_path);
-    this.registerStateDepFunction('appState', 'telemetry', this.update_drone_position);
-    this.registerStateDepFunction('appState', 'stationary_obstacles', this.set_stationary_obstacles);
-    this.registerStateDepFunction('appState', 'moving_obstacles', this.refresh_moving_obstacles);
+    this.map.addListener("dblclick", function(e) {
+      console.log(e.latLng.lat());
+    });
+
+    this.registerStateDepFunction('homeState', 'followDrone',
+        this.pan_to_drone_if_following);
+    this.registerStateDepFunction('homeState', 'mission',
+        this.draw_mission_details);
+    this.registerStateDepFunction('homeState', 'waypoints',
+        this.draw_waypoint_path);
+    this.registerStateDepFunction('appState', 'telemetry',
+        this.update_drone_position);
+    this.registerStateDepFunction('appState', 'stationary_obstacles',
+        this.set_stationary_obstacles);
+    this.registerStateDepFunction('appState', 'moving_obstacles',
+        this.refresh_moving_obstacles);
   }
 
   pan_to_drone_if_following = (props) => {
@@ -126,6 +136,7 @@ class Map extends Component {
 
   draw_mission_details = (props) => {
     let mission = props.homeState.mission;
+
     if (mission) {
       this.draw_mission_waypoints(mission.mission_waypoints);
       this.draw_fly_zones(mission.fly_zones);
@@ -134,10 +145,13 @@ class Map extends Component {
 
   draw_waypoint_path = (props) => {
     let waypoints = props.homeState.waypoints
+
     for (let marker of this.waypoints) {
       marker.setMap(null);
     }
+
     this.waypoints.length = 0;
+
     if (this.waypoint_path) {
       this.waypoint_path.setMap(null);
     }
@@ -149,6 +163,7 @@ class Map extends Component {
       strokeOpacity: 0.7,
       strokeWeight: 3,
     });
+
     polyline.setMap(this.map);
     this.waypoint_path = polyline
 
@@ -156,31 +171,37 @@ class Map extends Component {
       if (waypoint.fromMission) {
         continue;
       }
+
       let marker = new google.maps.Marker({
         map: this.map,
         position: waypoint
       });
+
       let infowindow = new google.maps.InfoWindow({
-      content: 'Lat: ' + waypoint.lat + '<br>' + 
-               'Lng: ' + waypoint.lng + '<br>' +
-               'Alt: ' + waypoint.alt + ' ft'
+        content: 'Lat: ' + waypoint.lat + '<br>' +
+                 'Lng: ' + waypoint.lng + '<br>' +
+                 'Alt: ' + waypoint.alt + ' m'
       });
+
       marker.addListener('click', () => {
         infowindow.open(this.map, marker);
       });
+
       google.maps.event.addListener(this.map, "click", () => {
         infowindow.close();
       });
+
       this.waypoints.push(marker);
     }
   }
 
   update_drone_position = (props) => {
     let telemetry = props.appState.telemetry;
-    if (!telemetry) {
-      return;
-    }
-    let new_position = new google.maps.LatLng(telemetry.gps_lat, telemetry.gps_lng);
+
+    if (!telemetry) return;
+
+    let new_position = new google.maps.LatLng(telemetry.gps_lat,
+                                              telemetry.gps_lng);
 
     this.drone_marker.setPosition(new_position);
     this.drone_marker_icon.rotation = telemetry.heading;
@@ -196,6 +217,7 @@ class Map extends Component {
 
   set_stationary_obstacles = (props) => {
     let obstacles = props.appState.stationary_obstacles;
+
     // Remove any old stationary obstacles that existed before update.
     for (let stationary_obstacle of this.stationary_obstacles) {
       stationary_obstacle.circle.setMap(null);
@@ -205,7 +227,6 @@ class Map extends Component {
 
     // Add in the new stationary obstacles.
     for (let obstacle of obstacles) {
-      console.log("making static obstacle");
       let stationary_obstacle = this.make_obstacle_map_object(obstacle);
 
       this.stationary_obstacles.push(stationary_obstacle);
@@ -214,8 +235,8 @@ class Map extends Component {
 
   refresh_moving_obstacles = (props) => {
     let obstacles = props.appState.moving_obstacles;
+
     if (!this.update_moving_obstacles(obstacles)) {
-      console.log('New moving obstacles received!');
       this.set_moving_obstacles(obstacles);
     }
   }
@@ -228,6 +249,7 @@ class Map extends Component {
     for (let polygon of this.fly_zones) {
       polygon.setMap(null);
     }
+
     this.fly_zones.length = 0;
 
     for (let fly_zone of fly_zones) {
@@ -236,9 +258,6 @@ class Map extends Component {
       for (let pt of fly_zone.boundary_pts) {
         boundary_coordinates.push({lat: pt.latitude, lng: pt.longitude});
       }
-
-      // let first_pt = boundary_pts[0];
-      // boundary_coordinates.push({lat: first_pt.latitude, lng: first_pt.longitude});
 
       let polygon = new google.maps.Polygon({
         path: boundary_coordinates,
@@ -258,6 +277,7 @@ class Map extends Component {
     for (let marker of this.mission_waypoints) {
       marker.setMap(null);
     }
+
     this.mission_waypoints.length = 0;
 
     for (let waypoint of waypoints) {
@@ -270,18 +290,23 @@ class Map extends Component {
           text: '\uf192'
         }
       });
+
       coords.alt = waypoint.altitude_msl;
+
       let infowindow = new google.maps.InfoWindow({
-      content: 'Lat: ' + coords.lat + '<br>' + 
-               'Lng: ' + coords.lng + '<br>' +
-               'Alt: ' + coords.alt + ' ft'
+        content: 'Lat: ' + coords.lat + '<br>' +
+                 'Lng: ' + coords.lng + '<br>' +
+                 'Alt: ' + coords.alt + ' m'
       });
+
       marker.addListener('click', () => {
         infowindow.open(this.map, marker);
       });
+
       google.maps.event.addListener(this.map, "click", () => {
         infowindow.close();
       });
+
       this.mission_waypoints.push(marker);
     }
   }
@@ -296,7 +321,6 @@ class Map extends Component {
 
     // Add in the new moving obstacles.
     for (let obstacle of obstacles) {
-      console.log("making moving obstacle");
       let moving_obstacle = this.make_obstacle_map_object(obstacle);
 
       this.moving_obstacles.push(moving_obstacle);
@@ -307,8 +331,6 @@ class Map extends Component {
     let pos = {lat: obstacle.latitude, lng: obstacle.longitude};
     let radius_feet = obstacle.cylinder_radius || obstacle.sphere_radius
 
-    console.log(obstacle);
-    console.log(radius_feet);
     let circle = new google.maps.Circle({
       center: pos,
       map: this.map,
@@ -318,15 +340,18 @@ class Map extends Component {
       radius: radius_feet * METERS_PER_FOOT,
       zIndex: 3
     });
+
     let infowindow = new google.maps.InfoWindow({
-      content: 'Lat: ' + obstacle.latitude + '<br>' + 
+      content: 'Lat: ' + obstacle.latitude + '<br>' +
                'Lng: ' + obstacle.longitude + '<br>' +
-               'Radius: ' + radius_feet + ' ft'
+               'Radius: ' + radius_feet + ' m'
     });
+
     google.maps.event.addListener(circle, 'click', () => {
       infowindow.setPosition(circle.getCenter());
       infowindow.open(this.map);
     });
+
     google.maps.event.addListener(this.map, "click", () => {
       infowindow.close();
     });
@@ -366,6 +391,8 @@ class Map extends Component {
   }
 
   get_distance(p1, p2) {
+    // Get distance between two coordinates (in meters).
+
     let R = 6378137; // Earth’s mean radius in meter
     let dLat = this.rad(p2.lat() - p1.lat());
     let dLong = this.rad(p2.lng() - p1.lng());
@@ -375,7 +402,7 @@ class Map extends Component {
     let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     let d = R * c;
 
-    return d; // returns the distance in meter
+    return d;
   }
 };
 
