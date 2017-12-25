@@ -406,8 +406,9 @@ class CopterInterface:
                 time.sleep(0.1)
                 continue
 
-            if abs(lat - gps_lat) < 0.00001 and \
-               abs(lng - gps_lng) < 0.00001 and \
+            TOLERANCE = 0.0001
+            if abs(lat - gps_lat) < TOLERANCE and \
+               abs(lng - gps_lng) < TOLERANCE and \
                abs(alt - gps_rel_alt) < 0.1:
                break
 

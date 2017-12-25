@@ -109,8 +109,10 @@ class Map extends Component {
       }
     });
 
-    this.map.addListener("dblclick", function(e) {
-      console.log(e.latLng.lat());
+    this.map.addListener("dblclick", (e) => {
+      if (this.props.onAddCommand) {
+        this.props.onAddCommand(e.latLng.lat(), e.latLng.lng());
+      }
     });
 
     this.registerStateDepFunction('homeState', 'followDrone',
