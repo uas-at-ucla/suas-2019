@@ -6,12 +6,12 @@ import Telemetry from '../Telemetry/Telemetry'
 import logo from '../graphics/vector_logo.svg';
 
 class Home extends Component {
-	state = {
-		isSidebarShown: true,
+  state = {
+    isSidebarShown: true,
     followDrone: true,
     mission: this.props.appState.missions[0] || null,
     waypoints: []
-	}
+  }
 
   componentWillReceiveProps(nextProps) {
     if (!this.state.mission && nextProps.appState.missions.length > 0) {
@@ -26,21 +26,19 @@ class Home extends Component {
              homeState={this.state} setHomeState={this.setHomeState}/>
         <div id="left_side">
           <div id="top_left">
-            <img id="logo" src={logo} width="270px" alt=""/>
+            <img id="logo" src={logo} width="380px" alt=""/>
             <div id="map_buttons">
               <div>
-                <button id="follow_drone_btn" className="btn btn-dark" onClick={this.followDrone}>
+                <button id="follow_drone_btn"
+                        className="btn btn-dark"
+                        onClick={this.followDrone}>
                   <i className="fa fa-location-arrow" aria-hidden="true"></i>
-                </button>
-              </div>
-              <div>
-                <button id="sidebar_btn" className="btn btn-dark" onClick={this.toggleSidebar}>
-                  { !this.state.isSidebarShown ? <i className="fa fa-bars" aria-hidden="true"></i> : '✕' }
                 </button>
               </div>
             </div>
           </div>
-          <div id="sidebar_container" className={!this.state.isSidebarShown ? 'hidden' : null}>
+          <div id="sidebar_container"
+               className={!this.state.isSidebarShown ? 'hidden' : null}>
             <Sidebar appState={this.props.appState}
                        homeState={this.state} setHomeState={this.setHomeState}
                        socketEmit={this.props.socketEmit}/>
@@ -62,7 +60,7 @@ class Home extends Component {
   }
 
   toggleSidebar = () => {
-  	this.setState({isSidebarShown: !this.state.isSidebarShown});
+    this.setState({isSidebarShown: !this.state.isSidebarShown});
   }
 }
 

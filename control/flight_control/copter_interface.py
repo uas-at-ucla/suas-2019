@@ -386,6 +386,10 @@ class CopterInterface:
 
         return True
 
+    def land(self):
+        self.controller.set_state("LAND")
+        print("Landing!")
+
     def goto(self, lat, lng, alt):
         if not self.controller.get_state() == "VELOCITY CONTROL":
             return False
