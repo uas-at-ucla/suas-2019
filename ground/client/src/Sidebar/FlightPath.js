@@ -33,14 +33,14 @@ class FlightPath extends Component {
     );
   }
 
-  addMissionWaypoints = () => {
+  addMissionWaypoint(lat, lng) {
     this.setState({commandAddMove: true});
 
     let waypoints = this.props.homeState.waypoints.slice();
 
     let waypoint = {
-      lat: 0.0,
-      lng: 0.0,
+      lat: lat,
+      lng: lng,
       alt: 20,
       fromMission: true
     }
