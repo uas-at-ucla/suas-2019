@@ -150,6 +150,7 @@ def drone_connected():
 def drone_disconnected():
     print "disconnected from drone!"
     communications.disconnect()
+    interface_socketio.emit('drone_disconnected')
     listen_for_communications()
 
 def listen_for_communications():
