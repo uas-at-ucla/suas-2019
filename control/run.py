@@ -25,13 +25,17 @@ SIMULATE_DRONE = True
 processes = process_manager.ProcessManager()
 
 def execute_commands(*args):
+    global drone_commander
+
     commands = args[0]
+    drone_commander.add_command(commander.TakeoffCommand())
     for command in commands:
         if command['type'] == 'goto':
             pos = command['pos']
             drone_commander.add_command(commander.GotoCommand(pos['lat'], \
                                                             pos['lng'], \
                                                             pos['alt']))
+    drone_commander.add_command(commander.LandCommand())
     drone_commander.start_mission()
     drone_commander.clear_commands()
 
@@ -107,6 +111,7 @@ def main():
                     "python commander/drone_communications.py")
 
         if run_commander:
+            global drone_commander
             drone_commander = commander.Commander(drone_address)
 
             communications = drone_commander.get_communications_socket()
