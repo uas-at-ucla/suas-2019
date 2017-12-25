@@ -3,6 +3,7 @@ import './Home.css';
 import Sidebar from '../Sidebar/Sidebar'
 import Map from '../Map/Map'
 import Telemetry from '../Telemetry/Telemetry'
+import DarkModal from '../DarkModal/DarkModal'
 import logo from '../graphics/vector_logo.svg';
 
 class Home extends Component {
@@ -48,7 +49,14 @@ class Home extends Component {
         </div>
         <div id="right_side">
           <Telemetry appState={this.props.appState}/>
-          <button id="failsafe_btn" className="btn btn-danger" onClick={this.failsafe}>Failsafe</button>
+          <button id="failsafe_prompt_btn" className="btn btn-danger" data-toggle="modal" data-target="#failsafe_modal">
+            Failsafe
+          </button>
+          <DarkModal myId="failsafe_modal" myTitle="Confirm Failsafe">
+            <button id="failsafe_btn" className="btn btn-danger btn-lg" data-dismiss="modal" onClick={this.failsafe}>
+              Failsafe
+            </button>
+          </DarkModal>
         </div>
       </div>
     );
