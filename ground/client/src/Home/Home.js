@@ -19,14 +19,22 @@ class Home extends Component {
     }
   }
 
+  addCommand(lat, lng) {
+    this.refs.sidebar.addCommand(lat, lng);
+  }
+
   render() {
     return (
-      <div className="Home">
-        <Map id="map" appState={this.props.appState}
-             homeState={this.state} setHomeState={this.setHomeState}/>
+      <div className = "Home">
+        <Map
+          id="map"
+          appState={this.props.appState}
+          homeState={this.state}
+          setHomeState={this.setHomeState}
+          onAddCommand={this.addCommand.bind(this)} />
         <div id="left_side">
           <div id="top_left">
-            <img id="logo" src={logo} width="380px" alt=""/>
+            <img id="logo" src={logo} width="380px" />
             <div id="map_buttons">
               <div>
                 <button id="follow_drone_btn"
@@ -39,9 +47,11 @@ class Home extends Component {
           </div>
           <div id="sidebar_container"
                className={!this.state.isSidebarShown ? 'hidden' : null}>
-            <Sidebar appState={this.props.appState}
-                       homeState={this.state} setHomeState={this.setHomeState}
-                       socketEmit={this.props.socketEmit}/>
+            <Sidebar
+              ref="sidebar"
+              appState={this.props.appState}
+              homeState={this.state} setHomeState={this.setHomeState}
+              socketEmit={this.props.socketEmit}/>
           </div>
         </div>
         <div id="right_side">
