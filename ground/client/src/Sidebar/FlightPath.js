@@ -11,15 +11,28 @@ class FlightPath extends Component {
 
   render() {
     const waypointsList = this.props.homeState.waypoints.map((waypoint) =>
-      <li>{waypoint.lat + ', ' + waypoint.lng + ', ' + waypoint.alt + ' m'}</li>
+      <tr>
+        <td>{waypoint.type}</td>
+        <td>{waypoint.lat.toFixed(5)}</td>
+        <td>{waypoint.lng.toFixed(5)}</td>
+        <td>{waypoint.alt.toFixed(1)} m</td>
+      </tr>
     );
 
     return (
       <div>
+        <table id="waypointListLabelsTable">
+          <tr id="waypointListLabels">
+            <td>Type</td>
+            <td>Latitude</td>
+            <td>Longitude</td>
+            <td>Altitude</td>
+          </tr>
+        </table>
         <div class="scrollbar">
-          <ol id="waypoints_list">
+          <table id="waypointList">
             {waypointsList}
-          </ol>
+          </table>
         </div>
 
         <button className="btn btn-outline-primary"
@@ -44,7 +57,7 @@ class FlightPath extends Component {
       lat: lat,
       lng: lng,
       alt: 20,
-      fromMission: true
+      type: "goto"
     }
 
     waypoints.push(waypoint);
