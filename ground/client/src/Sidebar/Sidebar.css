@@ -42,3 +42,8 @@
   color: white !important;
   text-shadow: none !important;
 }
+
+.right {
+  position: absolute;
+  right: 15px;
+}
