@@ -4,19 +4,24 @@ import Panel from './Panel'
 import FlightPath from './FlightPath'
 
 class Sidebar extends Component {
-
   render() {
     return (
       <div className="Sidebar">
         <div id="sidebar_content">
           <Panel title="Mission Plan" id="flightpath">
-            <FlightPath socketEmit={this.props.socketEmit}
+            <FlightPath ref="flightPath"
+                        socketEmit={this.props.socketEmit}
                         homeState={this.props.homeState}
                         setHomeState={this.props.setHomeState}/>
           </Panel>
         </div>
       </div>
     );
+  }
+
+  addCommand(lat, lng) {
+    console.log(this);
+    this.refs.flightPath.addMissionWaypoint(lat, lng);
   }
 
   addMissionWaypoints = () => {
