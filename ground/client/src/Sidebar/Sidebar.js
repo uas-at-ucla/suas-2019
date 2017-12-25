@@ -15,7 +15,7 @@ class Sidebar extends Component {
                            homeState={this.props.homeState}
                            setHomeState={this.props.setHomeState}/>
           </Panel>
-          <Panel title="Flight Path" id="flightpath">
+          <Panel myTitle="Flight Path" myId="flightpath">
             <FlightPath socketEmit={this.props.socketEmit}
                         homeState={this.props.homeState}
                         setHomeState={this.props.setHomeState}/>
