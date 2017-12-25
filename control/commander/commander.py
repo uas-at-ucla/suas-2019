@@ -19,6 +19,10 @@ class TakeoffCommand:
     def __init__(self):
         self.command_type = "takeoff"
 
+class LandCommand:
+    def __init__(self):
+        self.command_type = "land"
+
 class GotoCommand:
     def __init__(self, lat, lng, alt):
         self.command_type = "goto"
@@ -80,5 +84,7 @@ class Commander:
                 self.copter.takeoff()
             elif command.command_type == "goto":
                 self.copter.goto(command.lat, command.lng, command.alt)
-            elif command.command_type == "unknown":
+            elif command.command_type == "land":
+                self.copter.land()
+            else:
                 print("UNKNOWN COMMAND!!!")

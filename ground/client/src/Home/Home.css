@@ -32,33 +32,23 @@
   position: relative;
   background: rgba(0, 0, 0, 0.7);
   border-radius: 5px;
-  padding: 5px;
+  padding: 10px;
   margin: 10px 0 10px 10px;
 }
 
 #map_buttons {
   position: relative;
   display: inline-block;
-  padding: 10px 5px 10px 10px;
+  margin: 10px 5px 10px 10px;
+  height: 110px;
 }
 
 #follow_drone_btn {
   background-color: rgba(0, 0, 0, 0.7);
 }
 
-#sidebar_btn {
-  background-color: rgba(0, 0, 0, 0.7);
-  margin-top: 5px;
-}
-
 #sidebar_container {
-  position: relative;
-  clear: both;
-  flex: 1;
-  min-height: 0;
-  width: 25vw;
-  min-width: 338px;
-  transition: 0.2s;
+  width: 400px;
 }
 
 #sidebar_container.hidden {
