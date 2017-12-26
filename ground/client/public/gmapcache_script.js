@@ -23,38 +23,6 @@ var spriteRanges = {
 
 var max_zoom = 13;
 
-//From webStorage.js
-function LocalStorageWebStorageImpl() {
-    this.webStorageType = 'localStorage';
-
-    this.getItem = function(name) {
-        return localStorage.getItem(name);
-    };
-
-    this.setItem = function(name, value) {
-        localStorage.setItem(name, value);
-    };
-
-    this.clear = function() {
-        localStorage.clear();
-    };
-}
-
-function WebStorageFactory() {
-    var webStorage = null;
-
-    if (window.localStorage) {
-        webStorage = new LocalStorageWebStorageImpl();
-    } else {
-        alert("Your browser don't support localStorage");
-    }
-
-    this.getWebStorage = function() {
-        return webStorage;
-    }
-}
-//End from webStorage.js
-
 var webStorage = new WebStorageFactory().getWebStorage();
 
 function imageToBase64(image) {
@@ -93,8 +61,7 @@ function prepareWebStorage() {
   }
 }
 
-//added export
-export function checkTileInSprites(coord, zoom) {
+function checkTileInSprites(coord, zoom) {
   var sprites = spriteRanges[zoom];
   return sprites.tl.x <= coord.x && coord.x <= sprites.br.x &&
          sprites.tl.y <= coord.y && coord.y <= sprites.br.y;
@@ -105,14 +72,12 @@ function getOsmTileImgSrc(coord, zoom) {
          coord.y + ".png";
 }
 
-//added export
-export function getGmapTileImgSrc(coord, zoom) {
+function getGmapTileImgSrc(coord, zoom) {
   return "http://khms0.googleapis.com/kh?v=747&hl=en-US&x=" + coord.x +
          "&y=" + coord.y + "&z=" + zoom;
 }
 
-//added export
-export function getLocalTileImgSrc(coord, zoom) {
+function getLocalTileImgSrc(coord, zoom) {
   return "cache/" + zoom + "/" + coord.x + "_" + coord.y + ".png";
 }
 
