@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 
-// Option Componeent
+// Option Component
 class Option extends Component {
 
   handleOption = (e) => {
