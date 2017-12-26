@@ -43,6 +43,7 @@ class Sensors:
         with self.__telemetry_lock:
             self.__telemetry = {
                     "state": Sensor(str),
+                    "flight_time": Sensor(float),
                     "pixhawk_state": Sensor(str),
                     "armed": Sensor(str),
                     "voltage": Sensor(float),
@@ -68,6 +69,7 @@ class Sensors:
         # vehicle instance.
         with self.__telemetry_lock:
             self.__telemetry["state"].set(controller.get_state())
+            self.__telemetry["flight_time"].set(controller.flight_time)
             self.__telemetry["pixhawk_state"].set(vehicle.system_status.state)
             self.__telemetry["armed"].set(vehicle.armed)
             self.__telemetry["voltage"].set(self.__cut_from_string(str( \
@@ -172,6 +174,8 @@ class Controller:
         self.last_velocity = None
         self.state_lock = threading.Lock()
         self.state = "STANDBY"
+        self.in_the_air = False
+        self.flight_time = 0
         self.should_run = True
 
         self.reading_thread = thread.start_new_thread(self.control_loop, ())
@@ -266,7 +270,12 @@ class Controller:
 
         # Regular loop.
         while self.should_run:
-            last_loop = self.phased_loop(10, last_loop)
+            this_loop = self.phased_loop(10, last_loop)
+
+            if self.in_the_air:
+                self.flight_time += this_loop - last_loop
+
+            last_loop = this_loop
 
             new_state = None
             current_state = self.get_state()
@@ -300,6 +309,7 @@ class Controller:
             elif current_state == "TAKEOFF":
                 self.vehicle.mode = dronekit.VehicleMode("GUIDED")
                 self.armed = True
+                self.in_the_air = True
                 self.set_state("TAKEOFF SEND COMMAND")
             elif current_state == "TAKEOFF SEND COMMAND":
                 self.vehicle.mode = dronekit.VehicleMode("GUIDED")
@@ -336,6 +346,7 @@ class Controller:
                     #self.print_debug("Altitude: " +
                     #    str(self.vehicle.location.global_relative_frame.alt))
                 else:
+                    self.in_the_air = False
                     self.set_state("LANDED")
             elif current_state == "LANDED":
                 # Wait for all other drones to land.
