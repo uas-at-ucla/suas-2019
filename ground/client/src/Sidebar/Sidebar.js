@@ -10,7 +10,6 @@ class Sidebar extends Component {
         <div id="sidebar_content">
           <Panel title="Mission Plan" id="flightpath">
             <FlightPath ref="flightPath"
-                        socketEmit={this.props.socketEmit}
                         homeState={this.props.homeState}
                         setHomeState={this.props.setHomeState}/>
           </Panel>
@@ -40,19 +39,6 @@ class Sidebar extends Component {
     }
 
     this.props.setHomeState({waypoints: waypoints});
-  }
-
-  sendGotoWaypointsCommand = () => {
-    let commands = [];
-
-    for (let waypoint of this.props.homeState.waypoints) {
-      commands.push({
-        type: 'goto',
-        pos: waypoint
-      });
-    }
-
-    this.props.socketEmit('execute_commands', commands);
   }
 }
 
