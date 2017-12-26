@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import './Map.css'
 import map_style from './map_style.js'
-import * as gmapcache from './gmapcache/script.js';
 import drone_marker from '../graphics/drone_marker.svg';
 
 const METERS_PER_FOOT = 0.3048;
@@ -56,9 +55,9 @@ class Map extends Component {
 
     this.map.mapTypes.set("offline_gmap", new google.maps.ImageMapType({
       getTileUrl: function(coord, zoom) {
-        return gmapcache.checkTileInSprites(coord, zoom) ?
-          gmapcache.getLocalTileImgSrc(coord, zoom) :
-          gmapcache.getGmapTileImgSrc(coord, zoom);
+        return window.checkTileInSprites(coord, zoom) ?
+          window.getLocalTileImgSrc(coord, zoom) :
+          window.getGmapTileImgSrc(coord, zoom);
       },
       tileSize: new google.maps.Size(256, 256),
       name: "LocalMyGmap",
