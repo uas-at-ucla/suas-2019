@@ -170,10 +170,6 @@ class Map extends Component {
     this.waypoint_path = polyline
 
     for (let waypoint of waypoints) {
-      if (waypoint.fromMission) {
-        continue;
-      }
-
       let marker = new google.maps.Marker({
         map: this.map,
         position: waypoint
