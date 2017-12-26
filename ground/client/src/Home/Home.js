@@ -3,6 +3,7 @@ import './Home.css';
 import Sidebar from '../Sidebar/Sidebar'
 import Map from '../Map/Map'
 import Telemetry from '../Telemetry/Telemetry'
+import Controls from '../Controls/Controls'
 import logo from '../graphics/vector_logo.svg';
 
 class Home extends Component {
@@ -50,13 +51,18 @@ class Home extends Component {
             <Sidebar
               ref="sidebar"
               appState={this.props.appState}
-              homeState={this.state} setHomeState={this.setHomeState}
+              homeState={this.state}
+              setHomeState={this.setHomeState}
               socketEmit={this.props.socketEmit}/>
           </div>
         </div>
         <div id="right_side">
           <Telemetry appState={this.props.appState}/>
         </div>
+
+        <Controls
+          homeState={this.state}
+          socketEmit={this.props.socketEmit}/>
       </div>
     );
   }

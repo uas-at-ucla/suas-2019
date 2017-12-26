@@ -15,6 +15,7 @@ sys.path.insert(0, 'commander')
 import signal
 import time
 import sys
+import thread
 
 import process_manager
 import copter_interface
@@ -23,21 +24,6 @@ import commander
 SIMULATE_DRONE = True
 
 processes = process_manager.ProcessManager()
-
-def execute_commands(*args):
-    global drone_commander
-
-    commands = args[0]
-    drone_commander.add_command(commander.TakeoffCommand())
-    for command in commands:
-        if command['type'] == 'goto':
-            pos = command['pos']
-            drone_commander.add_command(commander.GotoCommand(pos['lat'], \
-                                                            pos['lng'], \
-                                                            pos['alt']))
-    drone_commander.add_command(commander.LandCommand())
-    drone_commander.start_mission()
-    drone_commander.clear_commands()
 
 def spawn_simulated_drone(lat, lng, alt, instance):
     processes.spawn_process("python " + \
@@ -113,11 +99,7 @@ def main():
         if run_commander:
             global drone_commander
             drone_commander = commander.Commander(drone_address)
-
             communications = drone_commander.get_communications_socket()
-            communications.on('connect', lambda : None)
-            communications.on('execute_commands', execute_commands)
-            communications.wait()
 
     except Exception as e:
         print("ERROR: " + str(e))
