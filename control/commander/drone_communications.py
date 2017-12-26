@@ -20,6 +20,10 @@ def connect():
 def execute_commands(data):
     emit('execute_commands', data, broadcast=True, include_self=False)
 
+@socketio.on('set_state')
+def set_state(data):
+    emit('set_state', data, broadcast=True, include_self=False)
+
 @socketio.on('telemetry')
 def broadcast_telemetry(data):
     emit('telemetry', data, broadcast=True, include_self=False)
