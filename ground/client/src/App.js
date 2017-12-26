@@ -26,12 +26,6 @@ class App extends Component {
   // Render based on button clicks in Navbar
   renderSelection() {
     switch(this.state.optionSelected) {
-      default:
-      case "Home":
-        return (
-          <Home appState={this.state}
-                socketEmit={this.socketEmit}/>
-        );
       case "Analytics":
         return (
           <Analytics appState={this.state}/>
@@ -39,6 +33,12 @@ class App extends Component {
       case "Images":
         return (
           <Images/>
+        );
+      case "Home":
+      default:
+        return (
+          <Home appState={this.state}
+                socketEmit={this.socketEmit}/>
         );
     }
   }
