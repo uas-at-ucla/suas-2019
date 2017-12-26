@@ -186,8 +186,9 @@ class Controller:
     def set_state(self, state):
         with self.state_lock:
             state = state.replace('"', '')
-            if self.state == "FAILSAFE":
-                self.print_debug("Failed to set state: In failsafe mode.")
+            if self.state == "FAILSAFE" or self.state == "THROTTLE_CUT":
+                self.print_debug("Failed to set state: In " + self.state \
+                        + " mode.")
                 return
 
             self.state = state
@@ -239,6 +240,26 @@ class Controller:
             0, 0, 0, # x, y, z acceleration (not supported yet)
             0, 0)    # yaw, yaw_rate (not supported yet)
         self.vehicle.send_mavlink(msg)
+
+    def terminate_flight(self):
+        while True:
+            msg = self.vehicle.message_factory.command_long_encode( \
+                0, 0,     # target system, target component
+                mavutil.mavlink.MAV_CMD_DO_FLIGHTTERMINATION ,
+                0,        # confirmation
+                1.0,
+                0, 0, 0, 0, 0, 0)
+#           for servo in range(1, 8):
+#               msg = self.vehicle.message_factory.command_long_encode( \
+#                   0, 0,     # target system, target component
+#                   mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
+#                   0,        # confirmation
+#                   servo,    # param 1, servo No
+#                   1000,     # param 2, pwm
+#                   0, 0, 0, 0, 0)
+            self.vehicle.send_mavlink(msg)
+            time.sleep(0.1)
+
 
     def control_loop(self):
         TARGET_TAKEOFF_ALT = 3.0
@@ -324,9 +345,15 @@ class Controller:
             elif current_state == "FAILSAFE":
                 # Exit control loop and go into failsafe mode.
                 break
+            elif current_state == "THROTTLE_CUT":
+                # Exit control loop and go into throttle cut mode.
+                break
             else:
                 self.print_debug("UNKNOWN CONTROLLER STATE: " + current_state)
                 self.set_state("FAILSAFE")
+
+        if current_state == "THROTTLE_CUT":
+            self.terminate_flight()
 
         # Failsafe mode (cannot escape without restarting drone_interface).
         self.print_debug("FAILSAFE")
@@ -342,31 +369,28 @@ class CopterInterface:
         self.controller = Controller(self.vehicle)
         self.sensor_reader = SensorReader(self.vehicle, self.controller)
 
+        #TODO(comran): Implement interrupts better...
+        self.interrupt = False
+
+    def force_state(self, state):
+        self.interrupt = True
+        print("trying...")
+        self.controller.set_state(state)
+        print("state: " + self.controller.get_state())
+
     def stop(self):
         self.sensor_reader.stop()
         self.controller.stop()
         self.vehicle.close()
 
-    def __connect_to_drone(self, address):
-        # Initializes a Dronekit instance to interface with the flight
-        # controller and returns this instance.
-
-        print("Connecting to drone at " + address)
-
-        vehicle = dronekit.connect(ip = address, \
-                                   baud = 115200, \
-                                   wait_ready = True)
-
-        vehicle.wait_ready("autopilot_version")
-
-        print("Connected to drone")
-
-        return vehicle
-
     def takeoff(self):
         self.controller.set_state("ARM")
 
         while True:
+            if self.interrupt:
+                self.interrupt = False
+                return False
+
             if self.controller.get_state() == "ARMED":
                 break
             time.sleep(0.1)
@@ -376,6 +400,10 @@ class CopterInterface:
         self.controller.set_state("TAKEOFF")
 
         while True:
+            if self.interrupt:
+                self.interrupt = False
+                return False
+
             if self.controller.get_state() == "TAKEN OFF":
                 break
             time.sleep(0.1)
@@ -391,10 +419,11 @@ class CopterInterface:
         print("Landing!")
 
     def goto(self, lat, lng, alt):
-        if not self.controller.get_state() == "VELOCITY CONTROL":
-            return False
-
         while True:
+            if not self.controller.get_state() == "VELOCITY CONTROL" \
+                    or self.interrupt:
+                return False
+
             sensors = self.sensor_reader.sensors.get()
             gps_lat = sensors["gps_lat"].get()
             gps_lng = sensors["gps_lng"].get()
@@ -431,6 +460,22 @@ class CopterInterface:
             time.sleep(0.1)
 
         return True
+
+    def __connect_to_drone(self, address):
+        # Initializes a Dronekit instance to interface with the flight
+        # controller and returns this instance.
+
+        print("Connecting to drone at " + address)
+
+        vehicle = dronekit.connect(ip = address, \
+                                   baud = 115200, \
+                                   wait_ready = True)
+
+        vehicle.wait_ready("autopilot_version")
+
+        print("Connected to drone")
+
+        return vehicle
 
 def main():
     parser = argparse.ArgumentParser( \
