@@ -22,16 +22,20 @@ class FlightPath extends Component {
     return (
       <div>
         <table id="waypointListLabelsTable">
-          <tr id="waypointListLabels">
-            <td>Type</td>
-            <td>Latitude</td>
-            <td>Longitude</td>
-            <td>Altitude</td>
-          </tr>
+          <tbody>
+            <tr id="waypointListLabels">
+              <td>Type</td>
+              <td>Latitude</td>
+              <td>Longitude</td>
+              <td>Altitude</td>
+            </tr>
+          </tbody>
         </table>
-        <div class="scrollbar">
+        <div className="scrollbar">
           <table id="waypointList">
-            {waypointsList}
+            <tbody>
+              {waypointsList}
+            </tbody>
           </table>
         </div>
 
@@ -56,7 +60,7 @@ class FlightPath extends Component {
     let waypoint = {
       lat: lat,
       lng: lng,
-      alt: 20,
+      alt: 80,
       type: "goto"
     }
 
