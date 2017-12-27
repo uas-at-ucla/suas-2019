@@ -5,23 +5,16 @@ import Map from '../Map/Map'
 import Telemetry from '../Telemetry/Telemetry'
 import Controls from '../Controls/Controls'
 import logo from '../graphics/vector_logo.svg';
+import {
+  Button
+} from 'react-bootstrap';
 
 class Home extends Component {
   state = {
     isSidebarShown: true,
     followDrone: true,
     mission: this.props.appState.missions[0] || null,
-    waypoints: []
-  }
-
-  componentWillReceiveProps(nextProps) {
-    if (!this.state.mission && nextProps.appState.missions.length > 0) {
-      this.setState({mission: nextProps.appState.missions[0]});
-    }
-  }
-
-  addCommand(lat, lng) {
-    this.refs.sidebar.addCommand(lat, lng);
+    commands: []
   }
 
   render() {
@@ -32,18 +25,16 @@ class Home extends Component {
           appState={this.props.appState}
           homeState={this.state}
           setHomeState={this.setHomeState}
-          onAddCommand={this.addCommand.bind(this)} />
+          onDoubleClick={this.addGotoCommand.bind(this)} />
         <div id="left_side">
           <div id="top_left">
             <img id="logo" src={logo} width="380px" />
             <div id="map_buttons">
-              <div>
-                <button id="follow_drone_btn"
-                        className="btn btn-dark"
-                        onClick={this.followDrone}>
-                  <i className="fa fa-location-arrow" aria-hidden="true"></i>
-                </button>
-              </div>
+              <Button id="follow_drone_btn"
+                      bsStyle="primary"
+                      onClick={this.followDrone}>
+                <i className="fa fa-location-arrow" aria-hidden="true"></i>
+              </Button>
             </div>
           </div>
           <div id="sidebar_container"
@@ -65,6 +56,16 @@ class Home extends Component {
           socketEmit={this.props.socketEmit}/>
       </div>
     );
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (!this.state.mission && nextProps.appState.missions.length > 0) {
+      this.setState({mission: nextProps.appState.missions[0]});
+    }
+  }
+
+  addGotoCommand(lat, lng) {
+    this.refs.sidebar.refs.missionPlanner.addGotoCommand(lat, lng);
   }
 
   setHomeState = (newState) => {

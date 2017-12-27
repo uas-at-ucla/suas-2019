@@ -45,6 +45,7 @@
 }
 
 .scrollbar {
+  width: 100%;
   height: 300px;
   overflow-y: auto;
   margin-bottom: 25px;
@@ -66,17 +67,30 @@
   background-color: #FFF;
 }
 
-#waypointListLabelsTable {
+#commandListLabelsTable {
   width: 100%;
   text-align: center;
 }
 
-#waypointList {
+#commandList {
   width: 100%;
   text-align: center;
 }
 
-#waypointListLabels {
+#commandList td {
+  width: 50%;
+  text-align: center;
+  vertical-align: middle;
+}
+
+#commandList .form-group {
+  margin: 0;
+  padding: 3px;
+  width: fit-content;
+  display: inline-block;
+}
+
+#commandListLabels {
   font-size: 18px;
   font-weight: bold;
 }

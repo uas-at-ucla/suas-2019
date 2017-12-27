@@ -92,9 +92,9 @@ class Map extends Component {
     this.stationary_obstacles = [];
     this.moving_obstacles = [];
 
-    this.mission_waypoints = [];
-    this.waypoints = [];
-    this.waypoint_path = null;
+    this.mission_commands = [];
+    this.commands = [];
+    this.command_path = null;
     this.fly_zones = [];
 
     this.map.addListener('dragstart', () => {
@@ -109,8 +109,8 @@ class Map extends Component {
     });
 
     this.map.addListener("dblclick", (e) => {
-      if (this.props.onAddCommand) {
-        this.props.onAddCommand(e.latLng.lat(), e.latLng.lng());
+      if (this.props.onDoubleClick) {
+        this.props.onDoubleClick(e.latLng.lat(), e.latLng.lng());
       }
     });
 
@@ -118,8 +118,8 @@ class Map extends Component {
         this.pan_to_drone_if_following);
     this.registerStateDepFunction('homeState', 'mission',
         this.draw_mission_details);
-    this.registerStateDepFunction('homeState', 'waypoints',
-        this.draw_waypoint_path);
+    this.registerStateDepFunction('homeState', 'commands',
+        this.draw_command_path);
     this.registerStateDepFunction('appState', 'telemetry',
         this.update_drone_position);
     this.registerStateDepFunction('appState', 'stationary_obstacles',
@@ -139,45 +139,36 @@ class Map extends Component {
     let mission = props.homeState.mission;
 
     if (mission) {
-      this.draw_mission_waypoints(mission.mission_waypoints);
+      this.draw_mission_commands(mission.mission_commands);
       this.draw_fly_zones(mission.fly_zones);
     }
   }
 
-  draw_waypoint_path = (props) => {
-    let waypoints = props.homeState.waypoints
+  draw_command_path = (props) => {
+    let commands = props.homeState.commands
 
-    for (let marker of this.waypoints) {
+    for (let marker of this.commands) {
       marker.setMap(null);
     }
 
-    this.waypoints.length = 0;
+    this.commands.length = 0;
 
-    if (this.waypoint_path) {
-      this.waypoint_path.setMap(null);
+    if (this.command_path) {
+      this.command_path.setMap(null);
     }
 
-    let polyline = new google.maps.Polyline({
-      path: [this.drone_marker.getPosition()].concat(waypoints),
-      geodesic: true,
-      strokeColor: '#0000FF',
-      strokeOpacity: 0.7,
-      strokeWeight: 3,
-    });
+    let commandPositions = [];
 
-    polyline.setMap(this.map);
-    this.waypoint_path = polyline
-
-    for (let waypoint of waypoints) {
+    for (let command of commands) {
       let marker = new google.maps.Marker({
         map: this.map,
-        position: waypoint
+        position: command.goto_options
       });
 
       let infowindow = new google.maps.InfoWindow({
-        content: 'Lat: ' + waypoint.lat + '<br>' +
-                 'Lng: ' + waypoint.lng + '<br>' +
-                 'Alt: ' + waypoint.alt + ' m'
+        content: 'Lat: ' + command.goto_options.lat + '<br>' +
+                 'Lng: ' + command.goto_options.lng + '<br>' +
+                 'Alt: ' + command.goto_options.alt + ' m'
       });
 
       marker.addListener('click', () => {
@@ -188,8 +179,24 @@ class Map extends Component {
         infowindow.close();
       });
 
-      this.waypoints.push(marker);
+      this.commands.push(marker);
+
+      commandPositions.push({
+        lat: command.goto_options.lat,
+        lng: command.goto_options.lng
+      });
     }
+
+    let polyline = new google.maps.Polyline({
+      path: commandPositions,
+      geodesic: true,
+      strokeColor: '#0000FF',
+      strokeOpacity: 0.7,
+      strokeWeight: 3,
+    });
+
+    polyline.setMap(this.map);
+    this.command_path = polyline;
   }
 
   update_drone_position = (props) => {
@@ -270,15 +277,17 @@ class Map extends Component {
     }
   }
 
-  draw_mission_waypoints(waypoints) {
-    for (let marker of this.mission_waypoints) {
+  draw_mission_commands(commands) {
+    for (let marker of this.mission_commands) {
       marker.setMap(null);
     }
 
-    this.mission_waypoints.length = 0;
+    this.mission_commands.length = 0;
 
-    for (let waypoint of waypoints) {
-      let coords = {lat: waypoint.latitude, lng: waypoint.longitude};
+    if(commands == undefined) return;
+
+    for (let command of commands) {
+      let coords = {lat: command.latitude, lng: command.longitude};
       let marker = new google.maps.Marker({
         map: this.map,
         position: coords,
@@ -288,7 +297,7 @@ class Map extends Component {
         }
       });
 
-      coords.alt = waypoint.altitude_msl;
+      coords.alt = command.altitude_msl;
 
       let infowindow = new google.maps.InfoWindow({
         content: 'Lat: ' + coords.lat + '<br>' +
@@ -304,7 +313,7 @@ class Map extends Component {
         infowindow.close();
       });
 
-      this.mission_waypoints.push(marker);
+      this.mission_commands.push(marker);
     }
   }
 

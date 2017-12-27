@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
 
 class Panel extends Component {
-
   render() {
     let header = null;
     if (this.props.title) {
       header = (
-        <h4 className="card-header">
+        <h4>
           {this.props.title}
           <button className="panel-expand" data-toggle="modal" data-target={`#${this.props.id}`}>
             <i className="fa fa-expand" aria-hidden="true"></i>
