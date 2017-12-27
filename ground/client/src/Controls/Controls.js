@@ -35,12 +35,14 @@ class Controls extends Component {
   sendRunMissionCommand = () => {
     let commands = [];
 
-    for (let waypoint of this.props.homeState.waypoints) {
+    for (let command of this.props.homeState.commands) {
       commands.push({
         type: 'goto',
-        pos: waypoint
+        pos: command.goto_options
       });
     }
+
+    console.log(commands);
 
     this.props.socketEmit('execute_commands', commands);
   }
