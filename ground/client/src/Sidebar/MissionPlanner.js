@@ -5,13 +5,6 @@ import {
 } from 'react-bootstrap';
 
 class MissionPlanner extends Component {
-  constructor(props) {
-    super(props);
-
-    this.state = {
-      totalCommands: 0
-    }
-  }
 
   render() {
     const commandsList = this.props.homeState.commands.map((command) =>
@@ -54,23 +47,6 @@ class MissionPlanner extends Component {
     let commands = this.props.homeState.commands.slice();
     commands[id].type = new_type.target.value;
     this.props.setHomeState({commands: commands});
-  }
-
-  addGotoCommand(lat, lng) {
-    let commands = this.props.homeState.commands.slice();
-
-    let goto_command = {
-      id: this.state.totalCommands,
-      command_type: "goto",
-      lat: lat,
-      lng: lng,
-      alt: 80
-    }
-
-    commands.push(goto_command);
-
-    this.props.setHomeState({commands: commands});
-    this.state.totalCommands++;
   }
 }
 
