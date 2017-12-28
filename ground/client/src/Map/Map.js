@@ -109,9 +109,7 @@ class Map extends Component {
     });
 
     this.map.addListener("dblclick", (e) => {
-      if (this.props.onDoubleClick) {
-        this.props.onDoubleClick(e.latLng.lat(), e.latLng.lng());
-      }
+      this.addGotoCommand(e.latLng.lat(), e.latLng.lng());
     });
 
     this.registerStateDepFunction('homeState', 'followDrone',
@@ -243,6 +241,20 @@ class Map extends Component {
     if (!this.update_moving_obstacles(obstacles)) {
       this.set_moving_obstacles(obstacles);
     }
+  }
+
+  addGotoCommand(lat, lng) {
+    let commands = this.props.homeState.commands.slice();
+    
+    commands.push({
+      id: commands.length,
+      command_type: "goto",
+      lat: lat,
+      lng: lng,
+      alt: 80
+    });
+
+    this.props.setHomeState({commands: commands});
   }
 
   pan_to_drone() {
