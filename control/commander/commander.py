@@ -62,7 +62,7 @@ class Commander:
         commands = args[0]
         self.add_command(TakeoffCommand())
         for command in commands:
-            drone_commander.add_command(commander.Command(command))
+            self.add_command(Command(command))
         self.add_command(LandCommand())
 
         self.interrupt = True
