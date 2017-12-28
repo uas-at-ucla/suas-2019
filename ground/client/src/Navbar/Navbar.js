@@ -22,6 +22,29 @@ class Navbar extends Component {
   }
 
   render() {
+    var batteryAndFlightTime = null
+    if (this.props.appState.optionSelected === 'Home') {
+      var flight_time = null;
+      var battery_voltage = null;
+      if (this.props.appState.telemetry) {
+        flight_time = this.props.appState.telemetry.flight_time;
+        flight_time = new Date(flight_time * 1000).toISOString().substr(11, 8);
+        battery_voltage = this.props.appState.telemetry.voltage + 'v';
+      }
+      batteryAndFlightTime = (
+        <div id="flight_time_and_battery">
+          <div id="flight_time">
+            <div id="flight_time_value">{flight_time}</div>
+            <div id="flight_time_label">Flight Time</div>
+          </div>
+          <div id="battery_v">
+            <div id="battery_value">{battery_voltage}</div>
+            <div id="battery_label">Battery</div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="Navbar">
           <div className="nav">
@@ -29,6 +52,7 @@ class Navbar extends Component {
             <button className={`btn btn-sm align-middle btn-outline-light ${!this.props.appState.interopBtnEnabled ? 'disabled' : null}`}
                     id="interop_btn" onClick={this.connectToInterop}>{this.props.appState.interopBtnText}</button>
           </div>
+          {batteryAndFlightTime}
       </div>
     );
   }
