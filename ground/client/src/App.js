@@ -58,7 +58,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const SOCKET_DOMAIN = "0.0.0.0";
+    const SOCKET_DOMAIN = document.domain; // Gets domain from browser
     const SOCKET_PORT = 8084;
 
     const SOCKET_ADDRESS = "http://" + SOCKET_DOMAIN + ":" + SOCKET_PORT;
