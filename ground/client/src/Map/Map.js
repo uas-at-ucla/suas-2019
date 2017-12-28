@@ -162,13 +162,13 @@ class Map extends Component {
     for (let command of commands) {
       let marker = new google.maps.Marker({
         map: this.map,
-        position: command.goto_options
+        position: command
       });
 
       let infowindow = new google.maps.InfoWindow({
-        content: 'Lat: ' + command.goto_options.lat + '<br>' +
-                 'Lng: ' + command.goto_options.lng + '<br>' +
-                 'Alt: ' + command.goto_options.alt + ' m'
+        content: 'Lat: ' + command.lat + '<br>' +
+                 'Lng: ' + command.lng + '<br>' +
+                 'Alt: ' + command.alt + ' m'
       });
 
       marker.addListener('click', () => {
@@ -182,8 +182,8 @@ class Map extends Component {
       this.commands.push(marker);
 
       commandPositions.push({
-        lat: command.goto_options.lat,
-        lng: command.goto_options.lng
+        lat: command.lat,
+        lng: command.lng
       });
     }
 

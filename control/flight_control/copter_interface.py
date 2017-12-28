@@ -44,7 +44,7 @@ class Sensors:
             self.__telemetry = {
                     "state": Sensor(str),
                     "pixhawk_state": Sensor(str),
-                    "armed": Sensor(str),
+                    "armed": Sensor(bool),
                     "voltage": Sensor(float),
                     "last_heartbeat": Sensor(float),
                     "gps_lat": Sensor(float),
