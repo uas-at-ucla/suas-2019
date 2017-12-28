@@ -51,10 +51,9 @@ class MissionPlanner extends Component {
   }
 
   onCommandTypeChange(id, new_type) {
-    this.props.homeState.commands[id].type = new_type.target.value;
-
-    // Force a redraw.
-    this.setState(this.state);
+    let commands = this.props.homeState.commands.slice();
+    commands[id].type = new_type.target.value;
+    this.props.setHomeState({commands: commands});
   }
 
   addGotoCommand(lat, lng) {
@@ -62,12 +61,10 @@ class MissionPlanner extends Component {
 
     let goto_command = {
       id: this.state.totalCommands,
-      type: "goto",
-      goto_options: {
-        lat: lat,
-        lng: lng,
-        alt: 80,
-      }
+      command_type: "goto",
+      lat: lat,
+      lng: lng,
+      alt: 80
     }
 
     commands.push(goto_command);
