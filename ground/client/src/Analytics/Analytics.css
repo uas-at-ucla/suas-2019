@@ -1,0 +1,18 @@
+.Analytics {
+    margin-top: calc(45px + 2vw);
+}
+
+table, th, td {
+    border: 1px solid black;
+    padding: 6px 6px 6px 6px;
+}
+
+table {
+    margin-bottom: 50px;
+}
+
+// Increase checkbox size
+input[type=checkbox] {
+    -webkit-transform: scale(1.4);
+}
+
