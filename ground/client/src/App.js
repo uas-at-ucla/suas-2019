@@ -11,7 +11,7 @@ class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      optionSelected: 'Home', // Default is Home
+      optionSelected: 'Home', // Adjust for development purposes
       droneArmedStatus: "Offline",
       droneState: "",
       telemetry: null,
