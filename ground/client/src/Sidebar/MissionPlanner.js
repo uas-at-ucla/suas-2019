@@ -45,7 +45,7 @@ class MissionPlanner extends Component {
 
   onCommandTypeChange(id, new_type) {
     let commands = this.props.homeState.commands.slice();
-    commands[id].type = new_type.target.value;
+    commands[id].command_type = new_type.target.value;
     this.props.setHomeState({commands: commands});
   }
 }
