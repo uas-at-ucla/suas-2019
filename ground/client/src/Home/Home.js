@@ -62,10 +62,6 @@ class Home extends Component {
     }
   }
 
-  addGotoCommand(lat, lng) {
-    this.refs.sidebar.refs.missionPlanner.addGotoCommand(lat, lng);
-  }
-
   setHomeState = (newState) => {
     this.setState(newState);
   }

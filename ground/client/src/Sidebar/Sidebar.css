@@ -78,7 +78,7 @@
 }
 
 #commandList td {
-  width: 50%;
+  /*width: 50%;*/
   text-align: center;
   vertical-align: middle;
 }
@@ -93,4 +93,12 @@
 #commandListLabels {
   font-size: 18px;
   font-weight: bold;
+}
+
+.Sidebar .altitude_input {
+  width: 3em;
+}
+
+.Sidebar .name_input {
+  width: 9em;
 }
