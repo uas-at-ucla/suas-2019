@@ -109,9 +109,7 @@ class Map extends Component {
     });
 
     this.map.addListener("dblclick", (e) => {
-      if (this.props.onDoubleClick) {
-        this.props.onDoubleClick(e.latLng.lat(), e.latLng.lng());
-      }
+      this.addGotoCommand(e.latLng.lat(), e.latLng.lng());
     });
 
     this.registerStateDepFunction('homeState', 'followDrone',
@@ -162,13 +160,13 @@ class Map extends Component {
     for (let command of commands) {
       let marker = new google.maps.Marker({
         map: this.map,
-        position: command.goto_options
+        position: command
       });
 
       let infowindow = new google.maps.InfoWindow({
-        content: 'Lat: ' + command.goto_options.lat + '<br>' +
-                 'Lng: ' + command.goto_options.lng + '<br>' +
-                 'Alt: ' + command.goto_options.alt + ' m'
+        content: 'Lat: ' + command.lat + '<br>' +
+                 'Lng: ' + command.lng + '<br>' +
+                 'Alt: ' + command.alt + ' m'
       });
 
       marker.addListener('click', () => {
@@ -182,8 +180,8 @@ class Map extends Component {
       this.commands.push(marker);
 
       commandPositions.push({
-        lat: command.goto_options.lat,
-        lng: command.goto_options.lng
+        lat: command.lat,
+        lng: command.lng
       });
     }
 
@@ -243,6 +241,20 @@ class Map extends Component {
     if (!this.update_moving_obstacles(obstacles)) {
       this.set_moving_obstacles(obstacles);
     }
+  }
+
+  addGotoCommand(lat, lng) {
+    let commands = this.props.homeState.commands.slice();
+    
+    commands.push({
+      id: commands.length,
+      command_type: "goto",
+      lat: lat,
+      lng: lng,
+      alt: 80
+    });
+
+    this.props.setHomeState({commands: commands});
   }
 
   pan_to_drone() {

@@ -16,6 +16,12 @@ import time
 
 import copter_interface
 
+class Command:
+    def __init__(self, data):
+        self.command_type = "unknown"
+        for key, value in data.items():
+            setattr(self, key, value)
+
 class TakeoffCommand:
     def __init__(self):
         self.command_type = "takeoff"
@@ -56,11 +62,7 @@ class Commander:
         commands = args[0]
         self.add_command(TakeoffCommand())
         for command in commands:
-            if command['type'] == 'goto':
-                pos = command['pos']
-                self.add_command(GotoCommand(pos['lat'], \
-                                             pos['lng'], \
-                                             pos['alt']))
+            self.add_command(Command(command))
         self.add_command(LandCommand())
 
         self.interrupt = True

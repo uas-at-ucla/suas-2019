@@ -58,7 +58,7 @@ class App extends Component {
   }
 
   componentDidMount() {
-    const SOCKET_DOMAIN = "0.0.0.0";
+    const SOCKET_DOMAIN = document.domain; // Gets domain from browser
     const SOCKET_PORT = 8084;
 
     const SOCKET_ADDRESS = "http://" + SOCKET_DOMAIN + ":" + SOCKET_PORT;
@@ -67,39 +67,51 @@ class App extends Component {
 
     this.socket.on('connect', () => {
       console.log("Connected to ground interface feeder!");
-      this.setState({droneArmedStatus: "Online"});
-      this.setState({droneState: ""});
-    });
-
-    this.socket.on('drone_connected', () => {
-      console.log("timer started!");
+      this.setState({
+        droneArmedStatus: "Online",
+        droneState: ""
+      });
     });
 
     this.socket.on('disconnect', () => {
       console.log("Disconnected from ground interface feeder!");
-      this.setState({droneArmedStatus: "Offline"});
-      this.setState({droneState: ""});
+      this.setState({
+        droneArmedStatus: "Offline",
+        droneState: ""
+      });
+    });
+
+    this.socket.on('drone_connected', () => {
+      this.setState({
+        droneArmedStatus: "Starting Up Drone...",
+        droneState: ""
+      });
+    });
+
+    this.socket.on('drone_disconnected', () => {
+      this.setState({
+        droneArmedStatus: "Drone Disconnected!",
+        droneState: ""
+      });
     });
 
     this.socket.on('telemetry', (telemetry) => {
       // console.log(telemetry);
-      this.setState({telemetry: telemetry});
-
-      if(telemetry["armed"] === "False") {
-        this.setState({droneArmedStatus: "Disarmed"});
-      } else {
-        this.setState({droneArmedStatus: "Armed"});
-      }
-
-      this.setState({droneState: this.convert_to_title_text(telemetry["state"])});
+      this.setState({
+        telemetry: telemetry,
+        droneArmedStatus: telemetry["armed"] ? "Armed" : "Disarmed",
+        droneState: this.convert_to_title_text(telemetry["state"])
+      });
     });
 
     this.socket.on('initial_data', (data) => {
       this.received_interop_status(data.interop_connected);
       if (data.interop_connected) {
-        this.setState({stationary_obstacles: data.stationary_obstacles});
-        this.setState({moving_obstacles: data.moving_obstacles});
-        this.setState({missions: data.missions});
+        this.setState({
+          stationary_obstacles: data.stationary_obstacles,
+          moving_obstacles: data.moving_obstacles,
+          missions: data.missions
+        });
       }
     });
 
@@ -122,11 +134,15 @@ class App extends Component {
 
   received_interop_status(is_interop_connected) {
     if (is_interop_connected) {
-      this.setState({interopBtnText: "Connected to Interop"});
-      this.setState({interopBtnEnabled: false});
+      this.setState({
+        interopBtnText: "Connected to Interop",
+        interopBtnEnabled: false
+      });
     } else {
-      this.setState({interopBtnText: "Cannot Connect to Interop Server!"});
-      this.setState({interopBtnEnabled: true});
+      this.setState({
+        interopBtnText: "Cannot Connect to Interop Server!",
+        interopBtnEnabled: true
+      });
       setTimeout(() => this.setState({interopBtnText: "Connect to Interop"}), 1000);
     }
   }
