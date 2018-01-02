@@ -49,7 +49,8 @@ class Map extends Component {
       navigationControl : false,
       mapTypeControl : false,
       scaleControl : true,
-      draggable : false,
+      draggable : true,
+      disableDoubleClickZoom: true,
       styles : map_style
     });
 
@@ -92,7 +93,15 @@ class Map extends Component {
     this.stationary_obstacles = [];
     this.moving_obstacles = [];
 
-    this.mission_commands = [];
+    this.mission_point_id = 0;
+    this.mission_points = {
+      waypoints: [],
+      person: null,
+      off_axis_object: null,
+      home: null,
+      air_drop: null
+    };
+    this.search_grid = null;
     this.commands = [];
     this.command_path = null;
     this.fly_zones = [];
@@ -109,7 +118,7 @@ class Map extends Component {
     });
 
     this.map.addListener("dblclick", (e) => {
-      this.addGotoCommand(e.latLng.lat(), e.latLng.lng());
+      this.addGotoCommand(e.latLng.lat(), e.latLng.lng(), 80);
     });
 
     this.registerStateDepFunction('homeState', 'followDrone',
@@ -137,8 +146,12 @@ class Map extends Component {
     let mission = props.homeState.mission;
 
     if (mission) {
-      this.draw_mission_commands(mission.mission_commands);
-      this.draw_fly_zones(mission.fly_zones);
+      this.draw_mission_fly_zones(mission.fly_zones);
+      this.draw_mission_waypoints(mission.mission_waypoints);
+      this.draw_mission_point('person', mission.emergent_last_known_pos);
+      this.draw_mission_point('off_axis_object', mission.off_axis_odlc_pos);
+      this.draw_mission_point('home', mission.home_pos);
+      this.draw_mission_point('air_drop', mission.air_drop_pos);
     }
   }
 
@@ -157,31 +170,43 @@ class Map extends Component {
 
     let commandPositions = [];
 
-    for (let command of commands) {
-      let marker = new google.maps.Marker({
-        map: this.map,
-        position: command
-      });
+    for (let i = 0; i < commands.length; i++) {
+      let command = commands[i];
 
-      let infowindow = new google.maps.InfoWindow({
-        content: 'Lat: ' + command.lat + '<br>' +
-                 'Lng: ' + command.lng + '<br>' +
-                 'Alt: ' + command.alt + ' m'
-      });
+      if (command.mission_point && command.mission_point.marker.getMap()) {
+        this.update_mission_point(command, i);
+      } else {
+        let marker = new google.maps.Marker({
+          map: this.map,
+          position: command.options
+        });
 
-      marker.addListener('click', () => {
-        infowindow.open(this.map, marker);
-      });
+        let title = (i+1) + ') ' + command.options.command_type;
+        if (command.name) {
+          title = title + ': ' + command.name;
+        }
 
-      google.maps.event.addListener(this.map, "click", () => {
-        infowindow.close();
-      });
+        let infowindow = new google.maps.InfoWindow({
+          content: '<h6>' + title + '</h6>' +
+                   'Lat: ' + command.options.lat + '<br>' +
+                   'Lng: ' + command.options.lng + '<br>' +
+                   'Alt: ' + command.options.alt + ' m'
+        });
 
-      this.commands.push(marker);
+        marker.addListener('click', () => {
+          infowindow.open(this.map, marker);
+        });
+
+        google.maps.event.addListener(this.map, "click", () => {
+          infowindow.close();
+        });
+
+        this.commands.push(marker);
+      }
 
       commandPositions.push({
-        lat: command.lat,
-        lng: command.lng
+        lat: command.options.lat,
+        lng: command.options.lng
       });
     }
 
@@ -243,15 +268,18 @@ class Map extends Component {
     }
   }
 
-  addGotoCommand(lat, lng) {
+  addGotoCommand(lat, lng, alt, name, mission_point) {
     let commands = this.props.homeState.commands.slice();
     
     commands.push({
-      id: commands.length,
-      command_type: "goto",
-      lat: lat,
-      lng: lng,
-      alt: 80
+      name: name || '',
+      mission_point: mission_point,
+      options: {
+        command_type: "goto",
+        lat: lat,
+        lng: lng,
+        alt: alt
+      }
     });
 
     this.props.setHomeState({commands: commands});
@@ -261,7 +289,68 @@ class Map extends Component {
     this.map.panTo(this.drone_marker.getPosition());
   }
 
-  draw_fly_zones(fly_zones) {
+  mission_point_title(mission_point_key, pos) {
+    switch (mission_point_key) {
+      case 'waypoints':
+        return 'Mission Waypoint ' + pos.order;
+      case 'person':
+        return 'Person';
+      case 'off_axis_object':
+        return 'Out-of-Bounds Object';
+      case 'home':
+        return 'Home';
+      case 'air_drop':
+        return 'Air Drop';
+      default:
+        return null;
+    }
+  }
+
+  mission_point_label(mission_point_key) {
+    switch (mission_point_key) {
+      case 'waypoints':
+        return {
+          fontFamily: 'Fontawesome',
+          text: '\uf192',
+          fontSize: '15px'
+        };
+      case 'person':
+        return {
+          fontFamily: 'Fontawesome',
+          text: '\uf183',
+          fontSize: '20px'
+        };
+      case 'off_axis_object':
+        return {
+          fontFamily: 'Fontawesome',
+          text: '\uf030',
+          fontSize: '14px'
+        };
+      case 'home':
+        return {
+          fontFamily: 'Fontawesome',
+          text: '\uf015',
+          fontSize: '18px'
+        };
+      case 'air_drop':
+        return {
+          fontFamily: 'Fontawesome',
+          text: '\uf1e2',
+          fontSize: '15px'
+        };
+      default:
+        return null;
+    }
+  }
+
+  draw_mission_fly_zones(fly_zones) {
+    let bigRect = [
+      {lat: 38.170, lng: -76.470},
+      {lat: 38.120, lng: -76.470},
+      {lat: 38.120, lng: -76.390},
+      {lat: 38.170, lng: -76.390}
+    ]
+
     for (let polygon of this.fly_zones) {
       polygon.setMap(null);
     }
@@ -275,12 +364,19 @@ class Map extends Component {
         boundary_coordinates.push({lat: pt.latitude, lng: pt.longitude});
       }
 
+      let paths = [boundary_coordinates];
+      if (this.polygonIsClockwise(boundary_coordinates)) {
+        paths.push(bigRect);
+      } else {
+        paths.push(bigRect.slice().reverse());
+      }
+
       let polygon = new google.maps.Polygon({
-        path: boundary_coordinates,
-        strokeColor: '#00FF00',
+        paths: paths,
+        strokeColor: '#FF0000',
         strokeOpacity: 0.7,
         strokeWeight: 3,
-        fillColor: '#00FF00',
+        fillColor: '#FF0000',
         fillOpacity: 0.25,
       });
 
@@ -289,44 +385,72 @@ class Map extends Component {
     }
   }
 
-  draw_mission_commands(commands) {
-    for (let marker of this.mission_commands) {
-      marker.setMap(null);
+  polygonIsClockwise(vertices) {
+    //This is the shoelace formula to calculate area, it's pretty neat.
+    //Not very meaningful with lat/lng, but the sign determines counter/clockwise
+    let area = 0;
+    for (let i = 0; i < vertices.length; i++) {
+        let j = (i + 1) % vertices.length;
+        area += vertices[i].lng * vertices[j].lat;
+        area -= vertices[j].lng * vertices[i].lat;
+    }
+    return area < 0;
+  }
+
+  draw_mission_waypoints(waypoints) {
+    for (let waypoint of this.mission_points.waypoints) {
+      waypoint.marker.setMap(null);
+    }
+    this.mission_points.waypoints.length = 0;
+
+    if(waypoints == undefined) return;
+
+    for (let pos of waypoints) {
+      let mission_point = this.make_mission_marker('waypoints', pos);
+      this.mission_points.waypoints.push(mission_point);
+    }
+  }
+
+  draw_mission_point(mission_point_key, pos) {
+    if (this.mission_points[mission_point_key]) {
+      this.mission_points[mission_point_key].marker.setMap(null);
     }
 
-    this.mission_commands.length = 0;
+    let mission_point = this.make_mission_marker(mission_point_key, pos);
+    this.mission_points[mission_point_key] = mission_point;
+  }
 
-    if(commands == undefined) return;
+  update_mission_point(command, index) {
+    let div = document.createElement('div');
+    div.innerHTML = command.mission_point.infowindow.getContent();
+    let command_info = (index+1) + ') ' + command.options.command_type + ': ';
+    div.getElementsByClassName('command_info')[0].textContent = command_info;
+    command.mission_point.infowindow.setContent(div.innerHTML);
+    command.mission_point.onInfoChanged();
+  }
 
-    for (let command of commands) {
-      let coords = {lat: command.latitude, lng: command.longitude};
-      let marker = new google.maps.Marker({
-        map: this.map,
-        position: coords,
-        label: {
-          fontFamily: 'Fontawesome',
-          text: '\uf192'
-        }
-      });
-
-      coords.alt = command.altitude_msl;
-
-      let infowindow = new google.maps.InfoWindow({
-        content: 'Lat: ' + coords.lat + '<br>' +
-                 'Lng: ' + coords.lng + '<br>' +
-                 'Alt: ' + coords.alt + ' m'
-      });
-
-      marker.addListener('click', () => {
-        infowindow.open(this.map, marker);
-      });
-
-      google.maps.event.addListener(this.map, "click", () => {
-        infowindow.close();
-      });
-
-      this.mission_commands.push(marker);
+  draw_mission_search_grid(points) {
+    if (this.search_grid) {
+      this.search_grid.setMap(null);
     }
+
+    let boundary_coordinates = [];
+
+    for (let pt of points) {
+      boundary_coordinates.push({lat: pt.latitude, lng: pt.longitude});
+    }
+
+    let polygon = new google.maps.Polygon({
+      path: boundary_coordinates,
+      strokeColor: '#00FFFF',
+      strokeOpacity: 0.7,
+      strokeWeight: 3,
+      fillColor: '#00FFFF',
+      fillOpacity: 0.25,
+    });
+
+    polygon.setMap(this.map);
+    this.search_grid = polygon;
   }
 
   set_moving_obstacles(obstacles) {
@@ -345,9 +469,105 @@ class Map extends Component {
     }
   }
 
+  make_mission_marker(mission_point_key, pos) {
+    let coords = {lat: pos.latitude, lng: pos.longitude};
+    let title = this.mission_point_title(mission_point_key, pos);
+    let label = this.mission_point_label(mission_point_key);
+
+    let marker_options = {
+      map: this.map,
+      position: coords,
+    }
+    if (label) {
+      marker_options.label = label
+    }
+
+    let marker = new google.maps.Marker(marker_options);
+
+    let id = this.mission_point_id;
+    this.mission_point_id++;
+
+    let infowindow_content = '<div id="mission_point_infowindow_' + id + '">' +
+                          '<h6 class="infowindow_title">' +
+                          '<span class="command_info"></span>' +
+                           title + '</h6>' +
+                          'Lat: ' + coords.lat + '<br>' +
+                          'Lng: ' + coords.lng
+    if (pos.altitude_msl) {
+      coords.alt = pos.altitude_msl * METERS_PER_FOOT;
+      infowindow_content = infowindow_content + '<br>' +
+        'Alt: ' + coords.alt + ' m'
+    }
+
+    infowindow_content = infowindow_content + '<br>' +
+      '<button ' +
+        'class="add_point_to_plan btn btn-sm btn-outline-success">' +
+        'Add to Plan' +
+      '</button>' +
+      '<button ' +
+        'hidden ' +
+        'class="remove_point_from_plan btn btn-sm btn-outline-danger">' +
+        'Remove from Plan' +
+      '</button>' + 
+      '</div>'
+
+    let infowindow = new google.maps.InfoWindow({
+      content: infowindow_content
+    });
+
+    let mission_point = {
+      marker: marker,
+      infowindow: infowindow
+    }
+
+    let setupListeners = () => {
+      let div = document.getElementById('mission_point_infowindow_' + id);
+      if (div) {
+        let add_btn = div.getElementsByClassName('add_point_to_plan')[0];
+        let remove_btn = div.getElementsByClassName('remove_point_from_plan')[0];
+        add_btn.onclick = () => {
+          add_btn.setAttribute('hidden', 'hidden');
+          remove_btn.removeAttribute('hidden');
+          infowindow.setContent(div.outerHTML);
+          mission_point.onInfoChanged();
+          this.addGotoCommand(coords.lat, coords.lng, coords.alt || 80, title, mission_point);
+        }
+        remove_btn.onclick = () => {
+          let command_index = this.props.homeState.commands.findIndex((el) => 
+            el.mission_point === mission_point);
+          if (command_index !== -1) {
+            remove_btn.setAttribute('hidden', 'hidden');
+            add_btn.removeAttribute('hidden');
+            let command_info = div.getElementsByClassName('command_info')[0];
+            command_info.textContent = '';
+            infowindow.setContent(div.outerHTML);
+            mission_point.onInfoChanged();
+            let commands = this.props.homeState.commands.slice();
+            commands.splice(command_index, 1);
+            this.props.setHomeState({commands: commands});
+          }
+        }
+      }
+    }
+
+    mission_point.onInfoChanged = setupListeners;
+
+    marker.addListener('click', () => {
+      infowindow.open(this.map, marker);
+      setupListeners();
+    });
+
+    google.maps.event.addListener(this.map, "click", () => {
+      infowindow.close();
+    });
+
+    return mission_point;
+  }
+
   make_obstacle_map_object(obstacle) {
     let pos = {lat: obstacle.latitude, lng: obstacle.longitude};
-    let radius_feet = obstacle.cylinder_radius || obstacle.sphere_radius
+    let radius_feet = obstacle.cylinder_radius || obstacle.sphere_radius;
+    let radius = radius_feet * METERS_PER_FOOT;
 
     let circle = new google.maps.Circle({
       center: pos,
@@ -355,14 +575,14 @@ class Map extends Component {
       fillColor: "#FF0000",
       fillOpacity: 0.7,
       strokeWeight: 0,
-      radius: radius_feet * METERS_PER_FOOT,
+      radius: radius,
       zIndex: 3
     });
 
     let infowindow = new google.maps.InfoWindow({
       content: 'Lat: ' + obstacle.latitude + '<br>' +
                'Lng: ' + obstacle.longitude + '<br>' +
-               'Radius: ' + radius_feet + ' m'
+               'Radius: ' + radius + ' m'
     });
 
     google.maps.event.addListener(circle, 'click', () => {
