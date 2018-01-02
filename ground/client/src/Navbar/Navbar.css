@@ -7,7 +7,7 @@
   box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
   z-index: 100;
   background-color: rgba(0, 0, 0, 0.7);
-  border-radius: 0 0 5px 5px;
+  border-radius: 5px;
   top: 10px
 }
 
@@ -17,4 +17,34 @@
 
 .nav button {
   margin: 5px;
+}
+
+#flight_time_and_battery {
+  min-height: 60px;
+  position: relative;
+  text-align: center;
+}
+
+#flight_time {
+  color: white;
+  position: absolute;
+  left: 15px;
+  bottom: 10px;
+}
+
+#battery_v {
+  color: white;
+  position: absolute;
+  right: 15px;
+  bottom: 10px;
+}
+
+#battery_value, #flight_time_value {
+  font-size: 24px;
+  line-height: 24px;
+}
+
+#battery_label, #flight_time_label {
+  font-size: 12px;
+  line-height: 12px;
 }

@@ -15,7 +15,9 @@ import Popper from 'popper.js/dist/esm/popper.min.js';
 
 import tether from 'react-tether'
 
+window.$ = jquery
 window.jQuery = jquery
+window.Popper = Popper
 window.Tether = tether
 
 require('bootstrap/dist/js/bootstrap.min.js');

@@ -24,8 +24,7 @@ class Home extends Component {
           id="map"
           appState={this.props.appState}
           homeState={this.state}
-          setHomeState={this.setHomeState}
-          onDoubleClick={this.addGotoCommand.bind(this)} />
+          setHomeState={this.setHomeState} />
         <div id="left_side">
           <div id="top_left">
             <img id="logo" src={logo} width="380px" />
@@ -40,7 +39,6 @@ class Home extends Component {
           <div id="sidebar_container"
                className={!this.state.isSidebarShown ? 'hidden' : null}>
             <Sidebar
-              ref="sidebar"
               appState={this.props.appState}
               homeState={this.state}
               setHomeState={this.setHomeState}
