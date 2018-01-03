@@ -399,6 +399,8 @@ class Map extends Component {
     for (let fly_zone of fly_zones) {
       let boundary_coordinates = [];
 
+      fly_zone.boundary_pts.sort((a, b) => a.order - b.order);
+
       for (let pt of fly_zone.boundary_pts) {
         boundary_coordinates.push({lat: pt.latitude, lng: pt.longitude});
       }
@@ -417,6 +419,7 @@ class Map extends Component {
         strokeWeight: 3,
         fillColor: '#FF0000',
         fillOpacity: 0.25,
+        clickable: false
       });
 
       polygon.setMap(this.map);
@@ -474,6 +477,8 @@ class Map extends Component {
     }
 
     let boundary_coordinates = [];
+
+    points.sort((a, b) => a.order - b.order);
 
     for (let pt of points) {
       boundary_coordinates.push({lat: pt.latitude, lng: pt.longitude});
