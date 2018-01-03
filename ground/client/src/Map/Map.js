@@ -93,7 +93,6 @@ class Map extends Component {
     this.stationary_obstacles = [];
     this.moving_obstacles = [];
 
-    this.mission_point_id = 0;
     this.mission_points = {
       waypoints: [],
       person: null,
@@ -127,6 +126,8 @@ class Map extends Component {
         this.draw_mission_details);
     this.registerStateDepFunction('homeState', 'commands',
         this.draw_command_path);
+    this.registerStateDepFunction('homeState', 'focusedCommand',
+        this.focus_on_command);
     this.registerStateDepFunction('appState', 'telemetry',
         this.update_drone_position);
     this.registerStateDepFunction('appState', 'stationary_obstacles',
@@ -158,8 +159,10 @@ class Map extends Component {
   draw_command_path = (props) => {
     let commands = props.homeState.commands
 
-    for (let marker of this.commands) {
-      marker.setMap(null);
+    for (let command_object of this.commands) {
+      if (command_object) {
+        command_object.marker.setMap(null);
+      }
     }
 
     this.commands.length = 0;
@@ -175,6 +178,7 @@ class Map extends Component {
 
       if (command.mission_point && command.mission_point.marker.getMap()) {
         this.update_mission_point(command, i);
+        this.commands.push(null);
       } else {
         let marker = new google.maps.Marker({
           map: this.map,
@@ -187,21 +191,42 @@ class Map extends Component {
         }
 
         let infowindow = new google.maps.InfoWindow({
-          content: '<h6>' + title + '</h6>' +
+          content: '<div id="command_infowindow_' + i + '">' +
+                   '<h6>' + title + '</h6>' +
                    'Lat: ' + command.options.lat + '<br>' +
                    'Lng: ' + command.options.lng + '<br>' +
-                   'Alt: ' + command.options.alt + ' m'
+                   'Alt: ' + command.options.alt + ' m<br>' +
+                   '<button class="remove_command btn btn-sm btn-outline-danger">' +
+                   'Remove</button></div>'
         });
+
+        let setupListeners = () => {
+          let div = document.getElementById('command_infowindow_' + i);
+          if (div) {
+            let remove_btn = div.getElementsByClassName('remove_command')[0];
+            remove_btn.onclick = () => {
+              let commands = this.props.homeState.commands.slice();
+              commands.splice(i, 1);
+              this.props.setHomeState({commands: commands});
+            }
+          }
+        }
 
         marker.addListener('click', () => {
           infowindow.open(this.map, marker);
+          this.commands[i].onInfoOpened();
         });
 
         google.maps.event.addListener(this.map, "click", () => {
           infowindow.close();
         });
 
-        this.commands.push(marker);
+        this.commands.push({
+          marker: marker,
+          infowindow: infowindow,
+          onInfoChanged: setupListeners,
+          onInfoOpened: setupListeners
+        });
       }
 
       commandPositions.push({
@@ -220,6 +245,20 @@ class Map extends Component {
 
     polyline.setMap(this.map);
     this.command_path = polyline;
+  }
+
+  focus_on_command = (props) => {
+    if (props.homeState.focusedCommand !== null) {
+      this.props.setHomeState({
+        followDrone: false,
+        focusedCommand: null
+      });
+      let point = this.commands[props.homeState.focusedCommand] || 
+        props.homeState.commands[props.homeState.focusedCommand].mission_point;
+      this.map.panTo(point.marker.getPosition());
+      point.marker.setAnimation(google.maps.Animation.BOUNCE);
+      setTimeout(() => point.marker.setAnimation(null), 1400);
+    }
   }
 
   update_drone_position = (props) => {
@@ -296,7 +335,7 @@ class Map extends Component {
       case 'person':
         return 'Person';
       case 'off_axis_object':
-        return 'Out-of-Bounds Object';
+        return 'Off-Axis Object';
       case 'home':
         return 'Home';
       case 'air_drop':
@@ -484,22 +523,24 @@ class Map extends Component {
 
     let marker = new google.maps.Marker(marker_options);
 
-    let id = this.mission_point_id;
-    this.mission_point_id++;
+    let id = mission_point_key;
+    if (pos.order) {
+      id = id + '_' + pos.order;
+    }
 
-    let infowindow_content = '<div id="mission_point_infowindow_' + id + '">' +
-                          '<h6 class="infowindow_title">' +
-                          '<span class="command_info"></span>' +
-                           title + '</h6>' +
-                          'Lat: ' + coords.lat + '<br>' +
-                          'Lng: ' + coords.lng
+    let info = '<div id="mission_point_infowindow_' + id + '">' +
+               '<h6 class="infowindow_title">' +
+               '<span class="command_info"></span>' +
+                title + '</h6>' +
+               'Lat: ' + coords.lat + '<br>' +
+               'Lng: ' + coords.lng
     if (pos.altitude_msl) {
       coords.alt = pos.altitude_msl * METERS_PER_FOOT;
-      infowindow_content = infowindow_content + '<br>' +
+      info = info + '<br>' +
         'Alt: ' + coords.alt + ' m'
     }
 
-    infowindow_content = infowindow_content + '<br>' +
+    info = info + '<br>' +
       '<button ' +
         'class="add_point_to_plan btn btn-sm btn-outline-success">' +
         'Add to Plan' +
@@ -512,7 +553,7 @@ class Map extends Component {
       '</div>'
 
     let infowindow = new google.maps.InfoWindow({
-      content: infowindow_content
+      content: info
     });
 
     let mission_point = {
@@ -551,10 +592,11 @@ class Map extends Component {
     }
 
     mission_point.onInfoChanged = setupListeners;
+    mission_point.onInfoOpened = setupListeners;
 
     marker.addListener('click', () => {
       infowindow.open(this.map, marker);
-      setupListeners();
+      mission_point.onInfoOpened();
     });
 
     google.maps.event.addListener(this.map, "click", () => {
@@ -579,10 +621,20 @@ class Map extends Component {
       zIndex: 3
     });
 
-    let infowindow = new google.maps.InfoWindow({
-      content: 'Lat: ' + obstacle.latitude + '<br>' +
+    let info = '<h6>' + (obstacle.cylinder_radius ? 'Stationary' : 'Moving') +
+               ' Obstacle</h6>' +
+               'Lat: ' + obstacle.latitude + '<br>' +
                'Lng: ' + obstacle.longitude + '<br>' +
                'Radius: ' + radius + ' m'
+    if (obstacle.cylinder_height) {
+      info = info + '<br>Height: ' + 
+             obstacle.cylinder_height * METERS_PER_FOOT + ' m'
+    } else if (obstacle.altitude_msl) {
+      info = info + '<br>Alt: ' + 
+             obstacle.altitude_msl * METERS_PER_FOOT + ' m'
+    }
+    let infowindow = new google.maps.InfoWindow({
+      content: info
     });
 
     google.maps.event.addListener(circle, 'click', () => {

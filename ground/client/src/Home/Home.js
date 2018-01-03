@@ -14,7 +14,8 @@ class Home extends Component {
     isSidebarShown: true,
     followDrone: true,
     mission: this.props.appState.missions[0] || null,
-    commands: []
+    commands: [],
+    focusedCommand: null
   }
 
   render() {
