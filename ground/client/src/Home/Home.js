@@ -15,6 +15,7 @@ class Home extends Component {
     followDrone: true,
     mission: this.props.appState.missions[0] || null,
     commands: [],
+    dontRedrawCommands: false,
     focusedCommand: null
   }
 
