@@ -88,19 +88,28 @@ class MissionPlanner extends Component {
   onCommandTypeChange(index, event) {
     let commands = this.props.homeState.commands.slice();
     commands[index].options.command_type = event.target.value;
-    this.props.setHomeState({commands: commands});
+    this.props.setHomeState({
+      commands: commands,
+      dontRedrawCommands: true
+    });
   }
 
   onCommandNameChange(index, event) {
     let commands = this.props.homeState.commands.slice();
     commands[index].name = event.target.value;
-    this.props.setHomeState({commands: commands});
+    this.props.setHomeState({
+      commands: commands,
+      dontRedrawCommands: true
+    });
   }
 
   onCommandAltChange(index, event) {
     let commands = this.props.homeState.commands.slice();
     commands[index].options.alt = event.target.value;
-    this.props.setHomeState({commands: commands});
+    this.props.setHomeState({
+      commands: commands,
+      dontRedrawCommands: true
+    });
   }
 
   onCommandClick(index, event) {
