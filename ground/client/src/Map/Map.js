@@ -148,6 +148,7 @@ class Map extends Component {
 
     if (mission) {
       this.draw_mission_fly_zones(mission.fly_zones);
+      this.draw_mission_search_grid(mission.search_grid_points);
       this.draw_mission_waypoints(mission.mission_waypoints);
       this.draw_mission_point('person', mission.emergent_last_known_pos);
       this.draw_mission_point('off_axis_object', mission.off_axis_odlc_pos);
@@ -158,6 +159,12 @@ class Map extends Component {
 
   draw_command_path = (props) => {
     let commands = props.homeState.commands
+
+    if (props.homeState.dontRedrawCommands) {
+      this.props.setHomeState({dontRedrawCommands: false});
+      this.update_commands(commands);
+      return;
+    }
 
     for (let command_object of this.commands) {
       if (command_object) {
@@ -328,6 +335,31 @@ class Map extends Component {
     this.map.panTo(this.drone_marker.getPosition());
   }
 
+  update_commands(commands) {
+    for (let i = 0; i < commands.length; i++) {
+      let command = commands[i];
+
+      if (command.mission_point && command.mission_point.marker.getMap()) {
+        this.update_mission_point(command, i);
+      } else if (this.commands[i]) {
+        let title = (i+1) + ') ' + command.options.command_type;
+        if (command.name) {
+          title = title + ': ' + command.name;
+        }
+        this.commands[i].infowindow.setContent(
+          '<div id="command_infowindow_' + i + '">' +
+          '<h6>' + title + '</h6>' +
+          'Lat: ' + command.options.lat + '<br>' +
+          'Lng: ' + command.options.lng + '<br>' +
+          'Alt: ' + command.options.alt + ' m<br>' +
+          '<button class="remove_command btn btn-sm btn-outline-danger">' +
+          'Remove</button></div>'
+        );
+        this.commands[i].onInfoChanged();
+      }
+    }
+  }
+
   mission_point_title(mission_point_key, pos) {
     switch (mission_point_key) {
       case 'waypoints':
@@ -476,6 +508,8 @@ class Map extends Component {
       this.search_grid.setMap(null);
     }
 
+    console.log(";vhluclou");
+
     let boundary_coordinates = [];
 
     points.sort((a, b) => a.order - b.order);
@@ -486,11 +520,12 @@ class Map extends Component {
 
     let polygon = new google.maps.Polygon({
       path: boundary_coordinates,
-      strokeColor: '#00FFFF',
+      strokeColor: '#00FF00',
       strokeOpacity: 0.7,
       strokeWeight: 3,
-      fillColor: '#00FFFF',
+      fillColor: '#00FF00',
       fillOpacity: 0.25,
+      clickable: false
     });
 
     polygon.setMap(this.map);
@@ -626,20 +661,8 @@ class Map extends Component {
       zIndex: 3
     });
 
-    let info = '<h6>' + (obstacle.cylinder_radius ? 'Stationary' : 'Moving') +
-               ' Obstacle</h6>' +
-               'Lat: ' + obstacle.latitude + '<br>' +
-               'Lng: ' + obstacle.longitude + '<br>' +
-               'Radius: ' + radius + ' m'
-    if (obstacle.cylinder_height) {
-      info = info + '<br>Height: ' + 
-             obstacle.cylinder_height * METERS_PER_FOOT + ' m'
-    } else if (obstacle.altitude_msl) {
-      info = info + '<br>Alt: ' + 
-             obstacle.altitude_msl * METERS_PER_FOOT + ' m'
-    }
     let infowindow = new google.maps.InfoWindow({
-      content: info
+      content: this.make_obstacle_info(obstacle)
     });
 
     google.maps.event.addListener(circle, 'click', () => {
@@ -653,8 +676,27 @@ class Map extends Component {
 
     return {
       circle: circle,
-      obstacle: obstacle
+      obstacle: obstacle,
+      infowindow: infowindow
     };
+  }
+
+  make_obstacle_info(obstacle) {
+    let radius_feet = obstacle.cylinder_radius || obstacle.sphere_radius;
+    let radius = radius_feet * METERS_PER_FOOT;
+    let info = '<h6>' + (obstacle.cylinder_radius ? 'Stationary' : 'Moving') +
+               ' Obstacle</h6>' +
+               'Lat: ' + obstacle.latitude + '<br>' +
+               'Lng: ' + obstacle.longitude + '<br>' +
+               'Radius: ' + radius + ' m'
+    if (obstacle.cylinder_height) {
+      info = info + '<br>Height: ' + 
+             obstacle.cylinder_height * METERS_PER_FOOT + ' m'
+    } else if (obstacle.altitude_msl) {
+      info = info + '<br>Alt: ' + 
+             obstacle.altitude_msl * METERS_PER_FOOT + ' m'
+    }
+    return info;
   }
 
   update_moving_obstacles(obstacles) {
@@ -676,6 +718,8 @@ class Map extends Component {
       };
 
       moving_obstacle.circle.setCenter(pos);
+      moving_obstacle.infowindow.setPosition(pos);
+      moving_obstacle.infowindow.setContent(this.make_obstacle_info(obstacles[i]));
     }
 
     return true;
