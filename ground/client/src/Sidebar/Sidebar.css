@@ -77,13 +77,14 @@
   text-align: center;
 }
 
-#commandList td {
-  width: 50%;
+.command_row td {
+  /*width: 50%;*/
   text-align: center;
   vertical-align: middle;
+  color: white;
 }
 
-#commandList .form-group {
+.command_row .form-group {
   margin: 0;
   padding: 3px;
   width: fit-content;
@@ -93,4 +94,12 @@
 #commandListLabels {
   font-size: 18px;
   font-weight: bold;
+}
+
+.command_row .altitude_input {
+  width: 3em;
+}
+
+.command_row .name_input {
+  width: 9em;
 }
