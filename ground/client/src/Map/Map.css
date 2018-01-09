@@ -3,3 +3,9 @@
   width: 100%;
   height: 100%;
 }
+
+.add_point_to_plan, .remove_point_from_plan, .remove_command {
+  margin-top: 5px;
+  outline: none !important;
+  box-shadow: none !important;
+}
