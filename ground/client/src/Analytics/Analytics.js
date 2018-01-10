@@ -2,20 +2,63 @@ import React, { Component } from 'react';
 import Graph from './Graph';
 import Checkbox from './Checkbox';
 import './Analytics.css';
+import MultiGraph from './MultiGraph';
 
 class Analytics extends Component {
 
   constructor(props) {
     super(props);
-    this.state = {
-      showGraphs: {
-        velocity_x: "none",
-        velocity_y: "none",
-        velocity_z: "none",
-        voltage: "none"
-      }
-    }
+    
     this.updateGraphVis = this.updateGraphVis.bind(this);
+
+    this.multigraphs = [
+              {
+                graphTitle: "Velocity",
+                dataNames: ["X Velocity", "Y Velocity", "Z Velocity"],
+                colors: ["#f00", "#0f0", "#00f"],
+                dataPoints: [
+                  {xData: "flight_time", yData: "velocity_x"},
+                  {xData: "flight_time", yData: "velocity_y"},
+                  {xData: "flight_time", yData: "velocity_z"}
+                ]
+              }
+            ];
+    this.singlegraphs = [
+              {
+                dataName: "X Velocity",
+                color: "#f00",
+                xData: "flight_time",
+                yData: "velocity_x"
+              },
+              {
+                dataName: "Y Velocity",
+                color: "#0f0",
+                xData: "flight_time",
+                yData: "velocity_y"
+              },
+               {
+                dataName: "Z Velocity",
+                color: "#00f",
+                xData: "flight_time",
+                yData: "velocity_z"
+              },
+               {
+                dataName: "Battery Voltage",
+                color: "rgba(255,140,0,1)",
+                xData: "flight_time",
+                yData: "voltage"
+              }
+            ];
+    let graphVis = {};
+    for (let obj in this.multigraphs)
+    {
+      graphVis[obj.graphTitle] = "none";
+    }
+    for (let obj in this.singlegraphs)
+    {
+      graphVis[obj.dataName] = "none";
+    }
+    this.state = {showGraphs: graphVis}; 
   }
 
   updateGraphVis(graphName, visibility) {
@@ -42,24 +85,35 @@ class Analytics extends Component {
   // X and Y data points - this makes the component reuseable
   renderGraphs() {
     if (this.telemetry) {
+      
       return (
         <div>
-          <div style={{display:this.state.showGraphs["velocity_x"]}}>
-            <Graph dataName="X Velocity" color="#f00"
-              dataPoint={{x: this.telemetry["flight_time"], y: this.telemetry["velocity_x"]}} />
-          </div>
-          <div style={{display:this.state.showGraphs["velocity_y"]}}>
-            <Graph dataName="Y Velocity" color="#0f0"
-              dataPoint={{x: this.telemetry["flight_time"], y: this.telemetry["velocity_y"]}} />
-          </div>
-          <div style={{display:this.state.showGraphs["velocity_z"]}}>
-            <Graph dataName="Z Velocity" color="#00f"
-              dataPoint={{x: this.telemetry["flight_time"], y: this.telemetry["velocity_z"]}} />
-          </div>
-          <div style={{display:this.state.showGraphs["voltage"]}}>
-            <Graph dataName="Battery Voltage" color="rgba(255,140,0,1)"
-              dataPoint={{x: this.telemetry["flight_time"], y: this.telemetry["voltage"]}} />
-          </div>
+          {/* Multi-dataset Graphs */
+            this.multigraphs.map((objMapped) =>
+              {
+                let dataPoints = [];
+                for (let dataPoint of objMapped.dataPoints)
+                {
+                  dataPoints.push({x: this.telemetry[dataPoint.xData], y: this.telemetry[dataPoint.yData]});
+                }
+                return (
+                  <div style={{display:this.state.showGraphs[objMapped.graphTitle]}}>
+                    <MultiGraph dataNames={objMapped.dataNames} colors={objMapped.colors} dataPoints={dataPoints}/>
+                  </div>
+                );
+              })
+          }
+
+          {/* Single Graphs */
+            this.singlegraphs.map((objMapped) => {
+              return (
+                <div style={{display:this.state.showGraphs[objMapped.dataName]}}>
+                  <Graph dataName={objMapped.dataName} color={objMapped.color}
+                    dataPoint={{x: this.telemetry[objMapped.xData], y: this.telemetry[objMapped.yData]}} />
+                </div>
+              );
+            })
+          }
         </div>
       );
     }
@@ -74,16 +128,28 @@ class Analytics extends Component {
 
         <table class="text-center" width="80%">
           <tr>
-            <th>X Velocity</th>
-            <th>Y Velocity</th>
-            <th>Z Velocity</th>
-            <th>Voltage</th>
+            {this.multigraphs.map((objMapped) => {
+              return (
+                <th>{objMapped.graphTitle}</th>
+              );
+            })}
+            {this.singlegraphs.map((objMapped) => {
+              return (
+                <th>{objMapped.dataName}</th>
+              );
+            })}
           </tr>
           <tr>
-            <td><Checkbox valName="velocity_x" updateVal={this.updateGraphVis}/></td>
-            <td><Checkbox valName="velocity_y" updateVal={this.updateGraphVis}/></td>
-            <td><Checkbox valName="velocity_z" updateVal={this.updateGraphVis}/></td>
-            <td><Checkbox valName="voltage" updateVal={this.updateGraphVis}/></td>
+            {this.multigraphs.map((objMapped) => {
+              return (
+                <td><Checkbox valName={objMapped.graphTitle} updateVal={this.updateGraphVis}/></td>
+              );
+            })}
+            {this.singlegraphs.map((objMapped) => {
+              return (
+                <td><Checkbox valName={objMapped.dataName} updateVal={this.updateGraphVis}/></td>
+              );
+            })}
           </tr>
         </table>
 
