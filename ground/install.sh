@@ -63,6 +63,7 @@ git submodule init;
 git submodule update --recursive;
 cd client;
 npm install --loglevel=error;
+echo "\n";
 cd ..;
 
 ##########################################################################
@@ -70,13 +71,12 @@ cd ..;
 docker_exists=$(groups | grep -o "docker");
 if [ $docker_exists = "docker" ]
 then
-    echo "\nA ${RED}docker${NO_COLOR} group already exists.\nIf the docker is not working, remove the group by executing the command ${RED}groupdel docker${NO_COLOR} and run this installation script again.\n";
+    echo "A ${RED}docker${NO_COLOR} group already exists.\nIf the docker is not working, remove the group by executing the command ${RED}sudo groupdel docker${NO_COLOR} and run this installation script again.\n";
 else
-    echo "Setting up docker..."
-    sudo ./interop/tools/setup_docker.sh;
+    echo "\nNo group ${RED}docker${NO_COLOR} exists. Setting up docker..."
     sudo groupadd docker;
     sudo usermod -aG docker $USER;
-    echo "\nYou must reboot your machine and run the final command:\n${RED}docker pull auvsisuas/interop-server${NO_COLOR}\n";
+    echo "You must reboot your machine and run these final two commands (please keep note of them after reboot) in order to complete installation:\n${RED}docker pull auvsisuas/interop-server\nsudo ./interop/tools/setup_docker.sh\n";
 fi
 
-echo "Installation is complete. To run the ground software, execute this command:\n${RED}sudo python ../control/run.py${NO_COLOR}\n"
+echo "${NO_COLOR}After installation is complete, you can run the ground control software by executing this command:\n${RED}sudo python ../control/run.py${NO_COLOR}\n"
