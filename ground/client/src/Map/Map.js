@@ -508,8 +508,6 @@ class Map extends Component {
       this.search_grid.setMap(null);
     }
 
-    console.log(";vhluclou");
-
     let boundary_coordinates = [];
 
     points.sort((a, b) => a.order - b.order);
