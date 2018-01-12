@@ -13,14 +13,7 @@ drone will take that flight route.
 * Platforms and Libraries
 
 ## Installation
-   Make sure you have all of the Python dependencies:
-   ```bash
-   pip install -r ../build/pip_requirements.txt
-   ```
-
-   Install Node from [nodejs.org](https://nodejs.org)
-
-   Install Node Modules:
+   Installation has been abstracted to a single shell script.
    ```bash
    chmod +x install.sh
    ./install.sh

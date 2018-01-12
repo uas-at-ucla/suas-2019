@@ -3,7 +3,7 @@ import React, { Component } from 'react';
 // Chart libraries
 // https://github.com/jerairrest/react-chartjs-2
 // https://www.youtube.com/watch?v=Ly-9VTXJlnA
-import {Bar, Line, Pie, Scatter} from 'react-chartjs-2';
+import { Scatter } from 'react-chartjs-2';
 
 class Graph extends Component {
 
