@@ -25,19 +25,19 @@ class Telemetry extends Component {
       filteredAltitude = this.round(this.telemetry["gps_rel_alt"], 1);
     }
 
-    var altimeterHeight = filteredAltitude / MAX_ALTITUDE * 450;
-    var altimeterBottom = 80;
+    var altimeterHeight = filteredAltitude / MAX_ALTITUDE * 90;
+    var altimeterBottom = 10;
     var altimeterColor = "#007BFF";
 
     if(altimeterHeight < 0) {
       altimeterHeight *= -1;
-      altimeterBottom = 80 - altimeterHeight;
+      altimeterBottom = 10 - altimeterHeight;
       altimeterColor = "#FF7B00";
     }
 
     return (
       <div className="Telemetry">
-        <div className="card text-white">
+        <div className="card text-white" id="telemetryNumbers">
           <div id="full_state">
             <span id="armed_indicator">
               {this.props.appState.droneArmedStatus}
@@ -81,15 +81,15 @@ class Telemetry extends Component {
            </tbody>
           </table>
         </div>
-
+        
         <div className="card text-white" id="altimeter">
           <p id="altimeterMaxAlt">{MAX_ALTITUDE}m</p>
           <p id="altimeterMinAlt">0m</p>
           <div id="altimeterAltitudeIndicator"
                style={{
-                 height: altimeterHeight,
+                 height: altimeterHeight + "%",
                  background: altimeterColor,
-                 bottom: altimeterBottom
+                 bottom: altimeterBottom + "%"
                }}>
           </div>
         </div>
