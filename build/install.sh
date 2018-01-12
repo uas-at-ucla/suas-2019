@@ -1,9 +1,15 @@
 #!/bin/sh
 
-# Change to script directory so that the script can be called from anywhere.
-cd "$(dirname "$0")"
+##########################################################################
+# Configuratons
 
 echo "\nHello! Welcome to the UCLA UAS 2018 Ground Software Installation!\n";
+
+## Change to script directory so that the script can be called from anywhere.
+cd "$(dirname "$0")"
+
+## Determine operating system
+OS=$(uname -s)
 
 ##########################################################################
 # Install Node.js
@@ -15,8 +21,18 @@ then
     echo "Node.js is greater than version 7.0.0\n";
 else
     echo "Installing Node.js...";
-    curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -;
-    sudo apt-get install -y nodejs;
+    if [ $OS = "Linux" ]
+    then
+        curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -;
+        sudo apt-get install -y nodejs;
+    elif [ $OS = "Darwin" ]
+    then # TODO: Install node.js v8.0.0 for macOS -- these are probably wrong commands
+        brew update;
+        brew install node;
+    else
+        echo "Please install Node.js first, and then run this script again.\n"
+        exit 1;
+    fi
     echo "\n\n";
 fi
 
@@ -24,21 +40,28 @@ fi
 # Install all Python dependencies
 
 ## Check if all Python packages exist; if not, then install
-if [ $(dpkg-query -W -f='${Status}' python3.5 2>/dev/null | grep -c "ok installed") -eq 0 ]
+if [ $OS = "Linux" ]
 then
-    sudo apt-get install python3.5;
-fi
-if [ $(dpkg-query -W -f='${Status}' python3-pip 2>/dev/null | grep -c "ok installed") -eq 0 ]
-then
-    sudo apt-get install python3-pip;
-fi
-if [ $(dpkg-query -W -f='${Status}' python3-dev 2>/dev/null | grep -c "ok installed") -eq 0 ]
-then
-    sudo apt-get install python3-dev;
-fi
-if [ $(dpkg-query -W -f='${Status}' build-essential 2>/dev/null | grep -c "ok installed") -eq 0 ]
-then
-    sudo apt-get install build-essential;
+    if [ $(dpkg-query -W -f='${Status}' python3.5 2>/dev/null | grep -c "ok installed") -eq 0 ]
+    then
+        sudo apt-get install python3.5;
+    fi
+    if [ $(dpkg-query -W -f='${Status}' python3-pip 2>/dev/null | grep -c "ok installed") -eq 0 ]
+    then
+        sudo apt-get install python3-pip;
+    fi
+    if [ $(dpkg-query -W -f='${Status}' python3-dev 2>/dev/null | grep -c "ok installed") -eq 0 ]
+    then
+        sudo apt-get install python3-dev;
+    fi
+    if [ $(dpkg-query -W -f='${Status}' build-essential 2>/dev/null | grep -c "ok installed") -eq 0 ]
+    then
+        sudo apt-get install build-essential;
+    fi
+elif [ $OS = "Darwin" ]
+then # TODO: Install python for macOS
+    echo "support for macOS is not supported."
+    exit 1;
 fi
 
 ## See if pip version is 9.x -- If not, then update pip
@@ -65,8 +88,7 @@ git submodule init;
 git submodule update --recursive;
 cd ../ground/client;
 npm install --loglevel=error;
-echo "\n";
-cd ..;
+echo "";
 
 ##########################################################################
 # Do docker stuff
@@ -78,7 +100,7 @@ else
     echo "\nNo group ${RED}docker${NO_COLOR} exists. Setting up docker..."
     sudo groupadd docker;
     sudo usermod -aG docker $USER;
-    echo "You must reboot your machine and run these final two commands (please keep note of them after reboot) in order to complete installation:\n${RED}docker pull auvsisuas/interop-server\nsudo ./interop/tools/setup_docker.sh\n";
+    echo "You must reboot your machine and run these final two commands (please keep note of them after reboot) in order to complete installation:\n${RED}docker pull auvsisuas/interop-server\nsudo ../ground/interop/tools/setup_docker.sh\n";
 fi
 
 echo "${NO_COLOR}After installation is complete, you can run the ground control software by executing this command:\n${RED}sudo python ../control/run.py${NO_COLOR}\n"
