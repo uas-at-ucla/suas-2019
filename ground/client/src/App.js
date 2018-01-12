@@ -5,7 +5,7 @@ import io from 'socket.io-client/dist/socket.io.js';
 
 import Home from './Home/Home';
 import Analytics from './Analytics/Analytics';
-import Images from './images/Images.js';
+import Images from './Images/Images.js';
 
 class App extends Component {
   constructor(props) {
@@ -32,7 +32,8 @@ class App extends Component {
         );
       case "Images":
         return (
-          <Images/>
+          <Images appState={this.state}
+                  socketEmit={this.socketEmit}/>
         );
       case "Home":
       default:
@@ -101,6 +102,13 @@ class App extends Component {
         telemetry: telemetry,
         droneArmedStatus: telemetry["armed"] ? "Armed" : "Disarmed",
         droneState: this.convert_to_title_text(telemetry["state"])
+      });
+    });
+
+
+    this.socket.on('image', (data) => {
+      this.setState({
+        testImage: data
       });
     });
 
