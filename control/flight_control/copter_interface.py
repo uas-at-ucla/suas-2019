@@ -430,6 +430,11 @@ class CopterInterface:
         print("Landing!")
 
     def goto(self, lat, lng, alt):
+        # Convert from unicode.
+        lat = float(lat)
+        lng = float(lng)
+        alt = float(alt)
+
         while True:
             if not self.controller.get_state() == "VELOCITY CONTROL" \
                     or self.interrupt:

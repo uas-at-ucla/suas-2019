@@ -120,6 +120,9 @@ class App extends Component {
           moving_obstacles: data.moving_obstacles,
           missions: data.missions
         });
+
+        console.log("MISSION DATA!!!")
+        console.log(data.missions[0]["fly_zones"][0]);
       }
     });
 
