@@ -71,7 +71,6 @@ then
     echo "Pip is greater than version 8.0.0\n";
 else
     echo "Warning! The version of pip is $version_pip\nConsider updating to the latest version of pip.";
-
 fi
 
 ## Install python dependencies
