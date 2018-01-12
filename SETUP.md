@@ -134,10 +134,10 @@ see the latest file edits you made that do not exist in the MASTER branch.
 And that's all the commonly used git controls. There are other useful commands you can google if you ever run into special situations. If you are new or not well-familiar with git, you will grow use to it after consecutive use and it will become almost second nature to you.
 
 ## Compiling
-The `install.sh` file in the `ground` directory abstracts the entire
+The `install.sh` file in the `build` directory abstracts the entire
 installation process.
 ```bash
-cd /path/to/ground/
+cd /path/to/build/
 chmod +x install.sh
 ./install.sh
 ```
