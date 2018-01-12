@@ -20,17 +20,18 @@ if [ $version_node -gt 7 ]
 then
     echo "Node.js is greater than version 7.0.0\n";
 else
-    echo "Installing Node.js...";
     if [ $OS = "Linux" ]
     then
+        echo "Installing Node.js...";
         curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -;
         sudo apt-get install -y nodejs;
     elif [ $OS = "Darwin" ]
     then # TODO: Install node.js v8.0.0 for macOS -- these are probably wrong commands
+        echo "Installing Node.js...";
         brew update;
         brew install node;
     else
-        echo "Please install Node.js first, and then run this script again.\n"
+        echo "Please install Node.js first, and then run this script again."
         exit 1;
     fi
     echo "\n\n";
