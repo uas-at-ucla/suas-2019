@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# Change to script directory so that the script can be called from anywhere.
+cd "$(dirname "$0")"
+
 echo "\nHello! Welcome to the UCLA UAS 2018 Ground Software Installation!\n";
 
 ##########################################################################
@@ -51,9 +54,8 @@ fi
 ## Install python dependencies
 RED='\033[0;31m';
 NO_COLOR='\033[0m';
-echo "Installing Python dependencies listed in ${RED}/../build/pip_requirements.txt${NO_COLOR}\nThis may take several seconds..."
-pip install --quiet -r ../build/pip_requirements.txt;
-pip install --quiet socketio-client docker;
+echo "Installing Python dependencies listed in ${RED}build/pip_requirements.txt${NO_COLOR}\nThis may take several seconds..."
+sudo pip install --quiet -r pip_requirements.txt;
 echo "Python dependencies installed.\n"
 
 ##########################################################################
@@ -61,7 +63,7 @@ echo "Python dependencies installed.\n"
 echo "Installing npm packages..."
 git submodule init;
 git submodule update --recursive;
-cd client;
+cd ../ground/client;
 npm install --loglevel=error;
 echo "\n";
 cd ..;

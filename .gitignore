@@ -3,6 +3,6 @@
 .DS_STORE
 *.pickle
 vision/image_simulator/output/
-ground/client/package-lock.json
+package-lock.json
 **/node_modules
 ground/client/build_commit.txt
