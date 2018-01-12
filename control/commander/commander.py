@@ -1,3 +1,5 @@
+import copter_interface
+
 import os
 abspath = os.path.abspath(__file__)
 dname = os.path.dirname(abspath)
@@ -14,10 +16,9 @@ import thread
 import threading
 import time
 
-import copter_interface
-
 class Command:
     def __init__(self, data):
+        #TODO: Support conversion from unicode.
         self.command_type = "unknown"
         for key, value in data.items():
             setattr(self, key, value)
@@ -29,13 +30,6 @@ class TakeoffCommand:
 class LandCommand:
     def __init__(self):
         self.command_type = "land"
-
-class GotoCommand:
-    def __init__(self, lat, lng, alt):
-        self.command_type = "goto"
-        self.lat = lat
-        self.lng = lng
-        self.alt = alt
 
 class Commander:
     class CommunicationsNamespace(BaseNamespace):
@@ -49,6 +43,7 @@ class Commander:
         self.mission_thread = None
         self.interrupt = False
         self.reset = True
+        self.copter = None
         self.commands = list()
         self.commands_lock = threading.Lock()
 
@@ -59,6 +54,10 @@ class Commander:
         self.copter.sensor_reader.set_communications_socket(self.communications)
 
     def execute_commands(self, *args):
+        if self.copter is None:
+            print("Rejected mission commands: Copter not ready.")
+            return
+
         commands = args[0]
         self.add_command(TakeoffCommand())
         for command in commands:
@@ -67,6 +66,7 @@ class Commander:
 
         self.interrupt = True
         self.copter.interrupt = True
+
         while not self.reset:
             print("Waiting for past mission to end.")
             time.sleep(0.5)
