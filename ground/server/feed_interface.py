@@ -102,6 +102,10 @@ def send_commands(commands):
 def send_commands(command):
     communications.emit('set_state', command)
 
+@interface_socketio.on('test_image')
+def request_test_image(data):
+    communications.emit('test_image', data)
+
 @interface_socketio.on('interop_disconnected')
 def interop_disconnected():
     flask_socketio.emit('interop_connected', False, \
@@ -127,7 +131,7 @@ def object_to_dict(my_object):
 
 def on_telemetry(*args):
     telemetry = args[0]
-    interface_socketio.emit("telemetry", telemetry)
+    interface_socketio.emit('telemetry', telemetry)
 
     if USE_INTEROP and interop_client is not None:
         lat = telemetry['gps_lat']
@@ -142,6 +146,9 @@ def on_telemetry(*args):
                 global interop_client
                 interop_client = None
                 interface_socketio.emit('interop_connected', False)
+
+def on_image(*args):
+    interface_socketio.emit('image', args[0])
 
 def drone_connected():
     print "connected to drone"
@@ -159,6 +166,7 @@ def listen_for_communications():
     communications.on('connect', drone_connected)
     communications.once('disconnect', drone_disconnected)
     communications.on('telemetry', on_telemetry)
+    communications.on('image', on_image)
     communications.wait()
 
 if __name__ == '__main__':
