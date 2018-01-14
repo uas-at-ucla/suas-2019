@@ -5,6 +5,7 @@ import os
 # directory that this script is in.
 dname = os.path.dirname(os.path.realpath(__file__))
 os.chdir(dname)
+os.chdir("control")
 
 import sys
 sys.dont_write_bytecode = True
