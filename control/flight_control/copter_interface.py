@@ -1,5 +1,6 @@
 import sys
 sys.dont_write_bytecode = True
+sys.path.insert(0, '../../util')
 
 import dronekit
 import time
@@ -12,6 +13,8 @@ import threading
 import signal
 from datetime import datetime
 from pymavlink import mavutil
+
+import position_tools
 
 class Sensor:
     def __init__(self, value_type):
@@ -434,6 +437,7 @@ class CopterInterface:
         lat = float(lat)
         lng = float(lng)
         alt = float(alt)
+        goal = position_tools.Geocoord3D(lat, lng, alt)
 
         while True:
             if not self.controller.get_state() == "VELOCITY CONTROL" \
@@ -451,18 +455,20 @@ class CopterInterface:
                 time.sleep(0.1)
                 continue
 
-            TOLERANCE = 0.0001
-            if abs(lat - gps_lat) < TOLERANCE and \
-               abs(lng - gps_lng) < TOLERANCE and \
-               abs(alt - gps_rel_alt) < 0.1:
-               break
+            position = position_tools.Geocoord3D(gps_lat, gps_lng, gps_rel_alt)
 
-            vx = lat - gps_lat
-            vy = lng - gps_lng
-            vz = gps_rel_alt - alt
+            # If we are within our transition circle, start to aim towards next
+            # waypoint.
+            TOLERANCE = 10  # in meters
+            if position_tools.distance(position, goal) < TOLERANCE:
+                break
 
-            vx *= 20000
-            vy *= 20000
+            speed = 25
+            direction = position_tools.point_to(position, goal)
+
+            vx = speed * direction.x
+            vy = speed * direction.y
+            vz = speed * direction.z
 
             self.controller.set_velocity(vx, vy, vz)
 
