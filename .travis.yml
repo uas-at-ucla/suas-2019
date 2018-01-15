@@ -9,10 +9,6 @@ addons:
       - "python-setuptools"
       - "python-opencv"
       - "docker"
-  sonarcloud:
-    organization: "unmannedsystems-ucla-github"
-    token:
-      secure: "bpSy1FTFZsF8TtSkEw9p2XcYZdPbcmyEZypFlpoWcJEk/303jOaKzp2XUwlllXtr59tz7XgXarQUTk8hwy7B2o8VIJddF07OpWycp7Bhj8rToufsiWrI2IQKesXMSvMKOLS3c4xezsDdaxEQL5rcEmgYkc/YHxz48tG2cn+5DXUB/NkgoA35BXzyuJ9zSS4MXMfQuaYy9llWyRoXvi62W+b3o9s9NGFQUpKouAgKEiWk56M6H4icSqkXHS4+MFsarQRMqOC3l3TUIaEyv1tht3VXa2Za7JO7g1kr8PRkL9zboVfOQCd0Yv+0ywrFND/4L0JqyxzllGnea+96YD3hrCntJWV6eAyY3XNnNXcs/6MRCXDBQH+Jb3k9vr0nQaCt0VNl2ELDI/XnBlQJPYtwe3Sa2gYCi37GkhYlwXRENS1/MXGSJdXdb4DlCSqa1IEEJkj3shPIPGhiwaAj4vpDYiHHmDqUz6tV/z5S5hQNsSPtVrMeFWyA/StZb6+yhfsj9bi78pu5t0CY0tHzu9XTADyVCQ8OczIbPlBBKotaWl8qe5JhbXHeQcPy0Af48iCa6F3lLodgKjFgC6QzXXUEo08E6Tj6TQcDGDR0WgFAiK5dGYr1MXwb4a03arqk4Qb/iKItK7UCtX1cOTcnxlHg+ih3aobOWLsJNODHUQR67jo="
 
 jdk:
  - oraclejdk8
@@ -26,12 +22,8 @@ cache:
   directories:
    - "$HOME/.sonar/cache"
 
-before_install:
- - git submodule update --init --recursive
- - sudo docker pull auvsisuas/interop-server
-
 install:
- - pip install -r $TRAVIS_BUILD_DIR/build/pip_requirements.txt
+ - ./$TRAVIS_BUILD_DIR/build/install.sh
 
 script:
  - python $TRAVIS_BUILD_DIR/vision/test_vision.py
