@@ -1,29 +1,12 @@
 dist: trusty
 sudo: required
 
-addons:
-  apt:
-    packages:
-      - "python"
-      - "python-pip"
-      - "python-setuptools"
-      - "python-opencv"
-      - "docker"
-
-jdk:
- - oraclejdk8
-
-language: python
-
-python:
- - '2.7'
-
 cache:
   directories:
    - "$HOME/.sonar/cache"
 
 install:
- - ./$TRAVIS_BUILD_DIR/build/install.sh
+ - sudo $TRAVIS_BUILD_DIR/build/install.sh
 
 script:
  - python $TRAVIS_BUILD_DIR/vision/test_vision.py
