@@ -8,14 +8,8 @@ Author: Amit Aides, Ahmad Kiswani
 License: See attached license file
 """
 
-
-
 from __future__ import division
 import argparse
-
-import sys
-sys.path.append('/Users/ruchapatki/Documents/School/COLLEGE/UAS/auvsi-targets') #the directory that contains my_pk
-
 import AUVSItargets
 import AUVSItargets.global_settings as gs
 import cv2
@@ -35,7 +29,7 @@ else:
     SUB_PATH = 'renamed_images'
 
 
-def main(jobs):
+def main(jobs, numIter):
     #
     # Setup the paths.
     #
@@ -62,18 +56,21 @@ def main(jobs):
     img_index = 0
     for img_path, data_path in zip(imgs_paths, data_paths):
 
-        print('Extracting patches from image', img_path)
+        results = []
+        for x in range(0,numIter):
+            print 'Extracting patches from image', img_path
 
-        img = AUVSItargets.Image(img_path, data_path, K=K)
-        patches = img.createPatches(patch_size=gs.PATCH_SIZE, patch_shift=1000)
+            img = AUVSItargets.Image(img_path, data_path, K=K)
+            patches = img.createPatches(patch_size=gs.PATCH_SIZE, patch_shift=1000)
 
-        results = Parallel(n_jobs=jobs)(
-            delayed(create_patch)(patch,
-                                 img,
-                                 img.latitude,
-                                 img.longitude,
-                                 img.yaw) for patch in patches
-        )
+
+            results.extend( Parallel(n_jobs=jobs)(
+                delayed(create_patch)(patch,
+                                     img,
+                                     img.latitude,
+                                     img.longitude,
+                                     img.yaw) for patch in patches
+            ))
 
         for mask, letter_label in results:
             if mask is None:
@@ -84,7 +81,7 @@ def main(jobs):
 
             cv2.imwrite(os.path.join(dst_folder, filename+'.jpg'), mask)
             with open(os.path.join(dst_folder, filename+'.txt'), 'w') as fp:
-                fp.write('{}.jpg\t{}'.format(filename, letter_label))
+                fp.write('{}'.format(letter_label))
 
 def create_patch(patch, img, latitude, longitude, yaw):
 
@@ -97,13 +94,14 @@ def create_patch(patch, img, latitude, longitude, yaw):
     if letter_label != 'no target':
         if letter_label == 'rotated letter':
             dangle = random.randint(45, 315)
+            randomLetter = 'rotated letter'
         else:
             dangle = random.randint(-5, 5)
 
         #
         # Paste a rotatedrandom target on the patch
         #
-        target, _, _ = AUVSItargets.randomTarget(
+        target, _, _, randomLetter = AUVSItargets.randomTarget(
             altitude=0,
             longitude=longitude,
             latitude=latitude,
@@ -115,6 +113,8 @@ def create_patch(patch, img, latitude, longitude, yaw):
         br = AUVSItargets.squareCoords(br, noise=False)
         patch = patch[br[1]:br[3], br[0]:br[2], ...]
 
+    else:
+        randomLetter = 'no target'
     #
     # Mask out the letter and tight crop.
     #
@@ -131,9 +131,7 @@ def create_patch(patch, img, latitude, longitude, yaw):
         print(traceback.format_exc())
         return None, None
 
-    print(gs.LETTER_LABELS.index(letter_label))
-
-    return mask, gs.LETTER_LABELS.index(letter_label)
+    return mask, gs.LETTER_LABELS.index(randomLetter)
 
 
 if __name__ == '__main__':
@@ -149,6 +147,14 @@ if __name__ == '__main__':
                          dest="jobs",
                          default=1)
 
+    cmdline.add_argument("--iterations",
+                         "-i",
+                         action="store",
+                         help="Number of iterations (each iteration is about 115 images).",
+                         type=int,
+                         dest="numIter",
+                         default=1)
+
     args = cmdline.parse_args()
 
-    main(jobs=args.jobs)
+    main(jobs=args.jobs, numIter=args.numIter)
