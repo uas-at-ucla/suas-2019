@@ -1,10 +1,6 @@
 dist: trusty
 sudo: required
 
-cache:
-  directories:
-   - "$HOME/.sonar/cache"
-
 install:
  - sudo $TRAVIS_BUILD_DIR/build/install.sh
 
