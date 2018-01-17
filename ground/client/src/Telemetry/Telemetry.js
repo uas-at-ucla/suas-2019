@@ -19,7 +19,9 @@ class Telemetry extends Component {
         position: this.round(this.telemetry["gps_lat"], 7) + ", "
           + this.round(this.telemetry["gps_lng"], 7),
         satellites: this.round(this.telemetry["gps_satellites"], 7),
-        heading: this.round(this.telemetry["heading"], 7)
+        heading: this.round(this.telemetry["heading"], 7),
+        gps_eph: this.round(this.telemetry["gps_eph"], 7),
+        gps_epv: this.round(this.telemetry["gps_epv"], 7)
       }
 
       filteredAltitude = this.round(this.telemetry["gps_rel_alt"], 1);
@@ -76,6 +78,18 @@ class Telemetry extends Component {
                 <td>Satellite Count</td>
                 <td id="telemetry_satellites">
                   {this.telemetryText.satellites}
+                </td>
+              </tr>
+              <tr>
+                <td>GPS HDOP (Signal)</td>
+                <td id="telemetry_gps_eph">
+                  {this.telemetryText.gps_eph}
+                </td>
+              </tr>
+              <tr>
+                <td>GPS VDOP (Signal)</td>
+                <td id="telemetry_gps_epv">
+                  {this.telemetryText.gps_epv}
                 </td>
               </tr>
            </tbody>
