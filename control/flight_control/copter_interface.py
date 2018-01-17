@@ -56,6 +56,8 @@ class Sensors:
                     "gps_alt": Sensor(float),
                     "gps_rel_alt": Sensor(float),
                     "gps_satellites": Sensor(int),
+                    "gps_eph": Sensor(int),
+                    "gps_epv": Sensor(int),
                     "velocity_x": Sensor(float),
                     "velocity_y": Sensor(float),
                     "velocity_z": Sensor(float),
@@ -89,6 +91,8 @@ class Sensors:
                             "alt="))
             self.__telemetry["gps_satellites"].set(self.__cut_from_string(str( \
                             vehicle.gps_0), "num_sat="))
+            self.__telemetry["gps_eph"].set(vehicle.gps_0.eph)
+            self.__telemetry["gps_epv"].set(vehicle.gps_0.epv)
             self.__telemetry["velocity_x"].set(vehicle.velocity[0])
             self.__telemetry["velocity_y"].set(vehicle.velocity[1])
             self.__telemetry["velocity_z"].set(vehicle.velocity[2])
