@@ -133,4 +133,4 @@ then
     docker pull auvsisuas/interop-server
 fi
 
-echo "${NO_COLOR}After installation is complete, you can run the ground control software by executing this command:\n${RED}sudo python ../control/run.py${NO_COLOR}\n"
+echo "${NO_COLOR}After installation is complete, you can run the ground control software by executing this command:\n${RED}sudo python ../ground/run_ground.py${NO_COLOR}\n"
