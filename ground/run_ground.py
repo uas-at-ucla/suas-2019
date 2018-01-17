@@ -20,6 +20,9 @@ if __name__ == "__main__":
 
     ground_processes.spawn_process("python server/run_backend.py")
     ground_processes.spawn_process("python client/serve_client.py")
+    # update above command to run npm start --prefix /relative/path
+    # and move all the changes needed to another file
+    # Keep above process as final build when everything is finalized
 
     signal.signal(signal.SIGINT, signal_received)
 
