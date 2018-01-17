@@ -3,7 +3,7 @@
 ##########################################################################
 # Configuratons
 
-echo "\nHello! Welcome to the UCLA UAS 2018 Ground Software Installation!\n";
+echo "\nHello! Welcome to the UCLA UAS 2018 Software Installation!\n";
 
 ## Change to script directory so that the script can be called from anywhere.
 cd "$(dirname "$0")"
@@ -100,7 +100,8 @@ fi
 RED='\033[0;31m';
 NO_COLOR='\033[0m';
 echo "Installing Python dependencies listed in ${RED}build/pip_requirements.txt${NO_COLOR}\nThis may take several seconds..."
-sudo pip install --quiet -r pip_requirements.txt;
+sudo pip install --upgrade pip
+sudo -H pip install -I -r pip_requirements.txt;
 echo "Python dependencies installed.\n"
 
 ##########################################################################
