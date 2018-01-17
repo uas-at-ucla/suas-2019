@@ -11,12 +11,22 @@ class ProcessManager:
     def __init__(self):
         self.procs = list()
 
-    def spawn_process(self, command, rel_cwd=None, track=True):
+    def spawn_process(self, command, rel_cwd=None, track=True, \
+            show_output=True):
         cwd = self.get_cwd(rel_cwd)
-        proc = subprocess.Popen(command, \
-                                shell = True, \
-                                preexec_fn = os.setsid, \
-                                cwd = cwd)
+        if show_output:
+            proc = subprocess.Popen(command,
+                    shell = True, \
+                    preexec_fn = os.setsid, \
+                    cwd = cwd)
+        else:
+            devnull = open(os.devnull, 'wb')
+            proc = subprocess.Popen(command,
+                    shell = True, \
+                    preexec_fn = os.setsid, \
+                    cwd = cwd,
+                    stdout=devnull,
+                    stderr=devnull)
         if track:
             self.procs.append(proc)
 
