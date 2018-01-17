@@ -77,31 +77,21 @@ class Sensors:
             self.__telemetry["flight_time"].set(controller.flight_time)
             self.__telemetry["pixhawk_state"].set(vehicle.system_status.state)
             self.__telemetry["armed"].set(vehicle.armed)
-            self.__telemetry["voltage"].set(self.__cut_from_string(str( \
-                    vehicle.battery), "Battery:voltage="))
+            self.__telemetry["voltage"].set(vehicle.battery.voltage)
             self.__telemetry["last_heartbeat"].set(int(vehicle.last_heartbeat))
-            self.__telemetry["gps_lat"].set(self.__cut_from_string(str( \
-                    vehicle.location.global_frame), "lat="))
-            self.__telemetry["gps_lng"].set(self.__cut_from_string(str( \
-                    vehicle.location.global_frame), "lon="))
-            self.__telemetry["gps_alt"].set(self.__cut_from_string(str( \
-                    vehicle.location.global_frame), "alt="))
-            self.__telemetry["gps_rel_alt"].set(self.__cut_from_string(str( \
-                            vehicle.location.global_relative_frame), \
-                            "alt="))
-            self.__telemetry["gps_satellites"].set(self.__cut_from_string(str( \
-                            vehicle.gps_0), "num_sat="))
+            self.__telemetry["gps_lat"].set(vehicle.location.global_frame.lat)
+            self.__telemetry["gps_lng"].set(vehicle.location.global_frame.lon)
+            self.__telemetry["gps_alt"].set(vehicle.location.global_frame.alt)
+            self.__telemetry["gps_rel_alt"].set(vehicle.location.global_relative_frame.alt)
+            self.__telemetry["gps_satellites"].set(vehicle.gps_0.satellites_visible)
             self.__telemetry["gps_eph"].set(vehicle.gps_0.eph)
             self.__telemetry["gps_epv"].set(vehicle.gps_0.epv)
             self.__telemetry["velocity_x"].set(vehicle.velocity[0])
             self.__telemetry["velocity_y"].set(vehicle.velocity[1])
             self.__telemetry["velocity_z"].set(vehicle.velocity[2])
-            self.__telemetry["pitch"].set(self.__cut_from_string(str( \
-                            vehicle.attitude), "pitch="))
-            self.__telemetry["roll"].set(self.__cut_from_string(str( \
-                            vehicle.attitude), "roll="))
-            self.__telemetry["yaw"].set(self.__cut_from_string(str( \
-                            vehicle.attitude), "yaw="))
+            self.__telemetry["pitch"].set(vehicle.attitude.pitch)
+            self.__telemetry["roll"].set(vehicle.attitude.roll)
+            self.__telemetry["yaw"].set(vehicle.attitude.yaw)
             self.__telemetry["heading"].set(vehicle.heading)
             self.__telemetry["ground_speed"].set(vehicle.groundspeed)
             self.__telemetry["air_speed"].set(vehicle.airspeed)

@@ -5,15 +5,16 @@ import Map from '../Map/Map'
 import Telemetry from '../Telemetry/Telemetry'
 import Controls from '../Controls/Controls'
 import logo from '../graphics/vector_logo.svg';
-import {
-  Button
-} from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
+import testMission from './test_mission'
+
+const USE_TEST_MISSION = true;
 
 class Home extends Component {
   state = {
     isSidebarShown: true,
     followDrone: true,
-    mission: this.props.appState.missions[0] || null,
+    mission: USE_TEST_MISSION ? testMission : (this.props.appState.missions[0] || null),
     commands: [],
     dontRedrawCommands: false,
     focusedCommand: null
