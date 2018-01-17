@@ -11,6 +11,25 @@ cd "$(dirname "$0")"
 ## Determine operating system
 OS=$(uname -s)
 
+if [ $OS = "Darwin" ]
+then
+    if [ "xcode-select --install 2>&1 | grep installed" ]
+    then
+        : # Xcode command line tools are installed
+    else
+      echo "Use the prompt to install the Xcode command line tools (needed for Homebrew), and then run this script again.";
+      exit 1;
+    fi
+    which -s brew
+    if [[ $? != 0 ]]
+    then
+        # Install Homebrew
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    else
+        brew update
+    fi
+fi
+
 ##########################################################################
 # Install Node.js
 
@@ -26,9 +45,8 @@ else
         curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -;
         sudo apt-get install -y nodejs;
     elif [ $OS = "Darwin" ]
-    then # TODO: Install node.js v8.0.0 for macOS -- these are probably wrong commands
+    then
         echo "Installing Node.js...";
-        brew update;
         brew install node;
     else
         echo "Please install Node.js first, and then run this script again."
@@ -60,9 +78,13 @@ then
         sudo apt-get install build-essential;
     fi
 elif [ $OS = "Darwin" ]
-then # TODO: Install python for macOS
-    echo "support for macOS is not supported."
-    exit 1;
+then
+    # MacOS comes with python
+    which -s pip
+    if [[ $? != 0 ]]
+    then
+        sudo easy_install pip;
+    fi
 fi
 
 ## See if pip version is 9.x -- If not, then update pip
@@ -92,15 +114,22 @@ echo "";
 
 ##########################################################################
 # Do docker stuff
-docker_exists=$(groups | grep -o "docker");
-if [ $docker_exists = "docker" ]
+if [ $OS = "Linux" ]
 then
-    echo "A ${RED}docker${NO_COLOR} group already exists.\nIf the docker is not working, remove the group by executing the command ${RED}sudo groupdel docker${NO_COLOR} and run this installation script again.\n";
-else
-    echo "\nNo group ${RED}docker${NO_COLOR} exists. Setting up docker..."
-    sudo groupadd docker;
-    sudo usermod -aG docker $USER;
-    echo "You must reboot your machine and run these final two commands (please keep note of them after reboot) in order to complete installation:\n${RED}docker pull auvsisuas/interop-server\nsudo ../ground/interop/tools/setup_docker.sh\n";
+    docker_exists=$(groups | grep -o "docker");
+    if [ $docker_exists = "docker" ]
+    then
+        echo "A ${RED}docker${NO_COLOR} group already exists.\nIf the docker is not working, remove the group by executing the command ${RED}sudo groupdel docker${NO_COLOR} and run this installation script again.\n";
+    else
+        echo "\nNo group ${RED}docker${NO_COLOR} exists. Setting up docker..."
+        sudo groupadd docker;
+        sudo usermod -aG docker $USER;
+        echo "You must reboot your machine and run these final two commands (please keep note of them after reboot) in order to complete installation:\n${RED}docker pull auvsisuas/interop-server\nsudo ../ground/interop/tools/setup_docker.sh\n";
+    fi
+elif [ $OS = "Darwin" ]
+then
+    brew cask install docker
+    docker pull auvsisuas/interop-server
 fi
 
 echo "${NO_COLOR}After installation is complete, you can run the ground control software by executing this command:\n${RED}sudo python ../control/run.py${NO_COLOR}\n"
