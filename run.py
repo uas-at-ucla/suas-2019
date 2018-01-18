@@ -17,6 +17,7 @@ import signal
 import time
 import sys
 import thread
+import argparse
 
 import process_manager
 import copter_interface
@@ -26,14 +27,14 @@ SIMULATE_DRONE = True
 
 processes = process_manager.ProcessManager()
 
-def spawn_simulated_drone(lat, lng, alt, instance):
+def spawn_simulated_drone(lat, lng, alt, instance, verbose):
     processes.spawn_process("python " + \
             "flight_control/dronekit-sitl/dronekit_sitl/__init__.py " + \
             "copter " + \
             "--home " + str(lat) + "," \
                       + str(lng) + "," \
                       + str(alt) + ",0 " + \
-            "--instance " + str(instance))
+            "--instance " + str(instance), None, True, verbose)
 
     # Wait to make sure the simulated drone is completely set up before
     # continuing.
@@ -52,33 +53,66 @@ def kill_processes_and_exit(signal, frame):
     kill_processes()
 
 def main():
+    print("******************************************************************")
+    print("*                                                                *")
+    print("*                      UAS @ UCLA FlightDeck                     *")
+    print("*                                                                *")
+    print("******************************************************************")
+    print("\n")
     signal.signal(signal.SIGINT, kill_processes_and_exit)
 
-    run_simulated_drone = False
-    run_ground          = False
-    run_commander       = False
-    run_communications  = False
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-v',               action="store_true")
+    parser.add_argument('--simulator',      action="store_true")
+    parser.add_argument('--ground',         action="store_true")
+    parser.add_argument('--communications', action="store_true")
+    parser.add_argument('--commander',      action="store_true")
+    options = parser.parse_args()
 
-    drone_address = "tcp:127.0.0.1:5760"
+    verbose                    = False
+    drone_address              = "tcp:127.0.0.1:5760"
+    run_all                    = True
+    run_simulated_drone        = False
+    run_ground                 = False
+    run_commander              = False
+    run_communications         = False
 
-    # Read in the items that we want to run.
-    run_list = "simulator,ground,commander,communications"
-    if len(sys.argv) > 1:
-        run_list = sys.argv[1]
+    if options.v:
+        verbose                = True
 
-    run_list = run_list.split(",")
-    for to_run in run_list:
-        if to_run == "simulator":
-            run_simulated_drone = True
-        elif to_run == "ground":
-            run_ground = True
-        elif to_run == "commander":
-            run_commander = True
-        elif to_run == "communications":
-            run_communications = True
-        else:
-            print("ERROR: Cannot run item: \"" + to_run + "\"")
-            sys.exit(1)
+    if options.simulator:
+        run_all                = False
+        run_simulated_drone    = True
+
+    if options.ground:
+        run_all                = False
+        run_ground             = True
+
+    if options.communications:
+        run_all                = False
+        run_communications     = True
+
+    if options.commander:
+        run_all                = False
+        run_commander          = True
+
+    if run_all:
+        run_simulated_drone    = True
+        run_ground             = True
+        run_commander          = True
+        run_communications     = True
+
+    print("Starting the following:")
+    if run_ground:
+        print("  - Ground System")
+    if run_simulated_drone:
+        print("  - Drone Simulator")
+    if run_communications:
+        print("  - Drone Communications")
+    if run_commander:
+        print("  - Drone Commander")
+    print("")
+
 
     # Now start all the components that the user asked us to start, and make
     # sure to kill everything if any errors occur.
@@ -87,15 +121,19 @@ def main():
             # Start the drone at the Webster Field that we will compete at.
             init_lat = 38.1470000;
             init_lng = -76.4284722;
-            drone_address = spawn_simulated_drone(init_lat, init_lng, 0.0, 0)
+            drone_address = spawn_simulated_drone(init_lat, init_lng, 0.0, 0, \
+                    verbose)
 
         if run_ground:
-            processes.run_command("python ../ground/client/build.py")
-            processes.spawn_process("python ../ground/run_ground.py")
+            processes.spawn_process("python ../ground/client/build.py", None,
+                    True, verbose)
+            processes.spawn_process("python ../ground/run_ground.py", None,
+                    True, verbose)
 
         if run_communications:
             processes.spawn_process( \
-                    "python commander/drone_communications.py")
+                    "python commander/drone_communications.py", None, True, \
+                    verbose)
 
         if run_commander:
             global drone_commander
