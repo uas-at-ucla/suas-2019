@@ -20,7 +20,7 @@ Please read through the entire documentation first before running anything on yo
 Linux is the premier way we want to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You have two options to install Linux:
 
 1. Install a Virtual Machine. This is the easiest option.
-2. [Dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) Windows and Ubuntu in order to 
+2. [Dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) Windows and Ubuntu in order to
    natively run Linux on your own machine. You will need to [disable
    secure boot](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/boot-to-uefi-mode-or-legacy-bios-mode)
    and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c) before starting the video.
@@ -34,7 +34,7 @@ If you are running on MacOS, you will need a Virtual Machine.
 3. Open Oracle VM VirtualBox.
 4. On the top-left corner, press File > Import Appliance...
 5. Locate the 'UAS at UCLA Virtualbox (Ubuntu).ova' file and press 'Next'. Then press 'Import'.
-6. A new virtual machine should show up in VirtualBox, which will be the machine that you can develop code on. Click on the machine in the left-hand bar, and click Start. 
+6. A new virtual machine should show up in VirtualBox, which will be the machine that you can develop code on. Click on the machine in the left-hand bar, and click Start.
 
    Note: VirtualBox has a variety of escape keys to manage transitioning from the virtual machine to your host machine. This key should be displayed at the bottom right of the window. To escape from the virtual machine environment, you should be able to press this key, release it, and then move your mouse out of the environment or use your native machine’s shortcuts to change windows.
 8. If you have a 1440p or 1080p screen, you may need to [scale the resolution](https://askubuntu.com/questions/823529/how-do-you-set-scaling-for-a-high-dpi-monitor-and-low-dpi-monitor-independently) so that everything does not look so tiny.
@@ -78,13 +78,13 @@ break anything severe on the master branch.
 #### Creating Your Own Branch
 1. Create the remote branch. In the [UAS Repository](https://github.com/uas-at-ucla/suas_2018), by the
    left-side section you should see a box that says 'Branch: master'. Click on it,
-   and create the remote branch. Name the branch by your first name. The
+   and create the remote branch. Name the branch by the corresponding GitHub issue. The
    remote branch is the cloud where you store your newly edited files and
    allow everyone else to see your edits.
 2. In the suas_2018 directory, run the following:
    ```bash
    git fetch
-   git checkout -b FIRST_NAME origin/FIRST_NAME
+   git checkout -b GITHUB-ISSUE origin/GITHUB-ISSUE
    git submodule update --recursive
    ```
 
@@ -108,7 +108,7 @@ break anything severe on the master branch.
    ```bash
    git checkout master
    git pull
-   git checkout FIRST_NAME
+   git checkout GITHUB-ISSUE
    git merge master
    ```
 4. If a merge conflict exists, a 'MERGE CONFLICT' message will appear immediately after the merge. Simply edit the files
@@ -134,40 +134,20 @@ see the latest file edits you made that do not exist in the MASTER branch.
 And that's all the commonly used git controls. There are other useful commands you can google if you ever run into special situations. If you are new or not well-familiar with git, you will grow use to it after consecutive use and it will become almost second nature to you.
 
 ## Compiling
-Install all of the packages that you will need.
+The `install.sh` file in the `build` directory abstracts the entire
+installation process.
 ```bash
-sudo apt-get update
-sudo apt-get install git python3.5 python3-pip python3-dev build-essential
+cd /path/to/build/
+chmod +x install.sh
+./install.sh
 ```
 
-Install Python dependencies.
+After successful installation, the ground control software can be run using:
 ```bash
-pip3 install -r /path/to/suas_2018/build/pip_requirements.txt
+python control/run.py
 ```
 
-Execute Python scripts.
-```bash
-python ./file_name.py
-```
-
-### Interoperability System
-The Interoperability System is provided by AUVSI. Read about it [here](https://github.com/auvsi-suas/interop).
-
-Make sure you have the interop git submodule (located in the 'ground' folder):
-```bash
-git submodule init
-git submodule update
-```
-
-To use the interop server, first install Docker:
-- On Linux, run ```./ground/interop/tools/setup_docker.sh```
-- On other operating systems, install Docker from [docker.com](https://www.docker.com)
-
-Next, retrieve the Docker image:
-```bash
-docker pull auvsisuas/interop-server
-```
-To start the interop server, run ```python ground/run_interop.py```. Check it out at http://localhost:8000.
+To start only the interop server, run ```python ground/run_interop.py```. Check it out at http://localhost:8000.
 
 Use username 'testadmin' and password 'testpass'.
 
