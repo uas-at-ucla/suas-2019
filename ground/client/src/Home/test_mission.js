@@ -6,18 +6,18 @@ export default {
    "fly_zones":[
       {
          "boundary_pts":[
-            {"latitude": 38.14611695779858, "longitude": -76.42763614654541, "order": 1},
-            {"latitude": 38.15155054770731, "longitude": -76.42877340316772, "order": 2},
-            {"latitude": 38.152579846778266, "longitude": -76.4315414428711, "order": 3},
-            {"latitude": 38.15060560462395, "longitude": -76.4353609085083, "order": 4},
-            {"latitude": 38.14760195423897, "longitude": -76.43235683441162, "order": 5},
-            {"latitude": 38.14458130468685, "longitude": -76.43304347991943, "order": 6},
-            {"latitude": 38.14326500486289, "longitude": -76.43478155136108, "order": 7},
-            {"latitude": 38.140581704751476, "longitude": -76.43276453018188, "order": 8},
-            {"latitude": 38.140834850487124, "longitude": -76.42606973648071, "order": 9},
-            {"latitude": 38.143973784642235, "longitude": -76.42119884490967, "order": 10},
-            {"latitude": 38.147517580251204, "longitude": -76.42282962799072, "order": 11},
-            {"latitude": 38.14618445829258, "longitude": -76.42671346664429, "order": 12}
+            {"latitude": 38.14627, "longitude": -76.42816, "order": 1},
+            {"latitude": 38.15162, "longitude": -76.42868, "order": 2},
+            {"latitude": 38.15189, "longitude": -76.43147, "order": 3},
+            {"latitude": 38.15059, "longitude": -76.43536, "order": 4},
+            {"latitude": 38.14757, "longitude": -76.43234, "order": 5},
+            {"latitude": 38.14467, "longitude": -76.43295, "order": 6},
+            {"latitude": 38.14326, "longitude": -76.43477, "order": 7},
+            {"latitude": 38.14046, "longitude": -76.43264, "order": 8},
+            {"latitude": 38.14072, "longitude": -76.42601, "order": 9},
+            {"latitude": 38.14376, "longitude": -76.42121, "order": 10},
+            {"latitude": 38.14735, "longitude": -76.42321, "order": 11},
+            {"latitude": 38.14613, "longitude": -76.42665, "order": 12}
          ],
          "altitude_msl_max":750.0,
          "altitude_msl_min":0.0
