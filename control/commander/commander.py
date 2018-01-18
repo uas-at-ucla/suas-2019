@@ -16,6 +16,7 @@ import thread
 import threading
 import time
 
+#TODO: Command inputs must be sanitized based on type.
 class Command:
     def __init__(self, data):
         #TODO: Support conversion from unicode.
