@@ -5,15 +5,16 @@ import Map from '../Map/Map'
 import Telemetry from '../Telemetry/Telemetry'
 import Controls from '../Controls/Controls'
 import logo from '../graphics/vector_logo.svg';
-import {
-  Button
-} from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
+import testMission from './test_mission'
+
+const USE_TEST_MISSION = true;
 
 class Home extends Component {
   state = {
     isSidebarShown: true,
     followDrone: true,
-    mission: this.props.appState.missions[0] || null,
+    mission: USE_TEST_MISSION ? testMission : (this.props.appState.missions[0] || null),
     commands: [],
     dontRedrawCommands: false,
     focusedCommand: null
@@ -22,33 +23,29 @@ class Home extends Component {
   render() {
     return (
       <div className = "Home">
-        <Map
-          id="map"
-          appState={this.props.appState}
-          homeState={this.state}
-          setHomeState={this.setHomeState} />
-        <div id="left_side">
-          <div id="top_left">
-            <img id="logo" src={logo} width="380px" onClick={this.followDrone}/>
-            <div id="map_buttons">
-              <Button id="follow_drone_btn"
-                      bsStyle="primary"
-                      onClick={this.followDrone}>
-                <i className="fa fa-location-arrow" aria-hidden="true"></i>
-              </Button>
+        <div id="sides">
+          <Map
+            id="map"
+            appState={this.props.appState}
+            homeState={this.state}
+            setHomeState={this.setHomeState} />
+          <div id="left_side">
+            <div id="top_left">
+              <img id="logo" src={logo} width="380px" onClick={this.followDrone}/>
+            </div>
+            <div id="sidebar_container"
+                 className={!this.state.isSidebarShown ? 'hidden' : null}>
+              <Sidebar
+                appState={this.props.appState}
+                homeState={this.state}
+                setHomeState={this.setHomeState}
+                socketEmit={this.props.socketEmit}/>
             </div>
           </div>
-          <div id="sidebar_container"
-               className={!this.state.isSidebarShown ? 'hidden' : null}>
-            <Sidebar
-              appState={this.props.appState}
-              homeState={this.state}
-              setHomeState={this.setHomeState}
-              socketEmit={this.props.socketEmit}/>
+          <div id="right_side">
+            <Telemetry appState={this.props.appState}
+                       homeState={this.state}/>
           </div>
-        </div>
-        <div id="right_side">
-          <Telemetry appState={this.props.appState}/>
         </div>
 
         <Controls
