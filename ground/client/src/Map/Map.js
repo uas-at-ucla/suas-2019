@@ -45,7 +45,7 @@ class Map extends Component {
       zoom : 16,
       tilt : 0,
       disableDefaultUI : true,
-      scrollwheel : false,
+      scrollwheel : true,
       navigationControl : false,
       mapTypeControl : false,
       scaleControl : true,
