@@ -105,7 +105,7 @@ class MissionPlanner extends Component {
 
   onCommandAltChange(index, event) {
     let commands = this.props.homeState.commands.slice();
-    commands[index].options.alt = event.target.value;
+    commands[index].options.alt = Number(event.target.value);
     this.props.setHomeState({
       commands: commands,
       dontRedrawCommands: true
