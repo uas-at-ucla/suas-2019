@@ -492,7 +492,7 @@ class Map extends Component {
         paths: paths,
         strokeColor: "#FF0000",
         strokeOpacity: 0.4,
-        strokeWeight: 1,
+        strokeWeight: 2,
         fillColor: "#FF0000",
         fillOpacity: 0.2,
         clickable: false
