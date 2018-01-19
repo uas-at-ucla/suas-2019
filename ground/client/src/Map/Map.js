@@ -45,7 +45,7 @@ class Map extends Component {
       zoom : 16,
       tilt : 0,
       disableDefaultUI : true,
-      scrollwheel : false,
+      scrollwheel : true,
       navigationControl : false,
       mapTypeControl : false,
       scaleControl : true,
@@ -479,10 +479,36 @@ class Map extends Component {
 
     if(waypoints == undefined) return;
 
+    let positions = [];
+
     for (let pos of waypoints) {
       let mission_point = this.make_mission_marker('waypoints', pos);
       this.mission_points.waypoints.push(mission_point);
+      positions.push({
+        lat: pos.latitude,
+        lng: pos.longitude
+      });
     }
+
+    let polyline = new google.maps.Polyline({
+      path: positions,
+      geodesic: true,
+      strokeColor: '#00FFFF',
+      strokeOpacity: 0,
+      strokeWeight: 3,
+      icons: [{
+        icon: {
+          path: 'M 0,-1 0,1',
+          strokeOpacity: 0.7,
+          scale: 4
+        },
+        offset: '0',
+        repeat: '20px'
+      }]
+    });
+
+    polyline.setMap(this.map);
+    // this.command_path = polyline;
   }
 
   draw_mission_point(mission_point_key, pos) {
