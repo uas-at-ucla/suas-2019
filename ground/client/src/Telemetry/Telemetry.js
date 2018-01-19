@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './Telemetry.css';
 
 const METERS_PER_SECOND_TO_MPH = 2.23694;
+const METERS_PER_FOOT = 0.3048;
 const MAX_ALTITUDE = 400;
 
 class Telemetry extends Component {
@@ -19,25 +20,46 @@ class Telemetry extends Component {
         position: this.round(this.telemetry["gps_lat"], 7) + ", "
           + this.round(this.telemetry["gps_lng"], 7),
         satellites: this.round(this.telemetry["gps_satellites"], 7),
-        heading: this.round(this.telemetry["heading"], 7)
+        heading: this.round(this.telemetry["heading"], 7),
+        gps_eph: this.round(this.telemetry["gps_eph"], 7),
+        gps_epv: this.round(this.telemetry["gps_epv"], 7)
       }
 
       filteredAltitude = this.round(this.telemetry["gps_rel_alt"], 1);
     }
 
-    var altimeterHeight = filteredAltitude / MAX_ALTITUDE * 450;
-    var altimeterBottom = 80;
+    var altimeterHeight = filteredAltitude / MAX_ALTITUDE * 90;
+    var altimeterBottom = 10;
     var altimeterColor = "#007BFF";
 
     if(altimeterHeight < 0) {
       altimeterHeight *= -1;
-      altimeterBottom = 80 - altimeterHeight;
+      altimeterBottom = 10 - altimeterHeight;
       altimeterColor = "#FF7B00";
+    }
+
+    var boundaryAltLine = null;
+    if (this.props.homeState.mission) {
+      var boundaryAlt = this.props.homeState.mission.fly_zones[0].altitude_msl_max * METERS_PER_FOOT;
+      boundaryAltLine = (
+        <p id="altimeterBoundaryAlt" 
+            style={{
+              textAlign: "center",
+              position: "absolute",
+              bottom: (10 + boundaryAlt / MAX_ALTITUDE * 90) + "%",
+              width: "100%",
+              borderBottom: "1px solid #ff0000",
+              zIndex: 100,
+              margin: "auto"
+            }}>
+          {this.round(boundaryAlt, 1)}m
+        </p>
+      )
     }
 
     return (
       <div className="Telemetry">
-        <div className="card text-white">
+        <div className="card text-white" id="telemetryNumbers">
           <div id="full_state">
             <span id="armed_indicator">
               {this.props.appState.droneArmedStatus}
@@ -78,19 +100,32 @@ class Telemetry extends Component {
                   {this.telemetryText.satellites}
                 </td>
               </tr>
+              <tr>
+                <td>GPS HDOP (Signal)</td>
+                <td id="telemetry_gps_eph">
+                  {this.telemetryText.gps_eph}
+                </td>
+              </tr>
+              <tr>
+                <td>GPS VDOP (Signal)</td>
+                <td id="telemetry_gps_epv">
+                  {this.telemetryText.gps_epv}
+                </td>
+              </tr>
            </tbody>
           </table>
         </div>
-
+        
         <div className="card text-white" id="altimeter">
           <p id="altimeterMaxAlt">{MAX_ALTITUDE}m</p>
+          {boundaryAltLine}
           <p id="altimeterMinAlt">0m</p>
           <div id="altimeterAltitudeIndicator"
-               style={{
-                 height: altimeterHeight,
-                 background: altimeterColor,
-                 bottom: altimeterBottom
-               }}>
+              style={{
+                height: altimeterHeight + "%",
+                background: altimeterColor,
+                bottom: altimeterBottom + "%"
+              }}>
           </div>
         </div>
       </div>
