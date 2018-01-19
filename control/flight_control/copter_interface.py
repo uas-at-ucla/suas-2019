@@ -432,8 +432,6 @@ class CopterInterface:
         self.controller.set_state("LAND")
         print("Landing!")
 
-    #TODO make this function handle alt saturation
-
     def goto(self, lat, lng, alt):
         print "GOTO CALLED ==================="
         # Convert from unicode.
