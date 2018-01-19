@@ -162,7 +162,7 @@ def drone_disconnected():
 
 def listen_for_communications():
     global communications
-    communications = socketIO_client.SocketIO('192.168.2.21', 8085)
+    communications = socketIO_client.SocketIO('0.0.0.0', 8085)
     communications.on('connect', drone_connected)
     communications.once('disconnect', drone_disconnected)
     communications.on('telemetry', on_telemetry)
