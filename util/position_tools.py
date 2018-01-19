@@ -14,6 +14,42 @@ class Vector3D:
         self.y = y
         self.z = z
 
+    def __add__(self, vec):
+        return Vector3D((self.x + vec.x), (self.y + vec.y), (self.z + vec.z))
+
+    def __sub__(self, vec):
+        return Vector3D((self.x - vec.x), (self.y - vec.y), (self.z - vec.z))
+
+    def __mul__(self, scalar):
+        return Vector3D((scalar * self.x), (scalar * self.y), (scalar * self.z))
+
+    def __rmul__(self, scalar):
+        return Vector3D((scalar * self.x), (scalar * self.y), (scalar * self.z))
+
+    def __div__(self, scalar):
+        return Vector3D((self.x / scalar), (self.y / scalar), (self.z / scalar))
+
+    def set(self, x, y, z):
+        self.x = x
+        self.y = y
+        self.z = z
+
+    def set(self, vec):
+        self.x = vec.x
+        self.y = vec.y
+        self.z = vec.z
+
+    def dot(self, vec):
+        return (self.x * vec.x) + (self.y * vec.y) + (self.z * vec.z)
+
+    def norm(self):
+        return sqrt(self.dot(self))
+
+    def print_vec(self):
+        print("(" + str(self.x)   + \
+              ",\t" + str(self.y) + \
+              ",\t" + str(self.z) + ')')
+
 def distance(coord1, coord2):
     d_ground = distance_2D(coord1.lng, coord1.lat, \
             coord2.lng, coord2.lat)
@@ -43,13 +79,11 @@ def point_to(home, remote):
     y = (remote.lng - home.lng) * COORD_TO_METERS
     z = -(remote.alt - home.alt) #because NED
 
-    length = sqrt(x*x + y*y + z*z)
+    vec = Vector3D(x, y, z)
 
-    unit_x = x / length
-    unit_y = y / length
-    unit_z = z / length
+    length = vec.norm()
 
-    return Vector3D(unit_x, unit_y, unit_z)
+    return (vec / length)
 
 def mix_directions(unit1, unit2, ratio):
     comp = 1 - ratio
@@ -63,3 +97,5 @@ def mix_directions(unit1, unit2, ratio):
             weightSum.x / length, \
             weightSum.y / length, \
             weightSum.z / length  )
+
+
