@@ -1,8 +1,8 @@
 .Telemetry {
   z-index: 10;
-  margin: 10px;
+  padding: 10px 10px 0px 10px;
   font-size: 16px;
-  height: calc(100% - 120px);
+  height: 100%;
   display: flex;
   flex-direction: column;
 }
@@ -10,6 +10,7 @@
 .Telemetry table {
   border: 0;
   padding: 0;
+  margin-bottom: 0;
 }
 
 #telemetryNumbers {
@@ -45,7 +46,7 @@
 }
 
 #altimeter {
-  margin: auto;
+  margin-left: auto;
   width: 60px;
   min-height: 100px;
   max-height: 500px;
