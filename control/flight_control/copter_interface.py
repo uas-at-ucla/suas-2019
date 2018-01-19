@@ -1,5 +1,6 @@
 import sys
 sys.dont_write_bytecode = True
+sys.path.insert(0, '../../util')
 
 import dronekit
 import time
@@ -12,6 +13,8 @@ import threading
 import signal
 from datetime import datetime
 from pymavlink import mavutil
+
+import position_tools as pose
 
 class Sensor:
     def __init__(self, value_type):
@@ -53,6 +56,8 @@ class Sensors:
                     "gps_alt": Sensor(float),
                     "gps_rel_alt": Sensor(float),
                     "gps_satellites": Sensor(int),
+                    "gps_eph": Sensor(int),
+                    "gps_epv": Sensor(int),
                     "velocity_x": Sensor(float),
                     "velocity_y": Sensor(float),
                     "velocity_z": Sensor(float),
@@ -72,29 +77,21 @@ class Sensors:
             self.__telemetry["flight_time"].set(controller.flight_time)
             self.__telemetry["pixhawk_state"].set(vehicle.system_status.state)
             self.__telemetry["armed"].set(vehicle.armed)
-            self.__telemetry["voltage"].set(self.__cut_from_string(str( \
-                    vehicle.battery), "Battery:voltage="))
+            self.__telemetry["voltage"].set(vehicle.battery.voltage)
             self.__telemetry["last_heartbeat"].set(int(vehicle.last_heartbeat))
-            self.__telemetry["gps_lat"].set(self.__cut_from_string(str( \
-                    vehicle.location.global_frame), "lat="))
-            self.__telemetry["gps_lng"].set(self.__cut_from_string(str( \
-                    vehicle.location.global_frame), "lon="))
-            self.__telemetry["gps_alt"].set(self.__cut_from_string(str( \
-                    vehicle.location.global_frame), "alt="))
-            self.__telemetry["gps_rel_alt"].set(self.__cut_from_string(str( \
-                            vehicle.location.global_relative_frame), \
-                            "alt="))
-            self.__telemetry["gps_satellites"].set(self.__cut_from_string(str( \
-                            vehicle.gps_0), "num_sat="))
+            self.__telemetry["gps_lat"].set(vehicle.location.global_frame.lat)
+            self.__telemetry["gps_lng"].set(vehicle.location.global_frame.lon)
+            self.__telemetry["gps_alt"].set(vehicle.location.global_frame.alt)
+            self.__telemetry["gps_rel_alt"].set(vehicle.location.global_relative_frame.alt)
+            self.__telemetry["gps_satellites"].set(vehicle.gps_0.satellites_visible)
+            self.__telemetry["gps_eph"].set(vehicle.gps_0.eph)
+            self.__telemetry["gps_epv"].set(vehicle.gps_0.epv)
             self.__telemetry["velocity_x"].set(vehicle.velocity[0])
             self.__telemetry["velocity_y"].set(vehicle.velocity[1])
             self.__telemetry["velocity_z"].set(vehicle.velocity[2])
-            self.__telemetry["pitch"].set(self.__cut_from_string(str( \
-                            vehicle.attitude), "pitch="))
-            self.__telemetry["roll"].set(self.__cut_from_string(str( \
-                            vehicle.attitude), "roll="))
-            self.__telemetry["yaw"].set(self.__cut_from_string(str( \
-                            vehicle.attitude), "yaw="))
+            self.__telemetry["pitch"].set(vehicle.attitude.pitch)
+            self.__telemetry["roll"].set(vehicle.attitude.roll)
+            self.__telemetry["yaw"].set(vehicle.attitude.yaw)
             self.__telemetry["heading"].set(vehicle.heading)
             self.__telemetry["ground_speed"].set(vehicle.groundspeed)
             self.__telemetry["air_speed"].set(vehicle.airspeed)
@@ -430,14 +427,30 @@ class CopterInterface:
         print("Landing!")
 
     def goto(self, lat, lng, alt):
+        print "GOTO CALLED ==================="
         # Convert from unicode.
         lat = float(lat)
         lng = float(lng)
         alt = float(alt)
+        goal = pose.Geocoord3D(lat, lng, alt)
+
+        sensors = self.sensor_reader.sensors.get()
+        gps_lat = sensors["gps_lat"].get()
+        gps_lng = sensors["gps_lng"].get()
+        gps_rel_alt = sensors["gps_rel_alt"].get()
+        while gps_lat is None or gps_lng is None or gps_rel_alt is None:
+            print "INIT gps GOT NONE <<<<<<<<<<<<<<<<"
+            gps_lat = sensors["gps_lat"].get()
+            gps_lng = sensors["gps_lng"].get()
+            gps_rel_alt = sensors["gps_rel_alt"].get()
+        position = pose.Geocoord3D(gps_lat, gps_lng, gps_rel_alt)
+
+        initDir = pose.point_to(position, goal)
 
         while True:
             if not self.controller.get_state() == "VELOCITY CONTROL" \
                     or self.interrupt:
+                print "goto INTERRUPTED <<<<<<<<<<<<<<<<<<<<"
                 return False
 
             sensors = self.sensor_reader.sensors.get()
@@ -445,36 +458,51 @@ class CopterInterface:
             gps_lng = sensors["gps_lng"].get()
             gps_rel_alt = sensors["gps_rel_alt"].get()
 
-            if gps_lat is None or \
-               gps_lng is None or \
-               gps_rel_alt is None:
+            if gps_lat is None or gps_lng is None or gps_rel_alt is None:
                 time.sleep(0.1)
+                print "gps got NONE <<<<<<<<<<<<<<<<<"
                 continue
 
-            TOLERANCE = 0.0001
-            if abs(lat - gps_lat) < TOLERANCE and \
-               abs(lng - gps_lng) < TOLERANCE and \
-               abs(alt - gps_rel_alt) < 0.1:
-               break
+            position = pose.Geocoord3D(gps_lat, gps_lng, gps_rel_alt)
 
-            vx = lat - gps_lat
-            vy = lng - gps_lng
-            vz = gps_rel_alt - alt
+            # If we are within our transition circle, start to aim towards next
+            # waypoint.
+            TOLERANCE = 10  # meters
+            if pose.distance(position, goal) < TOLERANCE:
+                print "GOT TO WAYPOINT ===================="
+                break
 
-            vx *= 20000
-            vy *= 20000
+            maxSpeed = 25 # meters per second
+            curDir = pose.point_to(position, goal)
+            # Length of normal (between 0 and 1) represents how "off track"
+            # the drone is.
+            # Direction of normalVec is the direction to the straight line
+            # the drone should be going in
+            normal = curDir - ((curDir.dot(initDir)) * initDir)
+            normNormal = normal.norm()
+            unitNormal = pose.Vector3D(0, 0, 0)
+            if normNormal > 0.001:
+                unitNormal = normal / normNormal
 
-            self.controller.set_velocity(vx, vy, vz)
+            # This function of normStrength(normNormal) controls how strongly
+            # the drone corrects to follow the straight line path
+            normalStrength = normNormal * 1.5
 
-            print("vx: " + "%6s" % str("%0.1f" % vx) + \
-                  " vy: " + "%6s" % str("%0.1f" % vy) + \
-                  " vz: " + "%6s" % str("%0.1f" % vz) + \
-                  " lat: " + "%11s" % str("%0.7f" % gps_lat) + \
-                  " lng: " + "%11s" % str("%0.7f" % gps_lng) + \
-                  " alt: " + "%6s" % str("%0.2f" % gps_rel_alt))
+            velocity = initDir + normalStrength * unitNormal
+            velocity = maxSpeed * (velocity / velocity.norm())
+
+            self.controller.set_velocity(velocity.x, velocity.y, velocity.z)
+
+            print("vx: "      + str("%0.1f" % velocity.x) + \
+                  "    vy: " + str("%0.1f" % velocity.y) + \
+                  "    vz: " + str("%0.1f" % velocity.z) + \
+                  "    lat: "+ str("%0.7f" % position.lat) + \
+                  "    lng: "+ str("%0.7f" % position.lng) + \
+                  "    alt: "+ str("%0.2f" % position.alt))
 
             time.sleep(0.1)
 
+        print "RETURNING OUT OF GOTO ><>><><><><><>"
         return True
 
     def __connect_to_drone(self, address):
