@@ -3,8 +3,14 @@
   height: 100%;
   z-index: 1;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   overflow: hidden;
+}
+
+#sides {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: row;
 }
 
 #map {
@@ -33,7 +39,7 @@
   background: rgba(0, 0, 0, 0.7);
   border-radius: 5px;
   padding: 10px;
-  margin: 10px 0 10px 10px;
+  margin: 10px 0 5px 10px;
 }
 
 #map_buttons {
