@@ -40,17 +40,7 @@
   border-radius: 5px;
   padding: 10px;
   margin: 10px 0 5px 10px;
-}
-
-#map_buttons {
-  position: relative;
-  display: inline-block;
-  margin: 10px 5px 10px 10px;
-  height: 110px;
-}
-
-#follow_drone_btn {
-  background-color: rgba(0, 0, 0, 0.7);
+  cursor: pointer;
 }
 
 #sidebar_container {

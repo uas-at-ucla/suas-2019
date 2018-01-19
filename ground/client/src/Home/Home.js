@@ -32,13 +32,6 @@ class Home extends Component {
           <div id="left_side">
             <div id="top_left">
               <img id="logo" src={logo} width="380px" onClick={this.followDrone}/>
-              <div id="map_buttons">
-                <Button id="follow_drone_btn"
-                        bsStyle="primary"
-                        onClick={this.followDrone}>
-                  <i className="fa fa-location-arrow" aria-hidden="true"></i>
-                </Button>
-              </div>
             </div>
             <div id="sidebar_container"
                  className={!this.state.isSidebarShown ? 'hidden' : null}>
