@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './Telemetry.css';
 
 const METERS_PER_SECOND_TO_MPH = 2.23694;
+const METERS_PER_FOOT = 0.3048;
 const MAX_ALTITUDE = 400;
 
 class Telemetry extends Component {
@@ -35,6 +36,25 @@ class Telemetry extends Component {
       altimeterHeight *= -1;
       altimeterBottom = 10 - altimeterHeight;
       altimeterColor = "#FF7B00";
+    }
+
+    var boundaryAltLine = null;
+    if (this.props.homeState.mission) {
+      var boundaryAlt = this.props.homeState.mission.fly_zones[0].altitude_msl_max * METERS_PER_FOOT;
+      boundaryAltLine = (
+        <p id="altimeterBoundaryAlt" 
+            style={{
+              textAlign: "center",
+              position: "absolute",
+              bottom: (10 + boundaryAlt / MAX_ALTITUDE * 90) + "%",
+              width: "100%",
+              borderBottom: "1px solid #ff0000",
+              zIndex: 100,
+              margin: "auto"
+            }}>
+          {this.round(boundaryAlt, 1)}m
+        </p>
+      )
     }
 
     return (
@@ -98,13 +118,14 @@ class Telemetry extends Component {
         
         <div className="card text-white" id="altimeter">
           <p id="altimeterMaxAlt">{MAX_ALTITUDE}m</p>
+          {boundaryAltLine}
           <p id="altimeterMinAlt">0m</p>
           <div id="altimeterAltitudeIndicator"
-               style={{
-                 height: altimeterHeight + "%",
-                 background: altimeterColor,
-                 bottom: altimeterBottom + "%"
-               }}>
+              style={{
+                height: altimeterHeight + "%",
+                background: altimeterColor,
+                bottom: altimeterBottom + "%"
+              }}>
           </div>
         </div>
       </div>
