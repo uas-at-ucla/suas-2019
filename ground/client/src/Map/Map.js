@@ -42,7 +42,7 @@ class Map extends Component {
 
     this.map = new google.maps.Map(this.refs.map, {
       center : field,
-      zoom : 16,
+      zoom : 11,
       tilt : 0,
       disableDefaultUI : true,
       scrollwheel : true,
@@ -62,7 +62,7 @@ class Map extends Component {
       },
       tileSize: new google.maps.Size(256, 256),
       name: "LocalMyGmap",
-      maxZoom: 16,
+      maxZoom: 19,
       minZoom: 0
     }));
 
@@ -70,7 +70,12 @@ class Map extends Component {
 
     this.drone_marker_icon = {
       path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-      scale: 10,
+      strokeColor: "#FFFFFF",
+      strokeOpacity: 0.8,
+      strokeWeight: 3,
+      fillColor: "#0000FF",
+      fillOpacity: 0.5,
+      scale: 7,
       rotation: 0,
       anchor: new google.maps.Point(0, 2.5)
     }
@@ -79,15 +84,6 @@ class Map extends Component {
       map: this.map,
       position: field,
       icon: this.drone_marker_icon
-    });
-
-    this.drone_background_marker = new google.maps.Marker({
-      map: this.map,
-      position: field,
-      icon: {
-        url: drone_marker,
-        anchor: new google.maps.Point(50, 50)
-      }
     });
 
     this.stationary_obstacles = [];
@@ -147,7 +143,7 @@ class Map extends Component {
     let mission = props.homeState.mission;
 
     if (mission) {
-      this.draw_mission_fly_zones(mission.fly_zones);
+      this.draw_boundaries(mission.fly_zones);
       this.draw_mission_search_grid(mission.search_grid_points);
       this.draw_mission_waypoints(mission.mission_waypoints);
       this.draw_mission_point('person', mission.emergent_last_known_pos);
@@ -279,7 +275,6 @@ class Map extends Component {
     this.drone_marker.setPosition(new_position);
     this.drone_marker_icon.rotation = telemetry.heading;
     this.drone_marker.setIcon(this.drone_marker_icon);
-    this.drone_background_marker.setPosition(new_position);
 
     if(this.get_distance(new_position, this.map.getCenter()) > 50.0) {
       if (this.props.homeState.followDrone) {
@@ -316,7 +311,7 @@ class Map extends Component {
 
   addGotoCommand(lat, lng, alt, name, mission_point) {
     let commands = this.props.homeState.commands.slice();
-    
+
     commands.push({
       name: name || '',
       mission_point: mission_point,
@@ -414,7 +409,7 @@ class Map extends Component {
     }
   }
 
-  draw_mission_fly_zones(fly_zones) {
+  draw_boundaries(fly_zones) {
     let bigRect = [
       {lat: 38.170, lng: -76.470},
       {lat: 38.120, lng: -76.470},
@@ -447,10 +442,10 @@ class Map extends Component {
       let polygon = new google.maps.Polygon({
         paths: paths,
         strokeColor: '#FF0000',
-        strokeOpacity: 0.7,
-        strokeWeight: 3,
+        strokeOpacity: 0.4,
+        strokeWeight: 1,
         fillColor: '#FF0000',
-        fillOpacity: 0.25,
+        fillOpacity: 0.20,
         clickable: false
       });
 
@@ -545,10 +540,10 @@ class Map extends Component {
     let polygon = new google.maps.Polygon({
       path: boundary_coordinates,
       strokeColor: '#00FF00',
-      strokeOpacity: 0.7,
-      strokeWeight: 3,
+      strokeOpacity: 0.4,
+      strokeWeight: 1,
       fillColor: '#00FF00',
-      fillOpacity: 0.25,
+      fillOpacity: 0.20,
       clickable: false
     });
 
@@ -580,6 +575,11 @@ class Map extends Component {
     let marker_options = {
       map: this.map,
       position: coords,
+      path: google.maps.SymbolPath.circle,
+      strokeColor: "#FFFFFF",
+      strokeOpacity: 0.8,
+      strokeWeight: 3,
+
     }
     if (label) {
       marker_options.label = label
@@ -613,7 +613,7 @@ class Map extends Component {
         'hidden ' +
         'class="remove_point_from_plan btn btn-sm btn-outline-danger">' +
         'Remove from Plan' +
-      '</button>' + 
+      '</button>' +
       '</div>'
 
     let infowindow = new google.maps.InfoWindow({
@@ -638,7 +638,7 @@ class Map extends Component {
           this.addGotoCommand(coords.lat, coords.lng, coords.alt || 80, title, mission_point);
         }
         remove_btn.onclick = () => {
-          let command_index = this.props.homeState.commands.findIndex((el) => 
+          let command_index = this.props.homeState.commands.findIndex((el) =>
             el.mission_point === mission_point);
           if (command_index !== -1) {
             remove_btn.setAttribute('hidden', 'hidden');
