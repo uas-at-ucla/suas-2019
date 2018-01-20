@@ -48,29 +48,10 @@ class Graph extends Component {
   }
 
   render() {
-
-	  let options =
-	  {
-			scales: {
-				xAxes: [{
-					type: 'linear',
-					position: 'bottom'
-				}]
-			}
-	  };
-	  /*
-	  const data = (canvas) => {
-		  const ctx = canvas.getContext("2d")
-		  const gradient = ctx.createLinearGradient(0,0,100,0);
-		  return {
-			   backgroundColor: gradient
-		  }
-	  }
-	  */
-
-	  return (
-		  	<Scatter data={this.state.graphData} />
-	  );
+	  if (this.props.options)
+		  return (<Scatter data={Object.assign({}, this.state.graphData, this.props.options)}/>);
+	  else
+	      return (<Scatter data={this.state.graphData} />);
   }
 }
 
