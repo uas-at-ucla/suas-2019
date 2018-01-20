@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
 class Panel extends Component {
   render() {
@@ -7,8 +7,12 @@ class Panel extends Component {
       header = (
         <h4>
           {this.props.title}
-          <button className="panel-expand" data-toggle="modal" data-target={`#${this.props.id}`}>
-            <i className="fa fa-expand" aria-hidden="true"></i>
+          <button
+            className="panel-expand"
+            data-toggle="modal"
+            data-target={`#${this.props.id}`}
+          >
+            <i className="fa fa-expand" aria-hidden="true" />
           </button>
         </h4>
       );
@@ -18,9 +22,7 @@ class Panel extends Component {
       <div className="Panel">
         <div className="card text-white">
           {header}
-          <div className="card-body">
-            {this.props.children}
-          </div>
+          <div className="card-body">{this.props.children}</div>
         </div>
 
         <div className="modal fade" id={this.props.id}>
@@ -28,11 +30,11 @@ class Panel extends Component {
             <div className="modal-content">
               <div className="modal-header">
                 <h5 className="modal-title">{this.props.title}</h5>
-                <button className="close" data-dismiss="modal">&times;</button>
+                <button className="close" data-dismiss="modal">
+                  &times;
+                </button>
               </div>
-              <div className="modal-body">
-                {this.props.children}
-              </div>
+              <div className="modal-body">{this.props.children}</div>
             </div>
           </div>
         </div>
@@ -41,4 +43,4 @@ class Panel extends Component {
   }
 }
 
-export default Panel
+export default Panel;

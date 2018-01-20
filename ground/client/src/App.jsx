@@ -5,7 +5,7 @@ import io from "socket.io-client/dist/socket.io.js";
 
 import Home from "./Home/Home";
 import Analytics from "./Analytics/Analytics";
-import Images from "./Images/Images.js";
+import Images from "./Images/Images";
 
 class App extends Component {
   constructor(props) {
@@ -122,7 +122,9 @@ class App extends Component {
     });
 
     this.socket.on("moving_obstacles", moving_obstacles => {
-      this.setState({ moving_obstacles: moving_obstacles });
+      this.setState({
+        moving_obstacles: moving_obstacles
+      });
     });
 
     this.socket.on("interop_connected", is_interop_connected =>
@@ -150,7 +152,10 @@ class App extends Component {
         interopBtnEnabled: true
       });
       setTimeout(
-        () => this.setState({ interopBtnText: "Connect to Interop" }),
+        () =>
+          this.setState({
+            interopBtnText: "Connect to Interop"
+          }),
         1000
       );
     }
@@ -164,4 +169,3 @@ class App extends Component {
 }
 
 export default App;
-

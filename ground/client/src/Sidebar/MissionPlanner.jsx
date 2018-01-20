@@ -1,24 +1,24 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
+import { FormControl, FormGroup } from "react-bootstrap";
 import {
-  FormControl,
-  FormGroup,
-} from 'react-bootstrap';
-import {SortableContainer, SortableElement, arrayMove} from 'react-sortable-hoc';
+  SortableContainer,
+  SortableElement,
+  arrayMove
+} from "react-sortable-hoc";
 
-const SortableItem = SortableElement(({command, myIndex, self}) =>
-  <tr className="command_row" onClick={
-      event => self.onCommandClick(myIndex, event)
-    }>
-    <td>{myIndex+1}</td>
+const SortableItem = SortableElement(({ command, myIndex, self }) => (
+  <tr
+    className="command_row"
+    onClick={event => self.onCommandClick(myIndex, event)}
+  >
+    <td>{myIndex + 1}</td>
     <td>
       <input
         className="name_input"
         type="text"
         value={command.name}
-        onChange={
-          event => self.onCommandNameChange(myIndex, event)
-        }>
-      </input>
+        onChange={event => self.onCommandNameChange(myIndex, event)}
+      />
     </td>
     <td>
       <FormGroup controlId="formControlsSelect">
@@ -26,9 +26,8 @@ const SortableItem = SortableElement(({command, myIndex, self}) =>
           componentClass="select"
           placeholder="select"
           value={command.options.command_type}
-          onChange={
-            event => self.onCommandTypeChange(myIndex, event)
-          }>
+          onChange={event => self.onCommandTypeChange(myIndex, event)}
+        >
           <option>goto</option>
           <option>jump</option>
           <option>bomb</option>
@@ -41,15 +40,13 @@ const SortableItem = SortableElement(({command, myIndex, self}) =>
         className="altitude_input"
         type="number"
         value={command.options.alt}
-        onChange={
-          event => self.onCommandAltChange(myIndex, event)
-        }>
-      </input>
+        onChange={event => self.onCommandAltChange(myIndex, event)}
+      />
     </td>
   </tr>
-);
+));
 
-const SortableList = SortableContainer(({commands, self}) => {
+const SortableList = SortableContainer(({ commands, self }) => {
   return (
     <div className="scrollbar">
       <table id="commandList">
@@ -61,7 +58,13 @@ const SortableList = SortableContainer(({commands, self}) => {
             <td>Alt</td>
           </tr>
           {commands.map((command, index) => (
-            <SortableItem key={`item-${index}`} index={index} command={command} myIndex={index} self={self}/>
+            <SortableItem
+              key={`item-${index}`}
+              index={index}
+              command={command}
+              myIndex={index}
+              self={self}
+            />
           ))}
         </tbody>
       </table>
@@ -72,15 +75,20 @@ const SortableList = SortableContainer(({commands, self}) => {
 class MissionPlanner extends Component {
   render() {
     return (
-      <SortableList commands={this.props.homeState.commands} onSortEnd={this.onSortEnd} self={this} 
-        transitionDuration={200} distance={2}/>
+      <SortableList
+        commands={this.props.homeState.commands}
+        onSortEnd={this.onSortEnd}
+        self={this}
+        transitionDuration={200}
+        distance={2}
+      />
     );
   }
 
-  onSortEnd = ({oldIndex, newIndex}) => {
+  onSortEnd = ({ oldIndex, newIndex }) => {
     if (oldIndex !== newIndex) {
       this.props.setHomeState({
-        commands: arrayMove(this.props.homeState.commands, oldIndex, newIndex),
+        commands: arrayMove(this.props.homeState.commands, oldIndex, newIndex)
       });
     }
   };
@@ -113,10 +121,10 @@ class MissionPlanner extends Component {
   }
 
   onCommandClick(index, event) {
-    if (event.target.tagName === 'TD') {
-      this.props.setHomeState({focusedCommand: index});
+    if (event.target.tagName === "TD") {
+      this.props.setHomeState({ focusedCommand: index });
     }
   }
 }
 
-export default MissionPlanner
+export default MissionPlanner;
