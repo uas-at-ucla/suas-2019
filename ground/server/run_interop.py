@@ -14,10 +14,13 @@ os.chdir("../interop/server")
 
 interop_processes = None
 
+
 def signal_received(signal, frame):
     interop_processes.killall()
     interop_processes.run_command("docker kill interop-server")
     sys.exit(0)
+
+
 signal.signal(signal.SIGINT, signal_received)
 
 # First kill the interop server. We don't want a previous instance

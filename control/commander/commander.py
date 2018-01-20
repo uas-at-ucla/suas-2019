@@ -16,6 +16,7 @@ import thread
 import threading
 import time
 
+
 #TODO: Command inputs must be sanitized based on type.
 class Command:
     def __init__(self, data):
@@ -24,13 +25,16 @@ class Command:
         for key, value in data.items():
             setattr(self, key, value)
 
+
 class TakeoffCommand:
     def __init__(self):
         self.command_type = "takeoff"
 
+
 class LandCommand:
     def __init__(self):
         self.command_type = "land"
+
 
 class Commander:
     class CommunicationsNamespace(BaseNamespace):
@@ -52,7 +56,8 @@ class Commander:
                 self.connect_to_drone_communications, ())
 
         self.copter = copter_interface.CopterInterface(drone_address)
-        self.copter.sensor_reader.set_communications_socket(self.communications)
+        self.copter.sensor_reader.set_communications_socket(
+            self.communications)
 
     def execute_commands(self, *args):
         if self.copter is None:
@@ -86,7 +91,7 @@ class Commander:
                 self.CommunicationsNamespace)
         print("Connected to drone communications.")
 
-        self.communications.on('connect', lambda : None)
+        self.communications.on('connect', lambda: None)
         self.communications.on('execute_commands', self.execute_commands)
         self.communications.on('set_state', self.set_state)
         self.communications.wait()
@@ -99,7 +104,7 @@ class Commander:
         self.save_mission_to_file()
 
     def save_mission_to_file(self):
-        with open(dname+'/mission.pickle', 'wb') as f:
+        with open(dname + '/mission.pickle', 'wb') as f:
             pickle.dump(self.commands, f, pickle.HIGHEST_PROTOCOL)
 
     def add_command(self, command):
