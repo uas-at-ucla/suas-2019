@@ -19,9 +19,10 @@ import process_manager
 import copter_interface
 import commander
 
+
 class TestControl(unittest.TestCase):
     def setUp(self):
-        self.RUN_GROUND = True;
+        self.RUN_GROUND = True
 
         self.test_drone = process_manager.ProcessManager()
 
@@ -34,6 +35,8 @@ class TestControl(unittest.TestCase):
         self.kill_processes()
 
     #TODO: Make work with dynamic command structure.
+
+
 #   def test_commander(self):
 #       if self.RUN_GROUND:
 #           self.test_drone.run_command("python ../ground/client/build.py")
@@ -121,11 +124,9 @@ class TestControl(unittest.TestCase):
 
 if __name__ == "__main__":
     loader = TestLoader()
-    suite = TestSuite((
-        loader.loadTestsFromTestCase(TestControl),
-    ))
+    suite = TestSuite((loader.loadTestsFromTestCase(TestControl), ))
 
-    runner = TextTestRunner(verbosity = 2)
+    runner = TextTestRunner(verbosity=2)
 
     ret = not runner.run(suite).wasSuccessful()
     sys.exit(ret)

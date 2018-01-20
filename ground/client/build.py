@@ -11,9 +11,11 @@ import process_manager
 
 processes = None
 
+
 def signal_received(signal, frame):
     processes.killall()
     sys.exit(0)
+
 
 if __name__ == "__main__":
     processes = process_manager.ProcessManager()
@@ -30,7 +32,7 @@ if __name__ == "__main__":
     latest_commit = processes.return_output("git show")
     latest_commit_id = latest_commit.split('\n')[0].split(' ')[1]
     if os.path.isfile("build_commit.txt"):
-        with open("build_commit.txt") as file:  
+        with open("build_commit.txt") as file:
             build_commit_id = file.read()
             if latest_commit_id != build_commit_id:
                 print "Detected new commit. Building React App..."
