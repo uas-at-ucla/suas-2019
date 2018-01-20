@@ -1,9 +1,6 @@
 class GMapCache {
   constructor() {
     this.spriteRanges = {
-      // tl = top_left
-      // br = bottom_right
-      // {zoom: {tl: {}, br: {}}
       0: { tl: { x: 0, y: 0 }, br: { x: 0, y: 0 } },
       1: { tl: { x: 1, y: 0 }, br: { x: 1, y: 0 } },
       2: { tl: { x: 2, y: 1 }, br: { x: 2, y: 1 } },
@@ -24,10 +21,11 @@ class GMapCache {
       17: { tl: { x: 75514, y: 42102 }, br: { x: 75620, y: 42216 } },
       18: { tl: { x: 151028, y: 84204 }, br: { x: 151240, y: 168864 } },
       19: { tl: { x: 302056, y: 168408 }, br: { x: 402480, y: 168864 } },
-      20: { tl: { x: 604112, y: 336816 }, br: { x: 804960, y: 33728 } }
+      20: { tl: { x: 604112, y: 336816 }, br: { x: 804960, y: 33728 } },
+      21: { tl: { x: 1208224, y: 673632 }, br: { x: 1609920, y: 67456 } }
     };
 
-    this.max_zoom = 13;
+    this.max_zoom = 21;
 
     var webStorage = null;
 
