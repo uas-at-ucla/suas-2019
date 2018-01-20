@@ -30,4 +30,3 @@ window.onbeforeunload = function() {
 };
 // Comment out last line for test flights
 window.onbeforeunload = null;
-
