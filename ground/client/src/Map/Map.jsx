@@ -69,7 +69,7 @@ class Map extends Component {
         },
         tileSize: new google.maps.Size(256, 256),
         name: "LocalMyGmap",
-        maxZoom: 20,
+        maxZoom: 21,
         minZoom: 12
       })
     );

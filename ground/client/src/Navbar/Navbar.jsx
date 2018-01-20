@@ -8,7 +8,7 @@ class Navbar extends Component {
   // Display tab titles here
   getOptions() {
     return [
-      { _id: 1, section: "Home" },
+      { _id: 1, section: "Control" },
       { _id: 2, section: "Analytics" },
       { _id: 3, section: "Images" }
     ];
