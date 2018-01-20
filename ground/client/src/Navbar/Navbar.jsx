@@ -50,12 +50,43 @@ class Navbar extends Component {
       if (this.props.appState.telemetry) {
         flight_time = this.props.appState.telemetry.flight_time;
         flight_time = new Date(flight_time * 1000).toISOString().substr(11, 8);
-        battery_voltage = this.props.appState.telemetry.voltage + "v";
+
+        battery_voltage = this.props.appState.telemetry.voltage + " volts";
+        let cells = this.getBatteryCells(this.props.appState.telemetry.voltage);
+
+        let runtime = (Date.now() - this.mountTime) / 1000;
         let graph_options = {
-          scales: { xAxes: [{ display: false }], yAxes: [{ display: false }] },
+          scales: {
+            xAxes: [{
+              display: false,
+              ticks: {
+                max: runtime,
+                min: runtime - 10 * 3,
+              }
+            }],
+            yAxes: [{
+              display: true,
+              position: 'right',
+              ticks: {
+                fontSize: 10,
+                max: cells * 4.4,
+                min: cells * 3.4,
+              }
+            }]
+          },
           legend: {
             display: false
           },
+          animation: {
+            duration: 0
+          },
+          xAxes: [{
+            override: {
+              steps: 10,
+            }
+          }],
+          yAxes: [{
+          }],
           tooltips: {enabled: false},
           hover: {mode: null},
         };
@@ -69,7 +100,7 @@ class Navbar extends Component {
               dataName={"Battery Voltage"}
               color={"#e2c63b"}
               dataPoint={{
-                x: (Date.now() - this.mountTime) / 1000,
+                x: runtime,
                 y: this.props.appState.telemetry.voltage
               }}
               options={graph_options}
@@ -78,14 +109,17 @@ class Navbar extends Component {
         );
       }
       batteryAndFlightTime = (
-        <div id="flight_time_and_battery">
-          <div id="flight_time">
-            <div id="flight_time_value">{flight_time}</div>
-            <div id="flight_time_label">Flight Time</div>
+        <div id="flight_time_battery_and_graph">
+          <div id="batteryGraph">
+            {batteryGraph}
           </div>
-          <div id="battery_v" onClick={this.toggleBatteryGraph}>
-            <div id="battery_value">{battery_voltage}</div>
-            <div id="battery_label">Battery</div>
+          <div id="flight_time_and_battery">
+            <div id="flight_time">
+              <p>{flight_time}</p>
+            </div>
+            <div id="battery_v" onClick={this.toggleBatteryGraph}>
+              <p>{battery_voltage}</p>
+            </div>
           </div>
         </div>
       );
@@ -105,7 +139,6 @@ class Navbar extends Component {
             {this.props.appState.interopBtnText}
           </button>
         </div>
-        {batteryGraph}
         {batteryAndFlightTime}
       </div>
     );
@@ -116,6 +149,10 @@ class Navbar extends Component {
     this.props.setAppState({ interopBtnEnabled: false });
     this.props.socketEmit("connect_to_interop");
   };
+
+  getBatteryCells = (voltage) => {
+    return Math.floor(voltage / 3.8);
+  }
 }
 
 export default Navbar;

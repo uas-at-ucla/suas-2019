@@ -18,8 +18,20 @@ class Graph extends Component {
             data: []
           }
         ]
-      }
+      },
     };
+
+    this.skipRenders = 0;
+  }
+
+  shouldComponentUpdate(nextProps, nextState) {
+    if(this.skipRenders % 5 == 0) {
+      this.skipRenders += 1;
+      return true;
+    }
+
+    this.skipRenders += 1;
+    return false;
   }
 
   componentWillReceiveProps(nextProps) {
@@ -31,21 +43,20 @@ class Graph extends Component {
         ];
 
         // Delete old points.
-        let history = 100
+        let history = 1000
         if(data.length > history) {
-          data.splice(0, history - 10);
+          data.splice(0, history - 100);
         }
 
         return {
           graphData: {
-            datasets: [
-              {
+            datasets: [{
+                pointRadius: 1,
                 label: props.dataName,
                 borderColor: props.color,
                 pointBorderColor: props.color,
-                data: data
-              }
-            ]
+                data: data,
+            }]
           }
         };
       });
@@ -54,7 +65,7 @@ class Graph extends Component {
 
   render() {
     if (this.props.options) {
-      let height = 50;
+      let height = 60;
       return (
         <Scatter
           data={this.state.graphData}
