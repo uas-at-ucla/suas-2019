@@ -51,6 +51,15 @@ class Navbar extends Component {
         flight_time = this.props.appState.telemetry.flight_time;
         flight_time = new Date(flight_time * 1000).toISOString().substr(11, 8);
         battery_voltage = this.props.appState.telemetry.voltage + "v";
+        let graph_options = {
+          scales: { xAxes: [{ display: false }], yAxes: [{ display: false }] },
+          legend: {
+            display: false
+          },
+          tooltips: {enabled: false},
+          hover: {mode: null},
+        };
+
         batteryGraph = (
           <div
             id="battery_graph_overlay"
@@ -63,6 +72,7 @@ class Navbar extends Component {
                 x: (Date.now() - this.mountTime) / 1000,
                 y: this.props.appState.telemetry.voltage
               }}
+              options={graph_options}
             />
           </div>
         );
