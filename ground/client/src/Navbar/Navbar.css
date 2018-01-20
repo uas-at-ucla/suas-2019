@@ -37,6 +37,7 @@
   position: absolute;
   right: 15px;
   bottom: 10px;
+  cursor: pointer;
 }
 
 #battery_value, #flight_time_value {
