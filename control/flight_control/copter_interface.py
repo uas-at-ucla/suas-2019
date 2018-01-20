@@ -193,7 +193,9 @@ class Controller:
     def set_state(self, state):
         with self.state_lock:
             state = state.replace('"', '')
-            if self.state == "FAILSAFE" or self.state == "THROTTLE_CUT":
+            if state == "THROTTLE CUT":
+                self.state = state
+            elif self.state == "FAILSAFE" or self.state == "THROTTLE CUT":
                 self.print_debug("Failed to set state: In " + self.state \
                         + " mode.")
                 return
@@ -251,20 +253,13 @@ class Controller:
     def terminate_flight(self):
         while True:
             msg = self.vehicle.message_factory.command_long_encode( \
-                0, 0,     # target system, target component
-                mavutil.mavlink.MAV_CMD_DO_FLIGHTTERMINATION ,
-                0,        # confirmation
+                0, 0,
+                mavutil.mavlink.MAV_CMD_DO_FLIGHTTERMINATION,
+                0,
                 1.0,
                 0, 0, 0, 0, 0, 0)
-            #           for servo in range(1, 8):
-            #               msg = self.vehicle.message_factory.command_long_encode( \
-            #                   0, 0,     # target system, target component
-            #                   mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
-            #                   0,        # confirmation
-            #                   servo,    # param 1, servo No
-            #                   1000,     # param 2, pwm
-            #                   0, 0, 0, 0, 0)
             self.vehicle.send_mavlink(msg)
+
             time.sleep(0.1)
 
     def control_loop(self):
@@ -352,14 +347,14 @@ class Controller:
             elif current_state == "FAILSAFE":
                 # Exit control loop and go into failsafe mode.
                 break
-            elif current_state == "THROTTLE_CUT":
+            elif current_state == "THROTTLE CUT":
                 # Exit control loop and go into throttle cut mode.
                 break
             else:
                 self.print_debug("UNKNOWN CONTROLLER STATE: " + current_state)
                 self.set_state("FAILSAFE")
 
-        if current_state == "THROTTLE_CUT":
+        if current_state == "THROTTLE CUT":
             self.terminate_flight()
 
         # Failsafe mode (cannot escape without restarting drone_interface).
@@ -368,6 +363,12 @@ class Controller:
             # If we go into failsafe mode, continuously tell the flight
             # controller to land.
             self.vehicle.mode = dronekit.VehicleMode("LAND")
+
+
+            # Break out if we go into throttle cut.
+            current_state = self.get_state()
+            if current_state == "THROTTLE CUT":
+                self.terminate_flight()
             time.sleep(0.1)
 
 
