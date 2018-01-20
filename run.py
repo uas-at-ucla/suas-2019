@@ -113,7 +113,6 @@ def main():
         print("  - Drone Commander")
     print("")
 
-
     # Now start all the components that the user asked us to start, and make
     # sure to kill everything if any errors occur.
     try:
