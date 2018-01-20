@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import "./Map.css";
-import GMapCache from "./gmapcache_script.js";
+import GMapCache from "./GMapCache.jsx";
 import map_style from "./map_style.js";
 import drone_marker from "../graphics/drone_marker.svg";
 
@@ -860,4 +860,3 @@ class Map extends Component {
 }
 
 export default Map;
-
