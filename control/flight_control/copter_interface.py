@@ -90,7 +90,6 @@ class Sensors:
                 vehicle.gps_0.satellites_visible)
             self.__telemetry["gps_eph"].set(vehicle.gps_0.eph)
             self.__telemetry["gps_epv"].set(vehicle.gps_0.epv)
-            print(vehicle.gps_0.epv)
             self.__telemetry["velocity_x"].set(vehicle.velocity[0])
             self.__telemetry["velocity_y"].set(vehicle.velocity[1])
             self.__telemetry["velocity_z"].set(vehicle.velocity[2])
