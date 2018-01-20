@@ -67,7 +67,7 @@ class Controls extends Component {
 
   sendThrottleCutCommand = () => {
     const command = {
-      state: "THROTTLE_CUT"
+      state: "THROTTLE CUT"
     };
 
     this.props.socketEmit("set_state", command);
