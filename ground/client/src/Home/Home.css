@@ -21,10 +21,8 @@
 }
 
 .Home .card {
-  -webkit-box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.7);
-  -moz-box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.7);
-  box-shadow: 1.5px 1.5px 8px 0px rgba(0, 0, 0, 0.7);
   background-color: rgba(0, 0, 0, 0.7) !important;
+  border-radius: 0;
 }
 
 #left_side {
@@ -37,7 +35,6 @@
   float: left;
   position: relative;
   background: rgba(0, 0, 0, 0.7);
-  border-radius: 5px;
   padding: 10px;
   margin: 10px 0 5px 10px;
   cursor: pointer;
