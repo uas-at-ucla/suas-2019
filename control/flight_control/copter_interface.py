@@ -16,6 +16,7 @@ from pymavlink import mavutil
 
 import position_tools
 
+
 class Sensor:
     def __init__(self, value_type):
         # Keep track of the value's variable type that will be provided later
@@ -39,34 +40,35 @@ class Sensor:
 
         return self.__value
 
+
 class Sensors:
     def __init__(self):
         self.__telemetry_lock = threading.Lock()
 
         with self.__telemetry_lock:
             self.__telemetry = {
-                    "state": Sensor(str),
-                    "flight_time": Sensor(float),
-                    "pixhawk_state": Sensor(str),
-                    "armed": Sensor(bool),
-                    "voltage": Sensor(float),
-                    "last_heartbeat": Sensor(float),
-                    "gps_lat": Sensor(float),
-                    "gps_lng": Sensor(float),
-                    "gps_alt": Sensor(float),
-                    "gps_rel_alt": Sensor(float),
-                    "gps_satellites": Sensor(int),
-                    "gps_eph": Sensor(int),
-                    "gps_epv": Sensor(int),
-                    "velocity_x": Sensor(float),
-                    "velocity_y": Sensor(float),
-                    "velocity_z": Sensor(float),
-                    "pitch": Sensor(float),
-                    "roll": Sensor(float),
-                    "yaw": Sensor(float),
-                    "heading": Sensor(int),
-                    "ground_speed": Sensor(float),
-                    "air_speed": Sensor(float)
+                "state": Sensor(str),
+                "flight_time": Sensor(float),
+                "pixhawk_state": Sensor(str),
+                "armed": Sensor(bool),
+                "voltage": Sensor(float),
+                "last_heartbeat": Sensor(float),
+                "gps_lat": Sensor(float),
+                "gps_lng": Sensor(float),
+                "gps_alt": Sensor(float),
+                "gps_rel_alt": Sensor(float),
+                "gps_satellites": Sensor(int),
+                "gps_eph": Sensor(int),
+                "gps_epv": Sensor(int),
+                "velocity_x": Sensor(float),
+                "velocity_y": Sensor(float),
+                "velocity_z": Sensor(float),
+                "pitch": Sensor(float),
+                "roll": Sensor(float),
+                "yaw": Sensor(float),
+                "heading": Sensor(int),
+                "ground_speed": Sensor(float),
+                "air_speed": Sensor(float)
             }
 
     def set(self, vehicle, controller):
@@ -82,10 +84,13 @@ class Sensors:
             self.__telemetry["gps_lat"].set(vehicle.location.global_frame.lat)
             self.__telemetry["gps_lng"].set(vehicle.location.global_frame.lon)
             self.__telemetry["gps_alt"].set(vehicle.location.global_frame.alt)
-            self.__telemetry["gps_rel_alt"].set(vehicle.location.global_relative_frame.alt)
-            self.__telemetry["gps_satellites"].set(vehicle.gps_0.satellites_visible)
+            self.__telemetry["gps_rel_alt"].set(
+                vehicle.location.global_relative_frame.alt)
+            self.__telemetry["gps_satellites"].set(
+                vehicle.gps_0.satellites_visible)
             self.__telemetry["gps_eph"].set(vehicle.gps_0.eph)
             self.__telemetry["gps_epv"].set(vehicle.gps_0.epv)
+            print(vehicle.gps_0.epv)
             self.__telemetry["velocity_x"].set(vehicle.velocity[0])
             self.__telemetry["velocity_y"].set(vehicle.velocity[1])
             self.__telemetry["velocity_z"].set(vehicle.velocity[2])
@@ -118,6 +123,7 @@ class Sensors:
             return None
 
         return return_str
+
 
 class SensorReader:
     def __init__(self, vehicle, controller):
@@ -158,6 +164,7 @@ class SensorReader:
 
     def stop(self):
         self.should_run = False
+
 
 class Controller:
     def __init__(self, vehicle):
@@ -250,17 +257,16 @@ class Controller:
                 0,        # confirmation
                 1.0,
                 0, 0, 0, 0, 0, 0)
-#           for servo in range(1, 8):
-#               msg = self.vehicle.message_factory.command_long_encode( \
-#                   0, 0,     # target system, target component
-#                   mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
-#                   0,        # confirmation
-#                   servo,    # param 1, servo No
-#                   1000,     # param 2, pwm
-#                   0, 0, 0, 0, 0)
+            #           for servo in range(1, 8):
+            #               msg = self.vehicle.message_factory.command_long_encode( \
+            #                   0, 0,     # target system, target component
+            #                   mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
+            #                   0,        # confirmation
+            #                   servo,    # param 1, servo No
+            #                   1000,     # param 2, pwm
+            #                   0, 0, 0, 0, 0)
             self.vehicle.send_mavlink(msg)
             time.sleep(0.1)
-
 
     def control_loop(self):
         TARGET_TAKEOFF_ALT = 3.0
@@ -278,12 +284,6 @@ class Controller:
 
             new_state = None
             current_state = self.get_state()
-
-            # Log any change in state.
-
-#           if current_state != "STANDBY" and self.check_velocity_control():
-#               self.set_state("FAILSAFE")
-#               current_state = "FAILSAFE"
 
             # Drone state machine.
             if current_state == "STANDBY":
@@ -370,6 +370,7 @@ class Controller:
             # controller to land.
             self.vehicle.mode = dronekit.VehicleMode("LAND")
             time.sleep(0.1)
+
 
 class CopterInterface:
     def __init__(self, address):
@@ -493,6 +494,7 @@ class CopterInterface:
 
         return vehicle
 
+
 def main():
     parser = argparse.ArgumentParser( \
             description = "Interface with flight controller.")
@@ -510,6 +512,7 @@ def main():
     drone_interface = CopterInterface(args.address)
 
     signal.pause()
+
 
 if __name__ == "__main__":
     main()
