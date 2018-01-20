@@ -1,5 +1,6 @@
 import React, { Component } from "react";
 import "./Map.css";
+import GMapCache from "./gmapcache_script.js";
 import map_style from "./map_style.js";
 import drone_marker from "../graphics/drone_marker.svg";
 
@@ -55,18 +56,21 @@ class Map extends Component {
       styles: map_style
     });
 
+    this.gmap_cache = new GMapCache();
+    let this_local = this;
+
     this.map.mapTypes.set(
       "offline_gmap",
       new google.maps.ImageMapType({
         getTileUrl: function(coord, zoom) {
-          return window.checkTileInSprites(coord, zoom)
-            ? window.getLocalTileImgSrc(coord, zoom)
-            : window.getGmapTileImgSrc(coord, zoom);
+          return this_local.gmap_cache.checkTileInSprites(coord, zoom)
+            ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
+            : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
         },
         tileSize: new google.maps.Size(256, 256),
         name: "LocalMyGmap",
-        maxZoom: 19,
-        minZoom: 0
+        maxZoom: 20,
+        minZoom: 12
       })
     );
 
