@@ -11,9 +11,11 @@ import process_manager
 
 ground_processes = None
 
+
 def signal_received(signal, frame):
     ground_processes.killall()
     sys.exit(0)
+
 
 if __name__ == "__main__":
     ground_processes = process_manager.ProcessManager()
