@@ -129,7 +129,12 @@ then
     fi
 elif [ $OS = "Darwin" ]
 then
-    brew cask install docker
+    which -s docker
+    if [[ $? != 0 ]]
+    then
+        brew cask install docker
+    fi
+    open -a Docker
     docker pull auvsisuas/interop-server
 fi
 
