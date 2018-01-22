@@ -1,11 +1,11 @@
 import React, { Component } from "react";
+import { Button } from "react-bootstrap";
+
 import "./Home.css";
 import Sidebar from "../Sidebar/Sidebar";
 import Map from "../Map/Map";
 import Telemetry from "../Telemetry/Telemetry";
 import Controls from "../Controls/Controls";
-import logo from "../graphics/vector_logo.svg";
-import { Button } from "react-bootstrap";
 import testMission from "./test_mission";
 
 const USE_TEST_MISSION = true;
@@ -33,14 +33,6 @@ class Home extends Component {
             setHomeState={this.setHomeState}
           />
           <div id="left_side">
-            <div id="top_left">
-              <img
-                id="logo"
-                src={logo}
-                width="380px"
-                onClick={this.followDrone}
-              />
-            </div>
             <div
               id="sidebar_container"
               className={!this.state.isSidebarShown ? "hidden" : null}
