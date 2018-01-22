@@ -121,7 +121,7 @@ class Map extends Component {
     });
 
     this.map.addListener("dblclick", e => {
-      this.addGotoCommand(e.latLng.lat(), e.latLng.lng(), 80);
+      this.addGotoCommand(e.latLng.lat(), e.latLng.lng(), 30);
     });
 
     this.registerStateDepFunction(
