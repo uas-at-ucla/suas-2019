@@ -101,14 +101,15 @@ class GMapCache {
   }
 
   getGmapTileImgSrc(coord, zoom) {
-    return (
+    let tile_src =
       "http://khms0.googleapis.com/kh?v=747&hl=en-US&x=" +
       coord.x +
       "&y=" +
       coord.y +
       "&z=" +
-      zoom
-    );
+      zoom;
+    console.log(tile_src);
+    return tile_src;
   }
 
   getLocalTileImgSrc(coord, zoom) {
