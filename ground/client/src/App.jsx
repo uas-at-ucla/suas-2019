@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import Navbar from "./Navbar/Navbar";
 import "./App.css";
 import io from "socket.io-client/dist/socket.io.js";
+import logo from "./graphics/vector_logo.svg";
 
 import Home from "./Home/Home";
 import Analytics from "./Analytics/Analytics";
@@ -44,6 +45,12 @@ class App extends Component {
   render() {
     return (
       <div className="App">
+        <img
+          id="logo"
+          src={logo}
+          width="380px"
+          onClick={this.followDrone}
+        />
         <Navbar
           appState={this.state}
           setAppState={this.setAppState}
