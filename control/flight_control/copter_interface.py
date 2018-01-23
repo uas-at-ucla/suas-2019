@@ -14,7 +14,8 @@ import signal
 from datetime import datetime
 from pymavlink import mavutil
 
-import position_tools as pose
+import position_tools
+
 
 class Sensor:
     def __init__(self, value_type):
@@ -39,34 +40,35 @@ class Sensor:
 
         return self.__value
 
+
 class Sensors:
     def __init__(self):
         self.__telemetry_lock = threading.Lock()
 
         with self.__telemetry_lock:
             self.__telemetry = {
-                    "state": Sensor(str),
-                    "flight_time": Sensor(float),
-                    "pixhawk_state": Sensor(str),
-                    "armed": Sensor(bool),
-                    "voltage": Sensor(float),
-                    "last_heartbeat": Sensor(float),
-                    "gps_lat": Sensor(float),
-                    "gps_lng": Sensor(float),
-                    "gps_alt": Sensor(float),
-                    "gps_rel_alt": Sensor(float),
-                    "gps_satellites": Sensor(int),
-                    "gps_eph": Sensor(int),
-                    "gps_epv": Sensor(int),
-                    "velocity_x": Sensor(float),
-                    "velocity_y": Sensor(float),
-                    "velocity_z": Sensor(float),
-                    "pitch": Sensor(float),
-                    "roll": Sensor(float),
-                    "yaw": Sensor(float),
-                    "heading": Sensor(int),
-                    "ground_speed": Sensor(float),
-                    "air_speed": Sensor(float)
+                "state": Sensor(str),
+                "flight_time": Sensor(float),
+                "pixhawk_state": Sensor(str),
+                "armed": Sensor(bool),
+                "voltage": Sensor(float),
+                "last_heartbeat": Sensor(float),
+                "gps_lat": Sensor(float),
+                "gps_lng": Sensor(float),
+                "gps_alt": Sensor(float),
+                "gps_rel_alt": Sensor(float),
+                "gps_satellites": Sensor(int),
+                "gps_eph": Sensor(int),
+                "gps_epv": Sensor(int),
+                "velocity_x": Sensor(float),
+                "velocity_y": Sensor(float),
+                "velocity_z": Sensor(float),
+                "pitch": Sensor(float),
+                "roll": Sensor(float),
+                "yaw": Sensor(float),
+                "heading": Sensor(int),
+                "ground_speed": Sensor(float),
+                "air_speed": Sensor(float)
             }
 
     def set(self, vehicle, controller):
@@ -82,8 +84,10 @@ class Sensors:
             self.__telemetry["gps_lat"].set(vehicle.location.global_frame.lat)
             self.__telemetry["gps_lng"].set(vehicle.location.global_frame.lon)
             self.__telemetry["gps_alt"].set(vehicle.location.global_frame.alt)
-            self.__telemetry["gps_rel_alt"].set(vehicle.location.global_relative_frame.alt)
-            self.__telemetry["gps_satellites"].set(vehicle.gps_0.satellites_visible)
+            self.__telemetry["gps_rel_alt"].set(
+                vehicle.location.global_relative_frame.alt)
+            self.__telemetry["gps_satellites"].set(
+                vehicle.gps_0.satellites_visible)
             self.__telemetry["gps_eph"].set(vehicle.gps_0.eph)
             self.__telemetry["gps_epv"].set(vehicle.gps_0.epv)
             self.__telemetry["velocity_x"].set(vehicle.velocity[0])
@@ -118,6 +122,7 @@ class Sensors:
             return None
 
         return return_str
+
 
 class SensorReader:
     def __init__(self, vehicle, controller):
@@ -159,6 +164,7 @@ class SensorReader:
     def stop(self):
         self.should_run = False
 
+
 class Controller:
     def __init__(self, vehicle):
         self.vehicle = vehicle
@@ -187,7 +193,9 @@ class Controller:
     def set_state(self, state):
         with self.state_lock:
             state = state.replace('"', '')
-            if self.state == "FAILSAFE" or self.state == "THROTTLE_CUT":
+            if state == "THROTTLE CUT":
+                self.state = state
+            elif self.state == "FAILSAFE" or self.state == "THROTTLE CUT":
                 self.print_debug("Failed to set state: In " + self.state \
                         + " mode.")
                 return
@@ -245,22 +253,14 @@ class Controller:
     def terminate_flight(self):
         while True:
             msg = self.vehicle.message_factory.command_long_encode( \
-                0, 0,     # target system, target component
-                mavutil.mavlink.MAV_CMD_DO_FLIGHTTERMINATION ,
-                0,        # confirmation
+                0, 0,
+                mavutil.mavlink.MAV_CMD_DO_FLIGHTTERMINATION,
+                0,
                 1.0,
                 0, 0, 0, 0, 0, 0)
-#           for servo in range(1, 8):
-#               msg = self.vehicle.message_factory.command_long_encode( \
-#                   0, 0,     # target system, target component
-#                   mavutil.mavlink.MAV_CMD_DO_SET_SERVO,
-#                   0,        # confirmation
-#                   servo,    # param 1, servo No
-#                   1000,     # param 2, pwm
-#                   0, 0, 0, 0, 0)
             self.vehicle.send_mavlink(msg)
-            time.sleep(0.1)
 
+            time.sleep(0.1)
 
     def control_loop(self):
         TARGET_TAKEOFF_ALT = 3.0
@@ -278,12 +278,6 @@ class Controller:
 
             new_state = None
             current_state = self.get_state()
-
-            # Log any change in state.
-
-#           if current_state != "STANDBY" and self.check_velocity_control():
-#               self.set_state("FAILSAFE")
-#               current_state = "FAILSAFE"
 
             # Drone state machine.
             if current_state == "STANDBY":
@@ -353,14 +347,14 @@ class Controller:
             elif current_state == "FAILSAFE":
                 # Exit control loop and go into failsafe mode.
                 break
-            elif current_state == "THROTTLE_CUT":
+            elif current_state == "THROTTLE CUT":
                 # Exit control loop and go into throttle cut mode.
                 break
             else:
                 self.print_debug("UNKNOWN CONTROLLER STATE: " + current_state)
                 self.set_state("FAILSAFE")
 
-        if current_state == "THROTTLE_CUT":
+        if current_state == "THROTTLE CUT":
             self.terminate_flight()
 
         # Failsafe mode (cannot escape without restarting drone_interface).
@@ -369,7 +363,14 @@ class Controller:
             # If we go into failsafe mode, continuously tell the flight
             # controller to land.
             self.vehicle.mode = dronekit.VehicleMode("LAND")
+
+
+            # Break out if we go into throttle cut.
+            current_state = self.get_state()
+            if current_state == "THROTTLE CUT":
+                self.terminate_flight()
             time.sleep(0.1)
+
 
 class CopterInterface:
     def __init__(self, address):
@@ -427,30 +428,15 @@ class CopterInterface:
         print("Landing!")
 
     def goto(self, lat, lng, alt):
-        print "GOTO CALLED ==================="
         # Convert from unicode.
         lat = float(lat)
         lng = float(lng)
         alt = float(alt)
-        goal = pose.Geocoord3D(lat, lng, alt)
-
-        sensors = self.sensor_reader.sensors.get()
-        gps_lat = sensors["gps_lat"].get()
-        gps_lng = sensors["gps_lng"].get()
-        gps_rel_alt = sensors["gps_rel_alt"].get()
-        while gps_lat is None or gps_lng is None or gps_rel_alt is None:
-            print "INIT gps GOT NONE <<<<<<<<<<<<<<<<"
-            gps_lat = sensors["gps_lat"].get()
-            gps_lng = sensors["gps_lng"].get()
-            gps_rel_alt = sensors["gps_rel_alt"].get()
-        position = pose.Geocoord3D(gps_lat, gps_lng, gps_rel_alt)
-
-        initDir = pose.point_to(position, goal)
+        goal = position_tools.Geocoord3D(lat, lng, alt)
 
         while True:
             if not self.controller.get_state() == "VELOCITY CONTROL" \
                     or self.interrupt:
-                print "goto INTERRUPTED <<<<<<<<<<<<<<<<<<<<"
                 return False
 
             sensors = self.sensor_reader.sensors.get()
@@ -458,51 +444,38 @@ class CopterInterface:
             gps_lng = sensors["gps_lng"].get()
             gps_rel_alt = sensors["gps_rel_alt"].get()
 
-            if gps_lat is None or gps_lng is None or gps_rel_alt is None:
+            if gps_lat is None or \
+               gps_lng is None or \
+               gps_rel_alt is None:
                 time.sleep(0.1)
-                print "gps got NONE <<<<<<<<<<<<<<<<<"
                 continue
 
-            position = pose.Geocoord3D(gps_lat, gps_lng, gps_rel_alt)
+            position = position_tools.Geocoord3D(gps_lat, gps_lng, gps_rel_alt)
 
             # If we are within our transition circle, start to aim towards next
             # waypoint.
-            TOLERANCE = 10  # meters
-            if pose.distance(position, goal) < TOLERANCE:
-                print "GOT TO WAYPOINT ===================="
+            TOLERANCE = 10  # in meters
+            if position_tools.distance(position, goal) < TOLERANCE:
                 break
 
-            maxSpeed = 25 # meters per second
-            curDir = pose.point_to(position, goal)
-            # Length of normal (between 0 and 1) represents how "off track"
-            # the drone is.
-            # Direction of normalVec is the direction to the straight line
-            # the drone should be going in
-            normal = curDir - ((curDir.dot(initDir)) * initDir)
-            normNormal = normal.norm()
-            unitNormal = pose.Vector3D(0, 0, 0)
-            if normNormal > 0.001:
-                unitNormal = normal / normNormal
+            speed = 25
+            direction = position_tools.point_to(position, goal)
 
-            # This function of normStrength(normNormal) controls how strongly
-            # the drone corrects to follow the straight line path
-            normalStrength = normNormal * 1.5
+            vx = speed * direction.x
+            vy = speed * direction.y
+            vz = speed * direction.z
 
-            velocity = initDir + normalStrength * unitNormal
-            velocity = maxSpeed * (velocity / velocity.norm())
+            self.controller.set_velocity(vx, vy, vz)
 
-            self.controller.set_velocity(velocity.x, velocity.y, velocity.z)
-
-            print("vx: "      + str("%0.1f" % velocity.x) + \
-                  "    vy: " + str("%0.1f" % velocity.y) + \
-                  "    vz: " + str("%0.1f" % velocity.z) + \
-                  "    lat: "+ str("%0.7f" % position.lat) + \
-                  "    lng: "+ str("%0.7f" % position.lng) + \
-                  "    alt: "+ str("%0.2f" % position.alt))
+            print("vx: " + "%6s" % str("%0.1f" % vx) + \
+                  " vy: " + "%6s" % str("%0.1f" % vy) + \
+                  " vz: " + "%6s" % str("%0.1f" % vz) + \
+                  " lat: " + "%11s" % str("%0.7f" % gps_lat) + \
+                  " lng: " + "%11s" % str("%0.7f" % gps_lng) + \
+                  " alt: " + "%6s" % str("%0.2f" % gps_rel_alt))
 
             time.sleep(0.1)
 
-        print "RETURNING OUT OF GOTO ><>><><><><><>"
         return True
 
     def __connect_to_drone(self, address):
@@ -521,6 +494,7 @@ class CopterInterface:
 
         return vehicle
 
+
 def main():
     parser = argparse.ArgumentParser( \
             description = "Interface with flight controller.")
@@ -538,6 +512,7 @@ def main():
     drone_interface = CopterInterface(args.address)
 
     signal.pause()
+
 
 if __name__ == "__main__":
     main()

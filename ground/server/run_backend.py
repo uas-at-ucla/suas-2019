@@ -1,13 +1,6 @@
 import os
 
-################################################################################
-#                                                                              #
-#           NOTE: ALL ERROR OUTPUT IS BEING PIPED TO /dev/null                 #
-#                 IF THIS CODE HAS ERRORS, THEN THEY WILL NOT APPEAR!          #
-#                                                                              #
-################################################################################
 import sys
-sys.stderr = open('/dev/null', 'w')
 
 # Start off fresh by making sure that our working directory is the same as the
 # directory that this script is in.
@@ -24,9 +17,12 @@ import process_manager
 
 processes = process_manager.ProcessManager()
 
+
 def signal_received(signal, frame):
     processes.killall()
     sys.exit(0)
+
+
 signal.signal(signal.SIGINT, signal_received)
 
 if RUN_INTEROP:
