@@ -3,14 +3,7 @@ import signal
 import time
 import os
 
-################################################################################
-#                                                                              #
-#           NOTE: ALL ERROR OUTPUT IS BEING PIPED TO /dev/null                 #
-#                 IF THIS CODE HAS ERRORS, THEN THEY WILL NOT APPEAR!          #
-#                                                                              #
-################################################################################
 import sys
-sys.stderr = open('/dev/null', 'w')
 
 try:
     # Python 3
@@ -36,12 +29,14 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir(WWW_DIRECTORY_RELATIVE_LOCATION)
 
 server = HTTPServer((SERVER_DOMAIN, SERVER_PORT), SimpleHTTPRequestHandler)
-thread = threading.Thread(target = server.serve_forever)
+thread = threading.Thread(target=server.serve_forever)
 thread.daemon = True
 thread.start()
 
+
 def handle_signal(signum, frame):
     server.shutdown()
+
 
 # Kill the server when this program is killed.
 signal.signal(signal.SIGHUP, handle_signal)

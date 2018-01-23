@@ -1,12 +1,11 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
 
 // Option Component
 class Option extends Component {
-
-  handleOption = (e) => {
+  handleOption = e => {
     e.preventDefault();
-    this.props.setAppState({optionSelected: this.props.option.section});
-  }
+    this.props.setAppState({ optionSelected: this.props.option.section });
+  };
 
   render() {
     return (

@@ -3,6 +3,7 @@
   overflow: auto;
   padding-left: 10px;
   padding-right: 10px;
+  margin-top: 150px;
 }
 
 .Sidebar .card {
@@ -28,9 +29,6 @@
 .Panel .modal-content {
   background-color: rgba(35, 35, 35, 0.9) !important;
   border-color: #333 !important;
-  -webkit-box-shadow: 0px 1px 15px 0px rgba(0, 0, 0, 0.9);
-  -moz-box-shadow: 0px 1px 15px 0px rgba(0, 0, 0, 0.9);
-  box-shadow: 0px 1px 15px 0px rgba(0, 0, 0, 0.9);
   color: white;
 }
 
