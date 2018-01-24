@@ -18,22 +18,10 @@ from TargetGenerator.NED import NED
 from TargetGenerator.utils import angle2dcm
 
 __all__ = [
-    "CircleTarget",
-    "HalfCircleTarget",
-    "QuarterCircleTarget",
-    "RectangleTarget",
-    "TrapezoidTarget",
-    "TriangleTarget",
-    "CrossTarget",
-    "PolygonTarget",
-    "PentagonTarget",
-    "HexagonTarget",
-    "HeptagonTarget",
-    "OctagonTarget",
-    "StarTarget",
-    "randomTarget",
-    "drawLetter",
-    "randomLetter"
+    "CircleTarget", "HalfCircleTarget", "QuarterCircleTarget",
+    "RectangleTarget", "TrapezoidTarget", "TriangleTarget", "CrossTarget",
+    "PolygonTarget", "PentagonTarget", "HexagonTarget", "HeptagonTarget",
+    "OctagonTarget", "StarTarget", "randomTarget", "drawLetter", "randomLetter"
 ]
 
 
@@ -82,25 +70,25 @@ class BaseTarget(object):
         Size of base template target (before pasting into drone image)
     """
 
-    _text_offset_ratio = 1/2
+    _text_offset_ratio = 1 / 2
 
     def __init__(
-        self,
-        size,
-        orientation,
-        altitude,
-        longitude,
-        latitude,
-        color=None,
-        letter=None,
-        font_color=None,
-        font=None,
-        size_limits=gs.NORMAL_TARGET_SIZE_RANGE,
-        ):
+            self,
+            size,
+            orientation,
+            altitude,
+            longitude,
+            latitude,
+            color=None,
+            letter=None,
+            font_color=None,
+            font=None,
+            size_limits=gs.NORMAL_TARGET_SIZE_RANGE,
+    ):
 
         if size is None:
-            size_limits_diff = size_limits[1]-size_limits[0]
-            self._size = random.random()*size_limits_diff + size_limits[0]
+            size_limits_diff = size_limits[1] - size_limits[0]
+            self._size = random.random() * size_limits_diff + size_limits[0]
         else:
             self._size = size
 
@@ -138,7 +126,7 @@ class BaseTarget(object):
 
         font = aggdraw.Font(self._font_color, self._font, self._font_size)
         text_size = ctx.textsize(self._letter, font)
-        position = [-text_size[i]/2 for i in range(2)]
+        position = [-text_size[i] / 2 for i in range(2)]
         ctx.text(position, self._letter, font)
 
     def drawTemplate(self, target_shape, M):
@@ -148,10 +136,7 @@ class BaseTarget(object):
         # Prepare the template canvas
         #
         img = Image.new(
-            mode='RGBA',
-            size=target_shape,
-            color=(255, 255, 255, 0)
-        )
+            mode='RGBA', size=target_shape, color=(255, 255, 255, 0))
         ctx = aggdraw.Draw(img)
         brush = aggdraw.Brush(self._color, 255)
 
@@ -159,13 +144,10 @@ class BaseTarget(object):
         # Note:
         # aggdraw supports only affine transforms, so we use only the first 6
         # parameters of the projection transform.
-        C = np.array((
-            (1/self._size_ratio, 0, 0),
-            (0, 1/self._size_ratio, 0),
-            (0, 0, 1)
-        ))
+        C = np.array(((1 / self._size_ratio, 0, 0), (0, 1 / self._size_ratio,
+                                                     0), (0, 0, 1)))
         M = np.dot(M, C)
-        M = M/M[2, 2]
+        M = M / M[2, 2]
         ctx.settransform(M.ravel()[:6])
 
         # Draw the form of the target
@@ -174,16 +156,10 @@ class BaseTarget(object):
         # Add letter.
         if self._letter is not None:
             # The font is half the size of the form
-            C = np.array(
-                (
-                    (self._size/self._font_size/2, 0, self._size/2),
-                    (0,
-                     self._size/self._font_size/2,
-                     self._size*self._text_offset_ratio
-                    ),
-                    (0, 0, 1)
-                )
-            )
+            C = np.array(((self._size / self._font_size / 2, 0,
+                           self._size / 2),
+                          (0, self._size / self._font_size / 2,
+                           self._size * self._text_offset_ratio), (0, 0, 1)))
             M = np.dot(M, C)
             ctx.settransform(M.ravel()[:6])
 
@@ -194,7 +170,7 @@ class BaseTarget(object):
 
         img = np.array(img)
         self._templateImg = img[..., :3]
-        self._templateAlpha = img[..., 3].astype(np.float32)/255
+        self._templateAlpha = img[..., 3].astype(np.float32) / 255
 
     def H(self, latitude, longitude, altitude):
         """Calculate the transform of the target.
@@ -213,19 +189,19 @@ class BaseTarget(object):
         """
 
         # Center the target around rotation center (center of weight).
-        T1 = transforms.translation_matrix((-self.size/2, -self.size/2, 0))
+        T1 = transforms.translation_matrix((-self.size / 2, -self.size / 2, 0))
 
         # Rotation.
         # Note: We subtract 90 degrees to convert between target coordinates
         # and world (NED) coordinates
         R = np.eye(4)
-        R[:3, :3] = angle2dcm(-self._orientation-math.pi/2, 0, 0,
-            input_units='rad')
+        R[:3, :3] = angle2dcm(
+            -self._orientation - math.pi / 2, 0, 0, input_units='rad')
 
         # Translation relative to center of axes (NED).
         ned = NED(lat=latitude, lon=longitude, height=altitude)
-        x, y, h = ned.geodetic2ned((self._latitude,
-            self._longitude, self._altitude))
+        x, y, h = ned.geodetic2ned((self._latitude, self._longitude,
+                                    self._altitude))
         T2 = transforms.translation_matrix((x, y, h))
 
         return np.dot(T2, np.dot(R, T1))
@@ -240,7 +216,7 @@ class BaseTarget(object):
 
     @property
     def size(self):
-        return self._size/self._size_ratio
+        return self._size / self._size_ratio
 
 
 class CircleTarget(BaseTarget):
@@ -256,12 +232,8 @@ class HalfCircleTarget(BaseTarget):
 
     def _drawForm(self, ctx, brush):
 
-        ctx.arc(
-            (0, self._size/4, self._size, self._size+self._size/4),
-            0,
-            180,
-            brush
-        )
+        ctx.arc((0, self._size / 4, self._size, self._size + self._size / 4),
+                0, 180, brush)
 
 
 class QuarterCircleTarget(BaseTarget):
@@ -269,19 +241,10 @@ class QuarterCircleTarget(BaseTarget):
 
     def _drawForm(self, ctx, brush):
 
-        offsetx = self._size/4
-        offsety = self._size/5
-        ctx.pieslice(
-            (
-                -offsetx,
-                offsety,
-                self._size+offsetx,
-                self._size+2*offsetx+offsety
-            ),
-            45,
-            135,
-            brush
-        )
+        offsetx = self._size / 4
+        offsety = self._size / 5
+        ctx.pieslice((-offsetx, offsety, self._size + offsetx,
+                      self._size + 2 * offsetx + offsety), 45, 135, brush)
 
 
 class RectangleTarget(BaseTarget):
@@ -289,8 +252,8 @@ class RectangleTarget(BaseTarget):
 
     def _drawForm(self, ctx, brush):
 
-        height = self._size*random.uniform(0, 0.25)
-        ctx.rectangle((0, height, self._size, self._size-height), brush)
+        height = self._size * random.uniform(0, 0.25)
+        ctx.rectangle((0, height, self._size, self._size - height), brush)
 
 
 class TrapezoidTarget(BaseTarget):
@@ -298,13 +261,11 @@ class TrapezoidTarget(BaseTarget):
 
     def _drawForm(self, ctx, brush):
 
-        offsetx = self._size*random.uniform(0.15, 0.25)
-        offsety = self._size*random.uniform(0.15, 0.25)
+        offsetx = self._size * random.uniform(0.15, 0.25)
+        offsety = self._size * random.uniform(0.15, 0.25)
         polygon = [
-            offsetx, offsety,
-            self._size-offsetx, offsety,
-            self._size, self._size-offsety,
-            0, self._size-offsety
+            offsetx, offsety, self._size - offsetx, offsety, self._size,
+            self._size - offsety, 0, self._size - offsety
         ]
 
         ctx.polygon(polygon, brush)
@@ -315,9 +276,9 @@ class TriangleTarget(BaseTarget):
 
     def _drawForm(self, ctx, brush):
 
-        self._text_offset_ratio = 2/3
-        ctx.polygon((0, self._size, self._size, self._size, self._size/2, 0),
-            brush)
+        self._text_offset_ratio = 2 / 3
+        ctx.polygon((0, self._size, self._size, self._size, self._size / 2, 0),
+                    brush)
 
 
 class CrossTarget(BaseTarget):
@@ -325,23 +286,13 @@ class CrossTarget(BaseTarget):
 
     def _drawForm(self, ctx, brush):
 
-        ctx.polygon(
-            (
-                0, self._size/3,
-                0, self._size*2/3,
-                self._size/3, self._size*2/3,
-                self._size/3, self._size,
-                self._size*2/3, self._size,
-                self._size*2/3, self._size*2/3,
-                self._size, self._size*2/3,
-                self._size, self._size/3,
-                self._size*2/3, self._size/3,
-                self._size*2/3, 0,
-                self._size/3, 0,
-                self._size/3, self._size/3
-                ),
-            brush
-        )
+        ctx.polygon((0, self._size / 3, 0, self._size * 2 / 3, self._size / 3,
+                     self._size * 2 / 3, self._size / 3, self._size,
+                     self._size * 2 / 3, self._size, self._size * 2 / 3,
+                     self._size * 2 / 3, self._size, self._size * 2 / 3,
+                     self._size, self._size / 3, self._size * 2 / 3,
+                     self._size / 3, self._size * 2 / 3, 0, self._size / 3, 0,
+                     self._size / 3, self._size / 3), brush)
 
 
 class PolygonTarget(BaseTarget):
@@ -357,13 +308,13 @@ class PolygonTarget(BaseTarget):
 
     def _drawForm(self, ctx, brush):
 
-        r = self._size/2
-        alpha = np.pi*2/self._nsides
+        r = self._size / 2
+        alpha = np.pi * 2 / self._nsides
 
         polygon = []
         for i in range(self._nsides):
-            polygon.append(r + r*np.cos(alpha*i))
-            polygon.append(r + r*np.sin(alpha*i))
+            polygon.append(r + r * np.cos(alpha * i))
+            polygon.append(r + r * np.sin(alpha * i))
 
         ctx.polygon(polygon, brush)
 
@@ -409,21 +360,22 @@ class StarTarget(BaseTarget):
 
     def _drawForm(self, ctx, brush):
 
-        r_outer = c = self._size/2
-        r_inner = self._size/4
-        alpha = np.pi/self._nstar
+        r_outer = c = self._size / 2
+        r_inner = self._size / 4
+        alpha = np.pi / self._nstar
 
         polygon = []
-        for i in range(2*self._nstar):
+        for i in range(2 * self._nstar):
             if i % 2 == 1:
                 r = r_outer
             else:
                 r = r_inner
 
-            polygon.append(c + r*np.cos(alpha*i))
-            polygon.append(c + r*np.sin(alpha*i))
+            polygon.append(c + r * np.cos(alpha * i))
+            polygon.append(c + r * np.sin(alpha * i))
 
         ctx.polygon(polygon, brush)
+
 
 TARGET_CLASSES = (
     (CircleTarget, 1., {}, "circle"),
@@ -445,6 +397,7 @@ with open(os.path.join(gs.DATA_PATH, 'colors.pkl'), 'r') as f:
 
 WRG = WeightedRandomGenerator(weights=zip(*TARGET_CLASSES[:-1])[1])
 
+
 def randomColor(ignore=None):
 
     color_list = RGB_COLORS.values()
@@ -455,8 +408,12 @@ def randomColor(ignore=None):
     return random.choice(color_list)
 
 
-def randomTarget(longitude, latitude, altitude, target_label=None,
-    coords_offset=0.0002, **kwds):
+def randomTarget(longitude,
+                 latitude,
+                 altitude,
+                 target_label=None,
+                 coords_offset=0.0000,
+                 **kwds):
     """Create a random target
 
     The target is selected randomly from all possible targets, and placed in a
@@ -466,14 +423,14 @@ def randomTarget(longitude, latitude, altitude, target_label=None,
     color = randomColor()
     letter = random.choice(gs.LETTERS)
     params = {
-        'size'        : None,
-        'orientation' : random.random() * 360,
-        'longitude'   : longitude + 2 * (random.random() - 0.5) * coords_offset,
-        'latitude'    : latitude + 2 * (random.random() - 0.5) * coords_offset,
-        'altitude'    : altitude,
-        'letter'      : letter,
-        'color'       : color,
-        'font_color'  : randomColor(ignore=color),
+        'size': None,
+        'orientation': random.random() * 360,
+        'longitude': longitude,
+        'latitude': latitude,
+        'altitude': altitude,
+        'letter': letter,
+        'color': color,
+        'font_color': randomColor(ignore=color),
     }
     params.update(kwds)
     if target_label is None:
@@ -488,10 +445,7 @@ def drawLetter(letter, size=28, font=None, font_size=15):
     """Draw a mask of a letter (used for training a classifier)."""
 
     # Prepare the template canvas
-    img = Image.new(
-        mode='L',
-        size=(size, size)
-    )
+    img = Image.new(mode='L', size=(size, size))
 
     ctx = aggdraw.Draw(img)
 
@@ -502,16 +456,13 @@ def drawLetter(letter, size=28, font=None, font_size=15):
         else:
             font = r"C:\Windows\Fonts\Arialbd.ttf"
 
-    C = np.array((
-        (size/font_size*4/5, 0, size/2),
-        (0, size/font_size*4/5, size/2),
-        (0, 0, 1)
-    ))
+    C = np.array(((size / font_size * 4 / 5, 0, size / 2),
+                  (0, size / font_size * 4 / 5, size / 2), (0, 0, 1)))
     ctx.settransform(C.ravel()[:6])
 
     font = aggdraw.Font(255, font, font_size)
     text_size = ctx.textsize(letter, font)
-    position = [-text_size[i]/2 for i in range(2)]
+    position = [-text_size[i] / 2 for i in range(2)]
     ctx.text(position, letter, font)
 
     # Flush to apply drawing.
@@ -522,11 +473,8 @@ def drawLetter(letter, size=28, font=None, font_size=15):
 
 
 def centered_rotation_matrix(alpha, center):
-    R = np.array([
-        [math.cos(alpha), -math.sin(alpha), 0],
-        [math.sin(alpha), math.cos(alpha), 0],
-        [0, 0, 1]
-    ])
+    R = np.array([[math.cos(alpha), -math.sin(alpha), 0],
+                  [math.sin(alpha), math.cos(alpha), 0], [0, 0, 1]])
 
     C1 = np.eye(3)
     C1[0, 2] = -center[0]
@@ -545,13 +493,13 @@ def randomLetter(letters_set=gs.LETTERS, rotated=False):
     img = drawLetter(letter, size=100, font=font)
 
     M = np.eye(3)
-    M[2, 2] = 100/gs.PATCH_SIZE[0]
+    M[2, 2] = 100 / gs.PATCH_SIZE[0]
     M[..., :2] += np.random.uniform(low=-0.001, high=0.001, size=(3, 2))
 
-    alpha = random.uniform(-math.pi/18, math.pi/18)
+    alpha = random.uniform(-math.pi / 18, math.pi / 18)
     if rotated:
-        alpha += random.uniform(math.pi/4, math.pi*7/4)
-    R = centered_rotation_matrix(alpha, np.array(gs.PATCH_SIZE)/2)
+        alpha += random.uniform(math.pi / 4, math.pi * 7 / 4)
+    R = centered_rotation_matrix(alpha, np.array(gs.PATCH_SIZE) / 2)
     img = cv2.warpPerspective(img, np.dot(R, M), dsize=gs.PATCH_SIZE)
 
     return img, letters_set.index(letter)
