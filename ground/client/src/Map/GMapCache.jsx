@@ -108,7 +108,6 @@ class GMapCache {
       coord.y +
       "&z=" +
       zoom;
-    console.log(tile_src);
     return tile_src;
   }
 
