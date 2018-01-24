@@ -17,36 +17,36 @@ class Node(object):
 
 class RRT:
     def __init__(self, startCoord, endCoord, obstacleList):
-        self.DELTA = 10
-        self.NUMNODES = 5000
+        self.delta = 10
+        self.num_nodes = 5000
 
         startCoord = startCoord.split(',')
-        self.START_XCOORD = float(startCoord[0])
-        self.START_YCOORD = float(startCoord[1])
+        self.start_x = float(startCoord[0])
+        self.start_y = float(startCoord[1])
 
         endCoord = endCoord.split(',')
-        self.END_XCOORD = float(endCoord[0])
-        self.END_YCOORD = float(endCoord[1])
+        self.end_x = float(endCoord[0])
+        self.end_y = float(endCoord[1])
 
-        self.COUNT = 0
+        self.count = 0
 
-        self.OBS_XCOORD = []
-        self.OBS_YCOORD = []
-        self.OBS_RADIUS = []
+        self.obstacles_x = []
+        self.obstacles_y = []
+        self.obstacles_radius = []
         for temp in range(0, len(obstacleList)):
             obs = obstacleList[temp]
             obs = obs.split(',')
-            self.OBS_XCOORD.append(float(obs[0]))
-            self.OBS_YCOORD.append(float(obs[1]))
-            self.OBS_RADIUS.append(float(obs[2]))
+            self.obstacles_x.append(float(obs[0]))
+            self.obstacles_y.append(float(obs[1]))
+            self.obstacles_radius.append(float(obs[2]))
 
-        # NUM_SEGMENTS would have to be a larger constant when used on the drone
-        self.NUM_SEGMENTS = 100
-        self.ROUTE = []
+        # num_segments would have to be a larger constant when used on the drone
+        self.num_segments = 100
+        self.route = []
 
     # function that will return route
     def returnRoute(self):
-        return self.ROUTE
+        return self.route
 
     def outputRoute(self):
         print("-------------------")
@@ -57,15 +57,15 @@ class RRT:
         y = list()
         obstacles = list()
 
-        for rt in self.ROUTE:
+        for rt in self.route:
             x.append(rt[0])
             y.append(rt[1])
             print(rt)
 
-        for i in range(0, len(self.OBS_RADIUS)):
+        for i in range(0, len(self.obstacles_radius)):
             obstacle = plt.Circle( \
-                    (self.OBS_XCOORD[i], self.OBS_YCOORD[i]), \
-                    self.OBS_RADIUS[i], \
+                    (self.obstacles_x[i], self.obstacles_y[i]), \
+                    self.obstacles_radius[i], \
                     color='r')
             obstacles.append(obstacle)
 
@@ -96,36 +96,36 @@ class RRT:
         return float(atan2(p2[1] - p1[1], p2[0] - p1[0]))
 
     def stepFromTo(self, p1, p2):
-        if self.getDistance(p1, p2) < self.DELTA:
+        if self.getDistance(p1, p2) < self.delta:
             return p2
         else:
             theta = self.getTheta(p1, p2)
-            return (p1[0] + (self.DELTA * float(cos(theta)))), (
-                p1[1] + (self.DELTA * float(sin(theta))))
+            return (p1[0] + (self.delta * float(cos(theta)))), (
+                p1[1] + (self.delta * float(sin(theta))))
 
     def collides(self, p):
-        for obsID in range(0, len(self.OBS_XCOORD)):
+        for obsID in range(0, len(self.obstacles_x)):
             obsCenter = []
-            obsCenter = self.OBS_XCOORD[obsID], self.OBS_YCOORD[obsID]
+            obsCenter = self.obstacles_x[obsID], self.obstacles_y[obsID]
 
-            if self.getDistance(p, obsCenter) <= (self.OBS_RADIUS[obsID] + 10):
+            if self.getDistance(p, obsCenter) <= (self.obstacles_radius[obsID] + 10):
                 return True
         return False
 
     def getRandomPt(self, p2, pTemp, dist):
         while True:
             p1 = []
-            if self.START_XCOORD >= self.END_XCOORD and self.START_YCOORD >= self.END_YCOORD:
+            if self.start_x >= self.end_x and self.start_y >= self.end_y:
                 p1 = random.uniform(p2[0] - dist * 9 / 7,
                                     p2[0] + dist * 2 / 7), random.uniform(
                                         p2[1] - dist * 9 / 7,
                                         p2[1] + dist * 2 / 7)
-            elif self.START_XCOORD < self.END_XCOORD and self.START_YCOORD < self.END_YCOORD:
+            elif self.start_x < self.end_x and self.start_y < self.end_y:
                 p1 = random.uniform(p2[0] - dist * 2 / 7,
                                     p2[0] + dist * 9 / 7), random.uniform(
                                         p2[1] - dist * 2 / 7,
                                         p2[1] + dist * 9 / 7)
-            elif self.START_XCOORD >= self.END_XCOORD and self.START_YCOORD < self.END_YCOORD:
+            elif self.start_x >= self.end_x and self.start_y < self.end_y:
                 p1 = random.uniform(p2[0] - dist * 9 / 7,
                                     p2[0] + dist * 2 / 7), random.uniform(
                                         p2[1] - dist * 2 / 7,
@@ -145,7 +145,7 @@ class RRT:
                     return p1
 
     def reset(self):
-        self.COUNT = 0
+        self.count = 0
 
     def findPath(self):
         currentState = 'goStraight'
@@ -155,35 +155,35 @@ class RRT:
 
         while True:
             if currentState == 'goStraight':
-                for seg in range(startPtCtrVal + 1, self.NUM_SEGMENTS):
-                    tempX = self.getSegX(self.START_XCOORD, self.END_XCOORD,
-                                         self.NUM_SEGMENTS - 1, seg)
-                    tempY = self.getSegY(self.START_YCOORD, self.END_YCOORD,
-                                         self.NUM_SEGMENTS - 1, seg)
-                    nextTempX = self.getSegX(self.START_XCOORD,
-                                             self.END_XCOORD,
-                                             self.NUM_SEGMENTS - 1, seg + 1)
-                    nextTempY = self.getSegY(self.START_YCOORD,
-                                             self.END_YCOORD,
-                                             self.NUM_SEGMENTS - 1, seg + 1)
+                for seg in range(startPtCtrVal + 1, self.num_segments):
+                    tempX = self.getSegX(self.start_x, self.end_x,
+                                         self.num_segments - 1, seg)
+                    tempY = self.getSegY(self.start_y, self.end_y,
+                                         self.num_segments - 1, seg)
+                    nextTempX = self.getSegX(self.start_x,
+                                             self.end_x,
+                                             self.num_segments - 1, seg + 1)
+                    nextTempY = self.getSegY(self.start_y,
+                                             self.end_y,
+                                             self.num_segments - 1, seg + 1)
                     nextTempPt = nextTempX, nextTempY
 
-                    if nextTempPt == (self.END_XCOORD, self.END_YCOORD):
+                    if nextTempPt == (self.end_x, self.end_y):
                         currentState = 'goalFound'
 
                     if self.collides(nextTempPt) == False:
-                        self.ROUTE.append(nextTempPt)
+                        self.route.append(nextTempPt)
                     else:
 
                         counter = 0
                         temp2Pt = []
-                        for test in range(0, self.NUM_SEGMENTS):
+                        for test in range(0, self.num_segments):
                             temp2X = self.getSegX(
-                                self.START_XCOORD, self.END_XCOORD,
-                                self.NUM_SEGMENTS - 1, seg + 1 + test)
+                                self.start_x, self.end_x,
+                                self.num_segments - 1, seg + 1 + test)
                             temp2Y = self.getSegY(
-                                self.START_YCOORD, self.END_YCOORD,
-                                self.NUM_SEGMENTS - 1, seg + 1 + test)
+                                self.start_y, self.end_y,
+                                self.num_segments - 1, seg + 1 + test)
                             temp2Pt = temp2X, temp2Y
                             if self.collides(temp2Pt) == True:
                                 counter = counter + 1
@@ -202,8 +202,8 @@ class RRT:
                         break
 
             elif currentState == 'buildTree':
-                self.COUNT = self.COUNT + 1
-                if self.COUNT < self.NUMNODES:
+                self.count = self.count + 1
+                if self.count < self.num_nodes:
                     dist = self.getDistance(tempStart, tempEnd)
                     foundNext = False
                     while foundNext == False:
@@ -234,7 +234,7 @@ class RRT:
                         rrtRoute.append(tempEnd)
 
                         for z in range(0, len(rrtRoute)):
-                            self.ROUTE.append(rrtRoute[z])
+                            self.route.append(rrtRoute[z])
 
                         currentState = 'goStraight'
                 else:
