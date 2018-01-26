@@ -1,0 +1,46 @@
+WARNING: gphoto2: (foreach_func [gphoto2-port-info-list.c:237]) Error during assembling of port list: 'Unspecified error' (-1).
+WARNING: gphoto2: (foreach_func [gphoto2-port-info-list.c:237]) Error during assembling of port list: 'Unspecified error' (-1).
+WARNING: gphoto2: (foreach_func [gphoto2-port-info-list.c:237]) Error during assembling of port list: 'Unspecified error' (-1).
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_usb_getresp [usb.c:466]') b'PTP_OC 0x911c receiving resp failed: PTP Device Busy (0x2019)'
+WARNING: gphoto2: (b'camera_unprepare_canon_eos_capture [config.c:550]') b"'ptp_canon_eos_resetuilock (params)' failed: PTP Device Busy (0x2019)"
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_usb_getresp [usb.c:466]') b'PTP_OC 0x911c receiving resp failed: PTP Device Busy (0x2019)'
+WARNING: gphoto2: (b'camera_unprepare_canon_eos_capture [config.c:550]') b"'ptp_canon_eos_resetuilock (params)' failed: PTP Device Busy (0x2019)"
+WARNING: gphoto2: (b'gp_context_error') b'Could not detect any camera'
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'camera_canon_eos_capture [library.c:3379]') b"'ptp_canon_eos_remotereleaseon (params, 1, 0)' failed: Canon EOS Half-Press failed (0x2019: PTP Device Busy)"
+WARNING: gphoto2: (b'gp_context_error') b'Canon EOS Half-Press failed (0x2019: PTP Device Busy)'
+WARNING: gphoto2: (b'gp_camera_capture [gphoto2-camera.c:1340]') b"'camera->functions->capture (camera, type, path, context)' failed: -110"
+WARNING: gphoto2: (b'gp_context_error') b'Could not detect any camera'
+WARNING: gphoto2: (b'gp_libusb1_open [libusb1.c:424]') b"'libusb_claim_interface (port->pl->dh, port->settings.usb.interface)' failed: Resource busy (-6)"
+WARNING: gphoto2: (b'gp_port_set_error [gphoto2-port.c:1190]') b'Could not claim interface 0 (Success). Make sure no other program (gvfs-gphoto2-volume-monitor) or kernel module (such as sdc2xx, stv680, spca50x) is using the device and you have read/write access to the device.'
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_usb_getresp [usb.c:466]') b'PTP_OC 0x911c receiving resp failed: PTP Device Busy (0x2019)'
+WARNING: gphoto2: (b'camera_unprepare_canon_eos_capture [config.c:550]') b"'ptp_canon_eos_resetuilock (params)' failed: PTP Device Busy (0x2019)"
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_usb_getresp [usb.c:466]') b'PTP_OC 0x911c receiving resp failed: PTP Device Busy (0x2019)'
+WARNING: gphoto2: (b'camera_unprepare_canon_eos_capture [config.c:550]') b"'ptp_canon_eos_resetuilock (params)' failed: PTP Device Busy (0x2019)"
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_usb_getresp [usb.c:466]') b'PTP_OC 0x911c receiving resp failed: PTP Device Busy (0x2019)'
+WARNING: gphoto2: (b'camera_unprepare_canon_eos_capture [config.c:550]') b"'ptp_canon_eos_resetuilock (params)' failed: PTP Device Busy (0x2019)"
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_usb_getresp [usb.c:466]') b'PTP_OC 0x911c receiving resp failed: PTP Device Busy (0x2019)'
+WARNING: gphoto2: (b'camera_unprepare_canon_eos_capture [config.c:550]') b"'ptp_canon_eos_resetuilock (params)' failed: PTP Device Busy (0x2019)"
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_usb_getresp [usb.c:466]') b'PTP_OC 0x911c receiving resp failed: PTP Device Busy (0x2019)'
+WARNING: gphoto2: (b'camera_unprepare_canon_eos_capture [config.c:550]') b"'ptp_canon_eos_resetuilock (params)' failed: PTP Device Busy (0x2019)"
+WARNING: gphoto2: (b'gp_context_error') b'Could not detect any camera'
+WARNING: gphoto2: (b'gp_libusb1_open [libusb1.c:424]') b"'libusb_claim_interface (port->pl->dh, port->settings.usb.interface)' failed: Resource busy (-6)"
+WARNING: gphoto2: (b'gp_port_set_error [gphoto2-port.c:1190]') b'Could not claim interface 0 (Success). Make sure no other program (gvfs-gphoto2-volume-monitor) or kernel module (such as sdc2xx, stv680, spca50x) is using the device and you have read/write access to the device.'
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_usb_getresp [usb.c:466]') b'PTP_OC 0x911c receiving resp failed: PTP Device Busy (0x2019)'
+WARNING: gphoto2: (b'camera_unprepare_canon_eos_capture [config.c:550]') b"'ptp_canon_eos_resetuilock (params)' failed: PTP Device Busy (0x2019)"
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
+WARNING: gphoto2: (b'ptp_usb_getresp [usb.c:466]') b'PTP_OC 0x911c receiving resp failed: PTP Device Busy (0x2019)'
+WARNING: gphoto2: (b'camera_unprepare_canon_eos_capture [config.c:550]') b"'ptp_canon_eos_resetuilock (params)' failed: PTP Device Busy (0x2019)"
+WARNING: gphoto2: (b'ptp_list_folder_eos [library.c:7739]') b'storage 0xffffffff, but handle 0x00000000?'
