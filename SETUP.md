@@ -118,7 +118,7 @@ And that's all the commonly used git controls. There are other useful commands y
 
 6. Change the default terminal to **WSL Bash**. Press `F1` in VS code, and type **Terminal: Select Default Shell**.
 
-7. To open and close the integrated terminal in VS code, press `Ctl` + ``\``` simultaneously.
+7. To open and close the integrated terminal in VS code, press `Ctl` + `&grave` simultaneously.
 
 8. Follow the Linux and MacOS section below to proceed.
 
