@@ -61,22 +61,9 @@ fi
 ## Check if all Python packages exist; if not, then install
 if [ $OS = "Linux" ]
 then
-    if [ $(dpkg-query -W -f='${Status}' python3.5 2>/dev/null | grep -c "ok installed") -eq 0 ]
-    then
-        sudo apt-get install python3.5;
-    fi
-    if [ $(dpkg-query -W -f='${Status}' python3-pip 2>/dev/null | grep -c "ok installed") -eq 0 ]
-    then
-        sudo apt-get install python3-pip;
-    fi
-    if [ $(dpkg-query -W -f='${Status}' python3-dev 2>/dev/null | grep -c "ok installed") -eq 0 ]
-    then
-        sudo apt-get install python3-dev;
-    fi
-    if [ $(dpkg-query -W -f='${Status}' build-essential 2>/dev/null | grep -c "ok installed") -eq 0 ]
-    then
-        sudo apt-get install build-essential;
-    fi
+    echo "Checking all necessary packages..."
+    echo "sudo apt-get install python3.5 python3-pip python3-dev build-essential docker.io\n"
+    sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential docker.io;
 elif [ $OS = "Darwin" ]
 then
     # MacOS comes with python
@@ -93,15 +80,15 @@ if [ $version_pip -gt 8 ]
 then
     echo "Pip is greater than version 8.0.0\n";
 else
-    echo "Warning! The version of pip is $version_pip\nConsider updating to the latest version of pip.";
+    echo "Updating to latest pip version...";
+    pip install --upgrade pip
 fi
 
 ## Install python dependencies
 RED='\033[0;31m';
 NO_COLOR='\033[0m';
 echo "Installing Python dependencies listed in ${RED}build/pip_requirements.txt${NO_COLOR}\nThis may take several seconds..."
-sudo pip install --upgrade pip
-sudo -H pip install -I -r pip_requirements.txt;
+sudo -H pip install -I -r pip_requirements.txt > /dev/null;
 echo "Python dependencies installed.\n"
 
 ##########################################################################
@@ -125,7 +112,11 @@ then
         echo "\nNo group ${RED}docker${NO_COLOR} exists. Setting up docker..."
         sudo groupadd docker;
         sudo usermod -aG docker $USER;
-        echo "You must reboot your machine and run these final two commands (please keep note of them after reboot) in order to complete installation:\n${RED}docker pull auvsisuas/interop-server\nsudo ../ground/interop/tools/setup_docker.sh\n";
+        echo "You must reboot your machine and run these final commands (please keep note of them before reboot) in order to complete installation:${RED}\n
+        sudo systemctl start docker\n
+        sudo ../ground/interop/tools/setup_docker.sh\n
+        docker pull auvsisuas/interop-server\n
+        docker run interop-server\n";
     fi
 elif [ $OS = "Darwin" ]
 then
