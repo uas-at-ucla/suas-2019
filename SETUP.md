@@ -122,7 +122,7 @@ And that's all the commonly used git controls. There are other useful commands y
 
 8. Follow the Linux and MacOS section below to proceed.
 
-## Linux and MacOS
+### Linux and MacOS
 The `install.sh` file in the `build` directory abstracts the entire
 installation process.
 ```bash
