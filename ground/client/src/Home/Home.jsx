@@ -6,17 +6,12 @@ import Telemetry from "../Telemetry/Telemetry";
 import Controls from "../Controls/Controls";
 import logo from "../graphics/vector_logo.svg";
 import { Button } from "react-bootstrap";
-import testMission from "./test_mission";
-
-const USE_TEST_MISSION = true;
 
 class Home extends Component {
   state = {
     isSidebarShown: true,
     followDrone: true,
-    mission: USE_TEST_MISSION
-      ? testMission
-      : this.props.appState.missions[0] || null,
+    mission: this.props.appState.missions[0] || null,
     commands: [],
     dontRedrawCommands: false,
     focusedCommand: null
@@ -64,7 +59,7 @@ class Home extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (!this.state.mission && nextProps.appState.missions.length > 0) {
+    if (nextProps.appState.missions.length > 0 && nextProps.appState.missions !== this.props.appState.missions) {
       this.setState({ mission: nextProps.appState.missions[0] });
     }
   }
