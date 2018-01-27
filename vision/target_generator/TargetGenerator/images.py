@@ -21,7 +21,7 @@ in_to_mm = 25.4
 
 
 def tagRatio(tag):
-    ratio = tag.values[0].num/tag.values[0].den
+    ratio = tag.values[0].num / tag.values[0].den
     return ratio
 
 
@@ -29,8 +29,12 @@ def tagValue(tag):
     return tag.values[0]
 
 
-def overlay(img, target, M, intensity_scale,
-    center_patch=False, bounding_rect=False):
+def overlay(img,
+            target,
+            M,
+            intensity_scale,
+            center_patch=False,
+            bounding_rect=False):
 
     # Calculate the destination pixels of the patch. This allows for much more
     # efficient copies (instead of copying a full 6000x4000 image).
@@ -59,8 +63,8 @@ def overlay(img, target, M, intensity_scale,
     overlay_yuv = cv2.cvtColor(overlay_img, cv2.COLOR_BGR2YUV).astype(np.float)
     overlay_yuv[:, :, 0] *= intensity_scale
     overlay_yuv[:, :, 0] = np.random.poisson(
-        overlay_yuv[:, :, 0]*gs.POISSON_INTENSITY_RATIO, overlay_img.shape[:2]
-        )/gs.POISSON_INTENSITY_RATIO
+        overlay_yuv[:, :, 0] * gs.POISSON_INTENSITY_RATIO,
+        overlay_img.shape[:2]) / gs.POISSON_INTENSITY_RATIO
     overlay_yuv[overlay_yuv > 255] = 255
     overlay_img = cv2.cvtColor(overlay_yuv.astype(np.uint8), cv2.COLOR_YUV2BGR)
 
@@ -68,11 +72,11 @@ def overlay(img, target, M, intensity_scale,
     # not create artifacts.
     overlay_alpha = overlay_alpha[..., np.newaxis]
     overlay_img = (
-        img[offsets[1]:offsets[1]+dst_shape[1],
-        offsets[0]:offsets[0]+dst_shape[0], :3].astype(np.float32)*
-        (1-overlay_alpha) +
-        overlay_img[..., :3].astype(np.float32)*overlay_alpha
-        ).astype(np.uint8)
+        img[offsets[1]:offsets[1] + dst_shape[1], offsets[0]:
+            offsets[0] + dst_shape[0], :3].astype(np.float32) *
+        (1 - overlay_alpha) +
+        overlay_img[..., :3].astype(np.float32) * overlay_alpha).astype(
+            np.uint8)
 
     #
     # Smoothen the overlay
@@ -82,26 +86,25 @@ def overlay(img, target, M, intensity_scale,
     #
     if overlay_img.shape[0] > 10:
         ksize = 3
-        ksigma = 0.3*((ksize-1)*0.5 - 1) + 0.8
+        ksigma = 0.3 * ((ksize - 1) * 0.5 - 1) + 0.8
         overlay_img = cv2.GaussianBlur(overlay_img, (ksize, ksize), ksigma)
 
     # Blend the image and overlay.
-    img[offsets[1]:offsets[1]+dst_shape[1],
-        offsets[0]:offsets[0]+dst_shape[0],
-        :3] = (img[
-                    offsets[1]:offsets[1]+dst_shape[1],
-                    offsets[0]:offsets[0]+dst_shape[0],
-                    :3].astype(np.float32)*(1-overlay_alpha) +
-               overlay_img[..., :3].astype(np.float32)*overlay_alpha
-            ).astype(np.uint8)
+    img[offsets[1]:offsets[1] + dst_shape[1], offsets[0]:
+        offsets[0] + dst_shape[0], :3] = (
+            img[offsets[1]:offsets[1] + dst_shape[1], offsets[0]:
+                offsets[0] + dst_shape[0], :3].astype(np.float32) *
+            (1 - overlay_alpha) +
+            overlay_img[..., :3].astype(np.float32) * overlay_alpha).astype(
+                np.uint8)
 
     if not bounding_rect:
         return None
 
     # Calculate a tight bounding rect
     binary_img = (np.squeeze(overlay_alpha) > 0).astype(np.uint8)
-    contour = cv2.findContours(binary_img, mode=cv2.RETR_EXTERNAL,
-        method=cv2.CHAIN_APPROX_NONE)
+    contour = cv2.findContours(
+        binary_img, mode=cv2.RETR_EXTERNAL, method=cv2.CHAIN_APPROX_NONE)
     if cv2.__version__[0] == '3':
         #
         # It seems that in version 3.1.0 (and possibly other >3 versions) the
@@ -111,17 +114,17 @@ def overlay(img, target, M, intensity_scale,
         copy_patch = target.img.copy()
         cv2.rectangle(copy_patch, (rect[0], rect[1]), (rect[2], rect[3]), \
                 (255, 0, 0), 3)
-        cv2.namedWindow('target', flags=cv2.WINDOW_NORMAL)
-        cv2.imshow('patch', copy_patch)
-        cv2.waitKey(0)
     else:
         # In opencv version 2.4 the output is the countours.
         rect = cv2.boundingRect(points=contour[0][0])
 
-    return rect[0] + offsets[0], \
-           rect[1] + offsets[1], \
-           rect[0] + offsets[0] + rect[2], \
-           rect[1] + offsets[1] + rect[3]
+
+    print(dst_shape[1])
+    print(dst_shape[0])
+    return offsets[0], \
+           offsets[1], \
+           offsets[0] + dst_shape[0], \
+           offsets[1] + dst_shape[1]
 
 
 def calcDstLimits(img, target, M, center_patch):
@@ -130,8 +133,8 @@ def calcDstLimits(img, target, M, center_patch):
 
     isize = img.shape[:2]
 
-    limits = np.float32((((0, 0), (0, target.size),
-        (target.size, target.size), (target.size, 0)),))
+    limits = np.float32((((0, 0), (0, target.size), (target.size, target.size),
+                          (target.size, 0)), ))
 
     limits_trans = cv2.perspectiveTransform(limits, M)
     dst_xlimit = cv2.minMaxLoc(limits_trans[0, :, 0])[:2]
@@ -139,22 +142,30 @@ def calcDstLimits(img, target, M, center_patch):
 
     # Center the patch
     if center_patch:
-        x_shift = (dst_xlimit[1]+dst_xlimit[0] - isize[1])/2
-        y_shift = (dst_ylimit[1]+dst_ylimit[0] - isize[0])/2
+        x_shift = (dst_xlimit[1] + dst_xlimit[0] - isize[1]) / 2
+        y_shift = (dst_ylimit[1] + dst_ylimit[0] - isize[0]) / 2
 
-        dst_xlimit = [min(max(int(dst_xlimit[0]-x_shift), 0), isize[1]),
-            min(max(int(dst_xlimit[1]-x_shift+1), 0), isize[1])]
-        dst_ylimit = [min(max(int(dst_ylimit[0]-y_shift), 0), isize[0]),
-            min(max(int(dst_ylimit[1]-y_shift+1), 0), isize[0])]
+        dst_xlimit = [
+            min(max(int(dst_xlimit[0] - x_shift), 0), isize[1]),
+            min(max(int(dst_xlimit[1] - x_shift + 1), 0), isize[1])
+        ]
+        dst_ylimit = [
+            min(max(int(dst_ylimit[0] - y_shift), 0), isize[0]),
+            min(max(int(dst_ylimit[1] - y_shift + 1), 0), isize[0])
+        ]
     else:
         x_shift, y_shift = 0, 0
-        dst_xlimit = [min(max(int(dst_xlimit[0]), 0), img.shape[1]),
-            min(max(int(dst_xlimit[1]+1), 0), img.shape[1])]
-        dst_ylimit = [min(max(int(dst_ylimit[0]), 0), img.shape[0]),
-            min(max(int(dst_ylimit[1]+1), 0), img.shape[0])]
+        dst_xlimit = [
+            min(max(int(dst_xlimit[0]), 0), img.shape[1]),
+            min(max(int(dst_xlimit[1] + 1), 0), img.shape[1])
+        ]
+        dst_ylimit = [
+            min(max(int(dst_ylimit[0]), 0), img.shape[0]),
+            min(max(int(dst_ylimit[1] + 1), 0), img.shape[0])
+        ]
 
     offsets = (dst_xlimit[0], dst_ylimit[0])
-    shape = (dst_xlimit[1]-dst_xlimit[0], dst_ylimit[1]-dst_ylimit[0])
+    shape = (dst_xlimit[1] - dst_xlimit[0], dst_ylimit[1] - dst_ylimit[0])
 
     return offsets, shape, (x_shift, y_shift)
 
@@ -168,9 +179,13 @@ class Image(object):
     and their respective flight data and manipulating those in the GUI.
     """
 
-    def __init__(self, img_path=None, data_path=None, timestamp=None,
-        intensity=gs.EMPIRICAL_IMAGE_INTENSITY,
-        img_path_full_size=None, K=None):
+    def __init__(self,
+                 img_path=None,
+                 data_path=None,
+                 timestamp=None,
+                 intensity=gs.EMPIRICAL_IMAGE_INTENSITY,
+                 img_path_full_size=None,
+                 K=None):
 
         self._stitching_keypoints = None
         self._stitching_destination = None
@@ -185,19 +200,15 @@ class Image(object):
 
             if self._img is None:
                 raise Exception(
-                    'Could not load image {img}'.format(img=img_path)
-                    )
+                    'Could not load image {img}'.format(img=img_path))
 
             # Some 'preprocessing'
             # This is used for calculating Quads in the map widget. It needs
             # to use the original image dimensions used for calculating K matrix
             h, w, _ = self._img.shape
 
-            self._limits = np.array((
-                (0, w, w, 0),
-                (0, 0, h, h),
-                (1, 1, 1, 1.)
-            ))
+            self._limits = np.array(((0, w, w, 0), (0, 0, h, h), (1, 1, 1,
+                                                                  1.)))
 
         else:
             self._img = None
@@ -234,8 +245,7 @@ class Image(object):
                         yaw = math.degrees(self._flight_data['yaw'])
                     else:
                         yaw = math.degrees(
-                            self._flight_data['all']['PixHawk']['yaw']
-                            )
+                            self._flight_data['all']['PixHawk']['yaw'])
                 elif 'cog' in self._flight_data and \
                      self._flight_data['src_cog'] is not None:
                     yaw = self._flight_data['cog'] / 100
@@ -262,9 +272,9 @@ class Image(object):
 
                 # Calculate the extrinsic matrix.
                 self.calculateExtrinsicMatrix(
-                    latitude=self._flight_data['lat']*1e-7,
-                    longitude=self._flight_data['lon']*1e-7,
-                    altitude=self._flight_data['relative_alt']*1e-3,
+                    latitude=self._flight_data['lat'] * 1e-7,
+                    longitude=self._flight_data['lon'] * 1e-7,
+                    altitude=self._flight_data['relative_alt'] * 1e-3,
                     yaw=yaw,
                     pitch=pitch,
                     roll=roll,
@@ -290,7 +300,8 @@ class Image(object):
                 self._datetime = img_dt + current_dt
             else:
                 print 'No Image DateTime tag. Using computer time.'
-                self._datetime = datetime.now().strftime("%Y_%m_%d_%H_%M_%S_%f")
+                self._datetime = datetime.now().strftime(
+                    "%Y_%m_%d_%H_%M_%S_%f")
 
     def stitching_detectFeatures(self, featureDetector):
         if featureDetector is None:
@@ -306,8 +317,8 @@ class Image(object):
     def stitching_getImageFeatures(self):
         return self._stitching_keypoints, self._stitching_destination
 
-    def calculateExtrinsicMatrix(self, latitude, longitude,
-        altitude, yaw, pitch, roll):
+    def calculateExtrinsicMatrix(self, latitude, longitude, altitude, yaw,
+                                 pitch, roll):
         """Calculate camera extrinsic matrix
 
         Calculate the extrinsic matrix in local Cartesian mapping (NED) which
@@ -346,17 +357,20 @@ class Image(object):
         target_H = target.H(
             latitude=self._latitude,
             longitude=self._longitude,
-            altitude=self._altitude
-        )
+            altitude=self._altitude)
         M1 = np.array(((1, 0, 0), (0, 1, 0), (0, 0, 0), (0, 0, 1)))
         M2 = np.array(((0, 1, 0, 0), (-1, 0, 0, 0), (0, 0, 1, 0)))
-        M = np.dot(
-            self.K,
-            np.dot(M2, np.dot(np.linalg.inv(self.Rt), np.dot(target_H, M1)))
-            )
+        M = np.dot(self.K,
+                   np.dot(M2,
+                          np.dot(np.linalg.inv(self.Rt), np.dot(target_H,
+                                                                M1))))
 
-        overlay(img=self._img, target=target,
-            M=M, intensity_scale=intensity_scale)
+        overlay(
+            img=self._img, target=target, M=M, intensity_scale=intensity_scale)
+
+
+    def createFullPatch(self):
+        yield self._img.copy()
 
     def createPatches(self, patch_size, patch_shift):
         """Create patches(crops) of an image
@@ -372,14 +386,14 @@ class Image(object):
         """
 
         patch_height, patch_width = patch_size
-        nx = int((self._img.shape[1] - patch_width)/patch_shift)
-        ny = int((self._img.shape[0] - patch_height)/patch_shift)
+        nx = int((self._img.shape[1] - patch_width) / patch_shift)
+        ny = int((self._img.shape[0] - patch_height) / patch_shift)
 
         for i in range(nx):
             for j in range(ny):
-                sx = i*patch_shift
-                sy = j*patch_shift
-                patch = self._img[sy:sy+patch_height, sx:sx+patch_width, :]
+                sx = i * patch_shift
+                sy = j * patch_shift
+                patch = self._img[sy:sy + patch_height, sx:sx + patch_width, :]
                 yield patch.copy()
 
     def createRandomSizedPatches(self, patch_size_range, patch_shift):
@@ -397,15 +411,15 @@ class Image(object):
         """
 
         patch_min, patch_max = patch_size_range
-        nx = int((self._img.shape[1] - patch_max)/patch_shift)
-        ny = int((self._img.shape[0] - patch_max)/patch_shift)
+        nx = int((self._img.shape[1] - patch_max) / patch_shift)
+        ny = int((self._img.shape[0] - patch_max) / patch_shift)
 
         for i in range(nx):
             for j in range(ny):
-                sx = i*patch_shift
-                sy = j*patch_shift
+                sx = i * patch_shift
+                sy = j * patch_shift
                 patch_size = random.randint(patch_min, patch_max)
-                patch = self._img[sy:sy+patch_size, sx:sx+patch_size, :]
+                patch = self._img[sy:sy + patch_size, sx:sx + patch_size, :]
                 yield patch.copy()
 
     def pastePatch(self, patch, target, intensity_scale=1):
@@ -425,28 +439,31 @@ class Image(object):
         target_H = target.H(
             latitude=self._latitude,
             longitude=self._longitude,
-            altitude=self._altitude
-        )
+            altitude=self._altitude)
         M1 = np.array(((1, 0, 0), (0, 1, 0), (0, 0, 0), (0, 0, 1)))
         M2 = np.array(((0, 1, 0, 0), (-1, 0, 0, 0), (0, 0, 1, 0)))
         M = np.dot(self.K,
-            np.dot(M2, np.dot(np.linalg.inv(self.Rt), np.dot(target_H, M1))))
+                   np.dot(M2,
+                          np.dot(np.linalg.inv(self.Rt), np.dot(target_H,
+                                                                M1))))
 
-        bounding_rect = overlay(img=patch, target=target, M=M,
-            intensity_scale=intensity_scale, center_patch=True,
+        bounding_rect = overlay(
+            img=patch,
+            target=target,
+            M=M,
+            intensity_scale=intensity_scale,
+            center_patch=True,
             bounding_rect=True)
         return bounding_rect
 
     def calculateQuad(self, ned):
-        x, y, h = ned.geodetic2ned([self._latitude, self._longitude,
-            self._altitude])
+        x, y, h = ned.geodetic2ned(
+            [self._latitude, self._longitude, self._altitude])
 
-        offset = np.array(
-            (
-                (x,),
-                (y,),
-            )
-        )
+        offset = np.array((
+            (x, ),
+            (y, ),
+        ))
 
         # Project the image corners to camera axes (at z=1)
         p = np.dot(self._Kinv, self._limits)
@@ -474,21 +491,13 @@ class Image(object):
         and therefore it is called flipped. This means that you need to
         flip the y coord when using a crop coords.
         """
-        point = np.array(
-            (
-                (px,),
-                (py,),
-                (1,)
-            )
-        )
-
+        point = np.array(((px, ), (py, ), (1, )))
 
         # Project the point to camera axes (at z=1)
         p = np.dot(self._Kinv, point)
 
         # Switch x, y to convert from camera to local body coords.
         p = p[(1, 0, 2), :]
-
 
         # Rotate according the camera attitude (as measured by the VectorNav).
         # The directions are scaled so that their z coordinate will be equal
@@ -497,26 +506,17 @@ class Image(object):
 
         r = r / r[2]
 
-
         # project the point to the ground
         ned = NED.NED(self._latitude, self._longitude, 0)
-        x, y, h = ned.geodetic2ned([self._latitude, self._longitude,
-            self._altitude])
+        x, y, h = ned.geodetic2ned(
+            [self._latitude, self._longitude, self._altitude])
 
-
-        offset = np.array(
-            (
-                (x,),
-                (y,),
-                (h,)
-            )
-        )
+        offset = np.array(((x, ), (y, ), (h, )))
 
         ned_coords = (offset + (-h) * r).flatten()
 
-        lat, lon, alt = ned.ned2geodetic(ned=(ned_coords[0], ned_coords[1],
-            ned_coords[2]))
-
+        lat, lon, alt = ned.ned2geodetic(
+            ned=(ned_coords[0], ned_coords[1], ned_coords[2]))
 
         return lat, lon
 
@@ -589,8 +589,8 @@ class Image(object):
     def intensity(self):
 
         if self._intensity is None:
-            self._intensity = np.mean(cv2.cvtColor(self._img,
-                cv2.COLOR_BGR2GRAY))
+            self._intensity = np.mean(
+                cv2.cvtColor(self._img, cv2.COLOR_BGR2GRAY))
 
         return self._intensity
 
