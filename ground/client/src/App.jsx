@@ -13,7 +13,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      optionSelected: "Home", // Default is Home
+      optionSelected: "Control", // Default is Home
       droneArmedStatus: "Offline",
       droneState: "",
       telemetry: null,
@@ -32,7 +32,7 @@ class App extends Component {
         return <Analytics appState={this.state} />;
       case "Images":
         return <Images appState={this.state} socketEmit={this.socketEmit} />;
-      case "Home":
+      case "Control":
       default:
         return <Home appState={this.state} socketEmit={this.socketEmit} />;
     }

@@ -44,7 +44,8 @@ class Navbar extends Component {
   render() {
     var batteryAndFlightTime = null;
     var batteryGraph = null;
-    if (this.props.appState.optionSelected === "Home") {
+    console.log('batteryAndFlightTime' + this.props.appState.optionSelected);
+    if (this.props.appState.optionSelected === "Control") {
       var flight_time = null;
       var battery_voltage = null;
       if (this.props.appState.telemetry) {
