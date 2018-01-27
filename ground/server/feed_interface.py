@@ -24,8 +24,20 @@ if USE_INTEROP:
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'flappy'
 interface_socketio = flask_socketio.SocketIO(app, async_mode='threading')
+communications = None
 stopped = False
 interop_client = None
+missions = None
+stationary_obstacles = None
+moving_obstacles = None
+
+def get_interop_data():
+    global missions
+    global stationary_obstacles
+    global moving_obstacles
+    missions = interop_client.get_missions().result()
+    stationary_obstacles, moving_obstacles = \
+        interop_client.get_obstacles().result()
 
 if USE_INTEROP:
     interop_url = 'http://localhost:8000'
@@ -38,6 +50,7 @@ if USE_INTEROP:
                 url=interop_url, \
                 username=interop_username, \
                 password=interop_password)
+            get_interop_data()
             print('Ground Station connected to Interop Server!')
             break
         except Exception as e:
@@ -55,21 +68,13 @@ def signal_received(signal, frame):
 def connect():
     print("Ground interface connected!")
     if USE_INTEROP and interop_client is not None:
-        try:
-            missions = interop_client.get_missions().result()
-            stationary_obstacles, moving_obstacles = \
-                interop_client.get_obstacles().result()
-            data = object_to_dict({ \
-                'missions': missions, \
-                'stationary_obstacles': stationary_obstacles, \
-                'moving_obstacles': moving_obstacles, \
-                'interop_connected': True})
-            flask_socketio.emit('initial_data', data)
-            return
-        except:
-            global interop_client
-            interop_client = None
-    flask_socketio.emit('initial_data', {'interop_connected': False})
+        data = object_to_dict({ \
+            'missions': missions, \
+            'stationary_obstacles': stationary_obstacles, \
+            'moving_obstacles': moving_obstacles})
+        flask_socketio.emit('initial_data', data)
+    else:
+        flask_socketio.emit('initial_data', {'interop_disconnected': True})
 
 
 @interface_socketio.on('connect_to_interop')
@@ -81,48 +86,88 @@ def connect_to_interop():
                 url=interop_url, \
                 username=interop_username, \
                 password=interop_password)
-            flask_socketio.emit('interop_connected', True)
+            get_interop_data()
+            flask_socketio.emit('interop_data', object_to_dict({ \
+                'missions': missions, \
+                'stationary_obstacles': stationary_obstacles, \
+                'moving_obstacles': moving_obstacles
+            }))
         except:
-            flask_socketio.emit('interop_connected', False)
+            global interop_client
+            interop_client = None
+            flask_socketio.emit('interop_disconnected')
 
-
-@interface_socketio.on('moving_obstacles')
-def broadcast_moving_obstacles(moving_obstacles):
-    flask_socketio.emit('moving_obstacles', moving_obstacles, \
+@interface_socketio.on('interop_data')
+def broadcast_obstacles(data):
+    flask_socketio.emit('interop_data', data, \
         broadcast=True, include_self=False)
+    if communications:
+        communications.emit('interop_data', data)
 
 
 @interface_socketio.on('execute_commands')
 def send_commands(commands):
-    communications.emit('execute_commands', commands)
+    if communications:
+        communications.emit('execute_commands', commands)
 
 
 @interface_socketio.on('set_state')
 def send_commands(command):
-    communications.emit('set_state', command)
+    if communications:
+        communications.emit('set_state', command)
 
 
 @interface_socketio.on('test_image')
 def request_test_image(data):
-    communications.emit('test_image', data)
+    if communications:
+        communications.emit('test_image', data)
 
 
 @interface_socketio.on('interop_disconnected')
 def interop_disconnected():
-    flask_socketio.emit('interop_connected', False, \
+    flask_socketio.emit('interop_disconnected', \
         broadcast=True, include_self=False)
 
 
-def refresh_moving_obstacles():
+def refresh_interop_data():
     # This is necessary to talk to the socket from a separate thread
     interface_client = socketIO_client.SocketIO('0.0.0.0', 8084)
     while True:
         time.sleep(1)
         if interop_client is not None:
             try:
-                moving_obstacles = interop_client.get_obstacles().result()[1]
-                interface_client.emit('moving_obstacles', \
-                object_to_dict(moving_obstacles))
+                old_stationary_obstacles = object_to_dict(stationary_obstacles)
+                old_missions = object_to_dict(missions)
+
+                get_interop_data()
+
+                new_missions = object_to_dict(missions)
+                send_missions = False
+                if len(new_missions) == len(old_missions):
+                    for i in range(len(new_missions)):
+                        if (json.dumps(new_missions[i]) != json.dumps(old_missions[i])):
+                            send_missions = True
+                            break
+                else:
+                    send_missions = True
+
+                new_stationary_obstacles = object_to_dict(stationary_obstacles)
+                send_stationary_obstacles = False
+                if len(new_stationary_obstacles) == len(old_stationary_obstacles):
+                    for i in range(len(new_stationary_obstacles)):
+                        if (json.dumps(new_stationary_obstacles[i]) != json.dumps(old_stationary_obstacles[i])):
+                            send_stationary_obstacles = True
+                            break
+                else:
+                    send_stationary_obstacles = True
+
+                data = {'moving_obstacles': moving_obstacles}
+                if send_stationary_obstacles:
+                    data['stationary_obstacles'] = stationary_obstacles
+                if send_missions:
+                    data['missions'] = missions
+
+                interface_client.emit('interop_data', object_to_dict(data))
             except:
                 global interop_client
                 interop_client = None
@@ -149,7 +194,7 @@ def on_telemetry(*args):
             except:
                 global interop_client
                 interop_client = None
-                interface_socketio.emit('interop_connected', False)
+                interface_socketio.emit('interop_disconnected')
 
 
 def on_image(*args):
@@ -159,6 +204,11 @@ def on_image(*args):
 def drone_connected():
     print "connected to drone"
     interface_socketio.emit('drone_connected')
+    communications.emit('interop_data', object_to_dict({ \
+        'missions': missions, \
+        'stationary_obstacles': stationary_obstacles, \
+        'moving_obstacles': moving_obstacles \
+    }))
 
 
 def drone_disconnected():
@@ -185,7 +235,7 @@ if __name__ == '__main__':
     t.daemon = True
     t.start()
     if USE_INTEROP:
-        t = threading.Thread(target=refresh_moving_obstacles)
+        t = threading.Thread(target=refresh_interop_data)
         t.daemon = True
         t.start()
 
