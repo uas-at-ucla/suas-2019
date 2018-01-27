@@ -75,7 +75,7 @@ def main(visualize):
                 cv2.rectangle(original_patch, (coords[0], coords[1]),
                               (coords[2], coords[3]), (0, 255, 0), 1)
                 cv2.namedWindow('patch', flags=cv2.WINDOW_NORMAL)
-                cv2.imshow('patch', patch)
+                cv2.imshow('patch', original_patch)
                 cv2.waitKey(0)
 
             filename = '{:07}'.format(img_index)
