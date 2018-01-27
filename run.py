@@ -31,7 +31,7 @@ processes = process_manager.ProcessManager()
 def spawn_simulated_drone(lat, lng, alt, instance, verbose):
     processes.spawn_process("python " + \
             "flight_control/dronekit-sitl/dronekit_sitl/__init__.py " + \
-            "copter " + \
+            "copter-3.3 " + \
             "--home " + str(lat) + "," \
                       + str(lng) + "," \
                       + str(alt) + ",0 " + \
