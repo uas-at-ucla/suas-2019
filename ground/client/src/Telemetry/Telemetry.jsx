@@ -43,7 +43,7 @@ class Telemetry extends Component {
     }
 
     var boundaryAltLine = null;
-    if (this.props.homeState.mission) {
+    if (this.props.homeState.mission && this.props.homeState.mission.fly_zones[0]) {
       var boundaryAlt =
         this.props.homeState.mission.fly_zones[0].altitude_msl_max *
         METERS_PER_FOOT;
