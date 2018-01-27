@@ -14,18 +14,18 @@ import os
 import argparse
 import random
 
+
 def main(visualize):
     # Create paths
-    imgs_paths = sorted(glob.glob(
-        os.path.join(gs.DATA_PATH, 'resized_images', '*.jpg')))
+    imgs_paths = sorted(
+        glob.glob(os.path.join(gs.DATA_PATH, 'gmap_tiles', '*.jpg')))
     img_names = [
         os.path.splitext(os.path.split(path)[1])[0] for path in imgs_paths
     ]
 
     data_paths = [
-        os.path.join(gs.DATA_PATH,
-             'flight_data',
-             name+'.json') for name in img_names
+        os.path.join(gs.DATA_PATH, 'flight_data', 'data.json')
+        for name in img_names
     ]
 
     dst_folder = os.path.join(gs.DATA_PATH, 'train_images')
@@ -39,44 +39,43 @@ def main(visualize):
     # Load image and image data
     img_index = 0
     for shape_img_path, shape_data_path, empty_img_path, empty_data_path in zip(
-        imgs_paths,
-        data_paths,
-        imgs_paths,
-        data_paths):
+            imgs_paths, data_paths, imgs_paths, data_paths):
 
-        print 'Extracting patches from image', shape_img_path
+        shape_img = TargetGenerator.Image(
+            shape_img_path, shape_data_path, K=gs.resized_K)
 
-        shape_img = TargetGenerator.Image(shape_img_path,
-            shape_data_path,
-            K=gs.resized_K)
-
-        shape_patches = shape_img.createPatches(patch_size=gs.PATCH_SIZE,
-            patch_shift=20)
+        shape_patches = shape_img.createFullPatch()
+#       shape_patches = shape_img.createPatches(
+#           patch_size=gs.PATCH_SIZE, patch_shift=1)
 
         for patch in shape_patches:
             if img_index > 5000:
                 break
 
             # Paste a random target on the patch
-            current_altitude = random.randint(25, 100)
+            current_altitude = random.randint(25, 30)
             target, target_label, _, shape = TargetGenerator.randomTarget(
                 altitude=current_altitude,
                 longitude=shape_img.longitude,
-                latitude=shape_img.latitude
-            )
+                latitude=shape_img.latitude)
 
-            print("shape " + shape + " @ altitude: " + str(current_altitude))
             coords = shape_img.pastePatch(patch=patch, target=target)
-            coords = TargetGenerator.squareCoords(coords, noise=True)
-            print coords
+            coords = TargetGenerator.squareCoords(coords, noise=False)
             original_patch = patch.copy()
 
             patch = cv2.resize(patch, dsize=gs.CLASSIFIER_PATCH_SIZE)
 
+            print("Created img " + shape + " with bounding box (" \
+                    + str(coords[0]) + ", " \
+                    + str(coords[1]) + "), (" \
+                    + str(coords[2]) + ", " \
+                    + str(coords[3]) + ")")
+
             if visualize:
-                cv2.rectangle(original_patch, (coords[0], coords[1]), (coords[2], coords[3]), (255, 0, 0), 3)
+                cv2.rectangle(original_patch, (coords[0], coords[1]),
+                              (coords[2], coords[3]), (0, 255, 0), 1)
                 cv2.namedWindow('patch', flags=cv2.WINDOW_NORMAL)
-                cv2.imshow('patch', original_patch)
+                cv2.imshow('patch', patch)
                 cv2.waitKey(0)
 
             filename = '{:07}'.format(img_index)
@@ -116,12 +115,14 @@ def main(visualize):
     if visualize:
         cv2.destroyAllWindows()
 
+
 if __name__ == '__main__':
-    cmdline = argparse.ArgumentParser(usage="usage: ./{}"
-              .format(os.path.basename(__file__)),
+    cmdline = argparse.ArgumentParser(
+        usage="usage: ./{}".format(os.path.basename(__file__)),
         description="Create target patches")
 
-    cmdline.add_argument("--visualize",
+    cmdline.add_argument(
+        "--visualize",
         action="store_true",
         help="Visualize outputs.",
         dest="visualize",
