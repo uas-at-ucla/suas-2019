@@ -104,6 +104,7 @@ class Map extends Component {
       home: null,
       air_drop: null
     };
+    this.waypoint_path = null;
     this.search_grid = null;
     this.commands = [];
     this.command_path = null;
@@ -522,6 +523,9 @@ class Map extends Component {
   }
 
   draw_mission_waypoints(waypoints) {
+    if (this.waypoint_path) {
+      this.waypoint_path.setMap(null);
+    }
     for (let waypoint of this.mission_points.waypoints) {
       waypoint.marker.setMap(null);
     }
@@ -560,7 +564,7 @@ class Map extends Component {
     });
 
     polyline.setMap(this.map);
-    // this.command_path = polyline;
+    this.waypoint_path = polyline;
   }
 
   draw_mission_point(mission_point_key, pos) {
