@@ -374,7 +374,13 @@ class Controller:
 
 class CopterInterface:
     def __init__(self, address):
-        self.vehicle = self.__connect_to_drone(address)
+        while True:
+            try:
+                self.vehicle = self.__connect_to_drone(address)
+                break
+            except Exception as inst:
+                print("Error(" + str(type(inst)) + "): " + str(inst.args))
+
         self.controller = Controller(self.vehicle)
         self.sensor_reader = SensorReader(self.vehicle, self.controller)
 

@@ -13,7 +13,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      optionSelected: "Home", // Default is Home
+      optionSelected: "Control", // Default is Control
       droneArmedStatus: "Offline",
       droneState: "",
       telemetry: null,
@@ -32,7 +32,7 @@ class App extends Component {
         return <Analytics appState={this.state} />;
       case "Images":
         return <Images appState={this.state} socketEmit={this.socketEmit} />;
-      case "Home":
+      case "Control":
       default:
         return <Home appState={this.state} socketEmit={this.socketEmit} />;
     }
@@ -115,28 +115,29 @@ class App extends Component {
     });
 
     this.socket.on("initial_data", data => {
-      this.receivedInteropStatus(data.interop_connected);
-      if (data.interop_connected) {
+      if (data.interop_disconnected) {
+        this.receivedInteropStatus(false);
+      } else {
         this.setState({
           stationary_obstacles: data.stationary_obstacles,
           moving_obstacles: data.moving_obstacles,
           missions: data.missions
         });
+        this.receivedInteropStatus(true);
 
         console.log("MISSION DATA!!!");
-        console.log(data.missions[0]["fly_zones"][0]);
+        console.log(data.missions[0]);
       }
     });
 
-    this.socket.on("moving_obstacles", moving_obstacles => {
-      this.setState({
-        moving_obstacles: moving_obstacles
-      });
+    this.socket.on("interop_data", data => {
+      this.setState(data);
+      this.receivedInteropStatus(true);
     });
 
-    this.socket.on("interop_connected", is_interop_connected =>
-      this.receivedInteropStatus(is_interop_connected)
-    );
+    this.socket.on("interop_disconnected", () => {
+      this.receivedInteropStatus(false);
+    });
   }
 
   socketEmit = (message, data) => {
@@ -149,10 +150,16 @@ class App extends Component {
 
   receivedInteropStatus(is_interop_connected) {
     if (is_interop_connected) {
-      this.setState({
+      let new_state = {
         interopBtnText: "Connected to Interop",
         interopBtnEnabled: false
-      });
+      }
+      for (let key in new_state) {
+        if (new_state[key] !== this.state[key]) {
+          this.setState(new_state);
+          break;
+        }
+      }
     } else {
       this.setState({
         interopBtnText: "Cannot Connect to Interop Server!",
