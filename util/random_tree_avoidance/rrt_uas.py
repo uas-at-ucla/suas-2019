@@ -7,7 +7,6 @@ from matplotlib import pyplot as plt
 import numpy as np
 import matplotlib
 
-
 class Node(object):
     def __init__(self, point, parent):
         super(Node, self).__init__()
@@ -70,11 +69,9 @@ class RRT:
             obstacles.append(obstacle)
 
         fig, ax = plt.subplots()
-
         ax.scatter(x, y)
         for obstacle in obstacles:
             ax.add_artist(obstacle)
-
         plt.show()
 
     def getDistance(self, p1, p2):
@@ -108,7 +105,7 @@ class RRT:
             obsCenter = []
             obsCenter = self.obstacles_x[obsID], self.obstacles_y[obsID]
 
-            if self.getDistance(p, obsCenter) <= (self.obstacles_radius[obsID] + 10):
+            if self.getDistance(p, obsCenter) <= (self.obstacles_radius[obsID] + (self.obstacles_radius[obsID] * 0.2)):
                 return True
         return False
 
@@ -116,25 +113,25 @@ class RRT:
         while True:
             p1 = []
             if self.start_x >= self.end_x and self.start_y >= self.end_y:
-                p1 = random.uniform(p2[0] - dist * 9 / 7,
-                                    p2[0] + dist * 2 / 7), random.uniform(
-                                        p2[1] - dist * 9 / 7,
-                                        p2[1] + dist * 2 / 7)
+                p1 = random.uniform(p2[0] - dist * 2,
+                                    p2[0] + dist * 0.5), random.uniform(
+                                        p2[1] - dist * 2,
+                                        p2[1] + dist * 0.5)
             elif self.start_x < self.end_x and self.start_y < self.end_y:
-                p1 = random.uniform(p2[0] - dist * 2 / 7,
-                                    p2[0] + dist * 9 / 7), random.uniform(
-                                        p2[1] - dist * 2 / 7,
-                                        p2[1] + dist * 9 / 7)
+                p1 = random.uniform(p2[0] - dist * 0.5,
+                                    p2[0] + dist * 2), random.uniform(
+                                        p2[1] - dist * 0.5,
+                                        p2[1] + dist * 2)
             elif self.start_x >= self.end_x and self.start_y < self.end_y:
-                p1 = random.uniform(p2[0] - dist * 9 / 7,
-                                    p2[0] + dist * 2 / 7), random.uniform(
-                                        p2[1] - dist * 2 / 7,
-                                        p2[1] + dist * 9 / 7)
+                p1 = random.uniform(p2[0] - dist * 2,
+                                    p2[0] + dist * 0.5), random.uniform(
+                                        p2[1] - dist * 0.5,
+                                        p2[1] + dist * 2)
             else:
-                p1 = random.uniform(p2[0] - dist * 2 / 7,
-                                    p2[0] + dist * 9 / 7), random.uniform(
-                                        p2[1] - dist * 9 / 7,
-                                        p2[1] + dist * 2 / 7)
+                p1 = random.uniform(p2[0] - dist * 0.5,
+                                    p2[0] + dist * 2), random.uniform(
+                                        p2[1] - dist * 2,
+                                        p2[1] + dist * 0.5)
 
             collision = not self.collides(p1)
             if collision:
@@ -214,7 +211,7 @@ class RRT:
                             if self.getDistance(p.point,
                                                 rand) <= self.getDistance(
                                                     parentNode.point, rand):
-                                if self.getDistance(p.point, rand) > 10:
+                                if self.getDistance(p.point, rand) > dist * 0.15:
                                     newPoint = self.stepFromTo(p.point, rand)
                                     if self.collides(newPoint) == False:
                                         parentNode = p
@@ -224,7 +221,7 @@ class RRT:
                     newNode = Node(newNodePoint, parentNode)
                     nodes.append(newNode)
 
-                    if self.getDistance(newNodePoint, tempEnd) < 10:
+                    if self.getDistance(newNodePoint, tempEnd) < dist * 0.15:
                         currNode = newNode
                         rrtRoute = []
                         while currNode.parent != None:
