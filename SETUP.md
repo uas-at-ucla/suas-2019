@@ -1,53 +1,17 @@
 # Setting Up UAS Development Environment
-Please read through the entire documentation first before running anything on your machine.
 
 ## Contents
- * Operating System
-   * Windows Setup
-   * Virtual Machine
  * Git Control
    * Initial Setup
    * Branching
      * Creating Your Own Branch
      * Pulling, Pushing, and Merge Conflicts
    * Pull Request Process
- * Compiling
- * Other Reads
-
-## Operating System
-
-### Windows Setup
-Linux is the premier way we want to develop all of our code. Ubuntu 16.04 is the recommended distribution due to its popularity, functional device drivers, and low-risk of bugs. You have two options to install Linux:
-
-1. Install a Virtual Machine. This is the easiest option.
-2. [Dual boot](https://www.youtube.com/watch?v=qNeJvujdB-0) Windows and Ubuntu in order to
-   natively run Linux on your own machine. You will need to [disable
-   secure boot](https://docs.microsoft.com/en-us/windows-hardware/manufacture/desktop/boot-to-uefi-mode-or-legacy-bios-mode)
-   and [BitLocker](https://www.youtube.com/watch?v=RT-Acsx549c) before starting the video.
-
-### Virtual Machine
-If you are running on MacOS, you will need a Virtual Machine.
-
-0. If you are using a Windows machine, be sure to [enable virtualization in your BIOS](http://bce.berkeley.edu/enabling-virtualization-in-your-pc-bios.html).
-1. Install a [Virtual Machine](https://www.virtualbox.org/wiki/Downloads).
-2. Download the [Virtual Box Appliance for UAS](https://drive.google.com/uc?export=download&confirm=Fn7m&id=0Bx9wIeK4Bxa_bTJ5UzhOWGdsUzQ).
-3. Open Oracle VM VirtualBox.
-4. On the top-left corner, press File > Import Appliance...
-5. Locate the 'UAS at UCLA Virtualbox (Ubuntu).ova' file and press 'Next'. Then press 'Import'.
-6. A new virtual machine should show up in VirtualBox, which will be the machine that you can develop code on. Click on the machine in the left-hand bar, and click Start.
-
-   Note: VirtualBox has a variety of escape keys to manage transitioning from the virtual machine to your host machine. This key should be displayed at the bottom right of the window. To escape from the virtual machine environment, you should be able to press this key, release it, and then move your mouse out of the environment or use your native machine’s shortcuts to change windows.
-8. If you have a 1440p or 1080p screen, you may need to [scale the resolution](https://askubuntu.com/questions/823529/how-do-you-set-scaling-for-a-high-dpi-monitor-and-low-dpi-monitor-independently) so that everything does not look so tiny.
-9. Default user credentials
-
-   **user:** uas
-
-   **pass:** password
-
-We will update this virtual machine as more dependencies or a change in build environment are needed. Pay attention to version numbers as these will be used to track the types of virtual machines being posted.
+ * Operating System
+   * Windows
+   * Linux and MacOS
 
 ## Git Control
-
 ### Initial Setup
 1. Create a GitHub Account and log in.
 2. Message in Slack Comran or in the #random channel your GitHub username in order to be
@@ -60,7 +24,7 @@ We will update this virtual machine as more dependencies or a change in build en
 4. Add an [SSH-Key](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/) onto your local machine or VM.
 5. Clone the repository - assure you are cloning with an SSH key.
    ```bash
-   git clone --recursive -j8 git@github.com:uas-at-ucla/suas_2018.git
+   git clone --recursive git@github.com:uas-at-ucla/suas_2018.git
    cd suas_2018
    ```
 ### Branching
@@ -85,7 +49,6 @@ break anything severe on the master branch.
    ```bash
    git fetch
    git checkout -b GITHUB-ISSUE origin/GITHUB-ISSUE
-   git submodule update --recursive
    ```
 
 #### Pulling, Pushing, and Merge Conflicts
@@ -129,11 +92,37 @@ see the latest file edits you made that do not exist in the MASTER branch.
    git checkout master
    git pull
    ```
-6. DO NOT delete your branch after a successful merge. The reason being is for convenience. It is easier for you to constantly merge the master branch into your own branch. See step 3.
+6. Do not delete your branch after a successful merge. The reason being is for convenience. It is easier for you to constantly merge the master branch into your own branch. See step 3.
 
 And that's all the commonly used git controls. There are other useful commands you can google if you ever run into special situations. If you are new or not well-familiar with git, you will grow use to it after consecutive use and it will become almost second nature to you.
 
-## Compiling
+## Operating System
+
+### Windows
+1. Download [Visual Studio Code](https://code.visualstudio.com/docs/setup/windows).
+
+2. Enable **Developer Mode**. Press the `Windows` key, search "For developers settings", and enable **Developer mode**.
+
+3. Enable Windows Subsystem for Linux.
+   To enable the WSL, open a PowerShell instance as the Administrator user. To do this, press the `Windows` key, start typing "PowerShell", and right click the main result and select "Run as administrator".
+
+   With the shell open, run the below command and then reboot your machine.
+   ```bash
+   Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
+   ```
+
+4. To install bash, open a Command prompt by opening the start menu and typing in "cmd" and opening the first result. With it open, type 
+   in "bash" and hit enter to install bash. This will handle downloading it, and creating the local Unix user.
+
+5. Open up Visual Studio Code.
+
+6. Change the default terminal to **WSL Bash**. Press `F1` in VS code, and type **Terminal: Select Default Shell**.
+
+7. To open and close the integrated terminal in VS code, press `Ctl` + `` ` `` simultaneously.
+
+8. Follow the Linux and MacOS section below to proceed.
+
+### Linux and MacOS
 The `install.sh` file in the `build` directory abstracts the entire
 installation process.
 ```bash
@@ -150,8 +139,3 @@ python control/run.py
 To start only the interop server, run ```python ground/run_interop.py```. Check it out at http://localhost:8000.
 
 Use username 'testadmin' and password 'testpass'.
-
-## Other Reads
-Each directory - control, vision, ground - contains their own README.md
-file. Depending on what sub-team you are in, those README.md files will list out
-greater detail on the sub-team's code functionalities and compilation.
