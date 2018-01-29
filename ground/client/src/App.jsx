@@ -7,13 +7,14 @@ import logo from "./graphics/vector_logo.svg";
 import Home from "./Home/Home";
 import Analytics from "./Analytics/Analytics";
 import Images from "./Images/Images";
+import Settings from "./Settings/Settings";
 
 class App extends Component {
   constructor(props) {
     super(props);
 
     this.state = {
-      optionSelected: "Control", // Default is Control
+      optionSelected: "Settings", // Default is Control
       droneArmedStatus: "Offline",
       droneState: "",
       telemetry: null,
@@ -32,6 +33,9 @@ class App extends Component {
         return <Analytics appState={this.state} />;
       case "Images":
         return <Images appState={this.state} socketEmit={this.socketEmit} />;
+      case "Settings":
+        return <Settings appState={this.state} socketEmit={this.socketEmit}
+                         setAppState={this.setAppState}/>;
       case "Control":
       default:
         return <Home appState={this.state} socketEmit={this.socketEmit} />;
