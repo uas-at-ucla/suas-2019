@@ -14,7 +14,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      optionSelected: "Settings", // Default is Control
+      optionSelected: "Control", // Default is Control
       droneArmedStatus: "Offline",
       droneState: "",
       telemetry: null,
