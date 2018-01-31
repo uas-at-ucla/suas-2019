@@ -39,7 +39,7 @@ def get_interop_data():
     stationary_obstacles, moving_obstacles = \
         interop_client.get_obstacles().result()
 
-if USE_INTEROP:
+if False:
     interop_url = 'http://localhost:8000'
     interop_username = 'testuser'
     interop_password = 'testpass'
@@ -78,9 +78,13 @@ def connect():
 
 
 @interface_socketio.on('connect_to_interop')
-def connect_to_interop():
+def connect_to_interop(data):
     if USE_INTEROP:
         try:
+            interop_username = 'testuser'
+            interop_password = 'testpass'
+            interop_url = 'http://' + str(data[0]) + '.' + str(data[1]) + \
+            '.' + str(data[2]) + '.' + str(data[3]) + ':' + str(data[4])
             global interop_client
             interop_client = interop.AsyncClient( \
                 url=interop_url, \
