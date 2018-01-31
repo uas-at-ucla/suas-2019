@@ -5,7 +5,7 @@ class Settings extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      ip_address: [127, 0, 0, 1, 8000],
+      ip_address: [127, 0, 0, 1, 8000], // Set docker default
     };
     this.interopButtonPressed = this.interopButtonPressed.bind(this);
   }
@@ -56,22 +56,22 @@ class Settings extends Component {
 
     // Either IPv4 is 127.0.0.1:8000 or new values
     var quad_one = ( this.refs.quad_one.value === "" ) ?
-                   127 : this.refs.quad_one.value;
+                   this.state.ip_address[0] : this.refs.quad_one.value;
     var quad_two = ( this.refs.quad_two.value === "" ) ?
-                   0 : this.refs.quad_two.value;
+                   this.state.ip_address[1] : this.refs.quad_two.value;
     var quad_three = ( this.refs.quad_three.value === "" ) ?
-                     0 : this.refs.quad_three.value;
+                     this.state.ip_address[2] : this.refs.quad_three.value;
     var quad_four = ( this.refs.quad_four.value === "" ) ?
-                    1 : this.refs.quad_four.value;
+                    this.state.ip_address[3] : this.refs.quad_four.value;
     var port = ( this.refs.port.value === "" ) ?
-                    8000 : this.refs.port.value;
+                    this.state.ip_address[4] : this.refs.port.value;
 
     var new_ip_address = [ quad_one, quad_two, quad_three, quad_four, port ];
     console.log(new_ip_address);
 
     this.props.setAppState({ interopBtnText: "Connecting..." });
     this.props.setAppState({ interopBtnEnabled: false });
-    this.props.socketEmit("connect_to_interop");
+    this.props.socketEmit("connect_to_interop", new_ip_address);
   };
 
   render() {
