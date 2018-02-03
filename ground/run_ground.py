@@ -21,11 +21,12 @@ if __name__ == "__main__":
     ground_processes = process_manager.ProcessManager()
 
     ground_processes.spawn_process("python server/run_backend.py")
-    # ground_processes.spawn_process("npm start --prefix ./client/")
-    ## Sockets aren't working -- see serve client
+
+    ## Developer's command
+    ground_processes.spawn_process("npm start --silent --prefix ./client/")
 
     ## Run this command to build final version
-    ground_processes.spawn_process("python client/serve_client.py")
+    # ground_processes.spawn_process("python client/serve_client.py")
 
     signal.signal(signal.SIGINT, signal_received)
 
