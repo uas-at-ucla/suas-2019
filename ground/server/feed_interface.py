@@ -6,6 +6,7 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import sys
 
 USE_INTEROP = True
+AUTO_CONNECT_TO_INTEROP = False
 
 sys.dont_write_bytecode = True
 
@@ -42,7 +43,8 @@ def get_interop_data():
 # Include in settings tab:
 # Change 'Connected to interop' to 'Connect to Interop' all the time
 # Have a heading/title stating the current ipv4 address connected
-if True:
+if AUTO_CONNECT_TO_INTEROP:
+    # Default Interop
     interop_url = 'http://localhost:8000'
     interop_username = 'testuser'
     interop_password = 'testpass'
