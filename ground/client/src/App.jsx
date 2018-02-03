@@ -54,6 +54,7 @@ class App extends Component {
           src={logo}
           width="380px"
           onClick={this.followDrone}
+          alt="UAS"
         />
         <Navbar
           appState={this.state}
