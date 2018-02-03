@@ -42,9 +42,6 @@ def get_interop_data():
     stationary_obstacles, moving_obstacles = \
         interop_client.get_obstacles().result()
 
-# Include in settings tab:
-# Change 'Connected to interop' to 'Connect to Interop' all the time
-# Have a heading/title stating the current ipv4 address connected
 if AUTO_CONNECT_TO_INTEROP:
     # Default Interop
     interop_url = 'http://localhost:8000'
