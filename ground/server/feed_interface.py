@@ -6,7 +6,9 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import sys
 
 USE_INTEROP = True
-AUTO_CONNECT_TO_INTEROP = False
+
+# Enable True for localhost; False to use another ip address
+AUTO_CONNECT_TO_INTEROP = True
 
 sys.dont_write_bytecode = True
 
