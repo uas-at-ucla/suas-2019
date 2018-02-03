@@ -18,7 +18,6 @@ except ImportError:
 SERVER_DOMAIN = "0.0.0.0"
 SERVER_PORT = 8080
 WWW_DIRECTORY_RELATIVE_LOCATION = "build"
-# WWW_DIRECTORY_RELATIVE_LOCATION = "public"
 ################################################################################
 
 # Start off fresh by making sure that our working directory is the same as the

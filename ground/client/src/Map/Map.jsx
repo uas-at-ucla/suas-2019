@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import "./Map.css";
 import GMapCache from "./GMapCache.jsx";
 import map_style from "./map_style.js";
-import drone_marker from "../graphics/drone_marker.svg";
+//import drone_marker from "../graphics/drone_marker.svg";
 
 const METERS_PER_FOOT = 0.3048;
 const google = window.google;
@@ -531,7 +531,7 @@ class Map extends Component {
     }
     this.mission_points.waypoints.length = 0;
 
-    if (waypoints == undefined) return;
+    if (waypoints === undefined) return;
 
     let positions = [];
 

@@ -25,7 +25,7 @@ class Graph extends Component {
   }
 
   shouldComponentUpdate(nextProps, nextState) {
-    if(this.skipRenders % 5 == 0) {
+    if(this.skipRenders % 5 === 0) {
       this.skipRenders += 1;
       return true;
     }
