@@ -38,8 +38,8 @@ class Navbar extends Component {
 
   toggleBatteryGraph() {
     if (this.state.display_bat_graph === "block")
-      this.state.display_bat_graph = "none";
-    else this.state.display_bat_graph = "block";
+      this.setState({display_bat_graph: "none"});
+    else this.setState({display_bat_graph: "block"});
   }
 
   render() {
