@@ -5,7 +5,11 @@ class Settings extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      // Development interop-server
+      //ip_address: [138, 68, 250, 14, 8000],
+      // Localhost interop-server
       ip_address: [127, 0, 0, 1, 8000], // Set docker default
+      interopSuccess: false
     };
     this.interopButtonPressed = this.interopButtonPressed.bind(this);
   }
@@ -13,6 +17,13 @@ class Settings extends Component {
   renderIPAddress() {
     return (
       <div className="ip_address">
+        <div className="row">
+          <div className="text-right col-md-3 offset-md-3">
+            <span className={`label ${this.state.interopSuccess ? "label-success" : "label-warning"}`}>
+              Connected to: {this.state.ip_address[0] + "." + this.state.ip_address[1] + "." + this.state.ip_address[2] +
+                             "." + this.state.ip_address[3] + ":" + this.state.ip_address[4]}</span>
+          </div>
+      </div>
         <form onSubmit={this.interopButtonPressed}>
           <div className="row">
             <div className="col-md-2 offset-md-4">
@@ -67,7 +78,7 @@ class Settings extends Component {
                     this.state.ip_address[4] : this.refs.port.value;
 
     var new_ip_address = [ quad_one, quad_two, quad_three, quad_four, port ];
-    console.log(new_ip_address);
+    this.setState({ip_address: new_ip_address});
 
     this.props.setAppState({ interopBtnText: "Connecting..." });
     this.props.setAppState({ interopBtnEnabled: false });
