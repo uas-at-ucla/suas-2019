@@ -6,7 +6,7 @@ import signal
 # directory that this script is in.
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-sys.path.insert(0, '../../util')
+sys.path.insert(0, '../../../lib')
 import process_manager
 
 processes = None
