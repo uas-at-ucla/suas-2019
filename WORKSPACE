@@ -49,5 +49,11 @@ git_repository(
     remote = "https://github.com/nelhage/rules_boost",
 )
 
+git_repository(
+    name = "protobuf",
+    commit = "07f023188e929019f506e9b390dde70539ea857f",
+    remote = "https://github.com/google/protobuf.git",
+)
+
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
 boost_deps()

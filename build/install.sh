@@ -62,7 +62,7 @@ fi
 if [ $OS = "Linux" ]
 then
     echo "Checking all necessary packages..."
-    echo "sudo apt-get install python3.5 python3-pip python3-dev build-essential docker.io\n"
+    echo "sudo apt-get install python3.5 python3-pip python3-dev build-essential docker.io bazel\n"
     sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential docker.io;
 elif [ $OS = "Darwin" ]
 then
