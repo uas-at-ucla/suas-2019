@@ -14,16 +14,14 @@ class Node(object):
         self.parent = parent
 
 
-class RRT:
+class RRTAvoidance:
     def __init__(self, startCoord, endCoord, obstacleList):
         self.delta = 10
         self.num_nodes = 5000
 
-        startCoord = startCoord.split(',')
         self.start_x = float(startCoord[0])
         self.start_y = float(startCoord[1])
 
-        endCoord = endCoord.split(',')
         self.end_x = float(endCoord[0])
         self.end_y = float(endCoord[1])
 
@@ -34,7 +32,6 @@ class RRT:
         self.obstacles_radius = []
         for temp in range(0, len(obstacleList)):
             obs = obstacleList[temp]
-            obs = obs.split(',')
             self.obstacles_x.append(float(obs[0]))
             self.obstacles_y.append(float(obs[1]))
             self.obstacles_radius.append(float(obs[2]))
@@ -252,8 +249,9 @@ def main():
                              " Coordinates and Radius in x,y,r Format:   ")
         obs.append(obsCoord)
 
-    rrt = RRT(startCoord, endCoord, obs)
+    rrt = RRTAvoidance(startCoord, endCoord, obs)
     rrt.findPath()
+
     # for competition, drone would have to call rrt.returnRoute() instead of rrt.outputRoute()
     rrt.outputRoute()
 
