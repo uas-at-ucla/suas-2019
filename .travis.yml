@@ -5,5 +5,6 @@ install:
  - sudo $TRAVIS_BUILD_DIR/build/install.sh
 
 script:
+ - bazel test //sandbox/...
  - python $TRAVIS_BUILD_DIR/vision/test_vision.py
  - python $TRAVIS_BUILD_DIR/control/test_control.py
