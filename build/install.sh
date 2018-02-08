@@ -55,14 +55,17 @@ else
     echo "\n\n";
 fi
 
+# Install bazel
+
 ##########################################################################
 # Install all Python dependencies
+sudo apt-get install bazel
 
 ## Check if all Python packages exist; if not, then install
 if [ $OS = "Linux" ]
 then
     echo "Checking all necessary packages..."
-    echo "sudo apt-get install python3.5 python3-pip python3-dev build-essential docker.io bazel\n"
+    echo "sudo apt-get install python3.5 python3-pip python3-dev build-essential docker.io\n"
     sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential docker.io;
 elif [ $OS = "Darwin" ]
 then
