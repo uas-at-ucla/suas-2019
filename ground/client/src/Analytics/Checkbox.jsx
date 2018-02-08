@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 
-class Checkbox extends React.Component {
+class Checkbox extends Component {
   constructor(props) {
     super(props);
     this.state = { checked: true };
