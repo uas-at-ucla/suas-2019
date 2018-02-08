@@ -56,7 +56,7 @@ else
 fi
 
 # Install bazel
-sudo add-apt-repository ppa:openjdk-r/ppa
+sudo add-apt-repository -y ppa:openjdk-r/ppa
 sudo apt-get update && sudo apt-get -y install openjdk-8-jdk
 
 echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
