@@ -142,8 +142,8 @@ def calcDstLimits(img, target, M, center_patch):
 
     # Center the patch
     if center_patch:
-        x_shift = (dst_xlimit[1] + dst_xlimit[0] - isize[1]) / 2
-        y_shift = (dst_ylimit[1] + dst_ylimit[0] - isize[0]) / 2
+        x_shift = (dst_xlimit[1] + dst_xlimit[0] - isize[1]) / 2 + random.randint(-95, 95)
+        y_shift = (dst_ylimit[1] + dst_ylimit[0] - isize[0]) / 2 + random.randint(-95, 95)
 
         dst_xlimit = [
             min(max(int(dst_xlimit[0] - x_shift), 0), isize[1]),

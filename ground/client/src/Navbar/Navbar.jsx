@@ -10,7 +10,8 @@ class Navbar extends Component {
     return [
       { _id: 1, section: "Control" },
       { _id: 2, section: "Analytics" },
-      { _id: 3, section: "Images" }
+      { _id: 3, section: "Images" },
+      { _id: 4, section: "Settings" },
     ];
   }
 
@@ -37,14 +38,14 @@ class Navbar extends Component {
 
   toggleBatteryGraph() {
     if (this.state.display_bat_graph === "block")
-      this.state.display_bat_graph = "none";
-    else this.state.display_bat_graph = "block";
+      this.setState({display_bat_graph: "none"});
+    else this.setState({display_bat_graph: "block"});
   }
 
   render() {
     var batteryAndFlightTime = null;
     var batteryGraph = null;
-    if (this.props.appState.optionSelected === "Home") {
+    if (this.props.appState.optionSelected === "Control") {
       var flight_time = null;
       var battery_voltage = null;
       if (this.props.appState.telemetry) {
@@ -129,26 +130,12 @@ class Navbar extends Component {
       <div className="Navbar">
         <div className="nav">
           {this.renderOptions()}
-          <button
-            className={`btn btn-sm align-middle btn-outline-light ${
-              !this.props.appState.interopBtnEnabled ? "disabled" : null
-            }`}
-            id="interop_btn"
-            onClick={this.connectToInterop}
-          >
-            {this.props.appState.interopBtnText}
-          </button>
         </div>
         {batteryAndFlightTime}
       </div>
     );
   }
 
-  connectToInterop = () => {
-    this.props.setAppState({ interopBtnText: "Connecting..." });
-    this.props.setAppState({ interopBtnEnabled: false });
-    this.props.socketEmit("connect_to_interop");
-  };
 
   getBatteryCells = (voltage) => {
     return Math.floor(voltage / 3.8);
