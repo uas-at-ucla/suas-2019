@@ -2,9 +2,9 @@ dist: trusty
 sudo: required
 
 install:
- - sudo $TRAVIS_BUILD_DIR/build/install.sh
+ - sudo $TRAVIS_BUILD_DIR/tools/build/install.sh
 
 script:
- - bazel test //sandbox/...
- - python $TRAVIS_BUILD_DIR/vision/test_vision.py
- - python $TRAVIS_BUILD_DIR/control/test_control.py
+ - bazel test //...
+ - python $TRAVIS_BUILD_DIR/src/vision/test_vision.py
+ - python $TRAVIS_BUILD_DIR/src/control/test_control.py

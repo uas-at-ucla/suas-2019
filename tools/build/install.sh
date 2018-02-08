@@ -101,12 +101,13 @@ echo "Python dependencies installed.\n"
 
 ##########################################################################
 # Update git submodules
+cd ../..
 echo "Installing npm packages..."
 git submodule init;
 git submodule update --recursive;
-cd ../ground/client;
+cd ground/client;
 npm install --loglevel=error;
-cd ../../build;
+cd ../..;
 echo "";
 
 ##########################################################################
