@@ -1,6 +1,6 @@
 import sys
 sys.dont_write_bytecode = True
-sys.path.insert(0, '../../util')
+sys.path.insert(0, '../../lib')
 
 import dronekit
 import time
@@ -15,7 +15,6 @@ from datetime import datetime
 from pymavlink import mavutil
 
 import position_tools
-
 
 class Sensor:
     def __init__(self, value_type):
