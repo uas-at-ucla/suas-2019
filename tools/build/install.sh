@@ -7,7 +7,6 @@ echo "\nHello! Welcome to the UCLA UAS 2018 Software Installation!\n";
 
 ## Change to script directory so that the script can be called from anywhere.
 cd "$(dirname "$0")"
-cd ../..
 
 ## Determine operating system
 OS=$(uname -s)
@@ -102,6 +101,7 @@ echo "Python dependencies installed.\n"
 
 ##########################################################################
 # Update git submodules
+cd ../..
 echo "Installing npm packages..."
 git submodule init;
 git submodule update --recursive;
