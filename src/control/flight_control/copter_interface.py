@@ -16,7 +16,6 @@ from pymavlink import mavutil
 
 import position_tools
 
-
 class Sensor:
     def __init__(self, value_type):
         # Keep track of the value's variable type that will be provided later
