@@ -25,7 +25,7 @@ if __name__ == "__main__":
     ## Developer's command
     ground_processes.spawn_process("npm start --silent --prefix ./client/")
 
-    ## Run this command to build final version
+    ## Run this command to serve precompiled build folder (requires 'npm build' first)
     # ground_processes.spawn_process("python client/serve_client.py")
 
     signal.signal(signal.SIGINT, signal_received)

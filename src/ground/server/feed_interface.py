@@ -6,6 +6,11 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 import sys
 
 USE_INTEROP = True
+LOCAL_INTEROP = False
+
+interop_ip = '138.68.250.14'
+if LOCAL_INTEROP:
+    interop_ip = 'localhost'
 
 # Enable True for localhost; False to use another ip address
 AUTO_CONNECT_TO_INTEROP = True
@@ -44,7 +49,7 @@ def get_interop_data():
 
 if AUTO_CONNECT_TO_INTEROP:
     # Default Interop
-    interop_url = 'http://localhost:8000'
+    interop_url = 'http://' + interop_ip + ':8000'
     interop_username = 'testuser'
     interop_password = 'testpass'
     interop_client = None
