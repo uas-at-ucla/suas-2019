@@ -151,6 +151,8 @@ toolchain {
   unfiltered_cxx_flag: "-no-canonical-prefixes"
   linker_flag: "-no-canonical-prefixes"
 
+  compiler_flag: "-Wno-expansion-to-defined"
+
   # Things that the code wants defined.
   compiler_flag: "-D__STDC_FORMAT_MACROS"
   compiler_flag: "-D__STDC_CONSTANT_MACROS"
