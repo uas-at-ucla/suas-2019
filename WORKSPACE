@@ -35,6 +35,34 @@ new_git_repository(
   commit = '6063cb1d612f6ca0232d4134a018053fb8faea20',
 )
 
+new_git_repository(
+  name = 'mavlink_v1',
+  remote = 'https://github.com/mavlink/c_library_v1.git',
+  build_file = 'lib/third_party/mavlink_v1.BUILD',
+  commit = 'c0e0ebf80ce0e0d497245f94869eb9c5e817114f',
+)
+
+new_git_repository(
+  name = 'libmavconn',
+  remote = 'https://github.com/mavlink/mavros.git',
+  build_file = 'lib/third_party/libmavconn.BUILD',
+  commit = '306f7ee6e0d90fa2c63f4a821b8f09b0f02219b9',
+)
+
+new_git_repository(
+  name = 'eigen',
+  remote = 'https://github.com/PX4/eigen.git',
+  build_file = 'lib/third_party/eigen.BUILD',
+  commit = 'e7850ed81f9c469e02df496ef09ae32ec0379b71',
+)
+
+new_git_repository(
+  name = 'console_bridge',
+  remote = 'https://github.com/uas-at-ucla/console_bridge.git',
+  build_file = 'lib/third_party/console_bridge.BUILD',
+  commit = '57f9d41e3402d317fec85b3cc531d9dc4437bf45',
+)
+
 new_http_archive(
     name = "gtest",
     url = "https://github.com/google/googletest/archive/release-1.8.0.zip",
