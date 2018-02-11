@@ -35,7 +35,7 @@ toolchain {
   tool_path { name: "compat-ld" path: "/usr/bin/ld" }
   tool_path { name: "cpp" path: "/usr/bin/cpp" }
   tool_path { name: "dwp" path: "/usr/bin/dwp" }
-  tool_path { name: "gcc" path: "/usr/bin/clang++-3.9" }
+  tool_path { name: "gcc" path: "/usr/bin/clang-3.9" }
   tool_path { name: "gcov" path: "/usr/bin/gcov" }
   # C(++) compiles invoke the compiler (as that is the one knowing where
   # to find libraries), but we provide LD so other rules can invoke the linker.
@@ -60,12 +60,7 @@ toolchain {
   cxx_builtin_include_directory: '/usr/include'
   cxx_builtin_include_directory: '/usr/lib/clang/3.9.1/include'
 
-  compiler_flag: "-std=c++11"
-  compiler_flag: "-stdlib=libc++"
-
   linker_flag: "-lstdc++"
-  linker_flag: "-std=c++11"
-  linker_flag: "-stdlib=libc++"
   linker_flag: "-B/usr/bin/"
 
   feature {
@@ -163,6 +158,7 @@ toolchain {
   compiler_flag: "-D_FILE_OFFSET_BITS=64"
 
   linker_flag: "-fuse-ld=gold"
+  linker_flag: "-lpthread"
 
   # Make C++ compilation deterministic. Use linkstamping instead of these
   # compiler symbols.
@@ -195,13 +191,12 @@ toolchain {
   compiler_flag: "-Wextra"
   compiler_flag: "-Wpointer-arith"
   compiler_flag: "-Wstrict-aliasing"
-  compiler_flag: "-Wcast-qual"
-  compiler_flag: "-Wcast-align"
   compiler_flag: "-Wwrite-strings"
   compiler_flag: "-Wtype-limits"
   compiler_flag: "-Wsign-compare"
   compiler_flag: "-Wformat=2"
   compiler_flag: "-Werror"
+  compiler_flag: "-Wno-sometimes-uninitialized"
 
   # Keep stack frames for debugging, even in opt mode.
   compiler_flag: "-fno-omit-frame-pointer"
