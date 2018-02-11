@@ -75,7 +75,7 @@ def main():
     options = parser.parse_args()
 
     verbose = False
-    drone_address = "tcp:127.0.0.1:5760"
+    drone_address = "udp:127.0.0.1:14550"
     run_all = True
     run_simulated_drone = False
     run_ground = False
