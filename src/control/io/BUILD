@@ -19,6 +19,8 @@ cc_library(
     'io.h'
   ],
   deps = [
-    "//src/control/io/autopilot_interface:autopilot_interface"
+    '//src/control/io/autopilot_interface:autopilot_interface',
+    '//src/control/loops:flight_loop_queue',
+    '//aos/linux_code:init'
   ],
 )
