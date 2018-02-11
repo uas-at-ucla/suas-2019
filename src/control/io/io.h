@@ -1,7 +1,9 @@
-#ifndef SPINNY_CONTROL_IO_H_
-#define SPINNY_CONTROL_IO_H_
+#ifndef SPINNY_CONTROL_IO_IO_H_
+#define SPINNY_CONTROL_IO_IO_H_
 
 #include "src/control/io/autopilot_interface/autopilot_interface.h"
+
+#include "src/control/loops/flight_loop.q.h"
 
 namespace spinny {
 namespace control {
@@ -21,4 +23,4 @@ class IO {
 }  // namespace control
 }  // namespace spinny
 
-#endif  // SPINNY_CONTROL_IO_H_
+#endif  // SPINNY_CONTROL_IO_IO_H_
