@@ -129,8 +129,9 @@ def main():
                     verbose)
 
         if run_ground:
-            processes.spawn_process("python ../ground/client/build.py", None,
-                                    True, verbose)
+            ## Run this command to build final version
+            # processes.spawn_process("python ../ground/client/build.py", None,
+                                    # True, verbose)
             processes.spawn_process("python ../ground/run_ground.py", None,
                                     True, verbose)
 
