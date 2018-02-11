@@ -8,7 +8,7 @@ class Settings extends Component {
       // Development interop-server
       //ip_address: [138, 68, 250, 14, 8000],
       // Localhost interop-server
-      ip_address: [127, 0, 0, 1, 8000], // Set docker default
+      ip_address: [138, 68, 250, 14, 8000], // Set docker default
       interopSuccess: false
     };
     this.interopButtonPressed = this.interopButtonPressed.bind(this);
