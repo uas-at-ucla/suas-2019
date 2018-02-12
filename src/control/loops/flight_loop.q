@@ -2,8 +2,8 @@ package spinny.control.loops;
 
 queue_group FlightLoopQueue {
   message Sensors {
-    float latitude;
-    float longitude;
+    double latitude;
+    double longitude;
     float altitude;
     float relative_altitude;
 

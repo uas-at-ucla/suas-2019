@@ -9,6 +9,8 @@ namespace spinny {
 namespace control {
 namespace io {
 
+void quit_handler(int sig);
+
 class IO {
  public:
   IO();

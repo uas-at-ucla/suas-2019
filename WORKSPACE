@@ -64,23 +64,29 @@ new_git_repository(
 )
 
 new_http_archive(
-    name = "gtest",
-    url = "https://github.com/google/googletest/archive/release-1.8.0.zip",
-    sha256 = "f3ed3b58511efd272eb074a3a6d6fb79d7c2e6a0e374323d1e6bcbcc1ef141bf",
-    build_file = "lib/third_party/gtest.BUILD",
-    strip_prefix = "googletest-release-1.8.0",
+  name = "gtest",
+  url = "https://github.com/google/googletest/archive/release-1.8.0.zip",
+  sha256 = "f3ed3b58511efd272eb074a3a6d6fb79d7c2e6a0e374323d1e6bcbcc1ef141bf",
+  build_file = "lib/third_party/gtest.BUILD",
+  strip_prefix = "googletest-release-1.8.0",
 )
 
 git_repository(
-    name = "com_github_nelhage_rules_boost",
-    commit = "239ce40e42ab0e3fe7ce84c2e9303ff8a277c41a",
-    remote = "https://github.com/nelhage/rules_boost",
+  name = "PX4_sitl",
+  remote = "https://github.com/uas-at-ucla/PX4_sitl.git",
+  commit = "0d9fdc4d4e73c67d91eb8a2450a92c7fe21dbd24",
 )
 
 git_repository(
-    name = "protobuf",
-    commit = "07f023188e929019f506e9b390dde70539ea857f",
-    remote = "https://github.com/google/protobuf.git",
+  name = "com_github_nelhage_rules_boost",
+  commit = "239ce40e42ab0e3fe7ce84c2e9303ff8a277c41a",
+  remote = "https://github.com/nelhage/rules_boost",
+)
+
+git_repository(
+  name = "protobuf",
+  commit = "07f023188e929019f506e9b390dde70539ea857f",
+  remote = "https://github.com/google/protobuf.git",
 )
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")

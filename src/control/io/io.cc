@@ -4,7 +4,24 @@ namespace spinny {
 namespace control {
 namespace io {
 
-IO::IO() : copter_io_("/tmp/virtualcom0", 115200) {}
+autopilot_interface::AutopilotInterface *copter_io_quit;
+void quit_handler(int sig) {
+  printf("\n\nTERMINATING AT USER REQUEST\n\n");
+
+  // autopilot interface
+  try {
+    copter_io_quit->handle_quit(sig);
+  } catch (int error) {}
+
+  // end program here
+  exit(0);
+}
+
+IO::IO() : copter_io_("/tmp/virtualcom0", 57600) {
+//IO::IO() : copter_io_("/dev/ttyUSB0", 57600) {
+  copter_io_quit = &copter_io_;
+  signal(SIGINT, quit_handler);
+}
 
 void IO::Run() { RunAutopilotIO(); }
 
@@ -19,8 +36,8 @@ void IO::RunAutopilotIO() {
     mavlink_global_position_int_t gps =
         copter_io_.current_messages.global_position_int;
 
-    flight_loop_sensors_message->latitude = static_cast<float>(gps.lat) / 1e7;
-    flight_loop_sensors_message->longitude = static_cast<float>(gps.lon) / 1e7;
+    flight_loop_sensors_message->latitude = static_cast<double>(gps.lat);
+    flight_loop_sensors_message->longitude = static_cast<double>(gps.lon);
     flight_loop_sensors_message->altitude = static_cast<float>(gps.alt) / 1e3;
 
     flight_loop_sensors_message->relative_altitude =
