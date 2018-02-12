@@ -152,7 +152,7 @@ cc_library(
     ':sizes',
     '//aos/common:die',
     '//aos/common:queue_types',
-    '//lib/third_party/eigen:eigen',
+    '@eigen//:eigen',
   ],
 )
 
