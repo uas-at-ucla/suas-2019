@@ -16,7 +16,9 @@ FlightLoop::FlightLoop()
                    std::chrono::milliseconds(10)) {}
 
 void FlightLoop::RunIteration() {
-  ::spinny::control::loops::flight_loop_queue.sensors.FetchNextBlocking();
+  if(!::spinny::control::loops::flight_loop_queue.sensors.FetchLatest()) {
+    return;
+  }
 
   std::chrono::time_point<std::chrono::system_clock> end =
       std::chrono::system_clock::now();
