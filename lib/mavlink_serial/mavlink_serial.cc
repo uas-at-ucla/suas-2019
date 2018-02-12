@@ -58,6 +58,7 @@ int MavlinkSerial::read_message(mavlink_message_t &message) {
   // Couldn't read from port
   else {
     fprintf(stderr, "ERROR: Could not read from fd %d\n", fd);
+    usleep(1e6 / 4);
   }
 
   if (msgReceived && debug) {

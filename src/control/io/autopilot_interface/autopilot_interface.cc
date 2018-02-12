@@ -76,10 +76,9 @@ AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
       control_status_(0),
       write_count_(0),
       time_to_exit_(false) {
-
   system_id = 0;
   autopilot_id = 0;
-  companion_id = 0;
+  companion_id = 2;
 
   current_messages.sysid = system_id;
   current_messages.compid = autopilot_id;
@@ -111,6 +110,7 @@ void AutopilotInterface::read_messages() {
       current_messages.compid = message.compid;
 
       // Handle Message ID
+      printf("got message %d\n", message.msgid);
       switch (message.msgid) {
         case MAVLINK_MSG_ID_HEARTBEAT: {
           mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
@@ -204,22 +204,11 @@ void AutopilotInterface::read_messages() {
     }
 
     // Check for receipt of all items
-    received_all = this_timestamps.heartbeat &&
-                   //        this_timestamps.battery_status &&
-                   //        this_timestamps.radio_status &&
-                   //        this_timestamps.local_position_ned &&
-                   //        this_timestamps.global_position_int &&
-                   //        this_timestamps.position_target_local_ned
-                   //&&
-                   //        this_timestamps.position_target_global_int
-                   //&&
-                   //        this_timestamps.highres_imu &&
-                   //        this_timestamps.attitude &&
-                   this_timestamps.sys_status;
+    received_all = this_timestamps.heartbeat && this_timestamps.sys_status;
 
     // give the write thread time to use the port
     if (writing_status_ > false) {
-      usleep(100);  // look for components of batches at 10kHz
+      usleep(1e6 / 1e4);
     }
   }
 }
@@ -236,7 +225,7 @@ void AutopilotInterface::write_setpoint() {
   mavlink_set_position_target_local_ned_t sp = current_setpoint;
 
   // double check some system parameters
-  if (not sp.time_boot_ms) sp.time_boot_ms = (uint32_t)(get_time_usec() / 1000);
+  if (not sp.time_boot_ms) sp.time_boot_ms = (uint32_t)(get_time_usec() / 1e3);
   sp.target_system = system_id;
   sp.target_component = autopilot_id;
 
@@ -341,11 +330,6 @@ void AutopilotInterface::start() {
   // now we know autopilot is sending messages
   printf("\n");
 
-  // This comes from the heartbeat, which in theory should only come from
-  // the autopilot we're directly connected to it.  If there is more than one
-  // vehicle then we can't expect to discover id's like this.
-  // In which case set the id's manually.
-
   // System ID
   if (not system_id) {
     system_id = current_messages.sysid;
@@ -364,6 +348,19 @@ void AutopilotInterface::start() {
              current_messages.time_stamps.attitude)) {
     if (time_to_exit_) return;
     usleep(1e6 / 2);
+  }
+
+  mavlink_data_stream_t data_stream_rate;
+  data_stream_rate.stream_id = MAV_DATA_STREAM_ALL;
+  data_stream_rate.message_rate = 1;
+  data_stream_rate.on_off = 1;
+
+  mavlink_message_t data_stream_rate_message;
+  mavlink_msg_data_stream_encode(system_id, companion_id,
+                                 &data_stream_rate_message, &data_stream_rate);
+
+  if (write_message(data_stream_rate_message) < 1) {
+    fprintf(stderr, "WARNING: could not set faster data stream rate\n");
   }
 
   // copy initial position ned
@@ -402,7 +399,9 @@ void AutopilotInterface::stop() {
   time_to_exit_ = true;
 
   pthread_join(read_tid_, NULL);
+  printf("READ THREAD JOINED\n");
   pthread_join(write_tid_, NULL);
+  printf("WRITE THREAD JOINED\n");
 
   printf("\n");
 
@@ -439,6 +438,8 @@ void AutopilotInterface::handle_quit(int sig) {
   } catch (int error) {
     fprintf(stderr, "Warning, could not stop autopilot interface\n");
   }
+
+  mavlink_serial_->handle_quit(sig);
 }
 
 void AutopilotInterface::read_thread() {

@@ -4,8 +4,6 @@ import os
 # Start off fresh by making sure that our working directory is the same as the
 # directory that this script is in.
 dname = os.path.dirname(os.path.realpath(__file__))
-os.chdir(dname)
-os.chdir("control")
 
 import sys
 sys.dont_write_bytecode = True
@@ -20,29 +18,10 @@ import thread
 import argparse
 
 import process_manager
-import copter_interface
-import commander
 
 SIMULATE_DRONE = True
 
 processes = process_manager.ProcessManager()
-
-
-def spawn_simulated_drone(lat, lng, alt, instance, verbose):
-    processes.spawn_process("python " + \
-            "flight_control/dronekit-sitl/dronekit_sitl/__init__.py " + \
-            "copter-3.3 " + \
-            "--home " + str(lat) + "," \
-                      + str(lng) + "," \
-                      + str(alt) + ",0 " + \
-            "--instance " + str(instance), None, True, verbose)
-
-    # Wait to make sure the simulated drone is completely set up before
-    # continuing.
-    time.sleep(2.0)
-
-    port = 5760 + 10 * instance
-    return "tcp:127.0.0.1:" + str(port)
 
 
 def kill_processes():
@@ -122,11 +101,8 @@ def main():
     # sure to kill everything if any errors occur.
     try:
         if run_simulated_drone:
-            # Start the drone at the Webster Field that we will compete at.
-            init_lat = 38.145298
-            init_lng = -76.42861
-            drone_address = spawn_simulated_drone(init_lat, init_lng, 0.0, 0, \
-                    verbose)
+            processes.spawn_process("bazel run @PX4_sitl//...", None, True,
+                                    verbose)
 
         if run_ground:
             processes.spawn_process("python ../ground/client/build.py", None,
@@ -139,11 +115,6 @@ def main():
                     "python commander/drone_communications.py", None, True, \
                     verbose)
 
-        if run_commander:
-            global drone_commander
-            drone_commander = commander.Commander(drone_address)
-            communications = drone_commander.get_communications_socket()
-
     except Exception as e:
         print("ERROR: " + str(e))
         kill_processes()
@@ -151,7 +122,6 @@ def main():
     # Wait forever or until the user sends an interrupt signal.
     while True:
         time.sleep(1)
-
 
 if __name__ == "__main__":
     main()
