@@ -4,6 +4,7 @@ import os
 # Start off fresh by making sure that our working directory is the same as the
 # directory that this script is in.
 dname = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dname)
 
 import sys
 sys.dont_write_bytecode = True
@@ -47,6 +48,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', action="store_true")
+    parser.add_argument('--simulator3D', action="store_true")
     parser.add_argument('--simulator', action="store_true")
     parser.add_argument('--ground', action="store_true")
     parser.add_argument('--communications', action="store_true")
@@ -57,6 +59,7 @@ def main():
     drone_address = "udp:127.0.0.1:14550"
     run_all = True
     run_simulated_drone = False
+    run_3D_simulator = False
     run_ground = False
     run_commander = False
     run_communications = False
@@ -67,6 +70,11 @@ def main():
     if options.simulator:
         run_all = False
         run_simulated_drone = True
+
+    if options.simulator3D:
+        run_all = False
+        run_simulated_drone = True
+        run_3D_simulator = True
 
     if options.ground:
         run_all = False
@@ -90,7 +98,10 @@ def main():
     if run_ground:
         print("  - Ground System")
     if run_simulated_drone:
-        print("  - Drone Simulator")
+        if run_3D_simulator:
+            print("  - Drone Simulator (3D visualization))")
+        else:
+            print("  - Drone Simulator")
     if run_communications:
         print("  - Drone Communications")
     if run_commander:
@@ -101,9 +112,15 @@ def main():
     # sure to kill everything if any errors occur.
     try:
         if run_simulated_drone:
-            processes.spawn_process(
-                "../../lib/scripts/bazel_run.sh @PX4_sitl//...", None, True,
-                verbose)
+            if run_3D_simulator:
+                processes.spawn_process(
+                    "../../lib/scripts/bazel_run.sh " \
+                            "@PX4_sitl//:px4_sitl_visualize",
+                    None, True, verbose)
+            else:
+                processes.spawn_process(
+                    "../../lib/scripts/bazel_run.sh @PX4_sitl//:px4_sitl",
+                    None, True, verbose)
 
         if run_ground:
             processes.spawn_process("python ../ground/client/build.py", None,
@@ -112,6 +129,10 @@ def main():
                                     True, verbose)
 
         if run_communications:
+            processes.spawn_process( \
+                    "../../lib/scripts/bazel_run.sh //aos/linux_code:core", \
+                    None, True, verbose)
+
             processes.spawn_process( \
                     "python commander/drone_communications.py", None, True, \
                     verbose)
