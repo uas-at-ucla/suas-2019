@@ -61,6 +61,7 @@ toolchain {
   cxx_builtin_include_directory: '/usr/lib/clang/3.9.1/include'
 
   linker_flag: "-lstdc++"
+  linker_flag: "-lc++"
   compiler_flag: "-stdlib=libc++"
   compiler_flag: "-Wno-error=unused-command-line-argument"
   linker_flag: "-B/usr/bin/"
