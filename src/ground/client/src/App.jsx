@@ -33,6 +33,8 @@ class App extends Component {
         return <Analytics appState={this.state} />;
       case "Images":
         return <Images appState={this.state} socketEmit={this.socketEmit} />;
+      case "Training":
+        return <Training appState={this.state} socketEmit={this.socketEmit} />;
       case "Settings":
         return <Settings appState={this.state} socketEmit={this.socketEmit}
                          setAppState={this.setAppState}/>;
