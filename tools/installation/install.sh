@@ -1,12 +1,15 @@
 #!/bin/sh
 
+## Start timer of install script
+start=`date +%s`;
+
 ##########################################################################
 # Configuratons
 
 echo "\nHello! Welcome to the UCLA UAS 2018 Software Installation!\n";
 
 ## Change to script directory so that the script can be called from anywhere.
-cd "$(dirname "$0")"
+cd "$(dirname "$0")";
 
 ## Determine operating system
 OS=$(uname -s)
@@ -42,6 +45,7 @@ else
     if [ $OS = "Linux" ]
     then
         echo "Installing Node.js...";
+        sudo apt-get install -qq curl;
         curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -;
         sudo apt-get install -y nodejs;
     elif [ $OS = "Darwin" ]
@@ -56,25 +60,33 @@ else
 fi
 
 ##########################################################################
+# Update git submodules
+
+cd ../../src/ground/
+echo "Installing npm packages..."
+git submodule init;
+git submodule update --recursive;
+cd client/;
+npm install --loglevel=error;
+cd ../../../tools/installation/;
+echo "";
+
+##########################################################################
 # Install all Packages
 
 ## Check if all packages exist; if not, then install
 if [ $OS = "Linux" ]
 then
     echo "Checking all necessary packages..."
-    echo "sudo apt-get install python3.5 python3-pip python3-dev build-essential\n"
+    echo "sudo apt-get install python3.5 python3-pip python-pip python3-dev build-essential\n"
     sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential sl;
 
     # Do Bazel stuff
     sudo add-apt-repository -y ppa:openjdk-r/ppa;
-    sudo apt-get update && sudo apt-get -y install openjdk-8-jdk;
+    sudo apt-get update && sudo apt-get -y -qq install openjdk-8-jdk;
     echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list;
     curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-    sudo apt-get update && sudo apt-get -y install bazel clang-3.9 libc++-dev clang-format-3.5;
-
-    # Do Gabezo stuff
-    source ubuntu_sim_ros_gazebo.sh;
-
+    sudo apt-get update && sudo apt-get -y -qq install bazel clang-3.9 libc++-dev clang-format-3.5;
     for i in $(seq 1 3);
     do
         sl;
@@ -89,7 +101,6 @@ then
     fi
     ##### todo #####
     # Figure out bazel stuff here
-    # Figure out gabezo stuff here
     ################
 fi
 
@@ -106,20 +117,25 @@ fi
 ## Install python dependencies
 RED='\033[0;31m';
 NO_COLOR='\033[0m';
-echo "Installing Python dependencies listed in ${RED}build/pip_requirements.txt${NO_COLOR}\nThis may take several seconds..."
+echo "Installing Python dependencies listed in ${RED}pip_requirements.txt${NO_COLOR}\nThis may take several seconds..."
 sudo -H pip install -I -r pip_requirements.txt > /dev/null;
 echo "Python dependencies installed.\n"
 
 ##########################################################################
-# Update git submodules
-cd ../../src/ground/
-echo "Installing npm packages..."
-git submodule init;
-git submodule update --recursive;
-cd client/;
-npm install --loglevel=error;
-cd "$(dirname "$0")";
-echo "";
+# Do Gazebo stuff
+
+if [ $OS = "Linux" ]
+then
+    echo "Installing gazebo...";
+    bash ubuntu_gazebo_install.sh;
+elif [ $OS = "Darwin" ]
+then
+    # MacOS comes with python
+    echo "Hi";
+    ##### todo #####
+    # Figure out Gazebo stuff here
+    ################
+fi
 
 ##########################################################################
 # Do docker stuff for local machines
@@ -149,8 +165,9 @@ echo "";
 #     docker pull auvsisuas/interop-server
 # fi
 
-echo "${NO_COLOR}After installation is complete, you can run the ground control software by executing this command:\n${RED}sudo python ../../src/control/run.py${NO_COLOR}\n"
+## Display time of installation
+end=`date +%s`;
+runtime=$((end-start));
+echo "${NO_COLOR}\nTime of installation:\n${RED}$runtime seconds${NO_COLOR}\n"
 
-echo "${NO_COLOR}To do Bazel stuff: Check out this file. IVAN NEEDS TO MAKE SCRIPT FILE\n${RED}Run this file${NO_COLOR}\n"
-
-echo "${NO_COLOR}To run gabezo simulator: Check out this file. IVAN NEEDS TO MAKE SCRIPT FILE\n${RED}Run this file${NO_COLOR}\n"
+echo "${NO_COLOR}You can now run the ground control software by executing this command:\n${RED}sudo python ../../src/control/run.py${NO_COLOR}\n"
