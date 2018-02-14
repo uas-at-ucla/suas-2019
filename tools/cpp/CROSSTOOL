@@ -12,6 +12,11 @@ default_toolchain {
   toolchain_identifier: "k8_linux"
 }
 
+default_toolchain {
+  cpu: "darwin"
+  toolchain_identifier: "k8_linux"
+}
+
 toolchain {
   abi_version: "local"
   abi_libc_version: "local"
