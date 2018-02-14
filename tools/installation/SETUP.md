@@ -111,7 +111,7 @@ And that's all the commonly used git controls. There are other useful commands y
    Enable-WindowsOptionalFeature -Online -FeatureName Microsoft-Windows-Subsystem-Linux
    ```
 
-4. To install bash, open a Command prompt by opening the start menu and typing in "cmd" and opening the first result. With it open, type 
+4. To install bash, open a Command prompt by opening the start menu and typing in "cmd" and opening the first result. With it open, type
    in "bash" and hit enter to install bash. This will handle downloading it, and creating the local Unix user.
 
 5. Open up Visual Studio Code.
@@ -131,9 +131,5 @@ installation process.
 
 After successful installation, the ground control software can be run using:
 ```bash
-python control/run.py
+python src/control/run.py
 ```
-
-To start only the interop server, run ```python ground/run_interop.py```. Check it out at http://localhost:8000.
-
-Use username 'testadmin' and password 'testpass'.

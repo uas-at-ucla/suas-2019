@@ -55,23 +55,30 @@ else
     echo "\n\n";
 fi
 
-# Install bazel
-sudo add-apt-repository -y ppa:openjdk-r/ppa
-sudo apt-get update && sudo apt-get -y install openjdk-8-jdk
-
-echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-sudo apt-get update && sudo apt-get -y install bazel clang-3.9 libc++-dev clang-format-3.5
-
 ##########################################################################
-# Install all Python dependencies
+# Install all Packages
 
-## Check if all Python packages exist; if not, then install
+## Check if all packages exist; if not, then install
 if [ $OS = "Linux" ]
 then
     echo "Checking all necessary packages..."
-    echo "sudo apt-get install python3.5 python3-pip python3-dev build-essential docker.io\n"
-    sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential docker.io;
+    echo "sudo apt-get install python3.5 python3-pip python3-dev build-essential\n"
+    sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential sl;
+
+    # Do Bazel stuff
+    sudo add-apt-repository -y ppa:openjdk-r/ppa;
+    sudo apt-get update && sudo apt-get -y install openjdk-8-jdk;
+    echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list;
+    curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
+    sudo apt-get update && sudo apt-get -y install bazel clang-3.9 libc++-dev clang-format-3.5;
+
+    # Do Gabezo stuff
+    source ubuntu_sim_ros_gazebo.sh;
+
+    for i in $(seq 1 3);
+    do
+        sl;
+    done
 elif [ $OS = "Darwin" ]
 then
     # MacOS comes with python
@@ -80,6 +87,10 @@ then
     then
         sudo easy_install pip;
     fi
+    ##### todo #####
+    # Figure out bazel stuff here
+    # Figure out gabezo stuff here
+    ################
 fi
 
 ## See if pip version is 9.x -- If not, then update pip
@@ -101,17 +112,17 @@ echo "Python dependencies installed.\n"
 
 ##########################################################################
 # Update git submodules
-cd ../..
+cd ../../src/ground/
 echo "Installing npm packages..."
 git submodule init;
 git submodule update --recursive;
-cd ground/client;
+cd client/;
 npm install --loglevel=error;
-cd ../..;
+cd "$(dirname "$0")";
 echo "";
 
 ##########################################################################
-# Do docker stuff
+# Do docker stuff for local machines
 # if [ $OS = "Linux" ]
 # then
 #     docker_exists=$(groups | grep -o "docker");
@@ -138,4 +149,8 @@ echo "";
 #     docker pull auvsisuas/interop-server
 # fi
 
-echo "${NO_COLOR}After installation is complete, you can run the ground control software by executing this command:\n${RED}sudo python ../ground/run_ground.py${NO_COLOR}\n"
+echo "${NO_COLOR}After installation is complete, you can run the ground control software by executing this command:\n${RED}sudo python ../../src/control/run.py${NO_COLOR}\n"
+
+echo "${NO_COLOR}To do Bazel stuff: Check out this file. IVAN NEEDS TO MAKE SCRIPT FILE\n${RED}Run this file${NO_COLOR}\n"
+
+echo "${NO_COLOR}To run gabezo simulator: Check out this file. IVAN NEEDS TO MAKE SCRIPT FILE\n${RED}Run this file${NO_COLOR}\n"
