@@ -20,6 +20,7 @@ cc_toolchain_suite(
   toolchains = {
     'raspi|gcc': ':cc-compiler-raspi',
     'k8|clang': ':cc-compiler-k8',
+    'darwin|clang': ':cc-compiler-k8',
   },
 )
 
