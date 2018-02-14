@@ -36,7 +36,7 @@ and reliability for the control software.
 automatically build every commit that is pushed to this Github repository.
 
 ### Installation
-Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/tools/build/SETUP.md).
+Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/tools/installation/SETUP.md).
 
 ### Platforms and Libraries Used
  * [Arducopter](https://github.com/ArduPilot/ardupilot/tree/master/ArduCopter) as the flight controller platform
@@ -44,3 +44,7 @@ Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/bl
  * [Dronekit SITL](https://github.com/dronekit/dronekit-sitl) for flight controller simulation and testing
  * [OpenCV](https://github.com/opencv/opencv) for image filtering and segmentation
  * [Darkflow](https://github.com/thtrieu/darkflow) for image classification
+ * [MAVLink Common Messages](http://mavlink.org/messages/common) for
+   communicating between Ground Control Station and the UAV
+ * [Bazel](https://bazel.build/), a C++ cross-compiler for the Raspberry Pi
+ * [Gazebo](https://dev.px4.io/en/simulation/gazebo.html) for 3D simulation
