@@ -41,7 +41,7 @@ _single_queue_file = rule(
     ),
     '_queue_compiler': attr.label(
       executable = True,
-      default = Label('//aos/build/queues:compiler'),
+      default = Label('//aos/build_queues/queues:compiler'),
       cfg = 'host',
     ),
   },

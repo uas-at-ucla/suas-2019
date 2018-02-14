@@ -1,6 +1,6 @@
 package(default_visibility = ['//visibility:public'])
 
-load('//aos/build/queues.bzl', 'queue_library')
+load('//aos/build_queues/queues.bzl', 'queue_library')
 
 cc_library(
   name = 'replay_control_loop',
