@@ -1,5 +1,7 @@
 #include "mavlink_serial.h"
 
+#include <iostream>
+
 namespace lib {
 namespace mavlink_serial {
 
@@ -34,29 +36,29 @@ void MavlinkSerial::initialize_defaults() {
 }
 
 int MavlinkSerial::read_message(mavlink_message_t &message) {
-  uint8_t cp;
+  uint8_t cp[1024];
   mavlink_status_t status;
   uint8_t msgReceived = false;
 
   // this function locks the port during read
   int result = _read_port(cp);
 
-  if (result > 0) {
+  for(int i = 0;i < result;i++) {
     // the parsing
-    msgReceived = mavlink_parse_char(MAVLINK_COMM_1, cp, &message, &status);
+    msgReceived = mavlink_parse_char(MAVLINK_COMM_1, cp[i], &message, &status);
 
     // check for dropped packets
     if ((lastStatus.packet_rx_drop_count != status.packet_rx_drop_count) &&
         debug) {
       printf("ERROR: DROPPED %d PACKETS\n", status.packet_rx_drop_count);
-      unsigned char v = cp;
+      unsigned char v = cp[i];
       fprintf(stderr, "%02x ", v);
     }
     lastStatus = status;
   }
 
   // Couldn't read from port
-  else {
+  if(result < 1) {
     fprintf(stderr, "ERROR: Could not read from fd %d\n", fd);
     usleep(1e6 / 4);
   }
@@ -331,11 +333,11 @@ bool MavlinkSerial::_setup_port(int baud, int data_bits, int stop_bits,
   return true;
 }
 
-int MavlinkSerial::_read_port(uint8_t &cp) {
+int MavlinkSerial::_read_port(uint8_t *cp) {
   // Lock
   pthread_mutex_lock(&lock);
 
-  int result = read(fd, &cp, 1);
+  int result = read(fd, cp, 1024);
 
   // Unlock
   pthread_mutex_unlock(&lock);
