@@ -43,7 +43,7 @@ USE_CV2_KMEANS = True
 # Letter parameters.
 #
 FONTS = None
-FONTS = glob.glob("/usr/share/fonts/truetype/dejavu/*.ttf")
+FONTS = glob.glob("./TargetGenerator/fonts/*.ttf")
 
 #
 # Letter classes. The simple set includes only upper case letters.
