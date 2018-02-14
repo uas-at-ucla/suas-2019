@@ -33,6 +33,7 @@ queue_group FlightLoopQueue {
     float velocity_y;
     float velocity_z;
 
+    bool velocity_control;
     bool arm;
     bool takeoff;
     bool land;

@@ -30,8 +30,6 @@ void set_position(float x, float y, float z,
                   mavlink_set_position_target_local_ned_t &sp);
 void set_velocity(float vx, float vy, float vz,
                   mavlink_set_position_target_local_ned_t &sp);
-void set_acceleration(float ax, float ay, float az,
-                      mavlink_set_position_target_local_ned_t &sp);
 void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp);
 void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp);
 
@@ -95,6 +93,11 @@ class AutopilotInterface {
   int autopilot_id;
   int companion_id;
 
+  void Arm();
+  void Takeoff();
+  void Offboard();
+  void Land();
+
   Mavlink_Messages current_messages;
   mavlink_set_position_target_local_ned_t initial_position;
 
@@ -104,6 +107,7 @@ class AutopilotInterface {
 
   void enable_offboard_control();
   void disable_offboard_control();
+  int toggle_offboard_control(bool flag);
 
   void start();
   void stop();
@@ -121,7 +125,6 @@ class AutopilotInterface {
   void read_thread();
   void write_thread(void);
 
-  int toggle_offboard_control(bool flag);
   void write_setpoint();
 
   pthread_t read_tid_;
