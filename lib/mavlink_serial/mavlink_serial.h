@@ -66,7 +66,7 @@ class MavlinkSerial {
   int _open_port(const char *port);
   bool _setup_port(int baud, int data_bits, int stop_bits, bool parity,
                    bool hardware_control);
-  int _read_port(uint8_t &cp);
+  int _read_port(uint8_t *cp);
   int _write_port(char *buf, unsigned len);
 };
 

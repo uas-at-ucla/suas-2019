@@ -1,5 +1,7 @@
 #include "autopilot_interface.h"
 
+#include <iostream>
+
 namespace spinny {
 namespace control {
 namespace io {
@@ -36,22 +38,6 @@ void set_velocity(float vx, float vy, float vz,
 
   printf("VELOCITY SETPOINT UVW = [ %.4f , %.4f , %.4f ] \n", sp.vx, sp.vy,
          sp.vz);
-}
-
-void set_acceleration(float ax, float ay, float az,
-                      mavlink_set_position_target_local_ned_t &sp) {
-  // NOT IMPLEMENTED
-  fprintf(stderr, "set_acceleration doesn't work yet \n");
-  throw 1;
-
-  sp.type_mask = MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_ACCELERATION &
-                 MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY;
-
-  sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-
-  sp.afx = ax;
-  sp.afy = ay;
-  sp.afz = az;
 }
 
 void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp) {
@@ -110,7 +96,6 @@ void AutopilotInterface::read_messages() {
       current_messages.compid = message.compid;
 
       // Handle Message ID
-      printf("got message %d\n", message.msgid);
       switch (message.msgid) {
         case MAVLINK_MSG_ID_HEARTBEAT: {
           mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
@@ -208,7 +193,8 @@ void AutopilotInterface::read_messages() {
 
     // give the write thread time to use the port
     if (writing_status_ > false) {
-      usleep(1e6 / 1e4);
+      // TODO(comran): This may break stuff for the write thread...
+      //    usleep(1e6 / 1e4);
     }
   }
 }
@@ -350,16 +336,20 @@ void AutopilotInterface::start() {
     usleep(1e6 / 2);
   }
 
-  mavlink_data_stream_t data_stream_rate;
-  data_stream_rate.stream_id = MAV_DATA_STREAM_ALL;
-  data_stream_rate.message_rate = 1;
-  data_stream_rate.on_off = 1;
+  // Prepare command for off-board mode
+  mavlink_command_long_t com = {0};
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_SET_MESSAGE_INTERVAL;
+  com.confirmation = true;
+  com.param1 = MAV_DATA_STREAM_ALL;
+  com.param2 = 1;
 
-  mavlink_message_t data_stream_rate_message;
-  mavlink_msg_data_stream_encode(system_id, companion_id,
-                                 &data_stream_rate_message, &data_stream_rate);
+  // Encode
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
 
-  if (write_message(data_stream_rate_message) < 1) {
+  if (mavlink_serial_->write_message(message) < 1) {
     fprintf(stderr, "WARNING: could not set faster data stream rate\n");
   }
 
@@ -391,6 +381,69 @@ void AutopilotInterface::start() {
   printf("\n");
 
   return;
+}
+
+void AutopilotInterface::Arm() {
+  mavlink_command_long_t com;
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_COMPONENT_ARM_DISARM;
+  com.confirmation = true;
+  com.param1 = 1;  // Should arm.
+
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
+}
+
+void AutopilotInterface::Takeoff() {
+  mavlink_global_position_int_t gps = current_messages.global_position_int;
+
+  mavlink_command_long_t com;
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_NAV_TAKEOFF;
+  com.confirmation = true;
+  com.param5 = static_cast<double>(gps.lat) / 1e7;
+  com.param6 = static_cast<double>(gps.lon) / 1e7;
+  com.param7 = 5;  // Altitude
+
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
+}
+
+void AutopilotInterface::Offboard() {
+  mavlink_command_long_t com = {0};
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_NAV_GUIDED_ENABLE;
+  com.confirmation = true;
+  com.param1 = 1;
+
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
+}
+
+void AutopilotInterface::Land() {
+  mavlink_global_position_int_t gps = current_messages.global_position_int;
+
+  mavlink_command_long_t com;
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_NAV_LAND;
+  com.confirmation = true;
+  com.param5 = static_cast<double>(gps.lat) / 1e7;
+  com.param6 = static_cast<double>(gps.lon) / 1e7;
+
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
 }
 
 void AutopilotInterface::stop() {
@@ -447,7 +500,6 @@ void AutopilotInterface::read_thread() {
 
   while (!time_to_exit_) {
     read_messages();
-    usleep(1e6 / 100);
   }
 
   reading_status_ = false;

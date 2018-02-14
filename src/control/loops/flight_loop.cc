@@ -11,12 +11,13 @@ namespace control {
 namespace loops {
 
 FlightLoop::FlightLoop()
-    : running_(false),
-      phased_loop_(std::chrono::milliseconds(25),
-                   std::chrono::milliseconds(10)) {}
+    : state_(UNINITIALIZED),
+      running_(false),
+      phased_loop_(std::chrono::milliseconds(50),
+                   std::chrono::milliseconds(0)) {}
 
 void FlightLoop::RunIteration() {
-  if(!::spinny::control::loops::flight_loop_queue.sensors.FetchLatest()) {
+  if (!::spinny::control::loops::flight_loop_queue.sensors.FetchLatest()) {
     return;
   }
 
@@ -24,13 +25,15 @@ void FlightLoop::RunIteration() {
       std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start_;
 
-  ::std::cout << "ITERATE " << elapsed.count() << " " << std::setprecision(12)
-              << ::spinny::control::loops::flight_loop_queue.sensors->latitude
-              << ", "
-              << ::spinny::control::loops::flight_loop_queue.sensors->longitude
-              << " @ alt "
-              << ::spinny::control::loops::flight_loop_queue.sensors->altitude
-              << std::endl;
+  ::std::cout
+      << "ITERATE " << elapsed.count() << " " << std::setprecision(12)
+      << ::spinny::control::loops::flight_loop_queue.sensors->latitude << ", "
+      << ::spinny::control::loops::flight_loop_queue.sensors->longitude
+      << " @ alt "
+      << ::spinny::control::loops::flight_loop_queue.sensors->altitude
+      << " @ rel_alt "
+      << ::spinny::control::loops::flight_loop_queue.sensors->relative_altitude
+      << std::endl;
   ::std::cout
       << ::spinny::control::loops::flight_loop_queue.sensors->accelerometer_x
       << ", "
@@ -61,7 +64,8 @@ void FlightLoop::RunIteration() {
       << ::spinny::control::loops::flight_loop_queue.sensors->battery_voltage
       << " volts | current "
       << ::spinny::control::loops::flight_loop_queue.sensors->battery_current
-      << ::std::endl << ::std::endl;
+      << ::std::endl
+      << ::std::endl;
 
   auto output_message =
       ::spinny::control::loops::flight_loop_queue.output.MakeMessage();
@@ -70,25 +74,48 @@ void FlightLoop::RunIteration() {
   output_message->velocity_y = 0;
   output_message->velocity_z = 0;
 
+  output_message->velocity_control = false;
   output_message->arm = false;
   output_message->takeoff = false;
   output_message->land = false;
   output_message->throttle_cut = false;
 
-  switch(state_) {
+  std::cout << "STATE: " << state_ << std::endl;
+  static int i = 0;
+  i++;
+  switch (state_) {
     case UNINITIALIZED:
+      state_ = ARMING;
       break;
     case STANDBY:
       break;
     case ARMING:
       output_message->arm = true;
+      if (i > 80) {
+        state_ = TAKING_OFF;
+      }
       break;
     case ARMED:
       break;
     case TAKING_OFF:
+      output_message->arm = true;
       output_message->takeoff = true;
+      if (::spinny::control::loops::flight_loop_queue.sensors
+              ->relative_altitude > 2.2) {
+        state_ = IN_AIR;
+      }
       break;
     case IN_AIR:
+      output_message->velocity_control = true;
+      if(i % 400 < 100) {
+        output_message->velocity_y = 10;
+      } else if(i % 400 < 200) {
+        output_message->velocity_x = 10;
+      } else if(i % 400 < 300) {
+        output_message->velocity_y = -10;
+      } else {
+        output_message->velocity_x = -10;
+      }
       break;
     case LANDING:
       output_message->land = true;

@@ -112,6 +112,10 @@ def main():
     # sure to kill everything if any errors occur.
     try:
         if run_simulated_drone:
+            processes.spawn_process( \
+                    "socat pty,link=/tmp/virtualcom0,raw udp4-listen:14550", \
+                    None, True, verbose)
+
             if run_3D_simulator:
                 processes.spawn_process(
                     "../../lib/scripts/bazel_run.sh " \
@@ -138,9 +142,6 @@ def main():
                     verbose)
 
         if run_commander:
-            processes.spawn_process( \
-                    "socat pty,link=/tmp/virtualcom0,raw udp4-listen:14550", \
-                    None, True, verbose)
             time.sleep(6)
             processes.spawn_process( \
                     "../../lib/scripts/bazel_run.sh //src/control/io:io", \
