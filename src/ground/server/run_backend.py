@@ -6,7 +6,7 @@ import sys
 # directory that this script is in.
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
-RUN_INTEROP = True
+RUN_INTEROP = False
 
 import sys
 sys.dont_write_bytecode = True

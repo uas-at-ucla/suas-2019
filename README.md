@@ -36,7 +36,7 @@ and reliability for the control software.
 automatically build every commit that is pushed to this Github repository.
 
 ### Installation
-Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/SETUP.md).
+Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/tools/build/SETUP.md).
 
 ### Platforms and Libraries Used
  * [Arducopter](https://github.com/ArduPilot/ardupilot/tree/master/ArduCopter) as the flight controller platform
