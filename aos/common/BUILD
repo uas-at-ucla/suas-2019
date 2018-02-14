@@ -1,6 +1,6 @@
 package(default_visibility = ['//visibility:public'])
 
-load('//aos/build:queues.bzl', 'queue_library')
+load('//aos/build_queues:queues.bzl', 'queue_library')
 load("//tools:environments.bzl", "mcu_cpus")
 
 queue_library(
@@ -51,17 +51,17 @@ cc_library(
 genrule(
   name = 'gen_queue_primitives',
   visibility = ['//visibility:private'],
-  tools = ['//aos/build/queues:queue_primitives'],
+  tools = ['//aos/build_queues/queues:queue_primitives'],
   outs = ['queue_primitives.h'],
-  cmd = '$(location //aos/build/queues:queue_primitives) $@',
+  cmd = '$(location //aos/build_queues/queues:queue_primitives) $@',
 )
 
 genrule(
   name = 'gen_print_field',
   visibility = ['//visibility:private'],
-  tools = ['//aos/build/queues:print_field'],
+  tools = ['//aos/build_queues/queues:print_field'],
   outs = ['print_field.cc'],
-  cmd = '$(location //aos/build/queues:print_field) $@',
+  cmd = '$(location //aos/build_queues/queues:print_field) $@',
 )
 
 cc_library(

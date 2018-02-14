@@ -126,7 +126,7 @@ And that's all the commonly used git controls. There are other useful commands y
 The `install.sh` file in the `build` directory abstracts the entire
 installation process.
 ```bash
-./tools/build/install.sh
+./tools/installation/install.sh
 ```
 
 After successful installation, the ground control software can be run using:
