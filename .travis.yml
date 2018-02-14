@@ -2,7 +2,7 @@ dist: trusty
 sudo: required
 
 install:
- - sudo $TRAVIS_BUILD_DIR/tools/build/install.sh
+ - sudo $TRAVIS_BUILD_DIR/tools/installation/install.sh
 
 script:
  - bazel test //src/...
