@@ -8,6 +8,7 @@ import Home from "./Home/Home";
 import Analytics from "./Analytics/Analytics";
 import Images from "./Images/Images";
 import Settings from "./Settings/Settings";
+import Training from "./Training/Training";
 
 class App extends Component {
   constructor(props) {
@@ -33,6 +34,8 @@ class App extends Component {
         return <Analytics appState={this.state} />;
       case "Images":
         return <Images appState={this.state} socketEmit={this.socketEmit} />;
+      case "Training":
+        return <Training appState={this.state} socketEmit={this.socketEmit} />;
       case "Settings":
         return <Settings appState={this.state} socketEmit={this.socketEmit}
                          setAppState={this.setAppState}/>;

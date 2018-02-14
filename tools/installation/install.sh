@@ -112,30 +112,30 @@ echo "";
 
 ##########################################################################
 # Do docker stuff
-if [ $OS = "Linux" ]
-then
-    docker_exists=$(groups | grep -o "docker");
-    if [ $docker_exists = "docker" ]
-    then
-        echo "A ${RED}docker${NO_COLOR} group already exists.\nIf the docker is not working, remove the group by executing the command ${RED}sudo groupdel docker${NO_COLOR} and run this installation script again.\n";
-    else
-        echo "\nNo group ${RED}docker${NO_COLOR} exists. Setting up docker...";
-        sudo docker stop interop-server > /dev/null;
-        sudo docker rm interop-server > /dev/null;
-        sudo ../ground/interop/tools/setup_docker.sh;
-        sudo ../ground/interop/server/run.sh;
-        sudo groupadd docker;
-        sudo usermod -aG docker $USER;
-    fi
-elif [ $OS = "Darwin" ]
-then
-    which -s docker
-    if [[ $? != 0 ]]
-    then
-        brew cask install docker
-    fi
-    open -a Docker
-    docker pull auvsisuas/interop-server
-fi
+# if [ $OS = "Linux" ]
+# then
+#     docker_exists=$(groups | grep -o "docker");
+#     if [ $docker_exists = "docker" ]
+#     then
+#         echo "A ${RED}docker${NO_COLOR} group already exists.\nIf the docker is not working, remove the group by executing the command ${RED}sudo groupdel docker${NO_COLOR} and run this installation script again.\n";
+#     else
+#         echo "\nNo group ${RED}docker${NO_COLOR} exists. Setting up docker...";
+#         sudo docker stop interop-server > /dev/null;
+#         sudo docker rm interop-server > /dev/null;
+#         sudo ../ground/interop/tools/setup_docker.sh;
+#         sudo ../ground/interop/server/run.sh;
+#         sudo groupadd docker;
+#         sudo usermod -aG docker $USER;
+#     fi
+# elif [ $OS = "Darwin" ]
+# then
+#     which -s docker
+#     if [[ $? != 0 ]]
+#     then
+#         brew cask install docker
+#     fi
+#     open -a Docker
+#     docker pull auvsisuas/interop-server
+# fi
 
 echo "${NO_COLOR}After installation is complete, you can run the ground control software by executing this command:\n${RED}sudo python ../ground/run_ground.py${NO_COLOR}\n"
