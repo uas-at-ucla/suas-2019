@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <sys/prctl.h>
 #include <malloc.h>
+#include <pthread.h>
 
 #include "aos/common/die.h"
 #include "aos/common/logging/implementations.h"
