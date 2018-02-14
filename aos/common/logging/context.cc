@@ -4,6 +4,7 @@
 #include <sys/prctl.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <errno.h>
 
 #include <string>
 
