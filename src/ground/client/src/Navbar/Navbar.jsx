@@ -12,6 +12,7 @@ class Navbar extends Component {
       { _id: 2, section: "Analytics" },
       { _id: 3, section: "Images" },
       { _id: 4, section: "Settings" },
+      { _id: 5, section: "Training"},
     ];
   }
 
