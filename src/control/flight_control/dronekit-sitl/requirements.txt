@@ -1,3 +1,0 @@
-psutil>=3.0
-dronekit>=2.0
-six>=1.10
