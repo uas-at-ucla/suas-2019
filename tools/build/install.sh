@@ -61,7 +61,7 @@ sudo apt-get update && sudo apt-get -y install openjdk-8-jdk
 
 echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
 curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-sudo apt-get update && sudo apt-get -y install bazel clang-3.9 libc++-dev
+sudo apt-get update && sudo apt-get -y install bazel clang-3.9 libc++-dev clang-format-3.5
 
 ##########################################################################
 # Install all Python dependencies
