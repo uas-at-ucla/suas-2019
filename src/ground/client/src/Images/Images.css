@@ -1,0 +1,100 @@
+.Images {
+    margin-top: calc(45px + 2vw);
+    padding: 6px 6px 6px 6px;
+}
+
+#PotentialTargets
+{
+    height: 500px;
+    right:0px;
+    width: 50%;
+    display: inline-block;
+    position:absolute;
+}
+
+#ImageList
+{
+    position: fixed;
+    min-height: 175px;
+    max-height: 175px;
+    bottom: 0px;
+    background-color: white;
+    width: 100%;
+    overflow: auto;
+}
+
+#PhotoList
+{
+    width: 30000px;
+}
+
+#CurrentImage
+{
+    height: 400px;
+    width: 525px;
+}
+
+.surveyPhotoEven
+{
+    height: 75px;
+    width: 100px;
+    position: relative;
+    bottom: 0%;
+    box-shadow: 0 0 5px rgba(81, 203, 238, 1)!important;
+    padding: 3px 0px 3px 3px;
+    margin: 5px;
+    border: 1px solid rgba(81, 203, 238, 1);
+}
+.surveyPhotoOdd
+{
+    height: 75px;
+    width: 100px;
+    position: relative;
+    top: 0%;
+    box-shadow: 0 0 5px rgba(81, 203, 238, 1)!important;
+    padding: 3px 0px 3px 3px;
+    margin: 5px;
+    border: 1px solid rgba(81, 203, 238, 1);
+}
+
+#ImageOptions
+{
+    z-index: 100!important;
+    position: absolute;
+    bottom: 175px;
+    -webkit-box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
+    -moz-box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    left:5px;
+    
+    
+}
+
+#actionBar
+{
+    z-index: 100;
+    position: fixed;
+    bottom: 10px;
+    -webkit-box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
+    -moz-box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
+    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
+    background-color: rgba(0, 0, 0, 0.7);
+    border-radius: 5px;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+}
+
+.actionBtn, .actionBtn:hover, .actionBtn:visited
+{
+    background: none;
+    border: none;
+    outline: none;
+    color: white;
+    margin: 5px;
+    font-size: 16pt;
+}
+
+
