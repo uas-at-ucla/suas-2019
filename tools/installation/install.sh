@@ -1,12 +1,15 @@
 #!/bin/sh
 
+## Start timer of install script
+start=`date +%s`;
+
 ##########################################################################
 # Configuratons
 
 echo "\nHello! Welcome to the UCLA UAS 2018 Software Installation!\n";
 
 ## Change to script directory so that the script can be called from anywhere.
-cd "$(dirname "$0")"
+cd "$(dirname "$0")";
 
 ## Determine operating system
 OS=$(uname -s)
@@ -42,6 +45,7 @@ else
     if [ $OS = "Linux" ]
     then
         echo "Installing Node.js...";
+        sudo apt-get install -qq curl;
         curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -;
         sudo apt-get install -y nodejs;
     elif [ $OS = "Darwin" ]
@@ -55,23 +59,38 @@ else
     echo "\n\n";
 fi
 
-# Install bazel
-sudo add-apt-repository -y ppa:openjdk-r/ppa
-sudo apt-get update && sudo apt-get -y install openjdk-8-jdk
+##########################################################################
+# Update git submodules
 
-echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list
-curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-sudo apt-get update && sudo apt-get -y install bazel clang-3.9 libc++-dev clang-format-3.5
+cd ../../src/ground/
+echo "Installing npm packages..."
+git submodule init;
+git submodule update --recursive;
+cd client/;
+npm install --loglevel=error;
+cd ../../../tools/installation/;
+echo "";
 
 ##########################################################################
-# Install all Python dependencies
+# Install all Packages
 
-## Check if all Python packages exist; if not, then install
+## Check if all packages exist; if not, then install
 if [ $OS = "Linux" ]
 then
     echo "Checking all necessary packages..."
-    echo "sudo apt-get install python3.5 python3-pip python3-dev build-essential docker.io\n"
-    sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential docker.io;
+    echo "sudo apt-get install python3.5 python3-pip python-pip python3-dev build-essential\n"
+    sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential sl;
+
+    # Do Bazel stuff
+    sudo add-apt-repository -y ppa:openjdk-r/ppa;
+    sudo apt-get update && sudo apt-get -y -qq install openjdk-8-jdk;
+    echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list;
+    curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
+    sudo apt-get update && sudo apt-get -y -qq install bazel clang-3.9 libc++-dev clang-format-3.5;
+    for i in $(seq 1 3);
+    do
+        sl;
+    done
 elif [ $OS = "Darwin" ]
 then
     # MacOS comes with python
@@ -80,6 +99,9 @@ then
     then
         sudo easy_install pip;
     fi
+    ##### todo #####
+    # Figure out bazel stuff here
+    ################
 fi
 
 ## See if pip version is 9.x -- If not, then update pip
@@ -95,23 +117,28 @@ fi
 ## Install python dependencies
 RED='\033[0;31m';
 NO_COLOR='\033[0m';
-echo "Installing Python dependencies listed in ${RED}build/pip_requirements.txt${NO_COLOR}\nThis may take several seconds..."
+echo "Installing Python dependencies listed in ${RED}pip_requirements.txt${NO_COLOR}\nThis may take several seconds..."
 sudo -H pip install -I -r pip_requirements.txt > /dev/null;
 echo "Python dependencies installed.\n"
 
 ##########################################################################
-# Update git submodules
-cd ../..
-echo "Installing npm packages..."
-git submodule init;
-git submodule update --recursive;
-cd ground/client;
-npm install --loglevel=error;
-cd ../..;
-echo "";
+# Do Gazebo stuff
+
+if [ $OS = "Linux" ]
+then
+    echo "Installing gazebo...";
+    bash ubuntu_gazebo_install.sh;
+elif [ $OS = "Darwin" ]
+then
+    # MacOS comes with python
+    echo "Hi";
+    ##### todo #####
+    # Figure out Gazebo stuff here
+    ################
+fi
 
 ##########################################################################
-# Do docker stuff
+# Do docker stuff for local machines
 # if [ $OS = "Linux" ]
 # then
 #     docker_exists=$(groups | grep -o "docker");
@@ -138,4 +165,9 @@ echo "";
 #     docker pull auvsisuas/interop-server
 # fi
 
-echo "${NO_COLOR}After installation is complete, you can run the ground control software by executing this command:\n${RED}sudo python ../ground/run_ground.py${NO_COLOR}\n"
+## Display time of installation
+end=`date +%s`;
+runtime=$((end-start));
+echo "${NO_COLOR}\nTime of installation:\n${RED}$runtime seconds${NO_COLOR}\n"
+
+echo "${NO_COLOR}You can now run the ground control software by executing this command:\n${RED}sudo python ../../src/control/run.py${NO_COLOR}\n"
