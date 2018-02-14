@@ -6,6 +6,7 @@
 /tools/build/bazel-*
 package-lock.json
 **/node_modules
+core
 
 /src/vision/target_generator/*.egg-info/
 /src/vision/target_generator/.installed.cfg
