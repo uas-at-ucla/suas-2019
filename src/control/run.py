@@ -119,11 +119,11 @@ def main():
             if run_3D_simulator:
                 processes.spawn_process(
                     "../../lib/scripts/bazel_run.sh " \
-                            "@PX4_sitl//:px4_sitl_visualize",
+                            "@PX4_sitl//:gazebo_visualize",
                     None, True, verbose)
             else:
                 processes.spawn_process(
-                    "../../lib/scripts/bazel_run.sh @PX4_sitl//:px4_sitl",
+                    "../../lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
                     None, True, verbose)
 
         if run_ground:

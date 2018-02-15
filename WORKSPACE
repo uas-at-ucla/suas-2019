@@ -74,7 +74,7 @@ new_http_archive(
 git_repository(
   name = "PX4_sitl",
   remote = "https://github.com/uas-at-ucla/PX4_sitl.git",
-  commit = "4283ebe4207fd69364aa8b8a394ca77ff82fd2c9",
+  commit = "e9aa8c07cd9b62e484512826ea4bdab396be3801",
 )
 
 git_repository(
