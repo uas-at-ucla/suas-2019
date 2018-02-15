@@ -31,3 +31,5 @@ sudo apt-get install libgazebo8-dev -y
 
 # Go to the firmware directory
 cd $clone_dir/Firmware
+
+cd "$(dirname "$0")";
