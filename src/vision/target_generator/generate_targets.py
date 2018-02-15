@@ -22,6 +22,8 @@ def main(visualize):
     img_names = [
         os.path.splitext(os.path.split(path)[1])[0] for path in imgs_paths
     ]
+    if len(imgs_paths) == 0:
+        raise ValueError("ERROR: No background tiles loaded (gmap_tiles)")
 
     data_paths = [
         os.path.join(gs.DATA_PATH, 'flight_data', 'data.json')
