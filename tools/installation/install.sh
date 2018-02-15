@@ -74,6 +74,10 @@ echo "";
 ##########################################################################
 # Install all Packages
 
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+sudo apt-get update
+sudo apt-get install gcc-6 g++-6
+
 ## Check if all packages exist; if not, then install
 if [ $OS = "Linux" ]
 then
@@ -129,7 +133,9 @@ then
     ## Miscellaneous commands that we have to run
     ## Note: not all commands may be needed
     sudo add-apt-repository ppa:webupd8team/java -y;
-    sudo apt-get install -qq cmake;
+    sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
+    sudo apt-get update
+    sudo apt-get install -qq cmake python-empy;
 
     ## Finally install gazebo stuff
     echo "Installing gazebo...";
