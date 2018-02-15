@@ -246,6 +246,7 @@ RawQueue *RawQueue::Fetch(const char *name, size_t length, int hash,
   if (kFetchDebug) {
     printf("fetching queue %s\n", name);
   }
+
   if (mutex_lock(&global_core->mem_struct->queues.lock) != 0) {
     LOG(FATAL, "mutex_lock(%p) failed\n",
         &global_core->mem_struct->queues.lock);

@@ -3,6 +3,7 @@
 
 #include "aos/common/util/phased_loop.h"
 #include "aos/common/time.h"
+#include "aos/linux_code/init.h"
 
 #include "src/control/loops/flight_loop.q.h"
 
@@ -15,6 +16,7 @@ class FlightLoop {
   FlightLoop();
 
   void Run();
+  void Iterate();
 
   enum State {
     UNINITIALIZED = 0,
