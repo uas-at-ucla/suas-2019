@@ -139,26 +139,29 @@ echo "Python dependencies installed.\n"
 ##########################################################################
 # Do Gazebo stuff
 
-if [ $OS = "Linux" ]
-then
-    ## Miscellaneous commands that we have to run
-    ## Note: not all commands may be needed
-    sudo add-apt-repository ppa:webupd8team/java -y;
-    sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
-    sudo apt-get update
-    sudo apt-get install -qq cmake python-empy;
+#TODO(comran): Gazebo should be installed separately until we get it working
+#              with Travis.
 
-    ## Finally install gazebo stuff
-    echo "Installing gazebo...";
-    bash ubuntu_gazebo_install.sh;
-elif [ $OS = "Darwin" ]
-then
-    # MacOS comes with python
-    echo "Hi";
-    ##### todo #####
-    # Figure out Gazebo stuff here
-    ################
-fi
+# if [ $OS = "Linux" ]
+# then
+#     ## Miscellaneous commands that we have to run
+#     ## Note: not all commands may be needed
+#     sudo add-apt-repository ppa:webupd8team/java -y;
+#     sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
+#     sudo apt-get update
+#     sudo apt-get install -qq cmake python-empy;
+
+#     ## Finally install gazebo stuff
+#     echo "Installing gazebo...";
+#     bash ubuntu_gazebo_install.sh;
+# elif [ $OS = "Darwin" ]
+# then
+#     # MacOS comes with python
+#     echo "Hi";
+#     ##### todo #####
+#     # Figure out Gazebo stuff here
+#     ################
+# fi
 
 ##########################################################################
 # Do docker stuff for local machines
