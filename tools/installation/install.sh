@@ -126,6 +126,12 @@ echo "Python dependencies installed.\n"
 
 if [ $OS = "Linux" ]
 then
+    ## Miscellaneous commands that we have to run
+    ## Note: not all commands may be needed
+    sudo add-apt-repository ppa:webupd8team/java;
+    sudo apt-get install -qq cmake;
+
+    ## Finally install gazebo stuff
     echo "Installing gazebo...";
     bash ubuntu_gazebo_install.sh;
 elif [ $OS = "Darwin" ]
@@ -169,5 +175,7 @@ fi
 end=`date +%s`;
 runtime=$((end-start));
 echo "${NO_COLOR}\nTime of installation:\n${RED}$runtime seconds${NO_COLOR}\n"
+
+echo "${NO_COLOR}\nIn order to test your installation, execute this command:\n${RED}./test-installation.sh${NO_COLOR}\n"
 
 echo "${NO_COLOR}You can now run the ground control software by executing this command:\n${RED}sudo python ../../src/control/run.py${NO_COLOR}\n"
