@@ -128,7 +128,7 @@ if [ $OS = "Linux" ]
 then
     ## Miscellaneous commands that we have to run
     ## Note: not all commands may be needed
-    sudo add-apt-repository ppa:webupd8team/java;
+    sudo add-apt-repository ppa:webupd8team/java -y;
     sudo apt-get install -qq cmake;
 
     ## Finally install gazebo stuff
