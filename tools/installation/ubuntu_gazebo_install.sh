@@ -5,7 +5,7 @@
 ##
 ## Installs:
 ## - Common dependencies libraries and tools as defined in `ubuntu_sim_common_deps.sh`
-## - Gazebo8 simulator
+## - Gazebo simulator
 
 echo "Downloading dependent script 'ubuntu_sim_common_deps.sh'"
 # Source the ubuntu_sim_common_deps.sh script directly from github
@@ -17,19 +17,19 @@ if [[ $wget_return_code -ne 0 ]]; then echo "Error downloading 'ubuntu_sim_commo
 . <(echo "${common_deps}")
 
 # Gazebo simulator dependencies
-echo "Installing Gazebo8"
+echo "Installing Gazebo"
 sudo apt-get install protobuf-compiler libeigen3-dev libopencv-dev -y
 sudo sh -c 'echo "deb http://packages.osrfoundation.org/gazebo/ubuntu-stable `lsb_release -cs` main" > /etc/apt/sources.list.d/gazebo-stable.list'
 ## Setup keys
 wget http://packages.osrfoundation.org/gazebo.key -O - | sudo apt-key add -
 ## Update the debian database:
 sudo apt-get update -y
-## Install Gazebo8
-sudo apt-get install gazebo8 -y
-## For developers (who work on top of Gazebo) one extra package
-sudo apt-get install libgazebo8-dev -y
+## Install Gazebo7
+sudo apt-get install gazebo7 libgazebo7-dev -y
+
+sudo pip install numpy toml
 
 # Go to the firmware directory
-cd $clone_dir/Firmware
+#cd $clone_dir/Firmware
 
-cd "$(dirname "$0")";
+#cd "$(dirname "$0")";
