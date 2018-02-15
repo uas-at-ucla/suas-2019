@@ -14,7 +14,12 @@ FlightLoop::FlightLoop()
     : state_(UNINITIALIZED),
       running_(false),
       phased_loop_(std::chrono::milliseconds(50),
-                   std::chrono::milliseconds(0)) {}
+                   std::chrono::milliseconds(0)),
+      start_(std::chrono::system_clock::now()) {}
+
+void FlightLoop::Iterate() {
+  RunIteration();
+}
 
 void FlightLoop::RunIteration() {
   if (!::spinny::control::loops::flight_loop_queue.sensors.FetchLatest()) {
@@ -133,8 +138,6 @@ void FlightLoop::RunIteration() {
 
 void FlightLoop::Run() {
   running_ = true;
-
-  start_ = std::chrono::system_clock::now();
 
   while (running_) {
     RunIteration();
