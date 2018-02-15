@@ -34,6 +34,16 @@ then
 fi
 
 ##########################################################################
+# Update python2.7
+sudo apt-get install -qq -y gcc-multilib g++-multilib libffi-dev libffi6 libffi6-dbg python-crypto python-mox3 python-pil python-ply libssl-dev zlib1g-dev libbz2-dev libexpat1-dev libbluetooth-dev libgdbm-dev dpkg-dev quilt autotools-dev libreadline-dev libtinfo-dev libncursesw5-dev tk-dev blt-dev libssl-dev zlib1g-dev libbz2-dev libexpat1-dev libbluetooth-dev libsqlite3-dev libgpm2 mime-support netbase net-tools bzip2
+wget https://www.python.org/ftp/python/2.7.9/Python-2.7.9.tgz
+tar xfz Python-2.7.9.tgz
+cd Python-2.7.9/
+./configure --prefix /usr/local/lib/python2.7.9 --enable-ipv6
+make
+sudo make install
+
+##########################################################################
 # Install Node.js
 
 ## See if node version is 8.x -- If not, then update node
@@ -73,6 +83,11 @@ echo "";
 
 ##########################################################################
 # Install all Packages
+
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test -y
+sudo apt-get update
+sudo apt-get install gcc-6 g++-6
+sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-6
 
 ## Check if all packages exist; if not, then install
 if [ $OS = "Linux" ]
@@ -124,24 +139,29 @@ echo "Python dependencies installed.\n"
 ##########################################################################
 # Do Gazebo stuff
 
-if [ $OS = "Linux" ]
-then
-    ## Miscellaneous commands that we have to run
-    ## Note: not all commands may be needed
-    sudo add-apt-repository ppa:webupd8team/java;
-    sudo apt-get install -qq cmake;
+#TODO(comran): Gazebo should be installed separately until we get it working
+#              with Travis.
 
-    ## Finally install gazebo stuff
-    echo "Installing gazebo...";
-    bash ubuntu_gazebo_install.sh;
-elif [ $OS = "Darwin" ]
-then
-    # MacOS comes with python
-    echo "Hi";
-    ##### todo #####
-    # Figure out Gazebo stuff here
-    ################
-fi
+# if [ $OS = "Linux" ]
+# then
+#     ## Miscellaneous commands that we have to run
+#     ## Note: not all commands may be needed
+#     sudo add-apt-repository ppa:webupd8team/java -y;
+#     sudo add-apt-repository ppa:george-edison55/cmake-3.x -y
+#     sudo apt-get update
+#     sudo apt-get install -qq cmake python-empy;
+
+#     ## Finally install gazebo stuff
+#     echo "Installing gazebo...";
+#     bash ubuntu_gazebo_install.sh;
+# elif [ $OS = "Darwin" ]
+# then
+#     # MacOS comes with python
+#     echo "Hi";
+#     ##### todo #####
+#     # Figure out Gazebo stuff here
+#     ################
+# fi
 
 ##########################################################################
 # Do docker stuff for local machines
