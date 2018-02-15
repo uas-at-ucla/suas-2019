@@ -20,6 +20,17 @@ cc_binary(
   ],
 )
 
+cc_test(
+  name = 'flight_loop_lib_test',
+  srcs = [
+    'flight_loop_lib_test.cc',
+  ],
+  deps = [
+    ':flight_loop_lib',
+    '@gtest//:googletest',
+  ],
+)
+
 cc_library(
   name = 'flight_loop_lib',
   visibility = ['//visibility:public'],
