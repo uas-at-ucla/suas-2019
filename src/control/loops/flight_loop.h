@@ -15,6 +15,7 @@ class FlightLoop {
   FlightLoop();
 
   void Run();
+  void Iterate();
 
   enum State {
     UNINITIALIZED = 0,
