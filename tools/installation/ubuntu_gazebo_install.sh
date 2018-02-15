@@ -27,6 +27,7 @@ sudo apt-get update -y
 ## Install Gazebo7
 sudo apt-get install gazebo7 libgazebo7-dev -y
 
+sudo pip install requests[security]
 sudo pip install numpy toml
 
 # Go to the firmware directory
