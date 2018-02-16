@@ -57,13 +57,17 @@ toolchain {
   # to be fixed, maybe with auto-detection?
   cxx_builtin_include_directory: '/usr/include/c++/4.8'
   cxx_builtin_include_directory: '/usr/include/c++/v1'
-  cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu/c++/4.8'
+  cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu/c++/3.9'
   cxx_builtin_include_directory: '/usr/include/c++/4.8/backward'
+  cxx_builtin_include_directory: '/usr/include/libcxxabi'
   cxx_builtin_include_directory: '/usr/local/include'
   cxx_builtin_include_directory: '/usr/lib/llvm-3.6/lib/clang/3.9.1/include'
   cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu'
   cxx_builtin_include_directory: '/usr/include'
   cxx_builtin_include_directory: '/usr/lib/clang/3.9.1/include'
+
+  cxx_flag: "-isystem"
+  cxx_flag: "/usr/include/libcxxabi"
 
   linker_flag: "-lstdc++"
   linker_flag: "-lc++"
