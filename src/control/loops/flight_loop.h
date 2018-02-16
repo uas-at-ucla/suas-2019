@@ -3,6 +3,7 @@
 
 #include "aos/common/util/phased_loop.h"
 #include "aos/common/time.h"
+#include "aos/linux_code/init.h"
 
 #include "src/control/loops/flight_loop.q.h"
 

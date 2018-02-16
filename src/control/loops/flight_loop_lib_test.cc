@@ -54,7 +54,7 @@ TEST_F(FlightLoopTest, DoesNothing) {
 }  // namespace spinny
 
 int main(int argc, char **argv) {
-  ::aos::InitNRT();
+  ::aos::InitCreate();
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
