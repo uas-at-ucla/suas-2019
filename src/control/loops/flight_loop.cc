@@ -11,21 +11,14 @@ namespace control {
 namespace loops {
 
 FlightLoop::FlightLoop()
-    : state_(UNINITIALIZED),
+    : state_(STANDBY),
       running_(false),
-      phased_loop_(std::chrono::milliseconds(50),
-                   std::chrono::milliseconds(0)),
+      phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
       start_(std::chrono::system_clock::now()) {}
 
-void FlightLoop::Iterate() {
-  RunIteration();
-}
+void FlightLoop::Iterate() { RunIteration(); }
 
-void FlightLoop::RunIteration() {
-  if (!::spinny::control::loops::flight_loop_queue.sensors.FetchLatest()) {
-    return;
-  }
-
+void FlightLoop::DumpSensors() {
   std::chrono::time_point<std::chrono::system_clock> end =
       std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start_;
@@ -69,71 +62,126 @@ void FlightLoop::RunIteration() {
       << ::spinny::control::loops::flight_loop_queue.sensors->battery_voltage
       << " volts | current "
       << ::spinny::control::loops::flight_loop_queue.sensors->battery_current
+      << ::std::endl;
+
+  ::std::cout
+      << "armed "
+      << ::spinny::control::loops::flight_loop_queue.sensors->armed
       << ::std::endl
       << ::std::endl;
 
-  auto output_message =
+}
+
+void FlightLoop::RunIteration() {
+  // TODO(comran): Are these two queues synced?
+  // TODO(comran): Check for stale queue messages.
+  if (!::spinny::control::loops::flight_loop_queue.sensors.FetchLatest()) {
+    return;
+  }
+
+  DumpSensors();
+
+  if(!::spinny::control::loops::flight_loop_queue.goal.FetchLatest()) {
+    return;
+  }
+
+  auto output =
       ::spinny::control::loops::flight_loop_queue.output.MakeMessage();
 
-  output_message->velocity_x = 0;
-  output_message->velocity_y = 0;
-  output_message->velocity_z = 0;
+  // Set defaults for all outputs.
+  output->velocity_x = 0;
+  output->velocity_y = 0;
+  output->velocity_z = 0;
 
-  output_message->velocity_control = false;
-  output_message->arm = false;
-  output_message->takeoff = false;
-  output_message->land = false;
-  output_message->throttle_cut = false;
+  output->velocity_control = false;
+  output->arm = false;
+  output->takeoff = false;
+  output->land = false;
+  output->throttle_cut = false;
 
-  std::cout << "STATE: " << state_ << std::endl;
-  static int i = 0;
-  i++;
+  bool run_mission =
+      ::spinny::control::loops::flight_loop_queue.goal->run_mission;
+
   switch (state_) {
-    case UNINITIALIZED:
-      state_ = ARMING;
-      break;
     case STANDBY:
-      break;
-    case ARMING:
-      output_message->arm = true;
-      if (i > 80) {
-        state_ = TAKING_OFF;
+      if (run_mission) {
+        state_ = ARMING;
       }
+
       break;
+
+    case ARMING:
+      if (!run_mission) {
+        state_ = LANDING;
+      }
+
+      if (::spinny::control::loops::flight_loop_queue.sensors->armed) {
+        state_ = ARMED;
+      }
+
+      output->arm = true;
+
+      break;
+
     case ARMED:
+      if (!run_mission) {
+        state_ = LANDING;
+      }
+
+      if (!::spinny::control::loops::flight_loop_queue.sensors->armed) {
+        state_ = ARMING;
+      }
+
+      state_ = TAKING_OFF;
+
       break;
+
     case TAKING_OFF:
-      output_message->arm = true;
-      output_message->takeoff = true;
+      if (!run_mission) {
+        state_ = LANDING;
+      }
+
+      if (!::spinny::control::loops::flight_loop_queue.sensors->armed) {
+        state_ = ARMING;
+      }
+
+      output->arm = true;
+      output->takeoff = true;
+
       if (::spinny::control::loops::flight_loop_queue.sensors
               ->relative_altitude > 2.2) {
         state_ = IN_AIR;
       }
       break;
+
     case IN_AIR:
-      output_message->velocity_control = true;
-      if(i % 400 < 100) {
-        output_message->velocity_y = 10;
-      } else if(i % 400 < 200) {
-        output_message->velocity_x = 10;
-      } else if(i % 400 < 300) {
-        output_message->velocity_y = -10;
-      } else {
-        output_message->velocity_x = -10;
+      if (!run_mission) {
+        state_ = LANDING;
       }
+
+      if (!::spinny::control::loops::flight_loop_queue.sensors->armed) {
+        state_ = ARMING;
+      }
+
+      output->velocity_control = true;
+      output->velocity_x = 10;
+      output->velocity_y = 10;
       break;
+
     case LANDING:
-      output_message->land = true;
+      output->land = true;
       break;
+
     case FAILSAFE:
-      output_message->land = true;
+      output->land = true;
       break;
+
     case FLIGHT_TERMINATION:
-      output_message->throttle_cut = true;
+      output->throttle_cut = true;
       break;
   }
 
-  output_message.Send();
+  output.Send();
 }
 
 void FlightLoop::Run() {

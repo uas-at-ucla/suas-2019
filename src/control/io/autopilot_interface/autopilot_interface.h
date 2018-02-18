@@ -97,6 +97,9 @@ class AutopilotInterface {
   void Takeoff();
   void Offboard();
   void Land();
+  void FlightTermination();
+
+  void set_message_period();
 
   Mavlink_Messages current_messages;
   mavlink_set_position_target_local_ned_t initial_position;

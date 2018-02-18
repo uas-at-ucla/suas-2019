@@ -19,15 +19,14 @@ class FlightLoop {
   void Iterate();
 
   enum State {
-    UNINITIALIZED = 0,
-    STANDBY = 1,
-    ARMING = 2,
-    ARMED = 3,
-    TAKING_OFF = 4,
-    IN_AIR = 5,
-    LANDING = 6,
-    FAILSAFE = 7,
-    FLIGHT_TERMINATION = 8
+    STANDBY,
+    ARMING,
+    ARMED,
+    TAKING_OFF,
+    IN_AIR,
+    LANDING,
+    FAILSAFE,
+    FLIGHT_TERMINATION
   };
 
   State state() const {
@@ -36,6 +35,8 @@ class FlightLoop {
 
  private:
   void RunIteration();
+
+  void DumpSensors();
 
   State state_;
 
