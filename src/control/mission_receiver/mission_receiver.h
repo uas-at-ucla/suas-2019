@@ -14,7 +14,15 @@ class MissionReceiver {
  public:
   MissionReceiver();
   void Run();
+  void OnConnect();
+  void OnFail();
+
+ private:
+  ::sio::client client_;
 };
+
+void on_connect();
+void on_fail();
 
 }  // namespace mission_receiver
 }  // namespace control
