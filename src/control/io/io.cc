@@ -22,10 +22,10 @@ void quit_handler(int sig) {
 }
 
 IO::IO()
+//  : copter_io_("/dev/ttyS0", 921600) {
     : copter_io_("/tmp/virtualcom0", 921600),
       autopilot_sensor_reader_(&copter_io_),
       autopilot_output_writer_(&copter_io_) {
-  // IO::IO() : copter_io_("/dev/ttyS0", 921600) {
   copter_io_quit = &copter_io_;
   io_quit = this;
   signal(SIGINT, quit_handler);
@@ -39,7 +39,7 @@ void IO::Run() {
   ::std::thread autopilot_output_writer_thread(
       ::std::ref(autopilot_output_writer_));
 
-  // Wait forever. Not much else to do...
+  // Wait forever.
   while (run_) {
     const int r = select(0, nullptr, nullptr, nullptr, nullptr);
     if (r != 0) {
@@ -122,6 +122,10 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->battery_current =
       static_cast<float>(sys_status.current_battery) / 1e3;
 
+  // Armed?
+  mavlink_heartbeat_t heartbeat = copter_io_->current_messages.heartbeat;
+  flight_loop_sensors_message->armed = !!(heartbeat.base_mode >> 7);
+
   flight_loop_sensors_message.Send();
 }
 
@@ -159,9 +163,11 @@ void AutopilotOutputWriter::Write() {
   }
 
   if (::spinny::control::loops::flight_loop_queue.output->land) {
+    copter_io_->Land();
   }
 
   if (::spinny::control::loops::flight_loop_queue.output->throttle_cut) {
+    copter_io_->FlightTermination();
   }
 }
 

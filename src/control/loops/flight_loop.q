@@ -26,6 +26,17 @@ queue_group FlightLoopQueue {
 
     float battery_voltage;
     float battery_current;
+
+    bool armed;
+    int32_t autopilot_state;
+  };
+
+  message Status {
+    int32_t state;
+  };
+
+  message Goal {
+    bool run_mission;
   };
 
   message Output {
@@ -41,6 +52,8 @@ queue_group FlightLoopQueue {
   };
 
   queue Sensors sensors;
+  queue Status status;
+  queue Goal goal;
   queue Output output;
 };
 

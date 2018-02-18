@@ -49,6 +49,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-v', action="store_true")
     parser.add_argument('--simulator3D', action="store_true")
+    parser.add_argument('--simulatorGazeboHeadless', action="store_true")
     parser.add_argument('--simulator', action="store_true")
     parser.add_argument('--ground', action="store_true")
     parser.add_argument('--communications', action="store_true")
@@ -60,6 +61,7 @@ def main():
     run_all = True
     run_simulated_drone = False
     run_3D_simulator = False
+    run_headless_gazebo_simulator = False
     run_ground = False
     run_commander = False
     run_communications = False
@@ -70,6 +72,11 @@ def main():
     if options.simulator:
         run_all = False
         run_simulated_drone = True
+
+    if options.simulatorGazeboHeadless:
+        run_all = False
+        run_simulated_drone = True
+        run_headless_gazebo_simulator = True
 
     if options.simulator3D:
         run_all = False
@@ -113,10 +120,16 @@ def main():
     try:
         if run_simulated_drone:
             processes.spawn_process( \
-                    "socat pty,link=/tmp/virtualcom0,raw udp4-listen:14550", \
+                    "socat pty,link=/tmp/virtualcom0,raw udp4-listen:14540", \
                     None, True, verbose)
 
-            if run_3D_simulator:
+            if run_headless_gazebo_simulator:
+                processes.spawn_process(
+                    "../../lib/scripts/bazel_run.sh " \
+                            "@PX4_sitl//:gazebo",
+                    None, True, verbose)
+
+            elif run_3D_simulator:
                 processes.spawn_process(
                     "../../lib/scripts/bazel_run.sh " \
                             "@PX4_sitl//:gazebo_visualize",
