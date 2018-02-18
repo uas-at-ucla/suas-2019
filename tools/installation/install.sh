@@ -32,9 +32,6 @@ then
         brew update
     fi
 fi
-
-##########################################################################
-
 ##########################################################################
 # Install Node.js
 
@@ -86,6 +83,7 @@ then
     # Do Bazel stuff
     sudo add-apt-repository -y ppa:openjdk-r/ppa;
     sudo apt-get update && sudo apt-get -y -qq install openjdk-8-jdk;
+    sudo apt-get -qq install libc++abi-dev;
     echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list;
     curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
     sudo apt-get update && sudo apt-get -y -qq install bazel clang-3.9 libc++-dev clang-format-3.5;
@@ -95,12 +93,7 @@ then
     done
 elif [ $OS = "Darwin" ]
 then
-    # MacOS comes with python
-    which -s pip
-    if [[ $? != 0 ]]
-    then
-        sudo easy_install pip;
-    fi
+    echo "Hi";
     ##### todo #####
     # Figure out bazel stuff here
     ################
@@ -148,34 +141,6 @@ echo "Python dependencies installed.\n"
 #     ##### todo #####
 #     # Figure out Gazebo stuff here
 #     ################
-# fi
-
-##########################################################################
-# Do docker stuff for local machines
-# if [ $OS = "Linux" ]
-# then
-#     docker_exists=$(groups | grep -o "docker");
-#     if [ $docker_exists = "docker" ]
-#     then
-#         echo "A ${RED}docker${NO_COLOR} group already exists.\nIf the docker is not working, remove the group by executing the command ${RED}sudo groupdel docker${NO_COLOR} and run this installation script again.\n";
-#     else
-#         echo "\nNo group ${RED}docker${NO_COLOR} exists. Setting up docker...";
-#         sudo docker stop interop-server > /dev/null;
-#         sudo docker rm interop-server > /dev/null;
-#         sudo ../ground/interop/tools/setup_docker.sh;
-#         sudo ../ground/interop/server/run.sh;
-#         sudo groupadd docker;
-#         sudo usermod -aG docker $USER;
-#     fi
-# elif [ $OS = "Darwin" ]
-# then
-#     which -s docker
-#     if [[ $? != 0 ]]
-#     then
-#         brew cask install docker
-#     fi
-#     open -a Docker
-#     docker pull auvsisuas/interop-server
 # fi
 
 ## Display time of installation
