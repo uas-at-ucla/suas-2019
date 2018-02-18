@@ -22,7 +22,8 @@ void quit_handler(int sig) {
 }
 
 IO::IO()
-//  : copter_io_("/dev/ttyS0", 921600) {
+    //  : copter_io_("/dev/ttyS0", 921600) {
+    //  : copter_io_("/tmp/virtualcom0", 921600),
     : copter_io_("/tmp/virtualcom0", 921600),
       autopilot_sensor_reader_(&copter_io_),
       autopilot_output_writer_(&copter_io_) {
@@ -74,8 +75,7 @@ void AutopilotSensorReader::RunIteration() {
       copter_io_->current_messages.time_stamps;
 
   if (!(current_timestamps.global_position_int -
-            last_timestamps_.global_position_int &&
-        current_timestamps.highres_imu - last_timestamps_.highres_imu)) {
+        last_timestamps_.global_position_int)) {
     return;
   }
 
