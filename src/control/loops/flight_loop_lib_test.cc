@@ -45,6 +45,8 @@ TEST_F(FlightLoopTest, DoesNothing) {
   for(int i = 0;i < 100;i++) {
     SendPosition();
     StepLoop();
+
+    CheckQueueForMessages();
   }
 }
 
