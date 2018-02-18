@@ -30,9 +30,9 @@ new_git_repository(
 
 new_git_repository(
   name = 'socketio_client_cpp',
-  remote = 'https://github.com/socketio/socket.io-client-cpp.git',
+  remote = 'https://github.com/uas-at-ucla/socket.io-client-cpp.git',
   build_file = 'lib/third_party/socketio_client_cpp.BUILD',
-  commit = '6063cb1d612f6ca0232d4134a018053fb8faea20',
+  commit = '28d2105f8052641498d305cb5ea02a73e60eb91a',
 )
 
 new_git_repository(
