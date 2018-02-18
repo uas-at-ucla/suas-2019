@@ -184,7 +184,26 @@ void AutopilotInterface::read_messages() {
           break;
         }
 
-        default: { break; }
+        case MAVLINK_MSG_ID_COMMAND_ACK: {
+          mavlink_command_ack_t com;
+          mavlink_msg_command_ack_decode(&message, &com);
+
+          if(com.command == MAV_CMD_COMPONENT_ARM_DISARM) {
+            std::cout << "result: " << (int)com.result << std::endl;;
+          }
+
+          //TODO(comran): Decode ACK messages.
+          break;
+        }
+
+        case MAVLINK_MSG_ID_COMMAND_LONG: {
+          break;
+        }
+
+        default: {
+          //std::cout << "unknown " << (int)message.msgid << std::endl;
+          break;
+        }
       }
     }
 
@@ -304,24 +323,6 @@ void AutopilotInterface::start() {
   // now we're reading messages
   printf("\n");
 
-  printf("CHECK FOR MESSAGES\n");
-
-  while (not current_messages.sysid) {
-    if (time_to_exit_) return;
-    usleep(1e6 / 2);
-  }
-
-  printf("Found\n");
-
-  // now we know autopilot is sending messages
-  printf("\n");
-
-  // System ID
-  if (not system_id) {
-    system_id = current_messages.sysid;
-    printf("GOT VEHICLE SYSTEM ID: %i\n", system_id);
-  }
-
   // Component ID
   if (not autopilot_id) {
     autopilot_id = current_messages.compid;
@@ -334,23 +335,6 @@ void AutopilotInterface::start() {
              current_messages.time_stamps.attitude)) {
     if (time_to_exit_) return;
     usleep(1e6 / 2);
-  }
-
-  // Prepare command for off-board mode
-  mavlink_command_long_t com = {0};
-  com.target_system = system_id;
-  com.target_component = autopilot_id;
-  com.command = MAV_CMD_SET_MESSAGE_INTERVAL;
-  com.confirmation = true;
-  com.param1 = MAV_DATA_STREAM_ALL;
-  com.param2 = 1;
-
-  // Encode
-  mavlink_message_t message;
-  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
-
-  if (mavlink_serial_->write_message(message) < 1) {
-    fprintf(stderr, "WARNING: could not set faster data stream rate\n");
   }
 
   // copy initial position ned
@@ -446,6 +430,81 @@ void AutopilotInterface::Land() {
   write_message(message);
 }
 
+void AutopilotInterface::FlightTermination() {
+  mavlink_command_long_t com;
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_DO_FLIGHTTERMINATION;
+  com.confirmation = true;
+  com.param1 = 1;
+
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
+}
+
+void AutopilotInterface::set_message_period() {
+  for (int i = 0; i < 255; i++) {
+    int32_t interval = -1;
+    bool valid = true;
+
+    switch (i) {
+      case MAVLINK_MSG_ID_HEARTBEAT:
+        interval = 1;
+        break;
+
+      case MAVLINK_MSG_ID_SERVO_OUTPUT_RAW:
+        interval = 0;
+        break;
+
+      case MAVLINK_MSG_ID_SYS_STATUS:
+      case MAVLINK_MSG_ID_BATTERY_STATUS:
+      case MAVLINK_MSG_ID_RADIO_STATUS:
+      case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+      case MAVLINK_MSG_ID_HIGHRES_IMU:
+      case MAVLINK_MSG_ID_ATTITUDE:
+        interval = -1;
+
+      case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
+      case MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED:
+      case MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT:
+      case MAVLINK_MSG_ID_ATTITUDE_QUATERNION:
+      case MAVLINK_MSG_ID_TIMESYNC:
+      case MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET:
+      case MAVLINK_MSG_ID_SYSTEM_TIME:
+      case MAVLINK_MSG_ID_GPS_RAW_INT:
+      case MAVLINK_MSG_ID_WIND_COV:
+      case MAVLINK_MSG_ID_ALTITUDE:
+      case MAVLINK_MSG_ID_VFR_HUD:
+      case MAVLINK_MSG_ID_EXTENDED_SYS_STATE:
+      case MAVLINK_MSG_ID_HOME_POSITION:
+      case MAVLINK_MSG_ID_ESTIMATOR_STATUS:
+      case MAVLINK_MSG_ID_VIBRATION:
+      case MAVLINK_MSG_ID_ATTITUDE_TARGET:
+      case MAVLINK_MSG_ID_TERRAIN_REPORT:
+        interval = -1;
+        break;
+      default:
+        valid = false;
+    }
+
+    if (valid) {
+      mavlink_command_long_t com;
+      com.target_system = system_id;
+      com.target_component = autopilot_id;
+      com.command = MAV_CMD_SET_MESSAGE_INTERVAL;
+      com.param1 = i;
+      com.param2 = interval;
+
+      mavlink_message_t message;
+      mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+      write_message(message);
+    }
+  }
+}
+
 void AutopilotInterface::stop() {
   printf("CLOSE THREADS\n");
 
@@ -524,6 +583,8 @@ void AutopilotInterface::write_thread(void) {
 
   write_setpoint();
   writing_status_ = true;
+
+  set_message_period();
 
   while (!time_to_exit_) {
     // Pixhawk needs to see off-board commands at minimum 2Hz,

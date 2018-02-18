@@ -17,6 +17,8 @@ class FlightLoopTest : public ::testing::Test {
       : flight_loop_queue_(".spinny.control.loops.flight_loop_queue",
                            0x0,
                            ".spinny.control.loops.flight_loop_queue.sensors",
+                           ".spinny.control.loops.flight_loop_queue.status",
+                           ".spinny.control.loops.flight_loop_queue.goal",
                            ".spinny.control.loops.flight_loop_queue.output") {}
 
   void StepLoop() {
@@ -36,12 +38,15 @@ class FlightLoopTest : public ::testing::Test {
     sensors_message.Send();
   }
 
+  FlightLoopQueue flight_loop_queue_;
+
  private:
   FlightLoop flight_loop_;
-  FlightLoopQueue flight_loop_queue_;
 };
 
 TEST_F(FlightLoopTest, DoesNothing) {
+  flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
+
   for(int i = 0;i < 100;i++) {
     SendPosition();
     StepLoop();
