@@ -4,6 +4,8 @@
 #include "sio_socket.h"
 #include "sio_client.h"
 
+#include "zmq.hpp"
+
 #include "src/control/loops/flight_loop.q.h"
 
 namespace spinny {
@@ -19,6 +21,8 @@ class MissionReceiver {
 
  private:
   ::sio::client client_;
+  ::zmq::context_t context_;
+  ::zmq::socket_t mission_command_stream_;
 };
 
 void on_connect();
