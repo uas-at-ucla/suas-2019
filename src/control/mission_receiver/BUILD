@@ -22,5 +22,6 @@ cc_library(
     '//src/control/loops:flight_loop_queue',
     '//aos/linux_code:init',
     "@socketio_client_cpp//:socketio_client_cpp",
+    "@cppzmq//:cppzmq",
   ],
 )
