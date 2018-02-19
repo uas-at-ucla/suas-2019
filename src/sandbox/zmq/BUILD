@@ -1,4 +1,4 @@
-cc_test(
+cc_binary(
   name = "server",
   srcs = ["server.cc"],
   deps = [
@@ -9,7 +9,7 @@ cc_test(
   ],
 )
 
-cc_test(
+cc_binary(
   name = "client",
   srcs = ["client.cc"],
   deps = [
