@@ -3,7 +3,6 @@ cc_binary(
   srcs = ["server.cc"],
   deps = [
     "@cppzmq//:cppzmq",
-#   "@protobuf//:protobuf",
     "@com_google_protobuf//:protobuf",
     ":mission_commands_cpp",
   ],
