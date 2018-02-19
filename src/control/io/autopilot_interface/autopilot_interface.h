@@ -108,10 +108,6 @@ class AutopilotInterface {
   void read_messages();
   int write_message(mavlink_message_t message);
 
-  void enable_offboard_control();
-  void disable_offboard_control();
-  int toggle_offboard_control(bool flag);
-
   void start();
   void stop();
 
@@ -135,7 +131,6 @@ class AutopilotInterface {
 
   char reading_status_;
   char writing_status_;
-  char control_status_;
 
   uint64_t write_count_;
 

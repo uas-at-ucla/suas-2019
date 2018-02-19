@@ -35,7 +35,7 @@ void MavlinkSerial::initialize_defaults() {
   }
 }
 
-int MavlinkSerial::read_message(mavlink_message_t &message) {
+int MavlinkSerial::read_messages(::std::vector<mavlink_message_t> &messages) {
   uint8_t cp[1024];
   mavlink_status_t status;
   uint8_t msgReceived = false;
@@ -45,6 +45,8 @@ int MavlinkSerial::read_message(mavlink_message_t &message) {
 
   for(int i = 0;i < result;i++) {
     // the parsing
+    mavlink_message_t message;
+
     msgReceived = mavlink_parse_char(MAVLINK_COMM_1, cp[i], &message, &status);
 
     // check for dropped packets
@@ -54,41 +56,48 @@ int MavlinkSerial::read_message(mavlink_message_t &message) {
       unsigned char v = cp[i];
       fprintf(stderr, "%02x ", v);
     }
+
     lastStatus = status;
+
+    if (msgReceived && debug) {
+      // Report info
+      printf("Received message from serial with ID #%d (sys:%d|comp:%d):\n",
+             message.msgid, message.sysid, message.compid);
+
+      fprintf(stderr, "Received serial data: ");
+      unsigned int i;
+      uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
+
+      // check message is write length
+      unsigned int messageLength = mavlink_msg_to_send_buffer(buffer, &message);
+
+      // message length error
+      if (messageLength > MAVLINK_MAX_PACKET_LEN) {
+        fprintf(stderr,
+                "\nFATAL ERROR: MESSAGE LENGTH IS LARGER THAN BUFFER SIZE\n");
+      }
+
+      // print out the buffer
+      else {
+        for (i = 0; i < messageLength; i++) {
+          unsigned char v = buffer[i];
+          fprintf(stderr, "%02x ", v);
+        }
+        fprintf(stderr, "\n");
+      }
+    }
+
+    if(msgReceived) {
+      messages.push_back(message);
+    }
   }
 
   // Couldn't read from port
   if(result < 1) {
     fprintf(stderr, "ERROR: Could not read from fd %d\n", fd);
-    usleep(1e6 / 4);
-  }
-
-  if (msgReceived && debug) {
-    // Report info
-    printf("Received message from serial with ID #%d (sys:%d|comp:%d):\n",
-           message.msgid, message.sysid, message.compid);
-
-    fprintf(stderr, "Received serial data: ");
-    unsigned int i;
-    uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
-
-    // check message is write length
-    unsigned int messageLength = mavlink_msg_to_send_buffer(buffer, &message);
-
-    // message length error
-    if (messageLength > MAVLINK_MAX_PACKET_LEN) {
-      fprintf(stderr,
-              "\nFATAL ERROR: MESSAGE LENGTH IS LARGER THAN BUFFER SIZE\n");
-    }
-
-    // print out the buffer
-    else {
-      for (i = 0; i < messageLength; i++) {
-        unsigned char v = buffer[i];
-        fprintf(stderr, "%02x ", v);
-      }
-      fprintf(stderr, "\n");
-    }
+    stop();
+    start();
+    usleep(1e6 / 10);
   }
 
   // Done!
@@ -107,7 +116,7 @@ int MavlinkSerial::write_message(const mavlink_message_t &message) {
   return bytesWritten;
 }
 
-void MavlinkSerial::open_serial() {
+int MavlinkSerial::open_serial() {
   printf("OPEN PORT\n");
 
   fd = _open_port(uart_name);
@@ -115,7 +124,8 @@ void MavlinkSerial::open_serial() {
   // Check success
   if (fd == -1) {
     printf("failure, could not open port.\n");
-    throw EXIT_FAILURE;
+//  throw EXIT_FAILURE;
+    return -1;
   }
 
   bool success = _setup_port(baudrate, 8, 1, false, false);
@@ -140,7 +150,7 @@ void MavlinkSerial::open_serial() {
 
   printf("\n");
 
-  return;
+  return 1;
 }
 
 void MavlinkSerial::close_serial() {
