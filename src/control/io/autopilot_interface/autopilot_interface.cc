@@ -23,7 +23,8 @@ void set_position(float x, float y, float z,
   sp.y = y;
   sp.z = z;
 
-  printf("POSITION SETPOINT XYZ = [ %.4f , %.4f , %.4f ] \n", sp.x, sp.y, sp.z);
+  // printf("POSITION SETPOINT XYZ = [ %.4f , %.4f , %.4f ] \n", sp.x, sp.y,
+  // sp.z);
 }
 
 void set_velocity(float vx, float vy, float vz,
@@ -36,8 +37,8 @@ void set_velocity(float vx, float vy, float vz,
   sp.vy = vy;
   sp.vz = vz;
 
-  printf("VELOCITY SETPOINT UVW = [ %.4f , %.4f , %.4f ] \n", sp.vx, sp.vy,
-         sp.vz);
+  // printf("VELOCITY SETPOINT UVW = [ %.4f , %.4f , %.4f ] \n", sp.vx, sp.vy,
+  //       sp.vz);
 }
 
 void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp) {
@@ -45,7 +46,7 @@ void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp) {
 
   sp.yaw = yaw;
 
-  printf("POSITION SETPOINT YAW = %.4f \n", sp.yaw);
+  // printf("POSITION SETPOINT YAW = %.4f \n", sp.yaw);
 }
 
 void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
@@ -59,12 +60,11 @@ AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
       write_tid_(0),
       reading_status_(0),
       writing_status_(0),
-      control_status_(0),
       write_count_(0),
       time_to_exit_(false) {
-  system_id = 0;
-  autopilot_id = 0;
-  companion_id = 2;
+  system_id = 1;
+  autopilot_id = 1;
+  companion_id = 3;
 
   current_messages.sysid = system_id;
   current_messages.compid = autopilot_id;
@@ -80,16 +80,17 @@ void AutopilotInterface::update_setpoint(
 }
 
 void AutopilotInterface::read_messages() {
-  bool success;
   bool received_all = false;
   TimeStamps this_timestamps;
 
   // Blocking wait for new data
   while (!received_all and !time_to_exit_) {
-    mavlink_message_t message;
-    success = mavlink_serial_->read_message(message);
+    ::std::vector<mavlink_message_t> messages;
+    mavlink_serial_->read_messages(messages);
 
-    if (success) {
+    for (std::vector<mavlink_message_t>::iterator it = messages.begin();
+         it != messages.end(); it++) {
+      mavlink_message_t message = *it;
       // Store message sysid and compid.
       // Note this doesn't handle multiple message sources.
       current_messages.sysid = message.sysid;
@@ -98,6 +99,7 @@ void AutopilotInterface::read_messages() {
       // Handle Message ID
       switch (message.msgid) {
         case MAVLINK_MSG_ID_HEARTBEAT:
+          ::std::cout << "HEARTBEAT\n";
           mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
           current_messages.time_stamps.heartbeat = get_time_usec();
           this_timestamps.heartbeat = current_messages.time_stamps.heartbeat;
@@ -142,24 +144,6 @@ void AutopilotInterface::read_messages() {
               current_messages.time_stamps.global_position_int;
           break;
 
-//      case MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED:
-//        mavlink_msg_position_target_local_ned_decode(
-//            &message, &(current_messages.position_target_local_ned));
-//        current_messages.time_stamps.position_target_local_ned =
-//            get_time_usec();
-//        this_timestamps.position_target_local_ned =
-//            current_messages.time_stamps.position_target_local_ned;
-//        break;
-
-//      case MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT:
-//        mavlink_msg_position_target_global_int_decode(
-//            &message, &(current_messages.position_target_global_int));
-//        current_messages.time_stamps.position_target_global_int =
-//            get_time_usec();
-//        this_timestamps.position_target_global_int =
-//            current_messages.time_stamps.position_target_global_int;
-//        break;
-
         case MAVLINK_MSG_ID_HIGHRES_IMU:
           mavlink_msg_highres_imu_decode(&message,
                                          &(current_messages.highres_imu));
@@ -174,18 +158,14 @@ void AutopilotInterface::read_messages() {
           this_timestamps.attitude = current_messages.time_stamps.attitude;
           break;
 
-//      case MAVLINK_MSG_ID_COMMAND_ACK:
-//        mavlink_command_ack_t com;
-//        mavlink_msg_command_ack_decode(&message, &com);
-
-//        //TODO(comran): Decode ACK messages.
-//        break;
-
         case MAVLINK_MSG_ID_COMMAND_LONG:
           break;
 
+        case MAVLINK_MSG_ID_SERVO_OUTPUT_RAW:
+          ::std::cout << "servo\n";
+          break;
+
         default:
-          //std::cout << "unknown " << (int)message.msgid << std::endl;
           break;
       }
     }
@@ -196,7 +176,7 @@ void AutopilotInterface::read_messages() {
     // give the write thread time to use the port
     if (writing_status_ > false) {
       // TODO(comran): This may break stuff for the write thread...
-      //    usleep(1e6 / 1e4);
+      usleep(1e6 / 1e2);
     }
   }
 }
@@ -228,74 +208,13 @@ void AutopilotInterface::write_setpoint() {
   return;
 }
 
-void AutopilotInterface::enable_offboard_control() {
-  // Should only send this command once
-  if (control_status_ == false) {
-    printf("ENABLE OFFBOARD MODE\n");
-
-    // Sends the command to go off-board
-    int success = toggle_offboard_control(true);
-
-    // Check the command was written
-    if (success) {
-      control_status_ = true;
-    } else {
-      fprintf(stderr,
-              "Error: off-board mode not set, could not write message\n");
-    }
-
-    printf("\n");
-  }
-}
-
-void AutopilotInterface::disable_offboard_control() {
-  // Should only send this command once
-  if (control_status_ == true) {
-    printf("DISABLE OFFBOARD MODE\n");
-
-    // Sends the command to stop off-board
-    int success = toggle_offboard_control(false);
-
-    // Check the command was written
-    if (success)
-      control_status_ = false;
-    else {
-      fprintf(stderr,
-              "Error: off-board mode not set, could not write message\n");
-    }
-
-    printf("\n");
-  }
-}
-
-int AutopilotInterface::toggle_offboard_control(bool flag) {
-  // Prepare command for off-board mode
-  mavlink_command_long_t com = {0};
-  com.target_system = system_id;
-  com.target_component = autopilot_id;
-  com.command = MAV_CMD_NAV_GUIDED_ENABLE;
-  com.confirmation = true;
-  com.param1 = (float)flag;
-
-  // Encode
-  mavlink_message_t message;
-  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
-
-  // Send the message
-  int len = mavlink_serial_->write_message(message);
-
-  return len;
-}
-
 void AutopilotInterface::start() {
   int result;
 
-  mavlink_serial_->start();
-
-  if (mavlink_serial_->status != 1) {
-    fprintf(stderr, "ERROR: serial port not open\n");
-    throw 1;
-  }
+  do {
+    mavlink_serial_->start();
+    usleep(1e6 / 10);
+  } while (mavlink_serial_->status != 1);
 
   printf("START READ THREAD \n");
 
@@ -365,6 +284,8 @@ void AutopilotInterface::Arm() {
 }
 
 void AutopilotInterface::Takeoff() {
+  Arm();
+
   mavlink_global_position_int_t gps = current_messages.global_position_int;
 
   mavlink_command_long_t com;
@@ -374,7 +295,7 @@ void AutopilotInterface::Takeoff() {
   com.confirmation = true;
   com.param5 = static_cast<double>(gps.lat) / 1e7;
   com.param6 = static_cast<double>(gps.lon) / 1e7;
-  com.param7 = 5;  // Altitude
+  com.param7 = static_cast<double>(gps.alt) / 1e3;
 
   mavlink_message_t message;
   mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
@@ -428,6 +349,10 @@ void AutopilotInterface::FlightTermination() {
 }
 
 void AutopilotInterface::set_message_period() {
+  // TODO(comran): FIX
+  // THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  return;
+
   for (int i = 0; i < 255; i++) {
     int32_t interval = -1;
     bool valid = true;
@@ -463,6 +388,7 @@ void AutopilotInterface::set_message_period() {
       case MAVLINK_MSG_ID_VIBRATION:
       case MAVLINK_MSG_ID_ATTITUDE_TARGET:
       case MAVLINK_MSG_ID_TERRAIN_REPORT:
+        valid = false;
         interval = -1;
         break;
       default:
@@ -523,8 +449,6 @@ void AutopilotInterface::start_write_thread(void) {
 }
 
 void AutopilotInterface::handle_quit(int sig) {
-  disable_offboard_control();
-
   try {
     stop();
   } catch (int error) {
@@ -570,7 +494,7 @@ void AutopilotInterface::write_thread(void) {
     // Pixhawk needs to see off-board commands at minimum 2Hz,
     // otherwise it will go into fail safe.
 
-    usleep(1e6 / 10);
+    usleep(1e6 / 4);
     write_setpoint();
   }
 
