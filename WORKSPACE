@@ -63,6 +63,27 @@ new_git_repository(
   commit = '57f9d41e3402d317fec85b3cc531d9dc4437bf45',
 )
 
+new_git_repository(
+  name = "libzmq",
+  commit = "b1fd3b2740f4b18ee25aefe193b31e319fcfbbe5",
+  build_file = "lib/third_party/libzmq.BUILD",
+  remote = "https://github.com/uas-at-ucla/libzmq.git",
+)
+
+new_git_repository(
+  name = "cppzmq",
+  commit = "a96e0ded6456757ed74947cec2b5d2b875f9dab4",
+  build_file = "lib/third_party/cppzmq.BUILD",
+  remote = "https://github.com/zeromq/cppzmq.git",
+)
+
+new_git_repository(
+  name = "sodium",
+  commit = "e25e2884e2543f608de34fb92d719f0724d5a5c7",
+  build_file = "lib/third_party/sodium.BUILD",
+  remote = "https://github.com/SodiumFRP/sodium-cxx.git",
+)
+
 new_http_archive(
   name = "gtest",
   url = "https://github.com/google/googletest/archive/release-1.8.0.zip",
@@ -83,10 +104,19 @@ git_repository(
   remote = "https://github.com/nelhage/rules_boost",
 )
 
-git_repository(
+new_git_repository(
   name = "protobuf",
   commit = "07f023188e929019f506e9b390dde70539ea857f",
   remote = "https://github.com/google/protobuf.git",
+  build_file = "lib/third_party/protobuf.BUILD",
+)
+
+new_http_archive(
+  name = "com_google_protobuf",
+  sha256 = "cef7f1b5a7c5fba672bec2a319246e8feba471f04dcebfe362d55930ee7c1c30",
+  strip_prefix = "protobuf-3.5.0",
+  urls = ["https://github.com/google/protobuf/archive/v3.5.0.zip"],
+  build_file = "lib/third_party/com_google_protobuf.BUILD",
 )
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
