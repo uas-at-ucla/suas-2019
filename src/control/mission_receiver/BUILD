@@ -1,3 +1,20 @@
+proto_library(
+  name = "mission_commands",
+  srcs = [
+    "mission_commands.proto",
+  ],
+  deps = [
+    "@com_google_protobuf//:any_proto",
+  ],
+)
+
+cc_proto_library(
+  name = "mission_commands_cpp",
+  deps = [
+    ":mission_commands",
+  ],
+)
+
 cc_binary(
   name = 'mission_receiver',
   visibility = ['//visibility:public'],
@@ -19,8 +36,10 @@ cc_library(
     'mission_receiver.h'
   ],
   deps = [
-    '//src/control/loops:flight_loop_queue',
+    ":mission_commands_cpp",
+    '//src/control/loops:flight_loop_lib',
     '//aos/linux_code:init',
     "@socketio_client_cpp//:socketio_client_cpp",
+    "@cppzmq//:cppzmq",
   ],
 )

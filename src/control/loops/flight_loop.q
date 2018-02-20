@@ -37,6 +37,9 @@ queue_group FlightLoopQueue {
 
   message Goal {
     bool run_mission;
+
+    bool trigger_failsafe;
+    bool trigger_throttle_cut;
   };
 
   message Output {
