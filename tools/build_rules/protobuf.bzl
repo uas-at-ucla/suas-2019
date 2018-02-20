@@ -13,7 +13,7 @@ def _do_proto_cc_library_impl(ctx):
     arguments = [
       '--cpp_out=%s' % ctx.configuration.genfiles_dir.path,
       '-I.',
-      '-Ithird_party/protobuf/src',
+      '-I@protobuf://src',
       ctx.file.src.path,
     ],
     mnemonic = 'ProtocCc',

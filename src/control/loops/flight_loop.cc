@@ -81,12 +81,18 @@ void FlightLoop::RunIteration() {
 
   DumpSensors();
 
-  if(!::spinny::control::loops::flight_loop_queue.goal.FetchLatest()) {
-    return;
-  }
+  ::spinny::control::loops::flight_loop_queue.goal.FetchAnother();
 
   auto output =
       ::spinny::control::loops::flight_loop_queue.output.MakeMessage();
+
+  if(::spinny::control::loops::flight_loop_queue.goal->trigger_failsafe) {
+    state_ = FAILSAFE;
+  }
+
+  if(::spinny::control::loops::flight_loop_queue.goal->trigger_throttle_cut) {
+    state_ = FLIGHT_TERMINATION;
+  }
 
   // Set defaults for all outputs.
   output->velocity_x = 0;
@@ -102,12 +108,13 @@ void FlightLoop::RunIteration() {
   bool run_mission =
       ::spinny::control::loops::flight_loop_queue.goal->run_mission;
 
+  ::std::cout << "current state: " << state_ << ::std::endl;
+
   switch (state_) {
     case STANDBY:
       if (run_mission) {
         state_ = ARMING;
       }
-
       break;
 
     case ARMING:
@@ -159,13 +166,13 @@ void FlightLoop::RunIteration() {
         state_ = LANDING;
       }
 
-      if (!::spinny::control::loops::flight_loop_queue.sensors->armed) {
-        state_ = ARMING;
+      if (::spinny::control::loops::flight_loop_queue.sensors->relative_altitude < 3) {
+        state_ = TAKING_OFF;
       }
 
       output->velocity_control = true;
-      output->velocity_x = 10;
-      output->velocity_y = 10;
+      output->velocity_x = 0.5;
+      output->velocity_y = 0.5;
       break;
 
     case LANDING:

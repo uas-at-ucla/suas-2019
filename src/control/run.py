@@ -152,7 +152,7 @@ def main():
                     None, True, verbose)
 
             processes.spawn_process( \
-                    "python commander/drone_communications.py", None, True, \
+                    "python python/commander/drone_communications.py", None, True, \
                     verbose)
 
         if run_commander:
