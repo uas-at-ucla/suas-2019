@@ -99,7 +99,6 @@ void AutopilotInterface::read_messages() {
       // Handle Message ID
       switch (message.msgid) {
         case MAVLINK_MSG_ID_HEARTBEAT:
-          ::std::cout << "HEARTBEAT\n";
           mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
           current_messages.time_stamps.heartbeat = get_time_usec();
           this_timestamps.heartbeat = current_messages.time_stamps.heartbeat;
@@ -156,13 +155,6 @@ void AutopilotInterface::read_messages() {
           mavlink_msg_attitude_decode(&message, &(current_messages.attitude));
           current_messages.time_stamps.attitude = get_time_usec();
           this_timestamps.attitude = current_messages.time_stamps.attitude;
-          break;
-
-        case MAVLINK_MSG_ID_COMMAND_LONG:
-          break;
-
-        case MAVLINK_MSG_ID_SERVO_OUTPUT_RAW:
-          ::std::cout << "servo\n";
           break;
 
         default:
