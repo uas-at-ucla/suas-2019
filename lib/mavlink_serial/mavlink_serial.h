@@ -8,6 +8,7 @@
 #include <termios.h>  // POSIX terminal control definitions
 #include <unistd.h>   // UNIX standard function definitions
 #include <cstdlib>
+#include <vector>
 
 #include <common/mavlink.h>
 
@@ -47,10 +48,10 @@ class MavlinkSerial {
   int baudrate;
   int status;
 
-  int read_message(mavlink_message_t &message);
+  int read_messages(::std::vector<mavlink_message_t> &message);
   int write_message(const mavlink_message_t &message);
 
-  void open_serial();
+  int open_serial();
   void close_serial();
 
   void start();
