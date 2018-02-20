@@ -64,12 +64,10 @@ void FlightLoop::DumpSensors() {
       << ::spinny::control::loops::flight_loop_queue.sensors->battery_current
       << ::std::endl;
 
-  ::std::cout
-      << "armed "
-      << ::spinny::control::loops::flight_loop_queue.sensors->armed
-      << ::std::endl
-      << ::std::endl;
-
+  ::std::cout << "armed "
+              << ::spinny::control::loops::flight_loop_queue.sensors->armed
+              << ::std::endl
+              << ::std::endl;
 }
 
 void FlightLoop::RunIteration() {
@@ -86,11 +84,11 @@ void FlightLoop::RunIteration() {
   auto output =
       ::spinny::control::loops::flight_loop_queue.output.MakeMessage();
 
-  if(::spinny::control::loops::flight_loop_queue.goal->trigger_failsafe) {
+  if (::spinny::control::loops::flight_loop_queue.goal->trigger_failsafe) {
     state_ = FAILSAFE;
   }
 
-  if(::spinny::control::loops::flight_loop_queue.goal->trigger_throttle_cut) {
+  if (::spinny::control::loops::flight_loop_queue.goal->trigger_throttle_cut) {
     state_ = FLIGHT_TERMINATION;
   }
 
@@ -166,8 +164,14 @@ void FlightLoop::RunIteration() {
         state_ = LANDING;
       }
 
-      if (::spinny::control::loops::flight_loop_queue.sensors->relative_altitude < 3) {
+      if (::spinny::control::loops::flight_loop_queue.sensors
+                  ->relative_altitude > 2.2 &&
+          ::spinny::control::loops::flight_loop_queue.sensors
+                  ->relative_altitude < 2.5) {
         state_ = TAKING_OFF;
+      } else if (::spinny::control::loops::flight_loop_queue.sensors
+                     ->relative_altitude < 2.2) {
+        state_ = LANDING;
       }
 
       output->velocity_control = true;
@@ -176,6 +180,10 @@ void FlightLoop::RunIteration() {
       break;
 
     case LANDING:
+      if (!::spinny::control::loops::flight_loop_queue.sensors->armed) {
+        state_ = STANDBY;
+      }
+
       output->land = true;
       break;
 
