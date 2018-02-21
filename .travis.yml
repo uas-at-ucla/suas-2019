@@ -1,8 +1,18 @@
 dist: trusty
 sudo: required
 
+addons:
+    apt:
+      packages:
+        - xvfb
+
 install:
- - sudo $TRAVIS_BUILD_DIR/tools/installation/install.sh
+  - export DISPLAY=':99.0'
+  - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+  - sudo $TRAVIS_BUILD_DIR/tools/installation/install.sh
 
 script:
- - bazel test //src/...
+ - bazel build //src/...
+ - bazel build @PX4_sitl//:jmavsim
+ - bazel run //src/control/loops:flight_loop_lib_test
+   # - bazel test //src/...
