@@ -97,7 +97,7 @@ int MavlinkSerial::read_messages(::std::vector<mavlink_message_t> &messages) {
     fprintf(stderr, "ERROR: Could not read from fd %d\n", fd);
     stop();
     start();
-    usleep(1e6 / 10);
+    usleep(1e6 / 3);
   }
 
   // Done!
@@ -117,14 +117,11 @@ int MavlinkSerial::write_message(const mavlink_message_t &message) {
 }
 
 int MavlinkSerial::open_serial() {
-  printf("OPEN PORT\n");
-
   fd = _open_port(uart_name);
 
   // Check success
   if (fd == -1) {
     printf("failure, could not open port.\n");
-//  throw EXIT_FAILURE;
     return -1;
   }
 
@@ -154,8 +151,6 @@ int MavlinkSerial::open_serial() {
 }
 
 void MavlinkSerial::close_serial() {
-  printf("CLOSE PORT\n");
-
   int result = close(fd);
 
   if (result) {

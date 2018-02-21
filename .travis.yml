@@ -14,5 +14,4 @@ install:
 script:
  - bazel build //src/...
  - bazel build @PX4_sitl//:jmavsim
- - bazel run //src/control/loops:flight_loop_lib_test
-   # - bazel test //src/...
+ - ./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test
