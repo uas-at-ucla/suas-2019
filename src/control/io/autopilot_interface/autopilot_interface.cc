@@ -22,9 +22,6 @@ void set_position(float x, float y, float z,
   sp.x = x;
   sp.y = y;
   sp.z = z;
-
-  // printf("POSITION SETPOINT XYZ = [ %.4f , %.4f , %.4f ] \n", sp.x, sp.y,
-  // sp.z);
 }
 
 void set_velocity(float vx, float vy, float vz,
@@ -36,17 +33,12 @@ void set_velocity(float vx, float vy, float vz,
   sp.vx = vx;
   sp.vy = vy;
   sp.vz = vz;
-
-  // printf("VELOCITY SETPOINT UVW = [ %.4f , %.4f , %.4f ] \n", sp.vx, sp.vy,
-  //       sp.vz);
 }
 
 void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp) {
   sp.type_mask &= MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_ANGLE;
 
   sp.yaw = yaw;
-
-  // printf("POSITION SETPOINT YAW = %.4f \n", sp.yaw);
 }
 
 void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
@@ -80,11 +72,10 @@ void AutopilotInterface::update_setpoint(
 }
 
 void AutopilotInterface::read_messages() {
-  bool received_all = false;
   TimeStamps this_timestamps;
 
   // Blocking wait for new data
-  while (!received_all and !time_to_exit_) {
+  while (!time_to_exit_ && mavlink_serial_->status > 0) {
     ::std::vector<mavlink_message_t> messages;
     mavlink_serial_->read_messages(messages);
 
@@ -161,9 +152,6 @@ void AutopilotInterface::read_messages() {
           break;
       }
     }
-
-    // Check for receipt of all items
-    received_all = this_timestamps.heartbeat && this_timestamps.sys_status;
 
     // give the write thread time to use the port
     if (writing_status_ > false) {
@@ -404,14 +392,10 @@ void AutopilotInterface::set_message_period() {
 }
 
 void AutopilotInterface::stop() {
-  printf("CLOSE THREADS\n");
-
   time_to_exit_ = true;
 
   pthread_join(read_tid_, NULL);
-  printf("READ THREAD JOINED\n");
   pthread_join(write_tid_, NULL);
-  printf("WRITE THREAD JOINED\n");
 
   printf("\n");
 
@@ -441,6 +425,7 @@ void AutopilotInterface::start_write_thread(void) {
 }
 
 void AutopilotInterface::handle_quit(int sig) {
+  ::std::cout << "QUIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
   try {
     stop();
   } catch (int error) {
@@ -453,6 +438,7 @@ void AutopilotInterface::handle_quit(int sig) {
 void AutopilotInterface::read_thread() {
   reading_status_ = true;
 
+  ::std::cout << time_to_exit_ << ::std::endl;
   while (!time_to_exit_) {
     read_messages();
   }
@@ -482,7 +468,7 @@ void AutopilotInterface::write_thread(void) {
 
   set_message_period();
 
-  while (!time_to_exit_) {
+  while (!time_to_exit_ && mavlink_serial_->status > 0) {
     // Pixhawk needs to see off-board commands at minimum 2Hz,
     // otherwise it will go into fail safe.
 
