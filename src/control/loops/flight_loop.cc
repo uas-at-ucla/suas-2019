@@ -19,6 +19,10 @@ FlightLoop::FlightLoop()
 void FlightLoop::Iterate() { RunIteration(); }
 
 void FlightLoop::DumpSensors() {
+  // Only log every second.
+  static int count = 0;
+  if(!(count++ % 100)) return;
+
   std::chrono::time_point<std::chrono::system_clock> end =
       std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start_;
