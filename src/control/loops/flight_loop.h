@@ -61,6 +61,8 @@ class FlightLoop {
   ::std::chrono::time_point<std::chrono::system_clock>  start_;
 
   int count_;
+
+  int takeoff_ticker_;
 };
 
 }  // namespace loops

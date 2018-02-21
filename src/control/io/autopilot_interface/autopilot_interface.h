@@ -94,6 +94,7 @@ class AutopilotInterface {
   int companion_id;
 
   void Arm();
+  void Disarm();
   void Takeoff();
   void Offboard();
   void Land();
