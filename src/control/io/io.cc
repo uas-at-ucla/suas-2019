@@ -29,6 +29,7 @@ IO::IO()
   copter_io_quit = &copter_io_;
   io_quit = this;
   signal(SIGINT, quit_handler);
+  signal(SIGTERM, quit_handler);
 }
 
 void IO::Run() {
