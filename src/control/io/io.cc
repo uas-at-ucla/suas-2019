@@ -148,6 +148,10 @@ void AutopilotOutputWriter::Write() {
     copter_io_->Arm();
   }
 
+  if (::spinny::control::loops::flight_loop_queue.output->disarm) {
+    copter_io_->Disarm();
+  }
+
   if (::spinny::control::loops::flight_loop_queue.output->takeoff) {
     copter_io_->Takeoff();
   }

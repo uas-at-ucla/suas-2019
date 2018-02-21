@@ -263,6 +263,20 @@ void AutopilotInterface::Arm() {
   write_message(message);
 }
 
+void AutopilotInterface::Disarm() {
+  mavlink_command_long_t com;
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_COMPONENT_ARM_DISARM;
+  com.confirmation = true;
+  com.param1 = 0;  // Should disarm.
+
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
+}
+
 void AutopilotInterface::Takeoff() {
   Arm();
 
