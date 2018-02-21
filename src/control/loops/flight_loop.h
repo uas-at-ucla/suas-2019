@@ -9,6 +9,15 @@
 
 #include "src/control/loops/flight_loop.q.h"
 
+/*      ________  ________  ___  ________   ________       ___    ___
+       |\   ____\|\   __  \|\  \|\   ___  \|\   ___  \    |\  \  /  /|
+       \ \  \___|\ \  \|\  \ \  \ \  \\ \  \ \  \\ \  \   \ \  \/  / /
+        \ \_____  \ \   ____\ \  \ \  \\ \  \ \  \\ \  \   \ \    / /
+         \|____|\  \ \  \___|\ \  \ \  \\ \  \ \  \\ \  \   \/  /  /
+           ____\_\  \ \__\    \ \__\ \__\\ \__\ \__\\ \__\__/  / /
+          |\_________\|__|     \|__|\|__| \|__|\|__| \|__|\___/ /
+          \|_________|           UAS @ UCLA 2018         \|___|/              */
+
 namespace spinny {
 namespace control {
 namespace loops {
@@ -20,6 +29,7 @@ class FlightLoop {
   void Run();
   void Iterate();
 
+  // Flight loop state machine states.
   enum State {
     STANDBY,
     ARMING,
@@ -35,10 +45,13 @@ class FlightLoop {
     return state_;
   }
 
+  // Method to dump all the current sensors at the head of the message queue.
+  void DumpSensors();
+
  private:
   void RunIteration();
 
-  void DumpSensors();
+  void DumpSensorsPeriodic();
 
   State state_;
 
@@ -46,6 +59,8 @@ class FlightLoop {
 
   ::aos::time::PhasedLoop phased_loop_;
   ::std::chrono::time_point<std::chrono::system_clock>  start_;
+
+  int count_;
 };
 
 }  // namespace loops
