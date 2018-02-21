@@ -15,8 +15,8 @@ FlightLoop::FlightLoop()
       running_(false),
       phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
       start_(std::chrono::system_clock::now()),
-      count_(0) {
-
+      count_(0),
+      takeoff_ticker_(0) {
   ::spinny::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::spinny::control::loops::flight_loop_queue.goal.FetchLatest();
   ::spinny::control::loops::flight_loop_queue.output.FetchLatest();
@@ -25,7 +25,7 @@ FlightLoop::FlightLoop()
 void FlightLoop::Iterate() { RunIteration(); }
 
 void FlightLoop::DumpSensorsPeriodic() {
-  if(count_++ % 10) return;
+  if (count_++ % 10) return;
 
   DumpSensors();
 }
@@ -36,7 +36,8 @@ void FlightLoop::DumpSensors() {
   std::chrono::duration<double> elapsed = end - start_;
 
   ::std::cout
-      << "ITERATE " << elapsed.count() << " " << std::setprecision(12)
+      << "ITERATE in state " << state_ << ::std::endl
+      << elapsed.count() << " " << std::setprecision(12)
       << ::spinny::control::loops::flight_loop_queue.sensors->latitude << ", "
       << ::spinny::control::loops::flight_loop_queue.sensors->longitude
       << " @ alt "
@@ -78,19 +79,31 @@ void FlightLoop::DumpSensors() {
 
   ::std::cout << "armed "
               << ::spinny::control::loops::flight_loop_queue.sensors->armed
-              << ::std::endl
               << ::std::endl;
+
+  if (::spinny::control::loops::flight_loop_queue.goal.get()) {
+    ::std::cout
+        << "goal run_mission "
+        << ::spinny::control::loops::flight_loop_queue.goal->run_mission
+        << " failsafe "
+        << ::spinny::control::loops::flight_loop_queue.goal->trigger_failsafe
+        << " throttle cut "
+        << ::spinny::control::loops::flight_loop_queue.goal
+               ->trigger_throttle_cut
+        << ::std::endl
+        << ::std::endl;
+  }
 }
 
 void FlightLoop::RunIteration() {
   // TODO(comran): Are these two queues synced?
   // TODO(comran): Check for stale queue messages.
   ::spinny::control::loops::flight_loop_queue.sensors.FetchAnother();
+  ::spinny::control::loops::flight_loop_queue.goal.FetchLatest();
 
   DumpSensorsPeriodic();
 
-  ::spinny::control::loops::flight_loop_queue.goal.FetchLatest();
-  if(!::spinny::control::loops::flight_loop_queue.goal.get()) {
+  if (!::spinny::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
     return;
   }
@@ -153,18 +166,25 @@ void FlightLoop::RunIteration() {
 
     case TAKING_OFF:
       if (!run_mission) {
+        takeoff_ticker_ = 0;
         state_ = LANDING;
       }
 
       if (!::spinny::control::loops::flight_loop_queue.sensors->armed) {
+        takeoff_ticker_ = 0;
         state_ = ARMING;
       }
 
-      output->arm = true;
-      output->takeoff = true;
+      if (takeoff_ticker_++ < 500) {
+        output->arm = true;
+        output->takeoff = true;
+      } else {
+        output->disarm = true;
+      }
 
       if (::spinny::control::loops::flight_loop_queue.sensors
               ->relative_altitude > 2.2) {
+        takeoff_ticker_ = 0;
         state_ = IN_AIR;
       }
       break;
