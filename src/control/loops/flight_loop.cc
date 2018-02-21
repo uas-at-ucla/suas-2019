@@ -14,15 +14,23 @@ FlightLoop::FlightLoop()
     : state_(STANDBY),
       running_(false),
       phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
-      start_(std::chrono::system_clock::now()) {}
+      start_(std::chrono::system_clock::now()),
+      count_(0) {
+
+  ::spinny::control::loops::flight_loop_queue.sensors.FetchLatest();
+  ::spinny::control::loops::flight_loop_queue.goal.FetchLatest();
+  ::spinny::control::loops::flight_loop_queue.output.FetchLatest();
+}
 
 void FlightLoop::Iterate() { RunIteration(); }
 
-void FlightLoop::DumpSensors() {
-  // Only log every second.
-  static int count = 0;
-  if(!(count++ % 100)) return;
+void FlightLoop::DumpSensorsPeriodic() {
+  if(count_++ % 10) return;
 
+  DumpSensors();
+}
+
+void FlightLoop::DumpSensors() {
   std::chrono::time_point<std::chrono::system_clock> end =
       std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start_;
@@ -79,9 +87,13 @@ void FlightLoop::RunIteration() {
   // TODO(comran): Check for stale queue messages.
   ::spinny::control::loops::flight_loop_queue.sensors.FetchAnother();
 
-  DumpSensors();
+  DumpSensorsPeriodic();
 
-  ::spinny::control::loops::flight_loop_queue.goal.FetchAnother();
+  ::spinny::control::loops::flight_loop_queue.goal.FetchLatest();
+  if(!::spinny::control::loops::flight_loop_queue.goal.get()) {
+    ::std::cerr << "NO GOAL!\n";
+    return;
+  }
 
   auto output =
       ::spinny::control::loops::flight_loop_queue.output.MakeMessage();
@@ -107,8 +119,6 @@ void FlightLoop::RunIteration() {
 
   bool run_mission =
       ::spinny::control::loops::flight_loop_queue.goal->run_mission;
-
-  ::std::cout << "current state: " << state_ << ::std::endl;
 
   switch (state_) {
     case STANDBY:

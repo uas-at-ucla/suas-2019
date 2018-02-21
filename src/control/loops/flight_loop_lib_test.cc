@@ -2,6 +2,9 @@
 
 #include <signal.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 
 #include "gtest/gtest.h"
 
@@ -17,43 +20,62 @@ namespace testing {
 pid_t simulator_pid, io_pid, socat_pid;
 
 void create_procs() {
-  pid_t simulator_pid = fork();
-  if (simulator_pid == 0) {
+  simulator_pid = fork();
+  if (!simulator_pid) {
+    setsid();
     const char *simulator_path = "../../../external/PX4_sitl/jmavsim";
+
+    int null_fd = open("/dev/null", O_WRONLY);
+    dup2(null_fd, 1);  // redirect stdout
+    dup2(null_fd, 2);  // redirect stderr
+
     execl("/bin/sh", "sh", "-c", simulator_path, NULL);
   }
   ASSERT_TRUE(0 == kill(simulator_pid, 0));
 
-  pid_t socat_pid = fork();
-  if (socat_pid == 0) {
+  socat_pid = fork();
+  if (!socat_pid) {
+    setsid();
+    int null_fd = open("/dev/null", O_WRONLY);
+    dup2(null_fd, 1);  // redirect stdout
+    dup2(null_fd, 2);  // redirect stderr
+
     execl("/usr/bin/socat", "socat", "pty,link=/tmp/virtualcom0,raw",
           "udp4-listen:14540", NULL);
   }
   ASSERT_TRUE(0 == kill(socat_pid, 0));
 
-  pid_t io_pid = fork();
-  if (io_pid == 0) {
+  io_pid = fork();
+  if (!io_pid) {
+    setsid();
+    int null_fd = open("/dev/null", O_WRONLY);
+    dup2(null_fd, 1);  // redirect stdout
+    dup2(null_fd, 2);  // redirect stderr
+
     const char *io_path = "../io/io";
     execl("/bin/sh", "sh", "-c", io_path, NULL);
   }
+
   ASSERT_TRUE(0 == kill(io_pid, 0));
 }
 
-void kill_and_wait(pid_t pid) {
-  int status;
+void kill_and_wait(pid_t pid, bool should_kill) {
+  ::std::cout << "trying to kill " << pid << ::std::endl;
 
-  while (waitpid(pid, &status, WNOHANG)) {
-    kill(simulator_pid, 2);
-    ::std::cout << "\n\n\nkilled " << status << "\n\n\n" << ::std::endl;
-  }
+  kill(-1 * pid, should_kill ? SIGKILL : SIGINT);
+  waitpid(-1 * pid, NULL, 0);
+
+  ::std::cout << "KILLED " << pid << ::std::endl;
 }
 
-void quit_procs(bool socat) {
-  kill_and_wait(simulator_pid);
-  kill_and_wait(io_pid);
+void quit_procs() {
+  kill_and_wait(io_pid, true);
+  kill_and_wait(simulator_pid, true);
+  kill_and_wait(socat_pid, true);
 
-  if(socat) {
-    kill_and_wait(socat_pid);
+  pid_t socat_rm_pid = fork();
+  if (!socat_rm_pid) {
+    execl("/bin/rm", "rm", "/tmp/virtualcom0", NULL);
   }
 }
 
@@ -61,7 +83,7 @@ void quit_handler(int sig) {
   (void)sig;
   printf("\n\nTERMINATING TEST\n\n");
 
-  quit_procs(true);
+  quit_procs();
 
   exit(0);
 }
@@ -74,6 +96,7 @@ class FlightLoopTest : public ::testing::Test {
                            ".spinny.control.loops.flight_loop_queue.status",
                            ".spinny.control.loops.flight_loop_queue.goal",
                            ".spinny.control.loops.flight_loop_queue.output") {
+
     // Change to the directory of the executable.
     char flight_loop_path[1024];
     ::readlink("/proc/self/exe", flight_loop_path,
@@ -98,24 +121,24 @@ class FlightLoopTest : public ::testing::Test {
 
     sensors_message.Send();
   }
-  
+
   void SetUp() {
+    ::std::cout << "\n\nTEST CASE SETUP\n\n";
     create_procs();
   }
 
   void TearDown() {
-    quit_procs(false);
-    usleep(1e6 * 2);
+    ::std::cout << "\n\nTEST CASE CLEANUP\n\n";
+    quit_procs();
   }
 
   FlightLoopQueue flight_loop_queue_;
-
- private:
   FlightLoop flight_loop_;
 };
 
 TEST_F(FlightLoopTest, ArmCheck) {
   ::std::cout << "Starting flight loop." << ::std::endl;
+
   for (int i = 0; i < 100; i++) {
     flight_loop_queue_.goal.MakeWithBuilder().run_mission(false).Send();
 
@@ -131,7 +154,7 @@ TEST_F(FlightLoopTest, ArmCheck) {
     ASSERT_FALSE(flight_loop_queue_.output->throttle_cut);
   }
 
-  for (int i = 0; i < 100 && !flight_loop_queue.sensors->armed; i++) {
+  for (int i = 0; i < 1000 && !flight_loop_queue.sensors->armed; i++) {
     flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
 
     StepLoop();
@@ -140,14 +163,12 @@ TEST_F(FlightLoopTest, ArmCheck) {
 
   ASSERT_TRUE(flight_loop_queue.sensors->armed);
 
-  usleep(1e6 * 2);
+  ::std::cout << "FINAL STATE:\n";
+  flight_loop_.DumpSensors();
 }
 
-TEST_F(FlightLoopTest, FailsafeCheck) {
+TEST_F(FlightLoopTest, ArmCheck2) {
   ::std::cout << "Starting flight loop." << ::std::endl;
-
-  flight_loop_queue_.goal.FetchLatest();
-  flight_loop_queue_.output.FetchLatest();
 
   for (int i = 0; i < 100; i++) {
     flight_loop_queue_.goal.MakeWithBuilder().run_mission(false).Send();
@@ -164,7 +185,7 @@ TEST_F(FlightLoopTest, FailsafeCheck) {
     ASSERT_FALSE(flight_loop_queue_.output->throttle_cut);
   }
 
-  for (int i = 0; i < 5000 && flight_loop_queue.sensors->relative_altitude < 2; i++) {
+  for (int i = 0; i < 1000 && !flight_loop_queue.sensors->armed; i++) {
     flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
 
     StepLoop();
@@ -173,17 +194,8 @@ TEST_F(FlightLoopTest, FailsafeCheck) {
 
   ASSERT_TRUE(flight_loop_queue.sensors->armed);
 
-  for (int i = 0; i < 5000 && flight_loop_queue.sensors->armed; i++) {
-    flight_loop_queue_.goal.MakeWithBuilder()
-        .run_mission(true)
-        .trigger_failsafe(true)
-        .Send();
-
-    StepLoop();
-    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
-  }
-
-  ASSERT_FALSE(flight_loop_queue.sensors->armed);
+  ::std::cout << "FINAL STATE:\n";
+  flight_loop_.DumpSensors();
 }
 
 }  // namespace testing
