@@ -73,9 +73,7 @@ void FlightLoop::DumpSensors() {
 void FlightLoop::RunIteration() {
   // TODO(comran): Are these two queues synced?
   // TODO(comran): Check for stale queue messages.
-  if (!::spinny::control::loops::flight_loop_queue.sensors.FetchLatest()) {
-    return;
-  }
+  ::spinny::control::loops::flight_loop_queue.sensors.FetchAnother();
 
   DumpSensors();
 
@@ -125,7 +123,6 @@ void FlightLoop::RunIteration() {
       }
 
       output->arm = true;
-
       break;
 
     case ARMED:
@@ -138,7 +135,6 @@ void FlightLoop::RunIteration() {
       }
 
       state_ = TAKING_OFF;
-
       break;
 
     case TAKING_OFF:
@@ -197,6 +193,11 @@ void FlightLoop::RunIteration() {
   }
 
   output.Send();
+
+  const int iterations = phased_loop_.SleepUntilNext();
+  if (iterations < 0) {
+    std::cout << "SKIPPED ITERATIONS\n";
+  }
 }
 
 void FlightLoop::Run() {
@@ -204,11 +205,6 @@ void FlightLoop::Run() {
 
   while (running_) {
     RunIteration();
-
-    const int iterations = phased_loop_.SleepUntilNext();
-    if (iterations < 0) {
-      std::cout << "SKIPPED ITERATIONS\n";
-    }
   }
 }
 
