@@ -55,7 +55,7 @@ void create_procs() {
   while (stat("/tmp/virtualcom0", &buffer)) {
     ::std::cout << "creating socat...\n";
 
-    if(socat_pid) {
+    if (socat_pid) {
       pid_t killall_pid = fork();
       if (!killall_pid) {
         execl("/usr/bin/killall", "killall", "socat", NULL);
@@ -226,6 +226,47 @@ TEST_F(FlightLoopTest, FailsafeCheck) {
   }
 
   ASSERT_FALSE(flight_loop_queue.sensors->armed);
+
+  ::std::cout << "FINAL STATE:\n";
+  flight_loop_.DumpSensors();
+}
+
+TEST_F(FlightLoopTest, ThrottleCutCheck) {
+  ::std::cout << "Starting flight loop." << ::std::endl;
+
+  flight_loop_queue_.output.FetchLatest();
+  flight_loop_queue_.sensors.FetchLatest();
+  for (int i = 0; (i < 10000) && (flight_loop_.state() != FlightLoop::IN_AIR);
+       i++) {
+    flight_loop_queue_.goal.MakeWithBuilder()
+        .run_mission(true)
+        .trigger_failsafe(false)
+        .trigger_throttle_cut(false)
+        .Send();
+
+    StepLoop();
+
+    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
+
+    flight_loop_queue_.sensors.FetchLatest();
+  }
+
+  ASSERT_TRUE(flight_loop_queue_.sensors->armed);
+  ASSERT_TRUE(flight_loop_queue_.sensors->relative_altitude >= 2);
+
+  for (int i = 0;
+       i < 50 && flight_loop_queue.sensors->relative_altitude > 0.1; i++) {
+    flight_loop_queue_.goal.MakeWithBuilder()
+        .run_mission(true)
+        .trigger_failsafe(false)
+        .trigger_throttle_cut(true)
+        .Send();
+
+    StepLoop();
+    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
+  }
+
+  ASSERT_TRUE(flight_loop_queue.sensors->relative_altitude < 0.1);
 
   ::std::cout << "FINAL STATE:\n";
   flight_loop_.DumpSensors();
