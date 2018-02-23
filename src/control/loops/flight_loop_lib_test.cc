@@ -159,7 +159,7 @@ class FlightLoopTest : public ::testing::Test {
   FlightLoop flight_loop_;
 };
 
-TEST_F(FlightLoopTest, ArmCheck) {
+TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
   ::std::cout << "Starting flight loop." << ::std::endl;
 
   for (int i = 0; i < 100; i++) {
@@ -177,14 +177,46 @@ TEST_F(FlightLoopTest, ArmCheck) {
     ASSERT_FALSE(flight_loop_queue_.output->throttle_cut);
   }
 
+  // Do arm and check if times out.
+  ::std::cout << "sending arm...\n";
   for (int i = 0; i < 1000 && !flight_loop_queue.sensors->armed; i++) {
     flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
 
     StepLoop();
     ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
   }
-
   ASSERT_TRUE(flight_loop_queue.sensors->armed);
+
+  // Do takeoff and check if times out.
+  ::std::cout << "sending mission...\n";
+  for (int i = 0; i < 3000 && flight_loop_queue.sensors->relative_altitude < 2.2; i++) {
+    flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
+
+    StepLoop();
+    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
+  }
+  ASSERT_TRUE(flight_loop_queue.sensors->relative_altitude > 2.2);
+
+  // Stay in IN_AIR for a bit.
+  for (int i = 0; i < 1000; i++) {
+    flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
+
+    StepLoop();
+
+    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
+    ASSERT_TRUE(flight_loop_queue.sensors->relative_altitude >= 2.2);
+    ASSERT_TRUE(flight_loop_queue.sensors->armed);
+  }
+
+  ::std::cout << "end mission...\n";
+  // Do land and check if times out.
+  for (int i = 0; i < 1000 && flight_loop_queue.sensors->armed; i++) {
+    flight_loop_queue_.goal.MakeWithBuilder().run_mission(false).Send();
+
+    StepLoop();
+    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
+  }
+  ASSERT_FALSE(flight_loop_queue.sensors->armed);
 
   ::std::cout << "FINAL STATE:\n";
   flight_loop_.DumpSensors();
