@@ -25,7 +25,7 @@ FlightLoop::FlightLoop()
 void FlightLoop::Iterate() { RunIteration(); }
 
 void FlightLoop::DumpSensorsPeriodic() {
-  if (count_++ % 10) return;
+  if (count_++ % 100) return;
 
   DumpSensors();
 }
@@ -205,8 +205,6 @@ void FlightLoop::RunIteration() {
       }
 
       output->velocity_control = true;
-      output->velocity_x = 0.5;
-      output->velocity_y = 0.5;
       break;
 
     case LANDING:
