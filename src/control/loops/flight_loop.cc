@@ -5,12 +5,15 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <thread>
+
+#include "zmq.hpp"
 
 namespace spinny {
 namespace control {
 namespace loops {
 
-FlightLoop::FlightLoop()
+FlightLoop::FlightLoop( )
     : state_(STANDBY),
       running_(false),
       phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
@@ -79,7 +82,7 @@ void FlightLoop::RunIteration() {
     return;
   }
 
-  DumpSensors();
+  //DumpSensors();
 
   ::spinny::control::loops::flight_loop_queue.goal.FetchAnother();
 
@@ -191,8 +194,30 @@ void FlightLoop::RunIteration() {
   output.Send();
 }
 
+void receive_mission() {
+  ::zmq::context_t context(1);
+  ::zmq::socket_t mission_receiver_stream(context, ZMQ_REQ);
+  mission_receiver_stream.connect("ipc:///tmp/mission_command_stream.ipc");
+  ::zmq::message_t request(5);
+  memcpy(request.data(), "Hello", 5);
+  mission_receiver_stream.send(request);
+
+  ::zmq::message_t reply;
+  mission_receiver_stream.recv(&reply);
+  for (int i = 0;; i++)
+    if (i % 1000000 == 0)
+      ::std::cout << "got a reply <><><><><><><><><><><><><><><\n";
+}
+
 void FlightLoop::Run() {
   running_ = true;
+
+  ::std::cout << "<<<<<<<<<<<<<<< Creating new mission_receiver_thread\n";
+
+  ::std::thread mission_receiver_thread(receive_mission);
+  mission_receiver_thread.detach();
+
+  ::std::cout << "<<<<<<<<<<<<<<< Detatched mission_receiver_thread\n";
 
   while (running_) {
     RunIteration();
