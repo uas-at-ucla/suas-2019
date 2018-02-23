@@ -9,6 +9,23 @@ queue_library(
   ],
 )
 
+proto_library(
+  name = "mission_commands",
+  srcs = [
+    "mission_commands.proto",
+  ],
+  deps = [
+    "@com_google_protobuf//:any_proto",
+  ],
+)
+
+cc_proto_library(
+  name = "mission_commands_cpp",
+  deps = [
+    ":mission_commands",
+  ],
+)
+
 cc_binary(
   name = 'flight_loop',
   visibility = ['//visibility:public'],
@@ -38,12 +55,13 @@ cc_library(
     'flight_loop.cc'
   ],
   hdrs = [
-    'flight_loop.h'
+    'flight_loop.h',
   ],
   deps = [
     ':flight_loop_queue',
     '//aos/common/util:phased_loop',
     '//aos/linux_code:init',
     '//aos/common:time',
+    "@cppzmq//:cppzmq",
   ],
 )
