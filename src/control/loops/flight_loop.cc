@@ -15,8 +15,9 @@ FlightLoop::FlightLoop()
       running_(false),
       phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
       start_(std::chrono::system_clock::now()),
-      count_(0),
-      takeoff_ticker_(0) {
+      takeoff_ticker_(0),
+      verbose_(false),
+      count_(0) {
   ::spinny::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::spinny::control::loops::flight_loop_queue.goal.FetchLatest();
   ::spinny::control::loops::flight_loop_queue.output.FetchLatest();
@@ -25,6 +26,8 @@ FlightLoop::FlightLoop()
 void FlightLoop::Iterate() { RunIteration(); }
 
 void FlightLoop::DumpSensorsPeriodic() {
+  if(!verbose_) return;
+
   if (count_++ % 100) return;
 
   DumpSensors();
@@ -93,6 +96,13 @@ void FlightLoop::DumpSensors() {
         << ::std::endl
         << ::std::endl;
   }
+}
+
+void FlightLoop::SetVerbose(bool verbose) {
+  ::std::cout << "SETTING VERBOSE: " << (verbose ? "true" : "false")
+    << ::std::endl;
+
+  verbose_ = verbose;
 }
 
 void FlightLoop::RunIteration() {
