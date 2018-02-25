@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <getopt.h>
 
 #include "gtest/gtest.h"
 
@@ -16,6 +17,8 @@ namespace spinny {
 namespace control {
 namespace loops {
 namespace testing {
+
+bool verbose_flight_loop = false;
 
 pid_t simulator_pid = 0, io_pid = 0, socat_pid = 0;
 
@@ -120,6 +123,9 @@ class FlightLoopTest : public ::testing::Test {
                            ".spinny.control.loops.flight_loop_queue.status",
                            ".spinny.control.loops.flight_loop_queue.goal",
                            ".spinny.control.loops.flight_loop_queue.output") {
+
+    flight_loop_.SetVerbose(verbose_flight_loop);
+
     // Change to the directory of the executable.
     char flight_loop_path[1024];
     ::readlink("/proc/self/exe", flight_loop_path,
@@ -197,8 +203,10 @@ TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
   }
   ASSERT_TRUE(flight_loop_queue.sensors->relative_altitude > 2.2);
 
+  ::std::cout << "flying in the air for a bit...\n";
+
   // Stay in IN_AIR for a bit.
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < 500; i++) {
     flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
 
     StepLoop();
@@ -311,15 +319,26 @@ TEST_F(FlightLoopTest, ThrottleCutCheck) {
 
 int main(int argc, char **argv) {
   signal(SIGINT, ::spinny::control::loops::testing::quit_handler);
-  signal(SIGKILL, ::spinny::control::loops::testing::quit_handler);
   signal(SIGTERM, ::spinny::control::loops::testing::quit_handler);
-  signal(SIGQUIT, ::spinny::control::loops::testing::quit_handler);
-  signal(SIGHUP, ::spinny::control::loops::testing::quit_handler);
-  signal(SIGTSTP, ::spinny::control::loops::testing::quit_handler);
-  signal(SIGSTOP, ::spinny::control::loops::testing::quit_handler);
-  signal(SIGTTOU, ::spinny::control::loops::testing::quit_handler);
-  signal(SIGTTIN, ::spinny::control::loops::testing::quit_handler);
-  signal(SIGABRT, ::spinny::control::loops::testing::quit_handler);
+
+  static struct option getopt_options[] = {
+    {"verbose", no_argument, 0, 'v'},
+    {0, 0, 0, 0}
+  };
+
+  while(1) {
+    int opt = getopt_long(argc, argv, "i:o:sc", getopt_options, NULL);
+    if(opt == -1) break;
+
+    switch(opt) {
+      case 'v':
+        ::spinny::control::loops::testing::verbose_flight_loop = true;
+        break;
+      default:
+        exit(1);
+        break;
+    }
+  }
 
   ::aos::InitCreate();
   ::testing::InitGoogleTest(&argc, argv);
