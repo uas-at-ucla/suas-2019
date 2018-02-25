@@ -3,8 +3,8 @@
 
 #include <atomic>
 
-#include "aos/common/util/phased_loop.h"
 #include "aos/common/time.h"
+#include "aos/common/util/phased_loop.h"
 #include "aos/linux_code/init.h"
 
 #include "src/control/loops/flight_loop.q.h"
@@ -41,28 +41,27 @@ class FlightLoop {
     FLIGHT_TERMINATION
   };
 
-  State state() const {
-    return state_;
-  }
+  State state() const { return state_; }
 
   // Method to dump all the current sensors at the head of the message queue.
   void DumpSensors();
+  void DumpSensorsPeriodic();
+
+  void SetVerbose(bool verbose);
 
  private:
   void RunIteration();
-
-  void DumpSensorsPeriodic();
 
   State state_;
 
   ::std::atomic<bool> running_;
 
   ::aos::time::PhasedLoop phased_loop_;
-  ::std::chrono::time_point<std::chrono::system_clock>  start_;
-
-  int count_;
+  ::std::chrono::time_point<std::chrono::system_clock> start_;
 
   int takeoff_ticker_;
+  bool verbose_;
+  int count_;
 };
 
 }  // namespace loops
