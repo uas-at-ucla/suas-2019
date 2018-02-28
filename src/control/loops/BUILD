@@ -20,7 +20,11 @@ cc_binary(
   ],
 )
 
-cc_test(
+cc_binary(
+  # TODO: Use bazel test.
+  # Requires bazel build @PX4_sitl//:jmavsim and bazel build //src/... to be run
+  # beforehand.
+
   name = 'flight_loop_lib_test',
   srcs = [
     'flight_loop_lib_test.cc',
