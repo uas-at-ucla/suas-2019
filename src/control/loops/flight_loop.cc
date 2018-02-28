@@ -222,7 +222,7 @@ void FlightLoop::RunIteration() {
           ::spinny::control::loops::flight_loop_queue.sensors
               ->relative_altitude};
 
-      Vector3D flight_direction = pilot_.Calculate(position);
+      Vector3D flight_direction = pilot_.Calculate(position, position);
 
       output->velocity_x = flight_direction.x;
       output->velocity_y = flight_direction.y;
