@@ -26,7 +26,7 @@ FlightLoop::FlightLoop()
 void FlightLoop::Iterate() { RunIteration(); }
 
 void FlightLoop::DumpSensorsPeriodic() {
-  if(!verbose_) return;
+  if (!verbose_) return;
 
   if (count_++ % 100) return;
 
@@ -100,7 +100,7 @@ void FlightLoop::DumpSensors() {
 
 void FlightLoop::SetVerbose(bool verbose) {
   ::std::cout << "SETTING VERBOSE: " << (verbose ? "true" : "false")
-    << ::std::endl;
+              << ::std::endl;
 
   verbose_ = verbose;
 }
@@ -199,11 +199,13 @@ void FlightLoop::RunIteration() {
       }
       break;
 
-    case IN_AIR:
+    case IN_AIR: {
       if (!run_mission) {
         state_ = LANDING;
       }
 
+      // Check if altitude is below a safe threshold, which may indicate that
+      // the autopilot was reset.
       if (::spinny::control::loops::flight_loop_queue.sensors
                   ->relative_altitude > 2.2 &&
           ::spinny::control::loops::flight_loop_queue.sensors
@@ -214,8 +216,21 @@ void FlightLoop::RunIteration() {
         state_ = LANDING;
       }
 
+      Position3D position = {
+          ::spinny::control::loops::flight_loop_queue.sensors->latitude,
+          ::spinny::control::loops::flight_loop_queue.sensors->longitude,
+          ::spinny::control::loops::flight_loop_queue.sensors
+              ->relative_altitude};
+
+      Vector3D flight_direction = pilot_.Calculate(position);
+
+      output->velocity_x = flight_direction.x;
+      output->velocity_y = flight_direction.y;
+      output->velocity_z = flight_direction.z;
+
       output->velocity_control = true;
       break;
+    }
 
     case LANDING:
       if (!::spinny::control::loops::flight_loop_queue.sensors->armed) {
