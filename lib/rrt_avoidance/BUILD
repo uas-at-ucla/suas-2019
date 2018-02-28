@@ -28,9 +28,27 @@ cc_library(
 )
 
 cc_test(
-  name = 'rrt_avoidance_test',
+  name = 'rrt_avoidance_bidirectional_test',
   srcs = [
     'BiRRTTest.cpp',
+  ],
+  deps = [
+    ':rrt_avoidance',
+    '@gtest//:googletest_main',
+    '@matplotlibcpp//:matplotlibcpp',
+  ],
+  copts = [
+    '-Wno-unused-variable',
+    '-Wno-reorder',
+    '-Wno-overloaded-virtual',
+    '-Wno-sign-compare',
+  ],
+)
+
+cc_test(
+  name = 'rrt_avoidance_tree_test',
+  srcs = [
+    'TreeTest.cpp',
   ],
   deps = [
     ':rrt_avoidance',
@@ -40,6 +58,8 @@ cc_test(
     '-Wno-unused-variable',
     '-Wno-reorder',
     '-Wno-overloaded-virtual',
+    '-Wno-sign-compare',
+    '-Wno-unused-function',
   ],
 )
 
