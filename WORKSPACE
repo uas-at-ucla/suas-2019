@@ -84,6 +84,20 @@ new_git_repository(
   remote = "https://github.com/SodiumFRP/sodium-cxx.git",
 )
 
+new_git_repository(
+  name = "flann",
+  commit = "27f9d9333f970b4bccaa95fa06f5a8344e931dc1",
+  build_file = "lib/third_party/flann.BUILD",
+  remote = "https://github.com/mariusmuja/flann.git",
+)
+
+new_git_repository(
+  name = "lz4",
+  commit = "b5233d3726b416b1176c71483d20b4c543851c6f",
+  build_file = "lib/third_party/lz4.BUILD",
+  remote = "https://github.com/lz4/lz4.git",
+)
+
 new_http_archive(
   name = "gtest",
   url = "https://github.com/google/googletest/archive/release-1.8.0.zip",
