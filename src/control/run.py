@@ -136,13 +136,13 @@ def main():
                     None, True, verbose)
             else:
                 processes.spawn_process(
-                    "../../lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
-                    None, True, verbose)
+                    "../../lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim", None,
+                    True, verbose)
 
         if run_ground:
             ## Run this command to build final version
             # processes.spawn_process("python ../ground/client/build.py", None,
-                                    # True, verbose)
+            # True, verbose)
             processes.spawn_process("python ../ground/run_ground.py", None,
                                     True, verbose)
 
@@ -152,8 +152,8 @@ def main():
                     None, True, verbose)
 
             processes.spawn_process( \
-                    "python python/commander/drone_communications.py", None, True, \
-                    verbose)
+                    "python python/commander/drone_communications.py", None, \
+                    True,  verbose)
 
         if run_commander:
             time.sleep(6)
