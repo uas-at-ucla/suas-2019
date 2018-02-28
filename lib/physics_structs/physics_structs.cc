@@ -72,6 +72,9 @@ Vector3D PointTowards(Position3D start, Position3D end) {
   double dy = GetDistance2D({0, start.longitude, 0}, {0, end.longitude, 0});
   double dz = start.altitude - end.altitude;  // In NED coordinates.
 
+  dx *= end.latitude > start.latitude ? 1 : -1;
+  dy *= end.longitude > start.longitude ? 1 : -1;
+
   Vector3D pointing_vector = {dx, dy, dz};
 
   pointing_vector /= GetMagnitude(pointing_vector);

@@ -13,3 +13,12 @@ cc_library(
     '//lib/physics_structs:physics_structs'
   ],
 )
+
+cc_test(
+  name = "pilot_test",
+  srcs = ["pilot_test.cc"],
+  deps = [
+    ":pilot",
+    "@gtest//:googletest_main"
+  ],
+)
