@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rrt/StateSpace.hpp>
+#include "lib/rrt_avoidance/StateSpace.hpp"
 #include <vector>
 
 namespace RRT {
@@ -14,16 +14,16 @@ namespace RRT {
  */
 template <typename T>
 void DownSampleVector(std::vector<T>& states, size_t maxSize) {
-    if (states.size() > maxSize) {
-        int toDelete = states.size() - maxSize;
-        double spacing = (double)states.size() / (double)toDelete;
-        double i = 0.0;
-        while (toDelete) {
-            toDelete--;
-            states.erase(states.begin() + (int)(i + 0.5));
-            i += spacing - 1.0;
-        }
+  if (states.size() > maxSize) {
+    int toDelete = states.size() - maxSize;
+    double spacing = (double)states.size() / (double)toDelete;
+    double i = 0.0;
+    while (toDelete) {
+      toDelete--;
+      states.erase(states.begin() + (int)(i + 0.5));
+      i += spacing - 1.0;
     }
+  }
 }
 
 /**
@@ -36,20 +36,20 @@ void DownSampleVector(std::vector<T>& states, size_t maxSize) {
  */
 template <typename T>
 void SmoothPath(std::vector<T>& pts, const StateSpace<T>& stateSpace) {
-    int span = 2;
-    while (span < pts.size()) {
-        bool changed = false;
-        for (int i = 0; i + span < pts.size(); i++) {
-            if (stateSpace.transitionValid(pts[i], pts[i + span])) {
-                for (int x = 1; x < span; x++) {
-                    pts.erase(pts.begin() + i + 1);
-                }
-                changed = true;
-            }
+  int span = 2;
+  while (span < pts.size()) {
+    bool changed = false;
+    for (int i = 0; i + span < pts.size(); i++) {
+      if (stateSpace.transitionValid(pts[i], pts[i + span])) {
+        for (int x = 1; x < span; x++) {
+          pts.erase(pts.begin() + i + 1);
         }
-
-        if (!changed) span++;
+        changed = true;
+      }
     }
+
+    if (!changed) span++;
+  }
 }
 
 }  // namespace RRT
