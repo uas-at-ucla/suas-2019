@@ -1,8 +1,8 @@
 #pragma once
 
 #include <Eigen/Dense>
-#include <rrt/2dplane/ObstacleGrid.hpp>
-#include <rrt/2dplane/PlaneStateSpace.hpp>
+#include "lib/rrt_avoidance/2dplane/ObstacleGrid.hpp"
+#include "lib/rrt_avoidance/2dplane/PlaneStateSpace.hpp"
 
 namespace RRT {
 

@@ -7,7 +7,7 @@
 #include <functional>
 #include <list>
 #include <memory>
-#include <rrt/StateSpace.hpp>
+#include "StateSpace.hpp"
 #include <stdexcept>
 #include <stdlib.h>
 #include <type_traits>

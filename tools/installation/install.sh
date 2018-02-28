@@ -79,6 +79,7 @@ then
     echo "Checking all necessary packages..."
     echo "sudo apt-get install python3.5 python3-pip python-pip python3-dev build-essential\n"
     sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential sl;
+    sudo apt-get install -qq python-matplotlib python-numpy python2.7-dev;
 
     # Do Bazel stuff
     sudo add-apt-repository -y ppa:openjdk-r/ppa;
@@ -130,7 +131,7 @@ fi
 if [ $OS = "Linux" ]
 then
     echo "Installing Gazebo dependencies..."
-    sudo apt-get -y -qq install libgazebo7-dev libopencv-dev libeigen3-dev protobuf-compiler;
+    sudo apt-get -y -qq install libgazebo7-dev libopencv-dev libeigen3-dev protobuf-compiler liblz4-dev;
 fi
 
 #TODO(comran): Gazebo should be installed separately until we get it working
