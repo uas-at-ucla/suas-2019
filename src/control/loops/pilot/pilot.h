@@ -16,7 +16,7 @@ class Pilot {
  public:
   Pilot();
 
-  Vector3D Calculate(Position3D drone_position);
+  Vector3D Calculate(Position3D drone_position, Position3D goal);
 
  private:
 //::std::map<::std::string, int> commands_;
