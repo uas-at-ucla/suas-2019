@@ -2,7 +2,7 @@
 #include <math.h>
 #include <memory>
 #include <functional>
-#include <rrt/2dplane/2dplane.hpp>
+#include "lib/rrt_avoidance/2dplane/2dplane.hpp"
 
 using namespace Eigen;
 using namespace RRT;

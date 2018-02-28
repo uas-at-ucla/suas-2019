@@ -1,7 +1,7 @@
 #pragma once
 
 #include <limits.h>
-#include <rrt/Tree.hpp>
+#include "lib/rrt_avoidance/Tree.hpp"
 
 namespace RRT {
 /**

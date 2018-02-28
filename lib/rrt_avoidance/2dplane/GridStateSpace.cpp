@@ -1,6 +1,6 @@
 #include <math.h>
-#include <rrt/2dplane/GridStateSpace.hpp>
-#include <rrt/util.hpp>
+#include "lib/rrt_avoidance/2dplane/GridStateSpace.hpp"
+#include "lib/rrt_avoidance/util.hpp"
 #include <stdexcept>
 
 using namespace Eigen;

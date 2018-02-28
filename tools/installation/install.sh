@@ -130,7 +130,7 @@ fi
 if [ $OS = "Linux" ]
 then
     echo "Installing Gazebo dependencies..."
-    sudo apt-get -y -qq install libgazebo7-dev libopencv-dev libeigen3-dev protobuf-compiler;
+    sudo apt-get -y -qq install libgazebo7-dev libopencv-dev libeigen3-dev protobuf-compiler liblz4-dev;
 fi
 
 #TODO(comran): Gazebo should be installed separately until we get it working
