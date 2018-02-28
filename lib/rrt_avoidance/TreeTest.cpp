@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <memory>
-#include <rrt/2dplane/2dplane.hpp>
-#include <rrt/2dplane/GridStateSpace.hpp>
-#include <rrt/Tree.hpp>
+#include "lib/rrt_avoidance/2dplane/2dplane.hpp"
+#include "lib/rrt_avoidance/2dplane/GridStateSpace.hpp"
+#include "lib/rrt_avoidance/Tree.hpp"
 #include <vector>
 
 using namespace Eigen;
