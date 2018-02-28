@@ -8,6 +8,8 @@
 #include "aos/linux_code/init.h"
 
 #include "src/control/loops/flight_loop.q.h"
+#include "src/control/loops/pilot/pilot.h"
+#include "lib/physics_structs/physics_structs.h"
 
 /*      ________  ________  ___  ________   ________       ___    ___
        |\   ____\|\   __  \|\  \|\   ___  \|\   ___  \    |\  \  /  /|
@@ -53,6 +55,8 @@ class FlightLoop {
   void RunIteration();
 
   State state_;
+
+  pilot::Pilot pilot_;
 
   ::std::atomic<bool> running_;
 
