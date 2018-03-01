@@ -80,7 +80,7 @@ Vector3D PointTowards(Position3D start, Position3D end) {
   Vector3D pointing_vector = {dx, dy, dz};
 
   // Make sure we don't divide by zero.
-  double magnitude = abs(GetMagnitude(pointing_vector));
+  double magnitude = ::std::abs(GetMagnitude(pointing_vector));
   pointing_vector.x = magnitude == 0 ? 0 : pointing_vector.x / magnitude;
   pointing_vector.y = magnitude == 0 ? 0 : pointing_vector.y / magnitude;
   pointing_vector.z = magnitude == 0 ? 0 : pointing_vector.z / magnitude;
