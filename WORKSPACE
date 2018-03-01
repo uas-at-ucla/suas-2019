@@ -84,6 +84,27 @@ new_git_repository(
   remote = "https://github.com/SodiumFRP/sodium-cxx.git",
 )
 
+new_git_repository(
+  name = "flann",
+  commit = "27f9d9333f970b4bccaa95fa06f5a8344e931dc1",
+  build_file = "lib/third_party/flann.BUILD",
+  remote = "https://github.com/mariusmuja/flann.git",
+)
+
+new_git_repository(
+  name = "lz4",
+  commit = "b5233d3726b416b1176c71483d20b4c543851c6f",
+  build_file = "lib/third_party/lz4.BUILD",
+  remote = "https://github.com/lz4/lz4.git",
+)
+
+new_git_repository(
+  name = "matplotlibcpp",
+  commit = "b74e465baa1d448172406a8e5624010925117be2",
+  build_file = "lib/third_party/matplotlibcpp.BUILD",
+  remote = "https://github.com/lava/matplotlib-cpp.git",
+)
+
 new_http_archive(
   name = "gtest",
   url = "https://github.com/google/googletest/archive/release-1.8.0.zip",
@@ -109,6 +130,20 @@ new_git_repository(
   commit = "07f023188e929019f506e9b390dde70539ea857f",
   remote = "https://github.com/google/protobuf.git",
   build_file = "lib/third_party/protobuf.BUILD",
+)
+
+new_local_repository(
+    name = "python_linux",
+    path = "/usr",
+    build_file_content = """
+cc_library(
+    name = "python27-lib",
+    srcs = ["lib/python2.7/config-x86_64-linux-gnu/libpython2.7.so"],
+    hdrs = glob(["include/python2.7/*.h"]),
+    includes = ["include/python2.7"],
+    visibility = ["//visibility:public"]
+)
+    """
 )
 
 new_http_archive(
