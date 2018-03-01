@@ -188,7 +188,7 @@ void FlightLoop::RunIteration() {
         state_ = ARMING;
       }
 
-      if (takeoff_ticker_++ < 500) {
+      if (takeoff_ticker_++ < 400) {
         output->arm = true;
         output->takeoff = true;
       } else {
