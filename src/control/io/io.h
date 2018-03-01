@@ -35,6 +35,7 @@ class AutopilotOutputWriter : public LoopOutputHandler {
   virtual void Read() override;
   virtual void Write() override;
   virtual void Stop() override;
+
   autopilot_interface::AutopilotInterface *copter_io_;
 };
 

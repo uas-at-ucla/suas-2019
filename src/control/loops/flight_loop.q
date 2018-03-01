@@ -49,6 +49,7 @@ queue_group FlightLoopQueue {
 
     bool velocity_control;
     bool arm;
+    bool disarm;
     bool takeoff;
     bool land;
     bool throttle_cut;

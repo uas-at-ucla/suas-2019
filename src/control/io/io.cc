@@ -22,14 +22,14 @@ void quit_handler(int sig) {
 }
 
 IO::IO()
-    //  : copter_io_("/dev/ttyS0", 921600) {
-    //  : copter_io_("/tmp/virtualcom0", 921600),
+//  : copter_io_("/dev/ttyS0", 921600) {
     : copter_io_("/tmp/virtualcom0", 921600),
       autopilot_sensor_reader_(&copter_io_),
       autopilot_output_writer_(&copter_io_) {
   copter_io_quit = &copter_io_;
   io_quit = this;
   signal(SIGINT, quit_handler);
+  signal(SIGTERM, quit_handler);
 }
 
 void IO::Run() {
@@ -41,14 +41,7 @@ void IO::Run() {
       ::std::ref(autopilot_output_writer_));
 
   // Wait forever.
-  while (run_) {
-    const int r = select(0, nullptr, nullptr, nullptr, nullptr);
-    if (r != 0) {
-      PLOG(WARNING, "infinite select failed");
-    } else {
-      PLOG(WARNING, "infinite select succeeded??\n");
-    }
-  }
+  select(0, nullptr, nullptr, nullptr, nullptr);
 
   autopilot_sensor_reader_.Quit();
   autopilot_sensor_reader_thread.join();
@@ -66,6 +59,7 @@ void IO::Quit() {
 AutopilotSensorReader::AutopilotSensorReader(
     autopilot_interface::AutopilotInterface *copter_io)
     : copter_io_(copter_io) {
+
   last_timestamps_.reset_timestamps();
 }
 
@@ -152,6 +146,10 @@ void AutopilotOutputWriter::Write() {
 
   if (::spinny::control::loops::flight_loop_queue.output->arm) {
     copter_io_->Arm();
+  }
+
+  if (::spinny::control::loops::flight_loop_queue.output->disarm) {
+    copter_io_->Disarm();
   }
 
   if (::spinny::control::loops::flight_loop_queue.output->takeoff) {
