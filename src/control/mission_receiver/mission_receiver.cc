@@ -74,7 +74,7 @@ void MissionReceiver::RunIteration() {
 }
 
 void MissionReceiver::OnConnect() {
-  ::std::cout << "got on_connect\n";
+  ::std::cout << "========================got on_connect\n";
 
   client_.socket()->on(
       "execute_commands",
