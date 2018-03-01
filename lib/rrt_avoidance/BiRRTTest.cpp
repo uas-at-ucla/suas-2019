@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include <Eigen/Dense>
 #include <iostream>
+#include "getopt.h"
 
 #include "2dplane/2dplane.hpp"
 #include "2dplane/GridStateSpace.hpp"
@@ -13,6 +14,8 @@ using namespace std;
 using namespace Eigen;
 
 namespace RRT {
+
+bool plot = false;
 
 TEST(BiRRT, Instantiation) {
   BiRRT<Vector2d> biRRT(make_shared<GridStateSpace>(50, 50, 50, 50), hash,
@@ -28,6 +31,14 @@ TEST(BiRRT, getPath) {
   vector<double> obs_x, obs_y;
   for (int x = 10; x < 30; x++) {
     for (int y = 10; y < 30; y++) {
+      obs_x.push_back(x);
+      obs_y.push_back(y);
+      state_space->obstacleGrid().obstacleAt(Vector2i(x, y)) = true;
+    }
+  }
+
+  for (int x = 10; x < 50; x++) {
+    for (int y = 30; y < 45; y++) {
       obs_x.push_back(x);
       obs_y.push_back(y);
       state_space->obstacleGrid().obstacleAt(Vector2i(x, y)) = true;
@@ -61,12 +72,15 @@ TEST(BiRRT, getPath) {
     smooth_y.push_back(node(1));
   }
 
-//::matplotlibcpp::plot(x, y);
-//::matplotlibcpp::plot(smooth_x, smooth_y);
-//::matplotlibcpp::plot(obs_x, obs_y);
-//::matplotlibcpp::xlim(0, 50);
-//::matplotlibcpp::ylim(0, 50);
-//::matplotlibcpp::show();
+  if(plot) {
+  ::matplotlibcpp::xkcd();
+  ::matplotlibcpp::plot(x, y);
+  ::matplotlibcpp::plot(smooth_x, smooth_y);
+  ::matplotlibcpp::plot(obs_x, obs_y);
+  ::matplotlibcpp::xlim(0, 50);
+  ::matplotlibcpp::ylim(0, 50);
+  ::matplotlibcpp::show();
+  }
 
   // path should contain at least two points (start and end)
   ASSERT_GE(path.size(), 2);
@@ -78,3 +92,27 @@ TEST(BiRRT, getPath) {
 }
 
 }  // namespace RRT
+
+int main(int argc, char **argv) {
+  static struct option getopt_options[] = {
+    {"plot", no_argument, 0, 'p'},
+    {0, 0, 0, 0}
+  };
+
+  while(1) {
+    int opt = getopt_long(argc, argv, "i:o:sc", getopt_options, NULL);
+    if(opt == -1) break;
+
+    switch(opt) {
+      case 'p':
+        ::RRT::plot = true;
+        break;
+      default:
+        exit(1);
+        break;
+    }
+  }
+
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
+}
