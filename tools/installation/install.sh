@@ -79,6 +79,7 @@ then
     echo "Checking all necessary packages..."
     echo "sudo apt-get install python3.5 python3-pip python-pip python3-dev build-essential\n"
     sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential sl;
+    sudo apt-get install -qq python-matplotlib python-numpy python2.7-dev;
 
     # Do Bazel stuff
     sudo add-apt-repository -y ppa:openjdk-r/ppa;
@@ -87,6 +88,7 @@ then
     echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list;
     curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
     sudo apt-get update && sudo apt-get -y -qq install bazel clang-3.9 libc++-dev clang-format-3.5;
+    sudo apt-get -y -qq install ruby;
     for i in $(seq 1 3);
     do
         sl;
@@ -116,8 +118,21 @@ echo "Installing Python dependencies listed in ${RED}pip_requirements.txt${NO_CO
 sudo -H pip install -I -r pip_requirements.txt > /dev/null;
 echo "Python dependencies installed.\n"
 
+
+if [ $OS = "Linux" ]
+then
+    echo "Installing jMAVSim dependencies..."
+    sudo apt-get -y -qq install ant;
+fi
+
 ##########################################################################
 # Do Gazebo stuff
+
+if [ $OS = "Linux" ]
+then
+    echo "Installing Gazebo dependencies..."
+    sudo apt-get -y -qq install libgazebo7-dev libopencv-dev libeigen3-dev protobuf-compiler liblz4-dev;
+fi
 
 #TODO(comran): Gazebo should be installed separately until we get it working
 #              with Travis.

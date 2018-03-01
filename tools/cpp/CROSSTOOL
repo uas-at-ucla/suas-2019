@@ -65,6 +65,7 @@ toolchain {
   cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu'
   cxx_builtin_include_directory: '/usr/include'
   cxx_builtin_include_directory: '/usr/lib/clang/3.9.1/include'
+  cxx_builtin_include_directory: '/usr/include/python2.7'
 
   cxx_flag: "-isystem"
   cxx_flag: "/usr/include/libcxxabi"
