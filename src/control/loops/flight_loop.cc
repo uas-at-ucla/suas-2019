@@ -13,7 +13,7 @@ namespace spinny {
 namespace control {
 namespace loops {
 
-FlightLoop::FlightLoop( )
+FlightLoop::FlightLoop()
     : state_(STANDBY),
       running_(false),
       phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
@@ -101,12 +101,7 @@ void FlightLoop::DumpSensors() {
   }
 }
 
-void FlightLoop::SetVerbose(bool verbose) {
-  ::std::cout << "SETTING VERBOSE: " << (verbose ? "true" : "false")
-              << ::std::endl;
-
-  verbose_ = verbose;
-}
+void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 
 void FlightLoop::RunIteration() {
   // TODO(comran): Are these two queues synced?
@@ -188,7 +183,12 @@ void FlightLoop::RunIteration() {
         state_ = ARMING;
       }
 
-      if (takeoff_ticker_++ < 400) {
+      if (::spinny::control::loops::flight_loop_queue.sensors
+              ->relative_altitude < 0.3) {
+        takeoff_ticker_++;
+      }
+
+      if (takeoff_ticker_ < 800) {
         output->arm = true;
         output->takeoff = true;
       } else {
