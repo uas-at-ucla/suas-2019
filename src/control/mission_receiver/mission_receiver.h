@@ -52,6 +52,11 @@ class MissionReceiver {
   ::aos::time::PhasedLoop phased_loop_;
 
   ::std::atomic<bool> running_;
+
+  int count_;
+
+  void SendTelemetryPeriodic();
+  void SendTelemetry();
 };
 
 void on_connect();
