@@ -6,6 +6,7 @@ queue_group FlightLoopQueue {
     double longitude;
     float altitude;
     float relative_altitude;
+    float heading;
 
     float velocity_x;
     float velocity_y;
