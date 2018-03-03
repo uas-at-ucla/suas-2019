@@ -1,5 +1,7 @@
 #include "mission_receiver.h"
 
+#include <iomanip>
+
 namespace spinny {
 namespace control {
 namespace mission_receiver {
@@ -16,7 +18,8 @@ MissionReceiver::MissionReceiver()
     : context_(1),
       mission_command_stream_(context_, ZMQ_REP),
       phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
-      running_(false) {
+      running_(false),
+      count_(0) {
   mission_command_stream_.bind("ipc:///tmp/mission_command_stream.ipc");
 
   socketio_mission_receiver = this;
@@ -29,6 +32,27 @@ MissionReceiver::MissionReceiver()
 
 void MissionReceiver::ConnectToGround() {
   client_.connect("http://0.0.0.0:8085");
+}
+
+void MissionReceiver::SendTelemetry() {
+  ::spinny::control::loops::flight_loop_queue.sensors.FetchLatest();
+  ::std::cout
+      << "Hello Universe ITERATE in state " << state_ << ::std::endl
+      << " " << std::setprecision(12)
+      << ::spinny::control::loops::flight_loop_queue.sensors->latitude << ", "
+      << ::spinny::control::loops::flight_loop_queue.sensors->longitude
+      << " @ alt "
+      << ::spinny::control::loops::flight_loop_queue.sensors->altitude
+      << " @ rel_alt "
+      << ::spinny::control::loops::flight_loop_queue.sensors->relative_altitude
+      << " @ heading "
+      << ::spinny::control::loops::flight_loop_queue.sensors->heading
+      << std::endl;
+}
+
+void MissionReceiver::SendTelemetryPeriodic() {
+  if (count_++ % 100) return;
+  SendTelemetry();
 }
 
 void MissionReceiver::Run() {
@@ -45,6 +69,8 @@ void MissionReceiver::Run() {
 }
 
 void MissionReceiver::RunIteration() {
+  SendTelemetryPeriodic();
+
   auto flight_loop_goal_message =
       ::spinny::control::loops::flight_loop_queue.goal.MakeMessage();
 
