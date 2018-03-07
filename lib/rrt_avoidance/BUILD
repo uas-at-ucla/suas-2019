@@ -36,6 +36,7 @@ cc_test(
     ':rrt_avoidance',
     '@gtest//:googletest_main',
     '@matplotlibcpp//:matplotlibcpp',
+     '//lib/physics_structs:physics_structs',
   ],
   copts = [
     '-Wno-unused-variable',
