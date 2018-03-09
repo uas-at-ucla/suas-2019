@@ -96,8 +96,7 @@ TEST(BiRRT, getPath) {
   EXPECT_EQ(goal, path.back());
 }
 
-TEST(BiRRT, MatrixTest) {
-  // sort out unnecessary obstacles here, given we know start and end lat, long
+TEST(BiRRT, GeocoordToObstacleGridTest) {
   int numObstacles = 1;
   int rows = 2 + numObstacles;
   ::Eigen::MatrixXd position_m(rows, 3);
@@ -107,6 +106,7 @@ TEST(BiRRT, MatrixTest) {
 
   for (int i = 0; i < numObstacles; i++) radius_m(i, 0) = 92;
 
+  // Load initial obstacles.
   position_m(0, 0) = 1;
   position_m(0, 1) = 1;
   position_m(1, 0) = 5;
@@ -121,30 +121,18 @@ TEST(BiRRT, MatrixTest) {
       position_m(i, 2) = radius_m(i - 2, 0);
   }
 
+  // Shift everything so that the drone position at the origin.
   position_m -= position_m.row(0).replicate(rows, 1);
 
-  double sign1, sign2;
-  if (position_m(1, 0) >= 0)
-    sign1 = 1.0;
-  else
-    sign1 = -1.0;
-  if (position_m(1, 1) >= 0)
-    sign2 = 1.0;
-  else
-    sign2 = -1.0;
+  // Make the start->end points exist in the first quadrant.
+  ::Eigen::MatrixXd reflection_m = MatrixXd::Identity(3, 3);
+  reflection_m(0, 0) = (position_m(1, 0) >= 0) ? 1 : -1;
+  reflection_m(1, 1) = (position_m(1, 1) >= 0) ? 1 : -1;
+  reflection_m(2, 2) = 1;
 
-  ::Eigen::MatrixXd rotation_m(3, 3);
-  for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-      rotation_m(i, j) = 0;
-    }
-  }
-  rotation_m(0, 0) = sign1;
-  rotation_m(1, 1) = sign2;
-  rotation_m(2, 2) = 1.0;
+  position_m *= reflection_m;
 
-  position_m *= rotation_m;
-
+  // Convert to meters.
   ::Eigen::MatrixXd meter_pos_m(rows, 3);
   for (int i = 0; i < rows; i++) {
     meter_pos_m(i, 0) =
@@ -154,12 +142,17 @@ TEST(BiRRT, MatrixTest) {
     meter_pos_m(i, 2) = position_m(i, 2);
   }
 
+  // TODO(akaash): Only add the buffer after we've gotten the whole thing to
+  // work in the first place.
+  /*
+  // Add a buffer to take into account obstacles that are not directly in the
+  // frame of the start and end points.
   double dist = sqrt((meter_pos_m(1, 0) - meter_pos_m(0, 0)) *
                          (meter_pos_m(1, 0) - meter_pos_m(0, 0)) +
                      (meter_pos_m(1, 1) - meter_pos_m(0, 1)) *
                          (meter_pos_m(1, 1) - meter_pos_m(0, 1)));
-  double buffer = dist * 0.2;
 
+  double buffer = dist * 0.2;
   ::Eigen::MatrixXd buffer_m(rows, 3);
   for (int i = 0; i < rows; i++) {
     buffer_m(i, 0) = buffer;
@@ -167,12 +160,15 @@ TEST(BiRRT, MatrixTest) {
     buffer_m(i, 2) = 0;
   }
   meter_pos_m += buffer_m;
+  */
 
+  // Scale everything to be within the 0 -> 50 obstacle grid used by RRT.
   double meter_width = meter_pos_m(1, 0);
   double meter_height = meter_pos_m(1, 1);
   double longest_dim = meter_width > meter_height ? meter_width : meter_height;
   double scale = 50 / longest_dim;
 
+  // Run the RRT.
   ::Eigen::MatrixXd rrt_m(rows, 3);
   rrt_m = scale * meter_pos_m;
   std::shared_ptr<RRT::GridStateSpace> state_space =
@@ -219,6 +215,8 @@ TEST(BiRRT, MatrixTest) {
   ::Eigen::MatrixXd meter_out_m(smooth_path.size(), 3);
   meter_out_m = (1 / scale) * rrt_out_m;
 
+  // TODO(akaash): Do buffer stuff later.
+  /*
   ::Eigen::MatrixXd buffer_out_m(smooth_path.size(), 3);
   for (int i = 0; i < smooth_path.size(); i++) {
     buffer_out_m(i, 0) = buffer;
@@ -226,6 +224,7 @@ TEST(BiRRT, MatrixTest) {
     buffer_out_m(i, 2) = 0;
   }
   meter_out_m -= buffer_out_m;
+  */
 
   // PENDING...
   // convert to latitude and longitude
