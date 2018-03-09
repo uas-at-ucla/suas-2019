@@ -10,6 +10,7 @@ import cv2
 import glob
 import os
 import argparse
+import random
 
 TARGET_INDICIES = {
     "random": None,
@@ -24,7 +25,8 @@ TARGET_INDICIES = {
     "hexagon": 8,
     "heptagon": 9,
     "octagon": 10,
-    "star": 11
+    "star": 11,
+    "blank": 12
 }
 
 
@@ -32,6 +34,8 @@ def main(visualize, n_images, selected_target, overwrite, dest_folder):
     #
     # Create paths
     #
+
+    # Field image path
     imgs_paths = sorted(
         glob.glob(os.path.join(gs.DATA_PATH, 'gmap_tiles', '*.jpg')))
     img_names = [
@@ -40,6 +44,15 @@ def main(visualize, n_images, selected_target, overwrite, dest_folder):
     if len(imgs_paths) == 0:
         raise ValueError("ERROR: No background tiles loaded (gmap_tiles)")
 
+    # Black tile path
+    black_tile_paths = sorted(
+        glob.glob(os.path.join(gs.DATA_PATH, 'black_tile', '*.png')))
+        # glob.glob(os.path.join(gs.DATA_PATH, 'gmap_tiles', '*.jpg')))
+    black_tile_names = [
+        os.path.splitext(os.path.split(path)[1])[0] for path in black_tile_paths 
+    ]
+    if len(black_tile_paths) == 0:
+        raise ValueError("ERROR: No background tiles loaded (black_tile)")
 
     data_paths = [
         os.path.join(gs.DATA_PATH, 'flight_data', 'data.json')
@@ -60,6 +73,7 @@ def main(visualize, n_images, selected_target, overwrite, dest_folder):
             if overwrite:
                 shutil.rmtree(dst_folder)
                 os.makedirs(dst_folder)
+                os.makedirs(os.path.join(dst_folder, 'ground_truth'))
             else:
                 raise IOError("Destination folder '" + dst_folder + "' not empty, use '-f' to force overwrite.")
     else:
@@ -87,17 +101,47 @@ def main(visualize, n_images, selected_target, overwrite, dest_folder):
             if img_index > n_images - 1:
                 break
 
-            target, target_label, _, shape= TargetGenerator.randomTarget(
+            letter = random.choice(gs.LETTERS)
+            orientation = random.random() * 360
+            target, target_label, _, shape= TargetGenerator.genTarget(
                 altitude=0,
                 longitude=shape_img.longitude,
                 latitude=shape_img.latitude,
-                target_label=TARGET_INDICIES[selected_target]
+                target_label=TARGET_INDICIES[selected_target],
+                # color_letter=(255, 255, 255),
+                letter_label=letter,
+                orien=orientation
             )
+
+            # make a blank target
+            blank_target, _, _, _ = TargetGenerator.genTarget(
+                altitude=0,
+                longitude=shape_img.longitude,
+                latitude=shape_img.latitude,
+                target_label=TARGET_INDICIES["blank"],
+                color_letter=(255, 255, 255),
+                letter_label=letter,
+                orien=orientation
+            )
+
+            # paste the targets
             coords = shape_img.pastePatch(patch=patch, target=target)
             coords = TargetGenerator.squareCoords(coords, noise=False)
             patch = patch[coords[1]:coords[3], coords[0]:coords[2], ...]
 
-            patch = cv2.resize(patch, dsize=gs.CLASSIFIER_PATCH_SIZE)
+            # patch = cv2.resize(patch, dsize=gs.CLASSIFIER_PATCH_SIZE)
+
+            # paste the blank target
+            black_img = TargetGenerator.Image(black_tile_paths[0], shape_data_path, K=gs.resized_K)
+            black_patches = black_img.createFullPatch()
+            black_patch = black_patches.next()
+
+            black_coords = black_img.pastePatch(patch=black_patch, target=blank_target)
+            black_coords = TargetGenerator.squareCoords(black_coords, noise=False)
+
+            black_patch = black_patch[black_coords[1]:black_coords[3], black_coords[0]:black_coords[2], ...]
+            _, black_patch = cv2.threshold(black_patch, 127, 255, cv2.THRESH_BINARY)
+            # black_patch = cv2.resize(black_patch, dsize=gs.CLASSIFIER_PATCH_SIZE)
 
             if visualize:
                 cv2.namedWindow('original patch', flags=cv2.WINDOW_NORMAL)
@@ -113,6 +157,7 @@ def main(visualize, n_images, selected_target, overwrite, dest_folder):
             img_index += 1
 
             cv2.imwrite(os.path.join(dst_folder, filename+'.jpg'), patch)
+            cv2.imwrite(os.path.join(dst_folder, 'ground_truth',  filename+'.png'), black_patch)
             #with open(os.path.join(dst_folder, filename+'.txt'), 'w') as fp:
             #    fp.write('{}.jpg\t{}'.format(filename, label))
 
