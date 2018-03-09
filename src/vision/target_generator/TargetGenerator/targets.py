@@ -21,7 +21,7 @@ __all__ = [
     "CircleTarget", "HalfCircleTarget", "QuarterCircleTarget",
     "RectangleTarget", "TrapezoidTarget", "TriangleTarget", "CrossTarget",
     "PolygonTarget", "PentagonTarget", "HexagonTarget", "HeptagonTarget",
-    "OctagonTarget", "StarTarget", "randomTarget", "drawLetter", "randomLetter"
+    "OctagonTarget", "StarTarget", "randomTarget", "drawLetter", "randomLetter", "BlankTarget", "genTarget"
 ]
 
 
@@ -218,6 +218,11 @@ class BaseTarget(object):
     def size(self):
         return self._size / self._size_ratio
 
+class BlankTarget(BaseTarget):
+    """Dummy target that draws no shape."""
+
+    def _drawForm(self, ctx, brush):
+        pass
 
 class CircleTarget(BaseTarget):
     """A target in the form of a circle."""
@@ -390,6 +395,7 @@ TARGET_CLASSES = (
     (HeptagonTarget, 1., {}, "heptagon"),
     (OctagonTarget, 1., {}, "octagon"),
     (StarTarget, 1., {}, "star"),
+    (BlankTarget, 0., {}, "blank")
 )
 
 with open(os.path.join(gs.DATA_PATH, 'colors.pkl'), 'r') as f:
@@ -407,6 +413,56 @@ def randomColor(ignore=None):
 
     return random.choice(color_list)
 
+def genTarget(longitude,
+                 latitude,
+                 altitude,
+                 target_label=None,
+                 letter_label=None,
+                 color_bak=None,
+                 color_letter=None,
+                 font=gs.FONTS[0],
+                 orien=0,
+                 coords_offset=0.0000,
+                 **kwds):
+    """Create a random target
+
+    The target is selected randomly from all possible targets, and placed in a
+    random offset from some given position.
+    """
+
+    if color_bak is None:
+        color = randomColor()
+    else:
+        color = color_bak
+    
+    if color_letter is None:
+        font_color = randomColor(ignore=color)
+    else:
+        font_color = color_letter
+    
+    if letter_label is None:
+        letter = random.choice(gs.LETTERS)
+    else:
+        letter = letter_label
+
+    params = {
+        'size': None,
+        'orientation': orien,
+        'longitude': longitude,
+        'latitude': latitude,
+        'altitude': altitude,
+        'letter': letter,
+        'color': color,
+        'font_color': font_color,
+        'font': font
+    }
+    params.update(kwds)
+    if target_label is None:
+        target_label = WRG.next()
+    target, _, extra_params, shape = TARGET_CLASSES[target_label]
+    params.update(extra_params)
+
+    return target(**params), target_label, gs.LETTERS.index(letter), shape
 
 def randomTarget(longitude,
                  latitude,
