@@ -5,6 +5,9 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <thread>
+
+#include "zmq.hpp"
 
 namespace spinny {
 namespace control {
@@ -98,12 +101,7 @@ void FlightLoop::DumpSensors() {
   }
 }
 
-void FlightLoop::SetVerbose(bool verbose) {
-  ::std::cout << "SETTING VERBOSE: " << (verbose ? "true" : "false")
-              << ::std::endl;
-
-  verbose_ = verbose;
-}
+void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 
 void FlightLoop::RunIteration() {
   // TODO(comran): Are these two queues synced?
@@ -185,7 +183,12 @@ void FlightLoop::RunIteration() {
         state_ = ARMING;
       }
 
-      if (takeoff_ticker_++ < 500) {
+      if (::spinny::control::loops::flight_loop_queue.sensors
+              ->relative_altitude < 0.3) {
+        takeoff_ticker_++;
+      }
+
+      if (takeoff_ticker_ < 800) {
         output->arm = true;
         output->takeoff = true;
       } else {
@@ -257,8 +260,30 @@ void FlightLoop::RunIteration() {
   }
 }
 
+void receive_mission() {
+  ::zmq::context_t context(1);
+  ::zmq::socket_t mission_receiver_stream(context, ZMQ_REQ);
+  mission_receiver_stream.connect("ipc:///tmp/mission_command_stream.ipc");
+  ::zmq::message_t request(5);
+  memcpy(request.data(), "Hello", 5);
+  mission_receiver_stream.send(request);
+
+  ::zmq::message_t reply;
+  mission_receiver_stream.recv(&reply);
+  for (int i = 0;; i++)
+    if (i % 1000000 == 0)
+      ::std::cout << "got a reply <><><><><><><><><><><><><><><\n";
+}
+
 void FlightLoop::Run() {
   running_ = true;
+
+  ::std::cout << "<<<<<<<<<<<<<<< Creating new mission_receiver_thread\n";
+
+  ::std::thread mission_receiver_thread(receive_mission);
+  mission_receiver_thread.detach();
+
+  ::std::cout << "<<<<<<<<<<<<<<< Detatched mission_receiver_thread\n";
 
   while (running_) {
     RunIteration();

@@ -9,7 +9,7 @@
 
 #include "zmq.hpp"
 
-#include "src/sandbox/zmq/mission_commands.pb.h"
+#include "lib/sandbox/zmq/mission_commands.pb.h"
 
 int main() {
   //  Prepare our context and socket
