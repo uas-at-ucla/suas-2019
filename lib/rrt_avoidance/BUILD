@@ -34,7 +34,7 @@ cc_test(
   ],
   deps = [
     ':rrt_avoidance',
-    '@gtest//:googletest_main',
+    '@gtest//:googletest',
     '@matplotlibcpp//:matplotlibcpp',
      '//lib/physics_structs:physics_structs',
   ],
