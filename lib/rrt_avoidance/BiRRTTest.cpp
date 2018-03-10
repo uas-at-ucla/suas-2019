@@ -27,8 +27,154 @@ TEST(BiRRT, Instantiation) {
                         dimensions);
 }
 
-TEST(BiRRT, getPath) {
-  Vector2d start = {1, 1}, goal = {50, 50};
+TEST(BiRRT, GeocoordToObstacleGridTest) {
+  int number_of_obstacles = 2;
+  int rows = 2 + number_of_obstacles;
+
+  ::Eigen::MatrixXd m(rows, 3);
+
+  ::std::cout.precision(10);
+
+  // Load initial start/end and obstacle values.
+  m(0, 0) = 3e-3;
+  m(0, 1) = 3e-3;
+  m(0, 2) = 0;
+  m(1, 0) = 1e-3;
+  m(1, 1) = 1e-3;
+  m(1, 2) = 0;
+  for (int i = 2; i < rows; i++) {
+    m(i, 0) = 2e-3;
+    m(i, 1) = 1.6e-3 + (i - 2) * 1.2e-3;
+    m(i, 2) = 50;
+  }
+  ::std::cout << m << ::std::endl;
+
+  // Shift everything so that the drone position at the origin.
+  ::Eigen::MatrixXd m_trans(rows, 3);
+  m_trans = m.row(0).replicate(rows, 1);
+  m -= m_trans;
+
+  ::std::cout << m << ::std::endl;
+
+  // Make the start->end points exist in the first quadrant.
+  ::Eigen::MatrixXd reflection_m = MatrixXd::Identity(3, 3);
+  reflection_m(0, 0) = (m(1, 0) >= 0) ? 1 : -1;
+  reflection_m(1, 1) = (m(1, 1) >= 0) ? 1 : -1;
+  m *= reflection_m;
+
+  // Convert coordinate components to meters.
+  double coordinate_to_meter = ::spinny::GetDistance2D({0, 0, 0}, {1, 0, 0});
+
+  for (int i = 0; i < rows; i++) {
+    m(i, 0) = m(i, 0) * coordinate_to_meter;
+    m(i, 1) = m(i, 1) * coordinate_to_meter;
+  }
+
+  // Scale everything to be within the 0 -> 50 obstacle grid used by RRT.
+  const int kDimension = 50;
+  double meter_width = m(1, 0);
+  double meter_height = m(1, 1);
+  double longest_dim = meter_width > meter_height ? meter_width : meter_height;
+
+  double scale = (kDimension - 2) / longest_dim;
+  m *= scale;
+
+  // Leave a 1 unit buffer around everything to make rrt more stable.
+  ::Eigen::MatrixXd m_shift(rows, 3);
+  ::Eigen::MatrixXd m_shift_row(1, 3);
+  m_shift_row << 1, 1, 0;
+  m_shift = m_shift_row.replicate(rows, 1);
+  m += m_shift;
+
+  std::shared_ptr<RRT::GridStateSpace> state_space =
+      make_shared<GridStateSpace>(kDimension, kDimension, kDimension,
+                                  kDimension);
+
+  // Set start and end goals.
+  Vector2d start = {m(0, 0), m(0, 1)};
+  Vector2d goal = {m(1, 0), m(1, 1)};
+
+  BiRRT<Vector2d> biRRT(state_space, hash, dimensions);
+  vector<double> obs_x, obs_y;
+
+  // Draw obstacles as circles on the obstacle grid.
+  for (int i = 2; i < rows; i++) {
+    int obstacle_radius = m(i, 2);
+    for (int offset_x = -obstacle_radius; offset_x <= obstacle_radius;
+         offset_x++) {
+      int y_max = sqrt(pow(obstacle_radius, 2) - pow(offset_x, 2)) + 1;
+
+      for (int offset_y = -y_max; offset_y <= y_max; offset_y++) {
+        int x = m(i, 0) + offset_x;
+        int y = m(i, 1) + offset_y;
+        if (x < 0 || x >= kDimension | y < 0 || y >= kDimension) {
+          continue;
+        }
+
+        state_space->obstacleGrid().obstacleAt(Vector2i(x, y)) = true;
+
+        obs_x.push_back(x);
+        obs_y.push_back(y);
+      }
+    }
+  }
+
+  // Run the RRT.
+  biRRT.setStartState(start);
+  biRRT.setGoalState(goal);
+  biRRT.setStepSize(1);
+  biRRT.setMaxIterations(10000);
+  bool success = biRRT.run();
+  vector<Vector2d> path = biRRT.getPath();
+  vector<Vector2d> smooth_path(path);
+  RRT::SmoothPath<Vector2d>(smooth_path, *state_space);
+
+  ::Eigen::MatrixXd m_rrt_path(smooth_path.size(), 2);
+
+  vector<double> smooth_x, smooth_y;
+  for (int i = 0; i < smooth_path.size(); i++) {
+    m_rrt_path(i, 0) = smooth_path[i][0];
+    m_rrt_path(i, 1) = smooth_path[i][1];
+
+    smooth_x.push_back(smooth_path[i][0]);
+    smooth_y.push_back(smooth_path[i][1]);
+  }
+
+  cout << m_rrt_path << endl;
+
+  // Apply inverse operations to get back to original coordinates.
+  m_rrt_path -= m_shift.block<1, 2>(0, 0).replicate(smooth_path.size(), 1);
+  m_rrt_path /= scale;
+  m_rrt_path /= coordinate_to_meter;
+  m_rrt_path *= reflection_m.block<2, 2>(0, 0);
+  m_rrt_path += m_trans.block<1, 2>(0, 0).replicate(smooth_path.size(), 1);
+
+  vector<double> final_x, final_y;
+  for(int i = 0;i < smooth_path.size();i++) {
+    final_x.push_back(m_rrt_path(i, 0));
+    final_y.push_back(m_rrt_path(i, 1));
+  }
+
+  ::std::cout << m_rrt_path << ::std::endl;
+
+  if (plot) {
+    ::matplotlibcpp::xkcd();
+    ::matplotlibcpp::plot(smooth_x, smooth_y);
+    ::matplotlibcpp::plot(obs_x, obs_y);
+    ::matplotlibcpp::xlim(0, kDimension);
+    ::matplotlibcpp::ylim(0, kDimension);
+    ::matplotlibcpp::title("RRT Path in ObstacleGrid units");
+    ::matplotlibcpp::show();
+
+    ::matplotlibcpp::xkcd();
+    ::matplotlibcpp::plot(final_x, final_y);
+    ::matplotlibcpp::title("RRT Path in real-world geocoords");
+    ::matplotlibcpp::show();
+  }
+}
+
+TEST(BiRRT, GetPath) {
+  Vector2d start = {1, 1}, goal = {49, 49};
 
   std::shared_ptr<RRT::GridStateSpace> state_space =
       make_shared<GridStateSpace>(50, 50, 50, 50);
@@ -94,166 +240,6 @@ TEST(BiRRT, getPath) {
   // the path, respectively.
   EXPECT_EQ(start, path.front());
   EXPECT_EQ(goal, path.back());
-}
-
-TEST(BiRRT, GeocoordToObstacleGridTest) {
-  int number_of_obstacles = 2;
-  int rows = 2 + number_of_obstacles;
-
-  ::Eigen::MatrixXd m(rows, 3);
-
-  ::std::cout.precision(10);
-
-  // Load initial start/end and obstacle values.
-  m(0, 0) = 3e-3;
-  m(0, 1) = 3e-3;
-  m(0, 2) = 0;
-  m(1, 0) = 1e-3;
-  m(1, 1) = 1e-3;
-  m(1, 2) = 0;
-  for(int i = 2;i < rows;i++) {
-    m(i, 0) = 2e-3;
-    m(i, 1) = 1.6e-3 + (i - 2) * 1.2e-3;
-    m(i, 2) = 50;
-  }
-
-  // Shift everything so that the drone position at the origin.
-  ::Eigen::MatrixXd m_trans(rows, 3);
-  m_trans = m.row(0).replicate(rows, 1);
-  m -= m_trans;
-
-  // Make the start->end points exist in the first quadrant.
-  ::Eigen::MatrixXd reflection_m = MatrixXd::Identity(3, 3);
-  reflection_m(0, 0) = (m(1, 0) >= 0) ? 1 : -1;
-  reflection_m(1, 1) = (m(1, 1) >= 0) ? 1 : -1;
-  m *= reflection_m;
-
-  // Convert coordinate components to meters.
-  for (int i = 0; i < rows; i++) {
-    m(i, 0) = ::spinny::GetDistance2D({0, 0, 0}, {m(i, 0), 0, 0});
-    m(i, 1) = ::spinny::GetDistance2D({0, 0, 0}, {0, m(i, 1), 0});
-  }
-
-  ::std::cout << m << ::std::endl;
-
-  // Scale everything to be within the 0 -> 50 obstacle grid used by RRT.
-  const int kDimension = 50;
-  double meter_width = m(1, 0);
-  double meter_height = m(1, 1);
-  double longest_dim = meter_width > meter_height ? meter_width : meter_height;
-
-  double scale = (kDimension - 2) / longest_dim;
-  m *= scale;
-
-  // Leave a 1 unit buffer around everything to make rrt more stable.
-  ::Eigen::MatrixXd m_shift(rows, 3);
-  ::Eigen::MatrixXd m_shift_row(1, 3);
-  m_shift_row << 1, 1, 0;
-  m_shift = m_shift_row.replicate(rows, 1);
-  m += m_shift;
-  ::std::cout << m << ::std::endl;
-
-  // Run the RRT.
-  std::shared_ptr<RRT::GridStateSpace> state_space =
-      make_shared<GridStateSpace>(kDimension, kDimension, kDimension,
-                                  kDimension);
-
-  Vector2d start = {m(0, 0) + 1, m(0, 1) + 1};
-  Vector2d goal = {m(1, 0) - 1, m(1, 1) - 1};
-
-  BiRRT<Vector2d> biRRT(state_space, hash, dimensions);
-  vector<double> obs_x, obs_y;
-
-  for(int i = 2;i < rows;i++) {
-    int obstacle_radius = m(i, 2);
-    for (int offset_x = -obstacle_radius; offset_x <= obstacle_radius;
-         offset_x++) {
-      int y_max = sqrt(pow(obstacle_radius, 2) - pow(offset_x, 2)) + 1;
-
-      for (int offset_y = -y_max; offset_y <= y_max; offset_y++) {
-        int x = m(i, 0) + offset_x;
-        int y = m(i, 1) + offset_y;
-        if(x < 0 || x >= 50 | y < 0 || y >= 50) {
-          continue;
-        }
-
-        state_space->obstacleGrid().obstacleAt(Vector2i(x, y)) = true;
-
-        obs_x.push_back(x);
-        obs_y.push_back(y);
-      }
-    }
-  }
-
-  biRRT.setStartState(start);
-  biRRT.setGoalState(goal);
-  biRRT.setStepSize(1);
-  biRRT.setMaxIterations(10000);
-  bool success = biRRT.run();
-  vector<Vector2d> path = biRRT.getPath();
-  vector<Vector2d> smooth_path(path);
-  RRT::SmoothPath<Vector2d>(smooth_path, *state_space);
-
-  ::Eigen::MatrixXd rrt_out_m(smooth_path.size(), 3);
-
-  vector<double> smooth_x, smooth_y;
-  for (int i = 0; i < smooth_path.size(); i++) {
-    rrt_out_m(i, 0) = smooth_path[i][0];
-    rrt_out_m(i, 1) = smooth_path[i][1];
-    rrt_out_m(i, 2) = 0;
-
-    smooth_x.push_back(smooth_path[i][0]);
-    smooth_y.push_back(smooth_path[i][1]);
-  }
-
-  cout << rrt_out_m << endl;
-
-  ::Eigen::MatrixXd meter_out_m(smooth_path.size(), 3);
-  meter_out_m = (1 / scale) * rrt_out_m;
-
-  // TODO(akaash): Only add the buffer after we've gotten the whole thing to
-  // work in the first place.
-  /*
-  // Add a buffer to take into account obstacles that are not directly in the
-  // frame of the start and end points.
-  double dist = sqrt((meter_pos_m(1, 0) - meter_pos_m(0, 0)) *
-                         (meter_pos_m(1, 0) - meter_pos_m(0, 0)) +
-                     (meter_pos_m(1, 1) - meter_pos_m(0, 1)) *
-                         (meter_pos_m(1, 1) - meter_pos_m(0, 1)));
-
-  double buffer = dist * 0.2;
-  ::Eigen::MatrixXd buffer_m(rows, 3);
-  for (int i = 0; i < rows; i++) {
-    buffer_m(i, 0) = buffer;
-    buffer_m(i, 1) = buffer;
-    buffer_m(i, 2) = 0;
-  }
-  meter_pos_m += buffer_m;
-  */
-  // TODO(akaash): Do buffer stuff later.
-  /*
-  ::Eigen::MatrixXd buffer_out_m(smooth_path.size(), 3);
-  for (int i = 0; i < smooth_path.size(); i++) {
-    buffer_out_m(i, 0) = buffer;
-    buffer_out_m(i, 1) = buffer;
-    buffer_out_m(i, 2) = 0;
-  }
-  meter_out_m -= buffer_out_m;
-  */
-
-  // PENDING...
-  // convert to latitude and longitude
-  // divide by rotation
-  // transfer start's 0,0 to original position
-
-  if (plot) {
-    ::matplotlibcpp::xkcd();
-    ::matplotlibcpp::plot(smooth_x, smooth_y);
-    ::matplotlibcpp::plot(obs_x, obs_y);
-    ::matplotlibcpp::xlim(0, 50);
-    ::matplotlibcpp::ylim(0, 50);
-    ::matplotlibcpp::show();
-  }
 }
 
 }  // namespace RRT
