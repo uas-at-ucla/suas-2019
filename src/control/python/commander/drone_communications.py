@@ -34,6 +34,7 @@ def set_state(data):
 
 @socketio.on('telemetry')
 def broadcast_telemetry(data):
+    # print "TELEMETRY"
     emit('telemetry', data, broadcast=True, include_self=False)
 
 
