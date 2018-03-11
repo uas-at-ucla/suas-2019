@@ -45,6 +45,8 @@ class FlightLoop {
 
   State state() const { return state_; }
 
+  static const std::map<State, std::string> state_string;
+
   // Method to dump all the current sensors at the head of the message queue.
   void DumpSensors();
   void DumpSensorsPeriodic();
