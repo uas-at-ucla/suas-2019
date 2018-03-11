@@ -15,7 +15,7 @@ class Telemetry extends Component {
       this.telemetryText = {
         speed:
           this.round(
-            this.telemetry.sensors["ground_speed"] * METERS_PER_SECOND_TO_MPH,
+            this.telemetry.sensors["gps_ground_speed"] * METERS_PER_SECOND_TO_MPH,
             1
           ) + "mph",
         altitude: this.round(this.telemetry.sensors["relative_altitude"], 1) + " meters",
@@ -23,13 +23,12 @@ class Telemetry extends Component {
           this.round(this.telemetry.sensors["latitude"], 7) +
           ", " +
           this.round(this.telemetry.sensors["longitude"], 7),
-        satellites: this.round(this.telemetry.sensors["satellite_count"], 7),
+        satellites: this.round(this.telemetry.sensors["gps_satellite_count"], 7),
         heading: this.round(this.telemetry.sensors["heading"], 7),
-        gps_eph: this.round(this.telemetry.sensors["eph"], 7),
-        gps_epv: this.round(this.telemetry.sensors["epv"], 7)
+        gps_eph: this.round(this.telemetry.sensors["gps_eph"], 7),
+        gps_epv: this.round(this.telemetry.sensors["gps_epv"], 7)
       };
 
-      //TODO: Fix altitude: interop uses MSL but we are using relative!!!
       filteredAltitude = this.round(this.telemetry.sensors["relative_altitude"], 1);
     }
 
