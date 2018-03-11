@@ -13,17 +13,6 @@ namespace spinny {
 namespace control {
 namespace loops {
 
-const std::map<FlightLoop::State, std::string> FlightLoop::state_string = {
-    {STANDBY, "STANDBY"},
-    {ARMING, "ARMING"},
-    {ARMED, "ARMED"},
-    {TAKING_OFF, "TAKING OFF"},
-    {IN_AIR, "IN AIR"},
-    {LANDING, "LANDING"},
-    {FAILSAFE, "FAILSAFE"},
-    {FLIGHT_TERMINATION, "FLIGHT TERMINATION"}
-};
-
 FlightLoop::FlightLoop()
     : state_(STANDBY),
       running_(false),
