@@ -64,15 +64,15 @@ void MissionReceiver::SendTelemetry() {
     (*sensors_map)["latitude"] = sio::double_message::create((*sensors)->latitude);
     (*sensors_map)["longitude"] = sio::double_message::create((*sensors)->longitude);
     (*sensors_map)["altitude"] = sio::double_message::create((*sensors)->altitude);
-    (*sensors_map)["relative_altitude"] = sio::double_message::create((*sensors)->altitude);
+    (*sensors_map)["relative_altitude"] = sio::double_message::create((*sensors)->relative_altitude);
     (*sensors_map)["heading"] = sio::double_message::create((*sensors)->heading);
-    (*sensors_map)["ground_speed"] = sio::double_message::create((*sensors)->ground_speed);
     (*sensors_map)["velocity_x"] = sio::double_message::create((*sensors)->velocity_x);
     (*sensors_map)["velocity_y"] = sio::double_message::create((*sensors)->velocity_y);
     (*sensors_map)["velocity_z"] = sio::double_message::create((*sensors)->velocity_z);
-    (*sensors_map)["satellite_count"] = sio::double_message::create((*sensors)->satellite_count);
-    (*sensors_map)["eph"] = sio::double_message::create((*sensors)->eph);
-    (*sensors_map)["epv"] = sio::double_message::create((*sensors)->epv);
+    (*sensors_map)["gps_ground_speed"] = sio::double_message::create((*sensors)->gps_ground_speed);
+    (*sensors_map)["gps_satellite_count"] = sio::double_message::create((*sensors)->gps_satellite_count);
+    (*sensors_map)["gps_eph"] = sio::double_message::create((*sensors)->gps_eph);
+    (*sensors_map)["gps_epv"] = sio::double_message::create((*sensors)->gps_epv);
     (*sensors_map)["accelerometer_x"] = sio::double_message::create((*sensors)->accelerometer_x);
     (*sensors_map)["accelerometer_y"] = sio::double_message::create((*sensors)->accelerometer_y);
     (*sensors_map)["accelerometer_z"] = sio::double_message::create((*sensors)->accelerometer_z);
@@ -91,7 +91,7 @@ void MissionReceiver::SendTelemetry() {
 
   if ((*status).get()) {
     ::std::cout << "Status" << ::std::endl;
-    std::string state = ::spinny::control::loops::FlightLoop::state_string.at(
+    std::string state = ::spinny::control::loops::state_string.at(
         static_cast<::spinny::control::loops::FlightLoop::State>((*status)->state));
     (*status_map)["state"] = sio::string_message::create(state);
   }
