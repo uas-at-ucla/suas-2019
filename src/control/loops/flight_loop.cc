@@ -13,6 +13,17 @@ namespace spinny {
 namespace control {
 namespace loops {
 
+const std::map<FlightLoop::State, std::string> FlightLoop::state_string = {
+    {STANDBY, "STANDBY"},
+    {ARMING, "ARMING"},
+    {ARMED, "ARMED"},
+    {TAKING_OFF, "TAKING OFF"},
+    {IN_AIR, "IN AIR"},
+    {LANDING, "LANDING"},
+    {FAILSAFE, "FAILSAFE"},
+    {FLIGHT_TERMINATION, "FLIGHT TERMINATION"}
+};
+
 FlightLoop::FlightLoop()
     : state_(STANDBY),
       running_(false),
@@ -253,6 +264,11 @@ void FlightLoop::RunIteration() {
   }
 
   output.Send();
+
+  auto status =
+      ::spinny::control::loops::flight_loop_queue.status.MakeMessage();
+  status->state = state_;
+  status.Send();
 
   const int iterations = phased_loop_.SleepUntilNext();
   if (iterations < 0) {

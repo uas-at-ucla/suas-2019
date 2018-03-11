@@ -7,6 +7,7 @@
 #include <atomic>
 #include <mutex>
 #include <thread>
+#include <map>
 
 #include "sio_socket.h"
 #include "sio_client.h"
