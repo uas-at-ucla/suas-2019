@@ -6,10 +6,17 @@ queue_group FlightLoopQueue {
     double longitude;
     float altitude;
     float relative_altitude;
+    float heading;
 
     float velocity_x;
     float velocity_y;
     float velocity_z;
+
+    float gps_ground_speed;
+
+    uint8_t gps_satellite_count;
+    uint16_t gps_eph;
+    uint16_t gps_epv;
 
     float accelerometer_x;
     float accelerometer_y;
