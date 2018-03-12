@@ -50,11 +50,12 @@ class Navbar extends Component {
       var flight_time = null;
       var battery_voltage = null;
       if (this.props.appState.telemetry) {
-        flight_time = this.props.appState.telemetry.flight_time;
-        flight_time = new Date(flight_time * 1000).toISOString().substr(11, 8);
+        flight_time = this.props.appState.telemetry.flight_time; //TODO get flight time on drone
+        if (flight_time) flight_time = new Date(flight_time * 1000).toISOString().substr(11, 8);
 
-        battery_voltage = this.props.appState.telemetry.voltage + " volts";
-        let cells = this.getBatteryCells(this.props.appState.telemetry.voltage);
+        battery_voltage = this.props.appState.telemetry.sensors.battery_voltage;
+        battery_voltage = this.round(battery_voltage, 2) + " volts";
+        let cells = this.getBatteryCells(this.props.appState.telemetry.sensors.battery_voltage);
 
         let runtime = (Date.now() - this.mountTime) / 1000;
         let graph_options = {
@@ -103,7 +104,7 @@ class Navbar extends Component {
               color={"#e2c63b"}
               dataPoint={{
                 x: runtime,
-                y: this.props.appState.telemetry.voltage
+                y: this.props.appState.telemetry.sensors.battery_voltage
               }}
               options={graph_options}
             />
@@ -137,6 +138,10 @@ class Navbar extends Component {
     );
   }
 
+  round(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
+  }
 
   getBatteryCells = (voltage) => {
     return Math.floor(voltage / 3.8);

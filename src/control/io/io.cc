@@ -85,6 +85,7 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->latitude = static_cast<double>(gps.lat) / 1e7;
   flight_loop_sensors_message->longitude = static_cast<double>(gps.lon) / 1e7;
   flight_loop_sensors_message->altitude = static_cast<float>(gps.alt) / 1e3;
+  flight_loop_sensors_message->heading = static_cast<float>(gps.hdg);
 
   flight_loop_sensors_message->relative_altitude =
       static_cast<float>(gps.relative_alt) / 1e3;
@@ -92,6 +93,14 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->velocity_x = static_cast<float>(gps.vx) / 1e2;
   flight_loop_sensors_message->velocity_y = static_cast<float>(gps.vy) / 1e2;
   flight_loop_sensors_message->velocity_z = static_cast<float>(gps.vz) / 1e2;
+
+  // GPS raw data.
+  mavlink_gps_raw_int_t gps_raw = copter_io_->current_messages.gps_raw_int;
+
+  flight_loop_sensors_message->gps_satellite_count = gps_raw.satellites_visible;
+  flight_loop_sensors_message->gps_eph = gps_raw.eph;
+  flight_loop_sensors_message->gps_epv = gps_raw.epv;
+  flight_loop_sensors_message->gps_ground_speed = static_cast<float>(gps_raw.vel) / 1e2;
 
   // IMU data.
   mavlink_highres_imu_t imu = copter_io_->current_messages.highres_imu;

@@ -254,6 +254,11 @@ void FlightLoop::RunIteration() {
 
   output.Send();
 
+  auto status =
+      ::spinny::control::loops::flight_loop_queue.status.MakeMessage();
+  status->state = state_;
+  status.Send();
+
   const int iterations = phased_loop_.SleepUntilNext();
   if (iterations < 0) {
     std::cout << "SKIPPED ITERATIONS\n";

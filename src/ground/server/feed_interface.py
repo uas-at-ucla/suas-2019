@@ -193,13 +193,14 @@ def object_to_dict(my_object):
 
 def on_telemetry(*args):
     telemetry = args[0]
+    # print telemetry
     interface_socketio.emit('telemetry', telemetry)
 
     if USE_INTEROP and interop_client is not None:
-        lat = telemetry['gps_lat']
-        lng = telemetry['gps_lng']
-        alt = telemetry['gps_alt']
-        heading = telemetry['heading']
+        lat = telemetry['sensors']['latitude']
+        lng = telemetry['sensors']['longitude']
+        alt = telemetry['sensors']['altitude']
+        heading = telemetry['sensors']['heading']
         if all(val is not None for val in [lat, lng, alt, heading]):
             try:
                 interop_telemetry = interop.Telemetry(lat, lng, alt, heading)
