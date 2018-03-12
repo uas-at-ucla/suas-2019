@@ -16,14 +16,14 @@ class App extends Component {
 
     this.state = {
       optionSelected: "Control", // Default is Control
-      droneArmedStatus: "Offline",
-      droneState: "",
+      droneState: "Offline",
       telemetry: null,
       interopBtnText: "Connect to Interop",
       interopBtnEnabled: true,
       moving_obstacles: [],
       stationary_obstacles: [],
-      missions: []
+      missions: [],
+      followDrone: true
     };
   }
 
@@ -41,7 +41,8 @@ class App extends Component {
                          setAppState={this.setAppState}/>;
       case "Control":
       default:
-        return <Home appState={this.state} socketEmit={this.socketEmit} />;
+        return <Home appState={this.state} socketEmit={this.socketEmit}
+                     setAppState={this.setAppState}/>;
     }
   }
 
@@ -69,6 +70,12 @@ class App extends Component {
     );
   }
 
+  followDrone = () => {
+    if (this.state.optionSelected === "Control") {
+      this.setState({ followDrone: true });
+    }
+  }
+
   componentDidMount() {
     const SOCKET_DOMAIN = document.domain; // Gets domain from browser
     const SOCKET_PORT = 8084;
@@ -80,40 +87,38 @@ class App extends Component {
     this.socket.on("connect", () => {
       console.log("Connected to ground interface feeder!");
       this.setState({
-        droneArmedStatus: "Online",
-        droneState: ""
+        droneState: "Ground Online",
       });
     });
 
     this.socket.on("disconnect", () => {
       console.log("Disconnected from ground interface feeder!");
       this.setState({
-        droneArmedStatus: "Offline",
-        droneState: ""
+        droneState: "Ground Offline",
       });
     });
 
     this.socket.on("drone_connected", () => {
       this.setState({
-        droneArmedStatus: "Starting Up Drone...",
-        droneState: ""
+        droneState: "Starting Up Drone...",
       });
     });
 
     this.socket.on("drone_disconnected", () => {
       this.setState({
-        droneArmedStatus: "Drone Disconnected!",
-        droneState: ""
+        droneState: "Drone Disconnected!",
       });
     });
 
     this.socket.on("telemetry", telemetry => {
       // console.log(telemetry);
-      this.setState({
-        telemetry: telemetry,
-        droneArmedStatus: telemetry["armed"] ? "Armed" : "Disarmed",
-        droneState: this.convertToTitleText(telemetry["state"])
-      });
+      let newState = {
+        telemetry: telemetry
+      }
+      if (telemetry.status && telemetry.status.state) {
+        newState.droneState = this.convertToTitleText(telemetry.status.state)
+      }
+      this.setState(newState);
     });
 
     this.socket.on("image", data => {
@@ -184,7 +189,7 @@ class App extends Component {
   }
 
   convertToTitleText(str) {
-    return str.replace(/\w\S*/g, function(txt) {
+    return str.replace('_', ' ').replace(/\w\S*/g, function(txt) {
       return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
     });
   }
