@@ -134,6 +134,14 @@ void AutopilotInterface::read_messages() {
               current_messages.time_stamps.global_position_int;
           break;
 
+        case MAVLINK_MSG_ID_GPS_RAW_INT:
+          mavlink_msg_gps_raw_int_decode(
+              &message, &(current_messages.gps_raw_int));
+          current_messages.time_stamps.gps_raw_int = get_time_usec();
+          this_timestamps.gps_raw_int =
+              current_messages.time_stamps.gps_raw_int;
+          break;
+
         case MAVLINK_MSG_ID_HIGHRES_IMU:
           mavlink_msg_highres_imu_decode(&message,
                                          &(current_messages.highres_imu));

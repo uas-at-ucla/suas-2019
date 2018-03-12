@@ -4,6 +4,8 @@ import Checkbox from "./Checkbox";
 import "./Analytics.css";
 import MultiGraph from "./MultiGraph";
 
+//TODO: Fix for new telemetry once we get flight time
+
 class Analytics extends Component {
   constructor(props) {
     super(props);

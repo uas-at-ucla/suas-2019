@@ -111,22 +111,24 @@ class Map extends Component {
     this.fly_zones = [];
 
     this.map.addListener("dragstart", () => {
-      this.props.setHomeState({ followDrone: false });
+      this.props.setAppState({ followDrone: false });
     });
 
     // Always keep drone in the center of view, even after resizing.
-    google.maps.event.addListener(this.map, "bounds_changed", () => {
-      if (this.props.homeState.followDrone) {
-        this.pan_to_drone();
-      }
-    });
+    // Shouldn't need this if the drone marker is updated with telemetry
+    // Also it causes a positive feedback loop somewhow.
+    // google.maps.event.addListener(this.map, "bounds_changed", () => {
+    //   if (this.props.appState.followDrone) {
+    //     this.pan_to_drone();
+    //   }
+    // });
 
     this.map.addListener("dblclick", e => {
       this.addGotoCommand(e.latLng.lat(), e.latLng.lng(), 30);
     });
 
     this.registerStateDepFunction(
-      "homeState",
+      "appState",
       "followDrone",
       this.pan_to_drone_if_following
     );
@@ -163,9 +165,9 @@ class Map extends Component {
   }
 
   pan_to_drone_if_following = props => {
-    if (props.homeState.followDrone) {
-      this.pan_to_drone();
+    if (props.appState.followDrone) {
       this.map.setZoom(16);
+      this.pan_to_drone();
     }
   };
 
@@ -293,10 +295,8 @@ class Map extends Component {
 
   focus_on_command = props => {
     if (props.homeState.focusedCommand !== null) {
-      this.props.setHomeState({
-        followDrone: false,
-        focusedCommand: null
-      });
+      this.props.setAppState({followDrone: false});
+      this.props.setHomeState({focusedCommand: null});
       let point =
         this.commands[props.homeState.focusedCommand] ||
         props.homeState.commands[props.homeState.focusedCommand].mission_point;
@@ -312,16 +312,16 @@ class Map extends Component {
     if (!telemetry) return;
 
     let new_position = new google.maps.LatLng(
-      telemetry.gps_lat,
-      telemetry.gps_lng
+      telemetry.sensors.latitude,
+      telemetry.sensors.longitude
     );
 
     this.drone_marker.setPosition(new_position);
-    this.drone_marker_icon.rotation = telemetry.heading;
+    this.drone_marker_icon.rotation = telemetry.sensors.heading;
     this.drone_marker.setIcon(this.drone_marker_icon);
 
     if (this.get_distance(new_position, this.map.getCenter()) > 50.0) {
-      if (this.props.homeState.followDrone) {
+      if (this.props.appState.followDrone) {
         this.pan_to_drone();
       }
     }
