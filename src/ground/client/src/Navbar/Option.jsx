@@ -4,7 +4,11 @@ import React, { Component } from "react";
 class Option extends Component {
   handleOption = e => {
     e.preventDefault();
-    this.props.setAppState({ optionSelected: this.props.option.section });
+    let newState = { optionSelected: this.props.option.section };
+    if (this.props.option.section === "Control") {
+      newState.followDrone = true;
+    }
+    this.props.setAppState(newState);
   };
 
   render() {

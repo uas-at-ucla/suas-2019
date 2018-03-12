@@ -45,6 +45,7 @@ struct TimeStamps {
   uint64_t radio_status;
   uint64_t local_position_ned;
   uint64_t global_position_int;
+  uint64_t gps_raw_int;
   uint64_t position_target_local_ned;
   uint64_t position_target_global_int;
   uint64_t highres_imu;
@@ -57,6 +58,7 @@ struct TimeStamps {
     radio_status = 0;
     local_position_ned = 0;
     global_position_int = 0;
+    gps_raw_int = 0;
     position_target_local_ned = 0;
     position_target_global_int = 0;
     highres_imu = 0;
@@ -74,6 +76,7 @@ struct Mavlink_Messages {
   mavlink_radio_status_t radio_status;
   mavlink_local_position_ned_t local_position_ned;
   mavlink_global_position_int_t global_position_int;
+  mavlink_gps_raw_int_t gps_raw_int;
   mavlink_position_target_local_ned_t position_target_local_ned;
   mavlink_position_target_global_int_t position_target_global_int;
   mavlink_highres_imu_t highres_imu;
