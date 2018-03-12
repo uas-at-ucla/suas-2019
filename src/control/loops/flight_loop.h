@@ -68,6 +68,17 @@ class FlightLoop {
   int count_;
 };
 
+const std::map<FlightLoop::State, std::string> state_string = {
+  {FlightLoop::STANDBY, "STANDBY"},
+  {FlightLoop::ARMING, "ARMING"},
+  {FlightLoop::ARMED, "ARMED"},
+  {FlightLoop::TAKING_OFF, "TAKING_OFF"},
+  {FlightLoop::IN_AIR, "IN_AIR"},
+  {FlightLoop::LANDING, "LANDING"},
+  {FlightLoop::FAILSAFE, "FAILSAFE"},
+  {FlightLoop::FLIGHT_TERMINATION, "FLIGHT_TERMINATION"}
+};
+
 }  // namespace loops
 }  // namespace control
 }  // namespace spinny
