@@ -7,6 +7,7 @@
 #include <atomic>
 #include <mutex>
 #include <thread>
+#include <map>
 
 #include "sio_socket.h"
 #include "sio_client.h"
@@ -52,6 +53,11 @@ class MissionReceiver {
   ::aos::time::PhasedLoop phased_loop_;
 
   ::std::atomic<bool> running_;
+
+  int count_;
+
+  void SendTelemetryPeriodic();
+  void SendTelemetry();
 };
 
 void on_connect();
