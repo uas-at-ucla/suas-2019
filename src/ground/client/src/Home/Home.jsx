@@ -9,7 +9,6 @@ import Controls from "../Controls/Controls";
 class Home extends Component {
   state = {
     isSidebarShown: true,
-    followDrone: true,
     mission: this.props.appState.missions[0] || null,
     commands: [],
     dontRedrawCommands: false,
@@ -23,6 +22,7 @@ class Home extends Component {
           <Map
             id="map"
             appState={this.props.appState}
+            setAppState={this.props.setAppState}
             homeState={this.state}
             setHomeState={this.setHomeState}
           />
@@ -57,10 +57,6 @@ class Home extends Component {
 
   setHomeState = newState => {
     this.setState(newState);
-  };
-
-  followDrone = () => {
-    this.setState({ followDrone: true });
   };
 
   toggleSidebar = () => {
