@@ -5,7 +5,8 @@
 using namespace Eigen;
 using namespace std;
 
-namespace RRT {
+namespace lib {
+namespace rrt_avoidance {
 
 ObstacleGrid::ObstacleGrid(double width, double height, int discretizedWidth,
                            int discretizedHeight) {
@@ -92,4 +93,5 @@ double ObstacleGrid::width() const { return _width; }
 
 double ObstacleGrid::height() const { return _height; }
 
-}  // namespace RRT
+}  // namespace rrt_avoidance
+}  // namespace lib
