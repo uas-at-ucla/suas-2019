@@ -7,7 +7,7 @@
 
 #include "lib/physics_structs/physics_structs.h"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace loops {
 namespace pilot {
@@ -27,6 +27,6 @@ class Pilot {
 }  // namespace pilot
 }  // namespace loops
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
 
 #endif  // SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_

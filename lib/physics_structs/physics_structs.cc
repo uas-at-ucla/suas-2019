@@ -2,7 +2,6 @@
 
 #include <iostream>
 
-namespace spinny {
 
 Vector3D& operator+=(Vector3D& vector, double scalar) {
   vector.x += scalar;
@@ -88,4 +87,3 @@ Vector3D PointTowards(Position3D start, Position3D end) {
   return pointing_vector;
 }
 
-}  // namespace spinny

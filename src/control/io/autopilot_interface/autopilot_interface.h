@@ -9,7 +9,7 @@
 
 #include <common/mavlink.h>
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace io {
 namespace autopilot_interface {
@@ -144,6 +144,6 @@ class AutopilotInterface {
 }  // namespace autopilot_interface
 }  // namespace io
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
 
 #endif  // AUTOPILOT_INTERFACE_H_

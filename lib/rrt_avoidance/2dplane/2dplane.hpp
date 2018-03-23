@@ -4,7 +4,8 @@
 #include "../StateSpace.hpp"
 #include "../Tree.hpp"
 
-namespace RRT {
+namespace lib {
+namespace rrt_avoidance {
 
 const int dimensions = 2;
 
@@ -35,8 +36,9 @@ static size_t hash(Eigen::Vector2d state) {
  * You'll probably want to override the transitionValidator callback
  * if your 2d plane has any obstacles.
  */
-std::shared_ptr<RRT::Tree<Eigen::Vector2d>> TreeFor2dPlane(
+std::shared_ptr<Tree<Eigen::Vector2d>> TreeFor2dPlane(
     std::shared_ptr<StateSpace<Eigen::Vector2d>> stateSpace,
     Eigen::Vector2d goal, double step);
 
-}  // namespace RRT
+}  // namespace rrt_avoidance
+}  // namespace lib

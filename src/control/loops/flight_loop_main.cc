@@ -4,7 +4,7 @@
 
 int main() {
   ::aos::InitNRT();
-  ::spinny::control::loops::FlightLoop flight_loop;
+  ::src::control::loops::FlightLoop flight_loop;
   flight_loop.Run();
   ::aos::Cleanup();
 }

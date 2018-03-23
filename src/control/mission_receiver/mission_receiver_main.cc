@@ -4,7 +4,7 @@
 
 int main() {
   ::aos::InitNRT();
-  ::spinny::control::mission_receiver::MissionReceiver mission_receiver;
+  ::src::control::mission_receiver::MissionReceiver mission_receiver;
   mission_receiver.Run();
   ::aos::Cleanup();
 }

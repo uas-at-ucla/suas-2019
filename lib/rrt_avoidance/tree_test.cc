@@ -8,7 +8,8 @@
 using namespace Eigen;
 using namespace std;
 
-namespace RRT {
+namespace lib {
+namespace rrt_avoidance {
 
 TEST(Tree, Example_2dplane) {
     shared_ptr<Tree<Vector2d>> tree =
@@ -105,4 +106,5 @@ TEST(Tree, ASC) {
     ASSERT_TRUE(varied);
 }
 
-}  // namespace RRT
+}  // namespace rrt_avoidance
+}  // namespace lib
