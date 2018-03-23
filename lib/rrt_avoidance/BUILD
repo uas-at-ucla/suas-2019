@@ -3,12 +3,67 @@ package(default_visibility = ['//visibility:public'])
 cc_library(
   name = 'rrt_avoidance',
   srcs = glob([
-    '2dplane/**/*.cpp',
+    'rrt_avoidance.cc',
   ]),
   hdrs = glob([
-    '**/*.hpp',
+    'rrt_avoidance.h',
   ]),
   deps = [
+    ':rrt_avoidance_tools',
+
+    '@eigen',
+    '@gtest//:googletest',
+    '@matplotlibcpp//:matplotlibcpp',
+  ],
+  copts = [
+    '-Wno-unused-variable',
+    '-Wno-reorder',
+    '-Wno-overloaded-virtual',
+  ],
+)
+
+cc_test(
+  name = 'rrt_avoidance_test',
+  srcs = [
+    'rrt_avoidance_test.cc',
+  ],
+  deps = [
+    ':rrt_avoidance',
+    '@gtest//:googletest',
+    '@matplotlibcpp//:matplotlibcpp',
+     '//lib/physics_structs:physics_structs',
+  ],
+  copts = [
+    '-Wno-unused-variable',
+    '-Wno-unused-function',
+    '-Wno-reorder',
+    '-Wno-overloaded-virtual',
+    '-Wno-sign-compare',
+  ],
+)
+
+cc_library(
+  name = 'rrt_avoidance_tools',
+  srcs = [
+    'birrt.cc',
+    '2dplane/2dplane.cpp',
+    '2dplane/GridStateSpace.cpp',
+    '2dplane/ObstacleGrid.cpp',
+  ],
+  hdrs = [
+    'birrt.h',
+    '2dplane/2dplane.hpp',
+    '2dplane/GridStateSpace.hpp',
+    '2dplane/ObstacleGrid.hpp',
+    '2dplane/PlaneStateSpace.hpp',
+    'planning/Path.hpp',
+    'StateSpace.hpp',
+    'Tree.hpp',
+    'util.hpp',
+  ],
+  deps = [
+    '//lib/physics_structs:physics_structs',
+
     '@eigen',
     '@boost//:functional',
     '@boost//:config',
@@ -19,21 +74,23 @@ cc_library(
     '@boost//:algorithm',
     '@flann//:flann',
     '@lz4//:lz4',
+    '@matplotlibcpp//:matplotlibcpp',
   ],
   copts = [
     '-Wno-unused-variable',
+    '-Wno-unused-function',
     '-Wno-reorder',
     '-Wno-overloaded-virtual',
   ],
 )
 
 cc_test(
-  name = 'rrt_avoidance_bidirectional_test',
+  name = 'bidirectional_test',
   srcs = [
-    'BiRRTTest.cpp',
+    'birrt_test.cc',
   ],
   deps = [
-    ':rrt_avoidance',
+    ':rrt_avoidance_tools',
     '@gtest//:googletest',
     '@matplotlibcpp//:matplotlibcpp',
      '//lib/physics_structs:physics_structs',
@@ -47,12 +104,12 @@ cc_test(
 )
 
 cc_test(
-  name = 'rrt_avoidance_tree_test',
+  name = 'tree_test',
   srcs = [
-    'TreeTest.cpp',
+    'tree_test.cc',
   ],
   deps = [
-    ':rrt_avoidance',
+    ':rrt_avoidance_tools',
     '@gtest//:googletest_main',
   ],
   copts = [

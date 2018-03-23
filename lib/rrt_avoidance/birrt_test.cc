@@ -8,7 +8,7 @@
 #include <cmath>
 #include "2dplane/2dplane.hpp"
 #include "2dplane/GridStateSpace.hpp"
-#include "BiRRT.hpp"
+#include "birrt.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "matplotlibcpp.h"
 #include "planning/Path.hpp"
@@ -18,12 +18,14 @@ const int DISPLAY_MODE = 1;
 using namespace std;
 using namespace Eigen;
 
-namespace RRT {
+namespace lib {
+namespace rrt_avoidance {
+namespace testing {
 
 bool plot = false;
 
 TEST(BiRRT, Instantiation) {
-  BiRRT<Vector2d> biRRT(make_shared<GridStateSpace>(100, 100, 100, 100), hash,
+  BiRRT biRRT(make_shared<GridStateSpace>(100, 100, 100, 100), hash,
                         dimensions);
 }
 
@@ -63,7 +65,7 @@ TEST(BiRRT, GeocoordToObstacleGridTest) {
   m *= reflection_m;
 
   // Convert coordinate components to meters.
-  double coordinate_to_meter = ::spinny::GetDistance2D({0, 0, 0}, {1, 0, 0});
+  double coordinate_to_meter = GetDistance2D({0, 0, 0}, {1, 0, 0});
 
   for (int i = 0; i < rows; i++) {
     m(i, 0) = m(i, 0) * coordinate_to_meter;
@@ -86,7 +88,7 @@ TEST(BiRRT, GeocoordToObstacleGridTest) {
   m_shift = m_shift_row.replicate(rows, 1);
   m += m_shift;
 
-  std::shared_ptr<RRT::GridStateSpace> state_space =
+  std::shared_ptr<GridStateSpace> state_space =
       make_shared<GridStateSpace>(kDimension, kDimension, kDimension,
                                   kDimension);
 
@@ -94,7 +96,7 @@ TEST(BiRRT, GeocoordToObstacleGridTest) {
   Vector2d start = {m(0, 0), m(0, 1)};
   Vector2d goal = {m(1, 0), m(1, 1)};
 
-  BiRRT<Vector2d> biRRT(state_space, hash, dimensions);
+  BiRRT biRRT(state_space, hash, dimensions);
   vector<double> obs_x, obs_y;
 
   // Draw obstacles as circles on the obstacle grid.
@@ -120,14 +122,14 @@ TEST(BiRRT, GeocoordToObstacleGridTest) {
   }
 
   // Run the RRT.
-  biRRT.setStartState(start);
-  biRRT.setGoalState(goal);
-  biRRT.setStepSize(1);
-  biRRT.setMaxIterations(10000);
-  bool success = biRRT.run();
-  vector<Vector2d> path = biRRT.getPath();
+  biRRT.set_start_state(start);
+  biRRT.set_goal_state(goal);
+  biRRT.set_step_size(1);
+  biRRT.set_max_iterations(10000);
+  bool success = biRRT.Run();
+  vector<Vector2d> path = biRRT.GetPath();
   vector<Vector2d> smooth_path(path);
-  RRT::SmoothPath<Vector2d>(smooth_path, *state_space);
+  SmoothPath<Vector2d>(smooth_path, *state_space);
 
   ::Eigen::MatrixXd m_rrt_path(smooth_path.size(), 2);
 
@@ -176,7 +178,7 @@ TEST(BiRRT, GeocoordToObstacleGridTest) {
 TEST(BiRRT, GetPath) {
   Vector2d start = {1, 1}, goal = {49, 49};
 
-  std::shared_ptr<RRT::GridStateSpace> state_space =
+  std::shared_ptr<GridStateSpace> state_space =
       make_shared<GridStateSpace>(50, 50, 50, 50);
 
   vector<double> obs_x, obs_y;
@@ -198,18 +200,18 @@ TEST(BiRRT, GetPath) {
 
   //  toggle the obstacle state of clicked square
 
-  BiRRT<Vector2d> biRRT(state_space, hash, dimensions);
-  biRRT.setStartState(start);
-  biRRT.setGoalState(goal);
-  biRRT.setStepSize(1);
-  biRRT.setMaxIterations(10000);
+  BiRRT biRRT(state_space, hash, dimensions);
+  biRRT.set_start_state(start);
+  biRRT.set_goal_state(goal);
+  biRRT.set_step_size(1);
+  biRRT.set_max_iterations(10000);
 
-  bool success = biRRT.run();
+  bool success = biRRT.Run();
   ASSERT_TRUE(success);
 
-  vector<Vector2d> path = biRRT.getPath();
+  vector<Vector2d> path = biRRT.GetPath();
   vector<Vector2d> smooth_path(path);
-  RRT::SmoothPath<Vector2d>(smooth_path, *state_space);
+  SmoothPath<Vector2d>(smooth_path, *state_space);
 
   vector<double> x, y;
   for (Vector2d node : path) {
@@ -242,7 +244,9 @@ TEST(BiRRT, GetPath) {
   EXPECT_EQ(goal, path.back());
 }
 
-}  // namespace RRT
+}  // namespace testing
+}  // namespace rrt_avoidance
+}  // namespace lib
 
 int main(int argc, char **argv) {
   static struct option getopt_options[] = {{"plot", no_argument, 0, 'p'},
@@ -254,7 +258,7 @@ int main(int argc, char **argv) {
 
     switch (opt) {
       case 'p':
-        ::RRT::plot = true;
+        ::lib::rrt_avoidance::testing::plot = true;
         break;
       default:
         exit(1);

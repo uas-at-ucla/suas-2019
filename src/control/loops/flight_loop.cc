@@ -9,7 +9,7 @@
 
 #include "zmq.hpp"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace loops {
 
@@ -21,9 +21,9 @@ FlightLoop::FlightLoop()
       takeoff_ticker_(0),
       verbose_(false),
       count_(0) {
-  ::spinny::control::loops::flight_loop_queue.sensors.FetchLatest();
-  ::spinny::control::loops::flight_loop_queue.goal.FetchLatest();
-  ::spinny::control::loops::flight_loop_queue.output.FetchLatest();
+  ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
+  ::src::control::loops::flight_loop_queue.goal.FetchLatest();
+  ::src::control::loops::flight_loop_queue.output.FetchLatest();
 }
 
 void FlightLoop::Iterate() { RunIteration(); }
@@ -44,57 +44,57 @@ void FlightLoop::DumpSensors() {
   ::std::cout
       << "ITERATE in state " << state_ << ::std::endl
       << elapsed.count() << " " << std::setprecision(12)
-      << ::spinny::control::loops::flight_loop_queue.sensors->latitude << ", "
-      << ::spinny::control::loops::flight_loop_queue.sensors->longitude
+      << ::src::control::loops::flight_loop_queue.sensors->latitude << ", "
+      << ::src::control::loops::flight_loop_queue.sensors->longitude
       << " @ alt "
-      << ::spinny::control::loops::flight_loop_queue.sensors->altitude
+      << ::src::control::loops::flight_loop_queue.sensors->altitude
       << " @ rel_alt "
-      << ::spinny::control::loops::flight_loop_queue.sensors->relative_altitude
+      << ::src::control::loops::flight_loop_queue.sensors->relative_altitude
       << std::endl;
   ::std::cout
-      << ::spinny::control::loops::flight_loop_queue.sensors->accelerometer_x
+      << ::src::control::loops::flight_loop_queue.sensors->accelerometer_x
       << ", "
-      << ::spinny::control::loops::flight_loop_queue.sensors->accelerometer_y
+      << ::src::control::loops::flight_loop_queue.sensors->accelerometer_y
       << ", "
-      << ::spinny::control::loops::flight_loop_queue.sensors->accelerometer_z
+      << ::src::control::loops::flight_loop_queue.sensors->accelerometer_z
       << ::std::endl;
 
-  ::std::cout << ::spinny::control::loops::flight_loop_queue.sensors->gyro_x
+  ::std::cout << ::src::control::loops::flight_loop_queue.sensors->gyro_x
               << ", "
-              << ::spinny::control::loops::flight_loop_queue.sensors->gyro_y
+              << ::src::control::loops::flight_loop_queue.sensors->gyro_y
               << ", "
-              << ::spinny::control::loops::flight_loop_queue.sensors->gyro_z
+              << ::src::control::loops::flight_loop_queue.sensors->gyro_z
               << ::std::endl;
 
   ::std::cout
       << "abs "
-      << ::spinny::control::loops::flight_loop_queue.sensors->absolute_pressure
+      << ::src::control::loops::flight_loop_queue.sensors->absolute_pressure
       << " relative_pressure "
-      << ::spinny::control::loops::flight_loop_queue.sensors->relative_pressure
+      << ::src::control::loops::flight_loop_queue.sensors->relative_pressure
       << " pressure_altitude "
-      << ::spinny::control::loops::flight_loop_queue.sensors->pressure_altitude
+      << ::src::control::loops::flight_loop_queue.sensors->pressure_altitude
       << " temperature "
-      << ::spinny::control::loops::flight_loop_queue.sensors->temperature
+      << ::src::control::loops::flight_loop_queue.sensors->temperature
       << ::std::endl;
 
   ::std::cout
-      << ::spinny::control::loops::flight_loop_queue.sensors->battery_voltage
+      << ::src::control::loops::flight_loop_queue.sensors->battery_voltage
       << " volts | current "
-      << ::spinny::control::loops::flight_loop_queue.sensors->battery_current
+      << ::src::control::loops::flight_loop_queue.sensors->battery_current
       << ::std::endl;
 
   ::std::cout << "armed "
-              << ::spinny::control::loops::flight_loop_queue.sensors->armed
+              << ::src::control::loops::flight_loop_queue.sensors->armed
               << ::std::endl;
 
-  if (::spinny::control::loops::flight_loop_queue.goal.get()) {
+  if (::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cout
         << "goal run_mission "
-        << ::spinny::control::loops::flight_loop_queue.goal->run_mission
+        << ::src::control::loops::flight_loop_queue.goal->run_mission
         << " failsafe "
-        << ::spinny::control::loops::flight_loop_queue.goal->trigger_failsafe
+        << ::src::control::loops::flight_loop_queue.goal->trigger_failsafe
         << " throttle cut "
-        << ::spinny::control::loops::flight_loop_queue.goal
+        << ::src::control::loops::flight_loop_queue.goal
                ->trigger_throttle_cut
         << ::std::endl
         << ::std::endl;
@@ -106,24 +106,24 @@ void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 void FlightLoop::RunIteration() {
   // TODO(comran): Are these two queues synced?
   // TODO(comran): Check for stale queue messages.
-  ::spinny::control::loops::flight_loop_queue.sensors.FetchAnother();
-  ::spinny::control::loops::flight_loop_queue.goal.FetchLatest();
+  ::src::control::loops::flight_loop_queue.sensors.FetchAnother();
+  ::src::control::loops::flight_loop_queue.goal.FetchLatest();
 
   DumpSensorsPeriodic();
 
-  if (!::spinny::control::loops::flight_loop_queue.goal.get()) {
+  if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
     return;
   }
 
   auto output =
-      ::spinny::control::loops::flight_loop_queue.output.MakeMessage();
+      ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
-  if (::spinny::control::loops::flight_loop_queue.goal->trigger_failsafe) {
+  if (::src::control::loops::flight_loop_queue.goal->trigger_failsafe) {
     state_ = FAILSAFE;
   }
 
-  if (::spinny::control::loops::flight_loop_queue.goal->trigger_throttle_cut) {
+  if (::src::control::loops::flight_loop_queue.goal->trigger_throttle_cut) {
     state_ = FLIGHT_TERMINATION;
   }
 
@@ -139,7 +139,7 @@ void FlightLoop::RunIteration() {
   output->throttle_cut = false;
 
   bool run_mission =
-      ::spinny::control::loops::flight_loop_queue.goal->run_mission;
+      ::src::control::loops::flight_loop_queue.goal->run_mission;
 
   switch (state_) {
     case STANDBY:
@@ -153,7 +153,7 @@ void FlightLoop::RunIteration() {
         state_ = LANDING;
       }
 
-      if (::spinny::control::loops::flight_loop_queue.sensors->armed) {
+      if (::src::control::loops::flight_loop_queue.sensors->armed) {
         state_ = ARMED;
       }
 
@@ -165,7 +165,7 @@ void FlightLoop::RunIteration() {
         state_ = LANDING;
       }
 
-      if (!::spinny::control::loops::flight_loop_queue.sensors->armed) {
+      if (!::src::control::loops::flight_loop_queue.sensors->armed) {
         state_ = ARMING;
       }
 
@@ -178,12 +178,12 @@ void FlightLoop::RunIteration() {
         state_ = LANDING;
       }
 
-      if (!::spinny::control::loops::flight_loop_queue.sensors->armed) {
+      if (!::src::control::loops::flight_loop_queue.sensors->armed) {
         takeoff_ticker_ = 0;
         state_ = ARMING;
       }
 
-      if (::spinny::control::loops::flight_loop_queue.sensors
+      if (::src::control::loops::flight_loop_queue.sensors
               ->relative_altitude < 0.3) {
         takeoff_ticker_++;
       }
@@ -195,7 +195,7 @@ void FlightLoop::RunIteration() {
         output->disarm = true;
       }
 
-      if (::spinny::control::loops::flight_loop_queue.sensors
+      if (::src::control::loops::flight_loop_queue.sensors
               ->relative_altitude > 2.2) {
         takeoff_ticker_ = 0;
         state_ = IN_AIR;
@@ -209,20 +209,20 @@ void FlightLoop::RunIteration() {
 
       // Check if altitude is below a safe threshold, which may indicate that
       // the autopilot was reset.
-      if (::spinny::control::loops::flight_loop_queue.sensors
+      if (::src::control::loops::flight_loop_queue.sensors
                   ->relative_altitude > 2.2 &&
-          ::spinny::control::loops::flight_loop_queue.sensors
+          ::src::control::loops::flight_loop_queue.sensors
                   ->relative_altitude < 2.5) {
         state_ = TAKING_OFF;
-      } else if (::spinny::control::loops::flight_loop_queue.sensors
+      } else if (::src::control::loops::flight_loop_queue.sensors
                      ->relative_altitude < 2.2) {
         state_ = LANDING;
       }
 
       Position3D position = {
-          ::spinny::control::loops::flight_loop_queue.sensors->latitude,
-          ::spinny::control::loops::flight_loop_queue.sensors->longitude,
-          ::spinny::control::loops::flight_loop_queue.sensors
+          ::src::control::loops::flight_loop_queue.sensors->latitude,
+          ::src::control::loops::flight_loop_queue.sensors->longitude,
+          ::src::control::loops::flight_loop_queue.sensors
               ->relative_altitude};
 
       Vector3D flight_direction = pilot_.Calculate(position, position);
@@ -236,7 +236,7 @@ void FlightLoop::RunIteration() {
     }
 
     case LANDING:
-      if (!::spinny::control::loops::flight_loop_queue.sensors->armed) {
+      if (!::src::control::loops::flight_loop_queue.sensors->armed) {
         state_ = STANDBY;
       }
 
@@ -255,7 +255,7 @@ void FlightLoop::RunIteration() {
   output.Send();
 
   auto status =
-      ::spinny::control::loops::flight_loop_queue.status.MakeMessage();
+      ::src::control::loops::flight_loop_queue.status.MakeMessage();
   status->state = state_;
   status.Send();
 
@@ -297,4 +297,4 @@ void FlightLoop::Run() {
 
 }  // namespace loops
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
