@@ -1,6 +1,6 @@
 #include "loop_input_handler.h"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace io {
 
@@ -17,4 +17,4 @@ void LoopInputHandler::operator()() {
 
 }  // namespace io
 }  // namespace control
-}  // namespace spinny
+}  // namespace src

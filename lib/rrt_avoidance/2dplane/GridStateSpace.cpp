@@ -8,7 +8,8 @@ using namespace std;
 
 #include <iostream>
 
-namespace RRT {
+namespace lib {
+namespace rrt_avoidance {
 
 GridStateSpace::GridStateSpace(double width, double height,
                                int discretizedWidth, int discretizedHeight)
@@ -153,4 +154,5 @@ const ObstacleGrid& GridStateSpace::obstacleGrid() const {
 
 ObstacleGrid& GridStateSpace::obstacleGrid() { return _obstacleGrid; }
 
-}  // namespace RRT
+}  // namespace rrt_avoidance
+}  // namespace lib

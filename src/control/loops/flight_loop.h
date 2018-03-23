@@ -20,7 +20,7 @@
           |\_________\|__|     \|__|\|__| \|__|\|__| \|__|\___/ /
           \|_________|           UAS @ UCLA 2018         \|___|/              */
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace loops {
 
@@ -81,6 +81,6 @@ const std::map<FlightLoop::State, std::string> state_string = {
 
 }  // namespace loops
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
 
 #endif  // SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_H_

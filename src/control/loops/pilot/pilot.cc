@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace loops {
 namespace pilot {
@@ -21,4 +21,4 @@ Vector3D Pilot::Calculate(Position3D drone_position, Position3D goal) {
 }  // namespace pilot
 }  // namespace loops
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
