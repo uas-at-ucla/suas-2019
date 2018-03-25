@@ -4,7 +4,8 @@
 #include "lib/rrt_avoidance/2dplane/ObstacleGrid.hpp"
 #include "lib/rrt_avoidance/2dplane/PlaneStateSpace.hpp"
 
-namespace RRT {
+namespace lib {
+namespace rrt_avoidance {
 
 /**
  * @brief A 2d plane with continuous states and discretized obstacles.
@@ -36,4 +37,5 @@ private:
     ObstacleGrid _obstacleGrid;
 };
 
-}  // namespace RRT
+}  // namespace rrt_avoidance
+}  // namespace lib

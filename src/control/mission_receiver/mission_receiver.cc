@@ -2,7 +2,7 @@
 
 #include <iomanip>
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace mission_receiver {
 
@@ -37,10 +37,10 @@ void MissionReceiver::ConnectToGround() {
 void MissionReceiver::SendTelemetry() {
   ::std::cout << "Sending:" << ::std::endl;
 
-  ::aos::Queue<::spinny::control::loops::FlightLoopQueue::Sensors> *sensors = &::spinny::control::loops::flight_loop_queue.sensors;
-  ::aos::Queue<::spinny::control::loops::FlightLoopQueue::Status> *status = &::spinny::control::loops::flight_loop_queue.status;
-  ::aos::Queue<::spinny::control::loops::FlightLoopQueue::Goal> *goal = &::spinny::control::loops::flight_loop_queue.goal;
-  ::aos::Queue<::spinny::control::loops::FlightLoopQueue::Output> *output = &::spinny::control::loops::flight_loop_queue.output;
+  ::aos::Queue<::src::control::loops::FlightLoopQueue::Sensors> *sensors = &::src::control::loops::flight_loop_queue.sensors;
+  ::aos::Queue<::src::control::loops::FlightLoopQueue::Status> *status = &::src::control::loops::flight_loop_queue.status;
+  ::aos::Queue<::src::control::loops::FlightLoopQueue::Goal> *goal = &::src::control::loops::flight_loop_queue.goal;
+  ::aos::Queue<::src::control::loops::FlightLoopQueue::Output> *output = &::src::control::loops::flight_loop_queue.output;
 
   (*sensors).FetchLatest();
   (*status).FetchLatest();
@@ -91,8 +91,8 @@ void MissionReceiver::SendTelemetry() {
 
   if ((*status).get()) {
     ::std::cout << "Status" << ::std::endl;
-    std::string state = ::spinny::control::loops::state_string.at(
-        static_cast<::spinny::control::loops::FlightLoop::State>((*status)->state));
+    std::string state = ::src::control::loops::state_string.at(
+        static_cast<::src::control::loops::FlightLoop::State>((*status)->state));
     (*status_map)["state"] = sio::string_message::create(state);
   }
 
@@ -148,7 +148,7 @@ void MissionReceiver::RunIteration() {
   SendTelemetryPeriodic();
 
   auto flight_loop_goal_message =
-      ::spinny::control::loops::flight_loop_queue.goal.MakeMessage();
+      ::src::control::loops::flight_loop_queue.goal.MakeMessage();
 
   flight_loop_goal_message->run_mission = true;
   flight_loop_goal_message->trigger_failsafe = false;
@@ -188,10 +188,10 @@ void MissionReceiver::OnConnect() {
         (void)isAck;
         (void)ack_resp;
 
-        ::spinny::controls::mission_receiver::Mission mission;
+        ::src::controls::mission_receiver::Mission mission;
 
         for (size_t i = 0; i < data->get_vector().size(); i++) {
-          ::spinny::controls::mission_receiver::Command* cmd =
+          ::src::controls::mission_receiver::Command* cmd =
               mission.add_commands();
 
           cmd->set_type(
@@ -271,4 +271,4 @@ MissionReceiver::GoalState MissionReceiver::GetState() {
 
 }  // namespace mission_receiver
 }  // namespace control
-}  // namespace spinny
+}  // namespace src

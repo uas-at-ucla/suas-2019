@@ -3,7 +3,8 @@
 #include <Eigen/Dense>
 #include "lib/rrt_avoidance/StateSpace.hpp"
 
-namespace RRT {
+namespace lib {
+namespace rrt_avoidance {
 
 /**
  * @brief A 2d plane with continuous states and no obstacles.
@@ -48,4 +49,5 @@ private:
     double _width, _height;
 };
 
-}  // namespace RRT
+}  // namespace rrt_avoidance
+}  // namespace lib

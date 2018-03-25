@@ -4,7 +4,7 @@
 
 int main() {
   ::aos::InitNRT();
-  ::spinny::control::io::IO io;
+  ::src::control::io::IO io;
   io.Run();
   ::aos::Cleanup();
 }

@@ -3,7 +3,6 @@
 
 #include <cmath>
 
-namespace spinny {
 
 namespace physical_constants {
 constexpr double kRadiusOfEarthInMeters = 6.3781e6;
@@ -21,6 +20,11 @@ struct Position3D {
   double altitude;
 };
 
+struct Obstacle {
+  Position3D position;
+  double radius;
+};
+
 Vector3D& operator+=(Vector3D& vector, double scalar);
 Vector3D& operator-=(Vector3D& vector, double scalar);
 Vector3D& operator*=(Vector3D& vector, double scalar);
@@ -33,6 +37,5 @@ double GetDistance3D(Position3D start, Position3D end);
 Vector3D PointTowards(Position3D start, Position3D end);
 double GetMagnitude(Vector3D);
 
-}  // namespace spinny
 
 #endif  // SPINNY_LIB_PHYSICS_STRUCTS_PHYSICS_STRUCTS

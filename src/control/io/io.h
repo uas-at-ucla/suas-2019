@@ -11,7 +11,7 @@
 #include "src/control/loops/flight_loop.q.h"
 #include "aos/common/util/phased_loop.h"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace io {
 
@@ -55,6 +55,6 @@ class IO {
 
 }  // namespace io
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
 
 #endif  // SPINNY_CONTROL_IO_IO_H_

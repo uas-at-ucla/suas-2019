@@ -17,7 +17,7 @@
 #include "src/control/loops/flight_loop.h"
 #include "src/control/mission_receiver/mission_commands.pb.h"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace mission_receiver {
 
@@ -65,6 +65,6 @@ void on_fail();
 
 }  // namespace mission_receiver
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
 
 #endif  // SPINNY_CONTROL_MISSION_RECEIVER_MISSION_RECEIVER_H_

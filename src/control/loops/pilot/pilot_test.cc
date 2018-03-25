@@ -4,7 +4,7 @@
 
 #include "lib/physics_structs/physics_structs.h"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace loops {
 namespace pilot {
@@ -71,4 +71,4 @@ TEST_F(PilotTest, ReachesGoalTest) {
 }  // namespace pilot
 }  // namespace loops
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
