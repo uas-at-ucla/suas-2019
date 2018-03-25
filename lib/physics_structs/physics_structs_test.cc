@@ -2,7 +2,6 @@
 
 #include "lib/physics_structs/physics_structs.h"
 
-namespace spinny {
 namespace testing {
 
 TEST(PhysicsStructsTest, VectorOperations) {
@@ -65,4 +64,3 @@ TEST(PhysicsStructsTest, PointTowardsTest) {
 }
 
 }  // namespace testing
-}  // namespace spinny

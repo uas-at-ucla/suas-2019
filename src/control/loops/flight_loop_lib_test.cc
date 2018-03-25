@@ -13,7 +13,7 @@
 
 #include "src/control/loops/flight_loop.q.h"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace loops {
 namespace testing {
@@ -132,11 +132,11 @@ void quit_handler(int sig) {
 class FlightLoopTest : public ::testing::Test {
  protected:
   FlightLoopTest()
-      : flight_loop_queue_(".spinny.control.loops.flight_loop_queue", 0x0,
-                           ".spinny.control.loops.flight_loop_queue.sensors",
-                           ".spinny.control.loops.flight_loop_queue.status",
-                           ".spinny.control.loops.flight_loop_queue.goal",
-                           ".spinny.control.loops.flight_loop_queue.output") {
+      : flight_loop_queue_(".src.control.loops.flight_loop_queue", 0x0,
+                           ".src.control.loops.flight_loop_queue.sensors",
+                           ".src.control.loops.flight_loop_queue.status",
+                           ".src.control.loops.flight_loop_queue.goal",
+                           ".src.control.loops.flight_loop_queue.output") {
     flight_loop_.SetVerbose(verbose);
 
     // Change to the directory of the executable.
@@ -340,11 +340,11 @@ TEST_F(FlightLoopTest, ThrottleCutCheck) {
 }  // namespace testing
 }  // namespace loops
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
 
 int main(int argc, char **argv) {
-  signal(SIGINT, ::spinny::control::loops::testing::quit_handler);
-  signal(SIGTERM, ::spinny::control::loops::testing::quit_handler);
+  signal(SIGINT, ::src::control::loops::testing::quit_handler);
+  signal(SIGTERM, ::src::control::loops::testing::quit_handler);
 
   static struct option getopt_options[] = {{"verbose", no_argument, 0, 'v'},
                                            {0, 0, 0, 0}};
@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
 
     switch (opt) {
       case 'v':
-        ::spinny::control::loops::testing::verbose = true;
+        ::src::control::loops::testing::verbose = true;
         break;
       default:
         exit(1);
