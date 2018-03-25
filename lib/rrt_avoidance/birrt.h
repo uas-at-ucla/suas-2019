@@ -28,7 +28,7 @@ class BiRRT {
   void Grow();
 
   // Grows the trees until we find a solution or run out of iterations.
-  bool Run();
+  int Run();
 
   // Reset everything for another calculation.
   void Reset();
@@ -97,6 +97,18 @@ class BiRRT {
   }
 
   int iteration_count() const { return iteration_count_; }
+
+  bool is_asc_enabled() const { return start_tree_.isASCEnabled(); }
+  void set_asc_enabled(bool checked) {
+    start_tree_.setASCEnabled(checked);
+    goal_tree_.setASCEnabled(checked);
+  }
+
+  double goal_bias() const { return start_tree_.goalBias(); }
+  void set_goal_bias(double goalBias) {
+    start_tree_.setGoalBias(goalBias);
+    goal_tree_.setGoalBias(goalBias);
+  }
 
  private:
   const Node<::Eigen::Vector2d>* FindBestPath(

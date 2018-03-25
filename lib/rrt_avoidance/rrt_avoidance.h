@@ -14,8 +14,13 @@ namespace rrt_avoidance {
 
 class RRTAvoidance {
  public:
+  RRTAvoidance();
   ::std::vector<Position3D> Process(Position3D start, Position3D end,
               ::std::vector<Obstacle> obstacles);
+
+ private:
+  ::std::shared_ptr<GridStateSpace> state_space_;
+  BiRRT birrt_;
 };
 
 }  // namespace rrt_avoidance

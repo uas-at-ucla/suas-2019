@@ -29,9 +29,9 @@ cc_test(
   ],
   deps = [
     ':rrt_avoidance',
+     '//lib/physics_structs:physics_structs',
     '@gtest//:googletest',
     '@matplotlibcpp//:matplotlibcpp',
-     '//lib/physics_structs:physics_structs',
   ],
   copts = [
     '-Wno-unused-variable',
