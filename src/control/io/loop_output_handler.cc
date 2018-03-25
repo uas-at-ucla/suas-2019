@@ -1,6 +1,6 @@
 #include "loop_output_handler.h"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace io {
 
@@ -53,4 +53,4 @@ void LoopOutputHandler::Watchdog::Reset() {
 
 }  // namespace io
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
