@@ -1,4 +1,4 @@
-package spinny.control.loops;
+package src.control.loops;
 
 queue_group FlightLoopQueue {
   message Sensors {

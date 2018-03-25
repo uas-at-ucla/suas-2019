@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace io {
 namespace autopilot_interface {
@@ -520,4 +520,4 @@ void *start_autopilot_interface_write_thread(void *args) {
 }  // namespace autopilot_interface
 }  // namespace io
 }  // namespace control
-}  // namespace spinny
+}  // namespace src

@@ -2,7 +2,7 @@
 
 #include <iostream>
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace io {
 
@@ -76,7 +76,7 @@ void AutopilotSensorReader::RunIteration() {
   last_timestamps_ = current_timestamps;
 
   auto flight_loop_sensors_message =
-      ::spinny::control::loops::flight_loop_queue.sensors.MakeMessage();
+      ::src::control::loops::flight_loop_queue.sensors.MakeMessage();
 
   // GPS data.
   mavlink_global_position_int_t gps =
@@ -137,44 +137,44 @@ AutopilotOutputWriter::AutopilotOutputWriter(
     : copter_io_(copter_io) {}
 
 void AutopilotOutputWriter::Read() {
-  ::spinny::control::loops::flight_loop_queue.output.FetchAnother();
-  ::spinny::control::loops::flight_loop_queue.sensors.FetchAnother();
+  ::src::control::loops::flight_loop_queue.output.FetchAnother();
+  ::src::control::loops::flight_loop_queue.sensors.FetchAnother();
 }
 
 void AutopilotOutputWriter::Write() {
-  if (::spinny::control::loops::flight_loop_queue.output->velocity_control) {
+  if (::src::control::loops::flight_loop_queue.output->velocity_control) {
     mavlink_set_position_target_local_ned_t sp;
 
     autopilot_interface::set_velocity(
-        ::spinny::control::loops::flight_loop_queue.output->velocity_x,
-        ::spinny::control::loops::flight_loop_queue.output->velocity_y,
-        ::spinny::control::loops::flight_loop_queue.output->velocity_z, sp);
+        ::src::control::loops::flight_loop_queue.output->velocity_x,
+        ::src::control::loops::flight_loop_queue.output->velocity_y,
+        ::src::control::loops::flight_loop_queue.output->velocity_z, sp);
 
     copter_io_->update_setpoint(sp);
   }
 
-  if (::spinny::control::loops::flight_loop_queue.output->arm) {
+  if (::src::control::loops::flight_loop_queue.output->arm) {
     copter_io_->Arm();
   }
 
-  if (::spinny::control::loops::flight_loop_queue.output->disarm) {
+  if (::src::control::loops::flight_loop_queue.output->disarm) {
     copter_io_->Disarm();
   }
 
-  if (::spinny::control::loops::flight_loop_queue.output->takeoff) {
+  if (::src::control::loops::flight_loop_queue.output->takeoff) {
     copter_io_->Takeoff();
   }
 
-  if (::spinny::control::loops::flight_loop_queue.output->velocity_control) {
+  if (::src::control::loops::flight_loop_queue.output->velocity_control) {
     //TODO(comran): Check altitude is above normal (on restarts).
     copter_io_->Offboard();
   }
 
-  if (::spinny::control::loops::flight_loop_queue.output->land) {
+  if (::src::control::loops::flight_loop_queue.output->land) {
     copter_io_->Land();
   }
 
-  if (::spinny::control::loops::flight_loop_queue.output->throttle_cut) {
+  if (::src::control::loops::flight_loop_queue.output->throttle_cut) {
     copter_io_->FlightTermination();
   }
 }
@@ -186,4 +186,4 @@ void AutopilotOutputWriter::Stop() {
 
 }  // namespace io
 }  // namespace control
-}  // namespace spinny
+}  // namespace src

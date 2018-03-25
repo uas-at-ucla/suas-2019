@@ -5,7 +5,8 @@
 using namespace Eigen;
 using namespace std;
 
-namespace RRT {
+namespace lib {
+namespace rrt_avoidance {
 
 ObstacleGrid::ObstacleGrid(double width, double height, int discretizedWidth,
                            int discretizedHeight) {
@@ -39,6 +40,8 @@ double ObstacleGrid::nearestObstacleDist(const Vector2d& state,
   // the point to the nearest obstacle
   for (int i = x - xSearchRad; i <= x + xSearchRad; i++) {
     for (int j = y - ySearchRad; j <= y + ySearchRad; j++) {
+      if (i < 0 || i >= _discretizedWidth || j < 0 || j >= _discretizedWidth)
+        continue;
       bool obs = obstacleAt(i, j);
       if (obs) {
         double xDist = (x - i) * _width / _discretizedWidth;
@@ -92,4 +95,5 @@ double ObstacleGrid::width() const { return _width; }
 
 double ObstacleGrid::height() const { return _height; }
 
-}  // namespace RRT
+}  // namespace rrt_avoidance
+}  // namespace lib
