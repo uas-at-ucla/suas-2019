@@ -21,7 +21,7 @@ int main() {
   socket.bind("ipc:///tmp/mission_command_stream.ipc");
 
   while (true) {
-    ::spinny::controls::mission_receiver::Command cmd;
+    ::spinny::controls::ground_communicator::Command cmd;
     cmd.set_type("test");
     cmd.set_latitude(1.0);
     cmd.set_longitude(3.0);
