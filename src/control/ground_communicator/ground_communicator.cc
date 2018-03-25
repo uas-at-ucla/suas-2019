@@ -1,18 +1,18 @@
-#include "mission_receiver.h"
+#include "ground_communicator.h"
 
 #include <iomanip>
 
 namespace src {
 namespace control {
-namespace mission_receiver {
+namespace ground_communicator {
 
-MissionReceiver* socketio_mission_receiver;
+MissionReceiver* socketio_ground_communicator;
 
-void on_connect() { socketio_mission_receiver->OnConnect(); }
+void on_connect() { socketio_ground_communicator->OnConnect(); }
 
-void on_fail() { socketio_mission_receiver->OnFail(); }
+void on_fail() { socketio_ground_communicator->OnFail(); }
 
-void connect() { socketio_mission_receiver->ConnectToGround(); }
+void connect() { socketio_ground_communicator->ConnectToGround(); }
 
 MissionReceiver::MissionReceiver()
     : context_(1),
@@ -22,7 +22,7 @@ MissionReceiver::MissionReceiver()
       count_(0) {
   mission_command_stream_.bind("ipc:///tmp/mission_command_stream.ipc");
 
-  socketio_mission_receiver = this;
+  socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
 
@@ -188,10 +188,10 @@ void MissionReceiver::OnConnect() {
         (void)isAck;
         (void)ack_resp;
 
-        ::src::controls::mission_receiver::Mission mission;
+        ::src::controls::ground_communicator::Mission mission;
 
         for (size_t i = 0; i < data->get_vector().size(); i++) {
-          ::src::controls::mission_receiver::Command* cmd =
+          ::src::controls::ground_communicator::Command* cmd =
               mission.add_commands();
 
           cmd->set_type(
@@ -269,6 +269,6 @@ MissionReceiver::GoalState MissionReceiver::GetState() {
   return state;
 }
 
-}  // namespace mission_receiver
+}  // namespace ground_communicator
 }  // namespace control
 }  // namespace src
