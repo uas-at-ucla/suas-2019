@@ -21,30 +21,27 @@ TEST(RRTAvoidance, NoObstacles) {
 
   RRTAvoidance rrt_avoidance;
 
-  Position3D start = {0, 0, 0};
-  Position3D end = {1e-3, 1e-3, 0};
-  ::std::vector<Obstacle> obstacles;
+  for (int iteration = 0; iteration < 10; iteration++) {
+    // Try going from start to end with no obstacles.
 
-  ::std::vector<Position3D> avoidance_path =
-      rrt_avoidance.Process(start, end, obstacles);
+    Position3D start = {0, 0, 0};
+    Position3D end = {1e-3, 1e-3, 0};
+    ::std::vector<Obstacle> obstacles;
 
-  ::std::vector<double> final_x, final_y;
-  for (size_t i = 0; i < avoidance_path.size(); i++) {
-    ::std::cout << avoidance_path[i].latitude << ", "
-                << avoidance_path[i].longitude << ::std::endl;
+    ::std::vector<Position3D> avoidance_path =
+        rrt_avoidance.Process(start, end, obstacles);
 
-    final_x.push_back(avoidance_path[i].latitude);
-    final_y.push_back(avoidance_path[i].longitude);
-  }
-
-  if (plot) {
-    ::matplotlibcpp::xkcd();
-    ::matplotlibcpp::plot(final_x, final_y);
-    ::matplotlibcpp::show();
+    // Check that the result is a straight line with only two waypoints.
+    double tolerance = 1e-8;
+    ASSERT_EQ(avoidance_path.size(), 2);
+    ASSERT_GE(avoidance_path[0].latitude, start.latitude - tolerance);
+    ASSERT_LE(avoidance_path[0].latitude, start.latitude + tolerance);
+    ASSERT_GE(avoidance_path[1].longitude, end.longitude - tolerance);
+    ASSERT_LE(avoidance_path[1].longitude, end.longitude + tolerance);
   }
 }
 
-TEST(RRTAvoidance, AvoidsObstacles) {
+TEST(RRTAvoidance, DodgeObstacles) {
   // Check that RRT does not intersect with obstacles.
 
   // TODO(comran): Write something to check that final path does not intersect
@@ -52,67 +49,87 @@ TEST(RRTAvoidance, AvoidsObstacles) {
 
   RRTAvoidance rrt_avoidance;
 
-  Position3D start = {0, 0, 0};
-  Position3D end = {1e-3, 1e-3, 0};
-  ::std::vector<Obstacle> obstacles;
+  for (int calcs = 0; calcs < 10; calcs++) {
+    ::std::cout << "Running calculation #" << calcs << ::std::endl;
 
-  for (int i = 0; i < 3; i++) {
-    Position3D obstacle_position = {0 + i * 1e-3 / 4, 0 + i * 1e-3 / 4, 0};
-    Obstacle obstacle = {obstacle_position, 20};
+    Position3D start = {3e-3, 3e-3, 0};
+    Position3D end = {1e-3, 1e-3, 0};
+    ::std::vector<Obstacle> obstacles;
 
-    obstacles.push_back(obstacle);
-  }
+    for (int i = 0; i < 2; i++) {
+      obstacles.push_back(Obstacle());
+      obstacles.back().position.latitude = 2e-3;
+      obstacles.back().position.longitude = 1.6e-3 + i * 1.2e-3;
+      obstacles.back().radius = 50;
+    }
 
-  ::std::vector<Position3D> avoidance_path =
-      rrt_avoidance.Process(start, end, obstacles);
+    ::std::cout << obstacles.back().radius << ::std::endl;
+    ::std::vector<Position3D> avoidance_path =
+        rrt_avoidance.Process(start, end, obstacles);
 
-  ::std::vector<double> final_x, final_y;
-  for (size_t i = 0; i < avoidance_path.size(); i++) {
-    ::std::cout << avoidance_path[i].latitude << ", "
-                << avoidance_path[i].longitude << ::std::endl;
+    ::std::vector<double> final_x, final_y;
+    double tolerance = 1e-3;
+    EXPECT_GT(avoidance_path.size(), 2);
 
-    final_x.push_back(avoidance_path[i].latitude);
-    final_y.push_back(avoidance_path[i].longitude);
-  }
+    // Check that we start at the right place.
+    ASSERT_GE(avoidance_path[0].latitude, start.latitude - 1e-3);
+    ASSERT_LE(avoidance_path[0].latitude, start.latitude + 1e-3);
 
-  if (plot) {
-    ::matplotlibcpp::xkcd();
-    ::matplotlibcpp::plot(final_x, final_y);
-    ::matplotlibcpp::show();
+    // Check that we met the goal.
+    ASSERT_GE(avoidance_path[avoidance_path.size() - 1].longitude,
+              end.longitude - 1e-3);
+    ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
+              end.longitude + 1e-3);
+
+    for (size_t i = 0; i < avoidance_path.size(); i++) {
+      ::std::cout << avoidance_path[i].latitude << ", "
+                  << avoidance_path[i].longitude << ::std::endl;
+
+      final_x.push_back(avoidance_path[i].latitude);
+      final_y.push_back(avoidance_path[i].longitude);
+    }
   }
 }
 
 // TODO(comran): Make this test not freeze after performing only a couple
 // calculations.
-TEST(RRTAvoidance, MultipleAvoidanceCalculations) {
+TEST(RRTAvoidance, RandomObstacle) {
   // Make sure we can use the same RRT avoidance class to perform multiple
   // calculations.
 
   RRTAvoidance rrt_avoidance;
+  const double coordinate_to_meter = GetDistance2D({0, 0, 0}, {1, 0, 0});
+
   for (int calcs = 0; calcs < 20; calcs++) {
     ::std::cout << "Running calculation #" << calcs << ::std::endl;
 
-    Position3D start = {0, 0, 0};
-    Position3D end = {1e-3, 1e-3, 0};
+    Position3D start = {0.0, 0.0, 0};
+    Position3D end = {1e3 / coordinate_to_meter, 1e3 / coordinate_to_meter, 0};
     ::std::vector<Obstacle> obstacles;
 
     ::std::vector<double> obs_x, obs_y;
-    for (int i = 1; i < 4; i++) {
-      Position3D obstacle_position = {0 + i * 1e-3 / 4, 0 + i * 1e-3 / 4, 0};
-      Obstacle obstacle = {obstacle_position, 5};
+    double rand_point = rand() / (RAND_MAX + 1.);
+    Position3D obstacle_position = {
+        (300 + 400 * rand_point) / coordinate_to_meter,
+        (300 + 400 * rand_point) / coordinate_to_meter, 0};
+    Obstacle obstacle = {obstacle_position, 150};
 
-      for (double x = obstacle_position.latitude - 1e-4;
-           x < obstacle_position.latitude + 1e-4; x += 1e-4) {
-        for (double y = obstacle_position.longitude - 1e-4;
-             y < obstacle_position.longitude + 1e-4; y += 1e-4) {
-          ::std::cout << "x " << x << " y " << y << ::std::endl;
-          obs_x.push_back(x);
-          obs_y.push_back(y);
-        }
+    // Draw circular obstacles on plot.
+    double coord_radius = obstacle.radius / coordinate_to_meter;
+    for (double x = obstacle_position.latitude - coord_radius;
+         x < obstacle_position.latitude + coord_radius;
+         x += coord_radius / 20) {
+      double y_max =
+          sqrt(pow(coord_radius, 2) - pow(x - obstacle_position.latitude, 2));
+
+      for (double y = obstacle_position.longitude - y_max;
+           y < obstacle_position.longitude + y_max; y += coord_radius / 20) {
+        obs_x.push_back(x);
+        obs_y.push_back(y);
       }
-
-      obstacles.push_back(obstacle);
     }
+
+    obstacles.push_back(obstacle);
 
     ::std::vector<Position3D> avoidance_path =
         rrt_avoidance.Process(start, end, obstacles);
@@ -125,6 +142,14 @@ TEST(RRTAvoidance, MultipleAvoidanceCalculations) {
       final_x.push_back(avoidance_path[i].latitude);
       final_y.push_back(avoidance_path[i].longitude);
     }
+
+    double tolerance = 1e-8;
+    ASSERT_GE(avoidance_path[0].latitude, start.latitude - tolerance);
+    ASSERT_LE(avoidance_path[0].latitude, start.latitude + tolerance);
+    ASSERT_GE(avoidance_path[avoidance_path.size() - 1].longitude,
+              end.longitude - tolerance);
+    ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
+              end.longitude + tolerance);
 
     if (plot) {
       ::matplotlibcpp::xkcd();

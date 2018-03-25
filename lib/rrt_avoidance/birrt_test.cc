@@ -30,6 +30,7 @@ TEST(BiRRT, Instantiation) {
 }
 
 TEST(BiRRT, GeocoordToObstacleGridTest) {
+  for(int tests = 0;tests < 50;tests++) {
   int number_of_obstacles = 2;
   int rows = 2 + number_of_obstacles;
 
@@ -126,7 +127,7 @@ TEST(BiRRT, GeocoordToObstacleGridTest) {
   biRRT.set_goal_state(goal);
   biRRT.set_step_size(1);
   biRRT.set_max_iterations(10000);
-  bool success = biRRT.Run();
+  int num_iterations = biRRT.Run();
   vector<Vector2d> path = biRRT.GetPath();
   vector<Vector2d> smooth_path(path);
   SmoothPath<Vector2d>(smooth_path, *state_space);
@@ -173,6 +174,7 @@ TEST(BiRRT, GeocoordToObstacleGridTest) {
     ::matplotlibcpp::title("RRT Path in real-world geocoords");
     ::matplotlibcpp::show();
   }
+  }
 }
 
 TEST(BiRRT, GetPath) {
@@ -206,8 +208,8 @@ TEST(BiRRT, GetPath) {
   biRRT.set_step_size(1);
   biRRT.set_max_iterations(10000);
 
-  bool success = biRRT.Run();
-  ASSERT_TRUE(success);
+  int num_iterations = biRRT.Run();
+  ASSERT_GT(num_iterations, 0);
 
   vector<Vector2d> path = biRRT.GetPath();
   vector<Vector2d> smooth_path(path);
