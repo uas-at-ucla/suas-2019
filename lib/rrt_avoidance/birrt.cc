@@ -63,12 +63,15 @@ void BiRRT::Grow() {
   ++iteration_count_;
 }
 
-bool BiRRT::Run() {
+int BiRRT::Run() {
   for (int i = 0; i < start_tree_.maxIterations(); i++) {
     Grow();
-    if (start_solution_node_ != nullptr && i >= min_iterations_) return true;
+    if (start_solution_node_ != nullptr && i >= min_iterations_) {
+      return i;
+    }
   }
-  return false;
+
+  return -1;
 }
 
 const Node<::Eigen::Vector2d>* BiRRT::FindBestPath(

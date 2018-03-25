@@ -3,8 +3,24 @@
 namespace lib {
 namespace rrt_avoidance {
 
+const int kDimension = 50;
+
+RRTAvoidance::RRTAvoidance()
+    : state_space_(::std::make_shared<GridStateSpace>(kDimension, kDimension,
+                                                      kDimension, kDimension)),
+      birrt_(state_space_, hash, dimensions) {
+  birrt_.set_asc_enabled(true);
+  birrt_.set_min_iterations(4e2);
+  birrt_.set_max_iterations(1e4);
+  birrt_.set_goal_bias(0.4);
+  birrt_.set_step_size(1.0);
+  birrt_.set_max_step_size(50.0);
+}
+
 ::std::vector<Position3D> RRTAvoidance::Process(
     Position3D start, Position3D end, ::std::vector<Obstacle> obstacles) {
+  birrt_.Reset();
+
   int rows = 2 + obstacles.size();
 
   ::Eigen::MatrixXd m(rows, 3);
@@ -19,9 +35,9 @@ namespace rrt_avoidance {
   m(1, 1) = end.longitude;
   m(1, 2) = 0;
   for (int i = 2; i < rows; i++) {
-    m(i, 0) = obstacles[i].position.latitude;
-    m(i, 1) = obstacles[i].position.longitude;
-    m(i, 2) = obstacles[i].radius;
+    m(i, 0) = obstacles.at(i - 2).position.latitude;
+    m(i, 1) = obstacles.at(i - 2).position.longitude;
+    m(i, 2) = obstacles.at(i - 2).radius;
   }
   //::std::cout << m << ::std::endl;
 
@@ -46,34 +62,34 @@ namespace rrt_avoidance {
     m(i, 1) = m(i, 1) * coordinate_to_meter;
   }
 
-  // Scale everything to be within the 0 -> 50 obstacle grid used by RRT.
-  const int kDimension = 50;
+  // Scale everything to be within the obstacle grid used by RRT.
   double meter_width = m(1, 0);
   double meter_height = m(1, 1);
   double longest_dim = meter_width > meter_height ? meter_width : meter_height;
 
-  double scale = (kDimension - 2) / longest_dim;
+  double scale = (kDimension - 4) / longest_dim;
   m *= scale;
 
   // Leave a 1 unit buffer around everything to make rrt more stable.
   ::Eigen::MatrixXd m_shift(rows, 3);
   ::Eigen::MatrixXd m_shift_row(1, 3);
-  m_shift_row << 1, 1, 0;
+  m_shift_row << 2, 2, 0;
   m_shift = m_shift_row.replicate(rows, 1);
   m += m_shift;
-
-  std::shared_ptr<GridStateSpace> state_space =
-      ::std::make_shared<GridStateSpace>(kDimension, kDimension, kDimension,
-                                         kDimension);
 
   // Set start and end goals.
   ::Eigen::Vector2d position = {m(0, 0), m(0, 1)};
   ::Eigen::Vector2d goal = {m(1, 0), m(1, 1)};
 
-  BiRRT biRRT(state_space, hash, dimensions);
   ::std::vector<double> obs_x, obs_y;
 
   // Draw obstacles as circles on the obstacle grid.
+  for(int y = 0;y < kDimension;y++) {
+    for(int x = 0;x < kDimension;x++) {
+      state_space_->obstacleGrid().obstacleAt(::Eigen::Vector2i(x, y)) = false;
+    }
+  }
+
   for (int i = 2; i < rows; i++) {
     int obstacle_radius = m(i, 2);
     for (int offset_x = -obstacle_radius; offset_x <= obstacle_radius;
@@ -83,11 +99,12 @@ namespace rrt_avoidance {
       for (int offset_y = -y_max; offset_y <= y_max; offset_y++) {
         int x = m(i, 0) + offset_x;
         int y = m(i, 1) + offset_y;
+
         if (x < 0 || x >= kDimension | y < 0 || y >= kDimension) {
           continue;
         }
 
-        state_space->obstacleGrid().obstacleAt(::Eigen::Vector2i(x, y)) = true;
+        state_space_->obstacleGrid().obstacleAt(::Eigen::Vector2i(x, y)) = true;
 
         obs_x.push_back(x);
         obs_y.push_back(y);
@@ -96,14 +113,13 @@ namespace rrt_avoidance {
   }
 
   // Run the RRT.
-  biRRT.set_start_state(position);
-  biRRT.set_goal_state(goal);
-  biRRT.set_step_size(1);
-  biRRT.set_max_iterations(10000);
-  bool success = biRRT.Run();
-  ::std::vector<::Eigen::Vector2d> path = biRRT.GetPath();
+  birrt_.set_start_state(position);
+  birrt_.set_goal_state(goal);
+
+  int num_iterations = birrt_.Run();
+  ::std::vector<::Eigen::Vector2d> path = birrt_.GetPath();
   ::std::vector<::Eigen::Vector2d> smooth_path(path);
-  SmoothPath<::Eigen::Vector2d>(smooth_path, *state_space);
+  SmoothPath<::Eigen::Vector2d>(smooth_path, *state_space_);
 
   ::Eigen::MatrixXd m_rrt_path(smooth_path.size(), 2);
 
@@ -131,7 +147,7 @@ namespace rrt_avoidance {
     final_path.push_back(waypoint);
   }
 
-  biRRT.Reset();
+  birrt_.Reset();
 
   return final_path;
 }
