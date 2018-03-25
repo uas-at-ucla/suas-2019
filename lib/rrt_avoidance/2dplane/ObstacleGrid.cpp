@@ -40,6 +40,8 @@ double ObstacleGrid::nearestObstacleDist(const Vector2d& state,
   // the point to the nearest obstacle
   for (int i = x - xSearchRad; i <= x + xSearchRad; i++) {
     for (int j = y - ySearchRad; j <= y + ySearchRad; j++) {
+      if (i < 0 || i >= _discretizedWidth || j < 0 || j >= _discretizedWidth)
+        continue;
       bool obs = obstacleAt(i, j);
       if (obs) {
         double xDist = (x - i) * _width / _discretizedWidth;
