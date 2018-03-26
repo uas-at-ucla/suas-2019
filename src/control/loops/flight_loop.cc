@@ -267,14 +267,14 @@ void FlightLoop::RunIteration() {
 
 void receive_mission() {
   ::zmq::context_t context(1);
-  ::zmq::socket_t mission_receiver_stream(context, ZMQ_REQ);
-  mission_receiver_stream.connect("ipc:///tmp/mission_command_stream.ipc");
+  ::zmq::socket_t ground_communicator_stream(context, ZMQ_REQ);
+  ground_communicator_stream.connect("ipc:///tmp/mission_command_stream.ipc");
   ::zmq::message_t request(5);
   memcpy(request.data(), "Hello", 5);
-  mission_receiver_stream.send(request);
+  ground_communicator_stream.send(request);
 
   ::zmq::message_t reply;
-  mission_receiver_stream.recv(&reply);
+  ground_communicator_stream.recv(&reply);
   for (int i = 0;; i++)
     if (i % 1000000 == 0)
       ::std::cout << "got a reply <><><><><><><><><><><><><><><\n";
@@ -283,12 +283,12 @@ void receive_mission() {
 void FlightLoop::Run() {
   running_ = true;
 
-  ::std::cout << "<<<<<<<<<<<<<<< Creating new mission_receiver_thread\n";
+  ::std::cout << "<<<<<<<<<<<<<<< Creating new ground_communicator_thread\n";
 
-  ::std::thread mission_receiver_thread(receive_mission);
-  mission_receiver_thread.detach();
+  ::std::thread ground_communicator_thread(receive_mission);
+  ground_communicator_thread.detach();
 
-  ::std::cout << "<<<<<<<<<<<<<<< Detatched mission_receiver_thread\n";
+  ::std::cout << "<<<<<<<<<<<<<<< Detatched ground_communicator_thread\n";
 
   while (running_) {
     RunIteration();

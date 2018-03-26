@@ -1,6 +1,6 @@
 syntax = "proto2";
 
-package spinny.controls.mission_receiver;
+package spinny.controls.ground_communicator;
 
 message Command {
   required string type = 1;
