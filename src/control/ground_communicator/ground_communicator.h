@@ -15,11 +15,11 @@
 
 #include "src/control/loops/flight_loop.q.h"
 #include "src/control/loops/flight_loop.h"
-#include "src/control/mission_receiver/mission_commands.pb.h"
+#include "src/control/ground_communicator/mission_commands.pb.h"
 
 namespace src {
 namespace control {
-namespace mission_receiver {
+namespace ground_communicator {
 
 class MissionReceiver {
  public:
@@ -63,7 +63,7 @@ class MissionReceiver {
 void on_connect();
 void on_fail();
 
-}  // namespace mission_receiver
+}  // namespace ground_communicator
 }  // namespace control
 }  // namespace src
 
