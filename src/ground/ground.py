@@ -246,7 +246,7 @@ def refresh_interop_data():
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
-    processes.spawn_process("npm start --silent --prefix ./client/", None,
+    processes.spawn_process("npm start --silent --prefix ./interface/", None,
                             True, False)
 
     if AUTO_CONNECT_TO_INTEROP:
@@ -256,7 +256,7 @@ if __name__ == '__main__':
 
     if USE_INTEROP:
         if LOCAL_INTEROP:
-            processes.spawn_process("python server/run_interop.py", None, True,
+            processes.spawn_process("python tools/run_interop.py", None, True,
                                     False)
 
         t = threading.Thread(target=refresh_interop_data)
