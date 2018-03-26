@@ -22,7 +22,7 @@ void quit_handler(int sig) {
 }
 
 IO::IO()
-//  : copter_io_("/dev/ttyS0", 921600) {
+    //  : copter_io_("/dev/ttyS0", 921600) {
     : copter_io_("/tmp/virtualcom0", 921600),
       autopilot_sensor_reader_(&copter_io_),
       autopilot_output_writer_(&copter_io_) {
@@ -59,7 +59,6 @@ void IO::Quit() {
 AutopilotSensorReader::AutopilotSensorReader(
     autopilot_interface::AutopilotInterface *copter_io)
     : copter_io_(copter_io) {
-
   last_timestamps_.reset_timestamps();
 }
 
@@ -85,7 +84,7 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->latitude = static_cast<double>(gps.lat) / 1e7;
   flight_loop_sensors_message->longitude = static_cast<double>(gps.lon) / 1e7;
   flight_loop_sensors_message->altitude = static_cast<float>(gps.alt) / 1e3;
-  flight_loop_sensors_message->heading = static_cast<float>(gps.hdg);
+  flight_loop_sensors_message->heading = static_cast<float>(gps.hdg) / 1e2;
 
   flight_loop_sensors_message->relative_altitude =
       static_cast<float>(gps.relative_alt) / 1e3;
@@ -100,7 +99,8 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->gps_satellite_count = gps_raw.satellites_visible;
   flight_loop_sensors_message->gps_eph = gps_raw.eph;
   flight_loop_sensors_message->gps_epv = gps_raw.epv;
-  flight_loop_sensors_message->gps_ground_speed = static_cast<float>(gps_raw.vel) / 1e2;
+  flight_loop_sensors_message->gps_ground_speed =
+      static_cast<float>(gps_raw.vel) / 1e2;
 
   // IMU data.
   mavlink_highres_imu_t imu = copter_io_->current_messages.highres_imu;
@@ -166,7 +166,7 @@ void AutopilotOutputWriter::Write() {
   }
 
   if (::src::control::loops::flight_loop_queue.output->velocity_control) {
-    //TODO(comran): Check altitude is above normal (on restarts).
+    // TODO(comran): Check altitude is above normal (on restarts).
     copter_io_->Offboard();
   }
 
