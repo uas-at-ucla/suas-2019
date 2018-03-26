@@ -32,7 +32,7 @@ int main() {
 
     ::std::string input(static_cast<char*>(reply.data()), reply.size());
 
-    ::spinny::controls::mission_receiver::Command cmd;
+    ::spinny::controls::ground_communicator::Command cmd;
     cmd.ParseFromString(input);
     std::cout << cmd.type() << std::endl;
 

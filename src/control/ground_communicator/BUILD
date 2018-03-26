@@ -16,24 +16,24 @@ cc_proto_library(
 )
 
 cc_binary(
-  name = 'mission_receiver',
+  name = 'ground_communicator',
   visibility = ['//visibility:public'],
   srcs = [
-    'mission_receiver_main.cc'
+    'ground_communicator_main.cc'
   ],
   deps = [
-    ":mission_receiver_lib"
+    ":ground_communicator_lib"
   ],
 )
 
 cc_library(
-  name = 'mission_receiver_lib',
+  name = 'ground_communicator_lib',
   visibility = ['//visibility:public'],
   srcs = [
-    'mission_receiver.cc'
+    'ground_communicator.cc'
   ],
   hdrs = [
-    'mission_receiver.h'
+    'ground_communicator.h'
   ],
   deps = [
     ":mission_commands_cpp",
