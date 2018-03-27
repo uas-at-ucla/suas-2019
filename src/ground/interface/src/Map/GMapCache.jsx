@@ -78,7 +78,6 @@ class GMapCache {
   }
 
   checkTileInSprites(coord, zoom) {
-    console.log(zoom);
     var sprites = this.spriteRanges[zoom];
     return (
       sprites.tl.x <= coord.x &&
