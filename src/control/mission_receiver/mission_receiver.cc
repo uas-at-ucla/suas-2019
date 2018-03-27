@@ -94,6 +94,7 @@ void MissionReceiver::SendTelemetry() {
     std::string state = ::src::control::loops::state_string.at(
         static_cast<::src::control::loops::FlightLoop::State>((*status)->state));
     (*status_map)["state"] = sio::string_message::create(state);
+    (*status_map)["flight_time"] = sio::int_message::create((*status)->flight_time);
   }
 
   if ((*goal).get()) {
