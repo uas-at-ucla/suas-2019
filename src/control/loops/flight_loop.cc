@@ -20,7 +20,9 @@ FlightLoop::FlightLoop()
       start_(std::chrono::system_clock::now()),
       takeoff_ticker_(0),
       verbose_(false),
-      count_(0) {
+      count_(0),
+      previous_flights_time_(0),
+      current_flight_start_time_(0) {
   ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
   ::src::control::loops::flight_loop_queue.output.FetchLatest();
@@ -169,6 +171,9 @@ void FlightLoop::RunIteration() {
         state_ = ARMING;
       }
 
+      current_flight_start_time_ =
+          std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch()).count();
       state_ = TAKING_OFF;
       break;
 
@@ -237,6 +242,13 @@ void FlightLoop::RunIteration() {
 
     case LANDING:
       if (!::src::control::loops::flight_loop_queue.sensors->armed) {
+        if (current_flight_start_time_ != 0) {
+          previous_flights_time_ +=
+              std::chrono::duration_cast<std::chrono::milliseconds>(
+              std::chrono::system_clock::now().time_since_epoch()).count() -
+              current_flight_start_time_;
+          current_flight_start_time_ = 0;
+        }
         state_ = STANDBY;
       }
 
@@ -257,6 +269,14 @@ void FlightLoop::RunIteration() {
   auto status =
       ::src::control::loops::flight_loop_queue.status.MakeMessage();
   status->state = state_;
+  if (current_flight_start_time_ == 0) {
+    status->flight_time = previous_flights_time_;
+  } else {
+    status->flight_time = previous_flights_time_ + (
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count() -
+        current_flight_start_time_);
+  }
   status.Send();
 
   const int iterations = phased_loop_.SleepUntilNext();
