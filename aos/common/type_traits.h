@@ -12,8 +12,8 @@ template<typename Tp>
 struct has_trivial_copy_assign : public std::integral_constant<bool,
 // This changed between 4.4.5 and 4.6.3. Unless somebody discovers otherwise,
 // 4.6 seems like a reasonable place to switch.
-#if ((__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 6)) && !defined(__clang__)
-    ::std::has_trivial_assign<Tp>::value> {};
+#if ((__GNUC__ < 4) || (__GNUC__ == 4 && __GNUC_MINOR__ < 9)) && !defined(__clang__)
+    ::std::has_trivial_copy_assign<Tp>::value> {};
 #else
     ::std::is_trivially_copy_assignable<Tp>::value> {};
 #endif
@@ -33,7 +33,7 @@ template <typename Tp>
 struct shm_ok : public std::integral_constant<
                     bool,
 #if ((__GNUC__ < 5))
-                    (::std::is_trivially_copy_constructible<Tp>::value &&
+                    (::std::is_copy_constructible<Tp>::value &&
                      ::aos::has_trivial_copy_assign<Tp>::value)
 #else
                     (::std::is_trivially_copyable<Tp>::value)
