@@ -78,7 +78,7 @@ class App extends Component {
 
   componentDidMount() {
     const SOCKET_DOMAIN = document.domain; // Gets domain from browser
-    const SOCKET_PORT = 8084;
+    const SOCKET_PORT = 8081;
 
     const SOCKET_ADDRESS = "http://" + SOCKET_DOMAIN + ":" + SOCKET_PORT;
 
@@ -86,6 +86,7 @@ class App extends Component {
 
     this.socket.on("connect", () => {
       console.log("Connected to ground interface feeder!");
+
       this.setState({
         droneState: "Ground Online",
       });
@@ -110,8 +111,7 @@ class App extends Component {
       });
     });
 
-    this.socket.on("telemetry", telemetry => {
-      // console.log(telemetry);
+    this.socket.on("on_telemetry", telemetry => {
       let newState = {
         telemetry: telemetry
       }
