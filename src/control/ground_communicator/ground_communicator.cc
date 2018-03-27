@@ -31,21 +31,21 @@ MissionReceiver::MissionReceiver()
 }
 
 void MissionReceiver::ConnectToGround() {
-  client_.connect("http://0.0.0.0:8085");
+  client_.connect("http://0.0.0.0:8081");
 }
 
 void MissionReceiver::SendTelemetry() {
   ::std::cout << "Sending:" << ::std::endl;
 
-  ::aos::Queue<::src::control::loops::FlightLoopQueue::Sensors> *sensors = &::src::control::loops::flight_loop_queue.sensors;
-  ::aos::Queue<::src::control::loops::FlightLoopQueue::Status> *status = &::src::control::loops::flight_loop_queue.status;
-  ::aos::Queue<::src::control::loops::FlightLoopQueue::Goal> *goal = &::src::control::loops::flight_loop_queue.goal;
-  ::aos::Queue<::src::control::loops::FlightLoopQueue::Output> *output = &::src::control::loops::flight_loop_queue.output;
+  auto sensors = &::src::control::loops::flight_loop_queue.sensors;
+  auto status = &::src::control::loops::flight_loop_queue.status;
+  auto goal = &::src::control::loops::flight_loop_queue.goal;
+  auto output = &::src::control::loops::flight_loop_queue.output;
 
-  (*sensors).FetchLatest();
-  (*status).FetchLatest();
-  (*goal).FetchLatest();
-  (*output).FetchLatest();
+  sensors->FetchLatest();
+  status->FetchLatest();
+  goal->FetchLatest();
+  output->FetchLatest();
 
   sio::message::ptr telemetry = sio::object_message::create();
 
@@ -54,66 +54,100 @@ void MissionReceiver::SendTelemetry() {
   sio::message::ptr goal_object = sio::object_message::create();
   sio::message::ptr output_object = sio::object_message::create();
 
-  std::map<std::string,sio::message::ptr> *sensors_map = &sensors_object->get_map();
-  std::map<std::string,sio::message::ptr> *status_map = &status_object->get_map();
-  std::map<std::string,sio::message::ptr> *goal_map = &goal_object->get_map();
-  std::map<std::string,sio::message::ptr> *output_map = &output_object->get_map();
+  std::map<std::string, sio::message::ptr>* sensors_map =
+      &sensors_object->get_map();
+  std::map<std::string, sio::message::ptr>* status_map =
+      &status_object->get_map();
+  std::map<std::string, sio::message::ptr>* goal_map = &goal_object->get_map();
+  std::map<std::string, sio::message::ptr>* output_map =
+      &output_object->get_map();
 
-  if ((*sensors).get()) {
+  if (sensors->get()) {
     ::std::cout << "Sensors" << ::std::endl;
-    (*sensors_map)["latitude"] = sio::double_message::create((*sensors)->latitude);
-    (*sensors_map)["longitude"] = sio::double_message::create((*sensors)->longitude);
-    (*sensors_map)["altitude"] = sio::double_message::create((*sensors)->altitude);
-    (*sensors_map)["relative_altitude"] = sio::double_message::create((*sensors)->relative_altitude);
-    (*sensors_map)["heading"] = sio::double_message::create((*sensors)->heading);
-    (*sensors_map)["velocity_x"] = sio::double_message::create((*sensors)->velocity_x);
-    (*sensors_map)["velocity_y"] = sio::double_message::create((*sensors)->velocity_y);
-    (*sensors_map)["velocity_z"] = sio::double_message::create((*sensors)->velocity_z);
-    (*sensors_map)["gps_ground_speed"] = sio::double_message::create((*sensors)->gps_ground_speed);
-    (*sensors_map)["gps_satellite_count"] = sio::double_message::create((*sensors)->gps_satellite_count);
-    (*sensors_map)["gps_eph"] = sio::double_message::create((*sensors)->gps_eph);
-    (*sensors_map)["gps_epv"] = sio::double_message::create((*sensors)->gps_epv);
-    (*sensors_map)["accelerometer_x"] = sio::double_message::create((*sensors)->accelerometer_x);
-    (*sensors_map)["accelerometer_y"] = sio::double_message::create((*sensors)->accelerometer_y);
-    (*sensors_map)["accelerometer_z"] = sio::double_message::create((*sensors)->accelerometer_z);
+    (*sensors_map)["latitude"] =
+        sio::double_message::create((*sensors)->latitude);
+    (*sensors_map)["longitude"] =
+        sio::double_message::create((*sensors)->longitude);
+    (*sensors_map)["altitude"] =
+        sio::double_message::create((*sensors)->altitude);
+    (*sensors_map)["relative_altitude"] =
+        sio::double_message::create((*sensors)->relative_altitude);
+    (*sensors_map)["heading"] =
+        sio::double_message::create((*sensors)->heading);
+    (*sensors_map)["velocity_x"] =
+        sio::double_message::create((*sensors)->velocity_x);
+    (*sensors_map)["velocity_y"] =
+        sio::double_message::create((*sensors)->velocity_y);
+    (*sensors_map)["velocity_z"] =
+        sio::double_message::create((*sensors)->velocity_z);
+    (*sensors_map)["gps_ground_speed"] =
+        sio::double_message::create((*sensors)->gps_ground_speed);
+    (*sensors_map)["gps_satellite_count"] =
+        sio::double_message::create((*sensors)->gps_satellite_count);
+    (*sensors_map)["gps_eph"] =
+        sio::double_message::create((*sensors)->gps_eph);
+    (*sensors_map)["gps_epv"] =
+        sio::double_message::create((*sensors)->gps_epv);
+    (*sensors_map)["accelerometer_x"] =
+        sio::double_message::create((*sensors)->accelerometer_x);
+    (*sensors_map)["accelerometer_y"] =
+        sio::double_message::create((*sensors)->accelerometer_y);
+    (*sensors_map)["accelerometer_z"] =
+        sio::double_message::create((*sensors)->accelerometer_z);
     (*sensors_map)["gyro_x"] = sio::double_message::create((*sensors)->gyro_x);
     (*sensors_map)["gyro_y"] = sio::double_message::create((*sensors)->gyro_y);
     (*sensors_map)["gyro_z"] = sio::double_message::create((*sensors)->gyro_z);
-    (*sensors_map)["absolute_pressure"] = sio::double_message::create((*sensors)->absolute_pressure);
-    (*sensors_map)["relative_pressure"] = sio::double_message::create((*sensors)->relative_pressure);
-    (*sensors_map)["pressure_altitude"] = sio::double_message::create((*sensors)->pressure_altitude);
-    (*sensors_map)["temperature"] = sio::double_message::create((*sensors)->temperature);
-    (*sensors_map)["battery_voltage"] = sio::double_message::create((*sensors)->battery_voltage);
-    (*sensors_map)["battery_current"] = sio::double_message::create((*sensors)->battery_current);
+    (*sensors_map)["absolute_pressure"] =
+        sio::double_message::create((*sensors)->absolute_pressure);
+    (*sensors_map)["relative_pressure"] =
+        sio::double_message::create((*sensors)->relative_pressure);
+    (*sensors_map)["pressure_altitude"] =
+        sio::double_message::create((*sensors)->pressure_altitude);
+    (*sensors_map)["temperature"] =
+        sio::double_message::create((*sensors)->temperature);
+    (*sensors_map)["battery_voltage"] =
+        sio::double_message::create((*sensors)->battery_voltage);
+    (*sensors_map)["battery_current"] =
+        sio::double_message::create((*sensors)->battery_current);
     (*sensors_map)["armed"] = sio::bool_message::create((*sensors)->armed);
-    (*sensors_map)["autopilot_state"] = sio::int_message::create((*sensors)->autopilot_state);
+    (*sensors_map)["autopilot_state"] =
+        sio::int_message::create((*sensors)->autopilot_state);
   }
 
-  if ((*status).get()) {
+  if (status->get()) {
     ::std::cout << "Status" << ::std::endl;
     std::string state = ::src::control::loops::state_string.at(
-        static_cast<::src::control::loops::FlightLoop::State>((*status)->state));
+        static_cast<::src::control::loops::FlightLoop::State>(
+            (*status)->state));
     (*status_map)["state"] = sio::string_message::create(state);
   }
 
-  if ((*goal).get()) {
+  if (goal->get()) {
     ::std::cout << "Goal" << ::std::endl;
-    (*goal_map)["run_mission"] = sio::bool_message::create((*goal)->run_mission);
-    (*goal_map)["trigger_failsafe"] = sio::bool_message::create((*goal)->trigger_failsafe);
-    (*goal_map)["trigger_throttle_cut"] = sio::bool_message::create((*goal)->trigger_throttle_cut);
+    (*goal_map)["run_mission"] =
+        sio::bool_message::create((*goal)->run_mission);
+    (*goal_map)["trigger_failsafe"] =
+        sio::bool_message::create((*goal)->trigger_failsafe);
+    (*goal_map)["trigger_throttle_cut"] =
+        sio::bool_message::create((*goal)->trigger_throttle_cut);
   }
 
-  if ((*output).get()) {
+  if (output->get()) {
     ::std::cout << "Output" << ::std::endl;
-    (*output_map)["velocity_x"] = sio::double_message::create((*output)->velocity_x);
-    (*output_map)["velocity_y"] = sio::double_message::create((*output)->velocity_y);
-    (*output_map)["velocity_z"] = sio::double_message::create((*output)->velocity_z);
-    (*output_map)["velocity_control"] = sio::bool_message::create((*output)->velocity_control);
+    (*output_map)["velocity_x"] =
+        sio::double_message::create((*output)->velocity_x);
+    (*output_map)["velocity_y"] =
+        sio::double_message::create((*output)->velocity_y);
+    (*output_map)["velocity_z"] =
+        sio::double_message::create((*output)->velocity_z);
+    (*output_map)["velocity_control"] =
+        sio::bool_message::create((*output)->velocity_control);
     (*output_map)["arm"] = sio::bool_message::create((*output)->arm);
     (*output_map)["disarm"] = sio::bool_message::create((*output)->disarm);
     (*output_map)["takeoff"] = sio::bool_message::create((*output)->takeoff);
     (*output_map)["land"] = sio::bool_message::create((*output)->land);
-    (*output_map)["throttle_cut"] = sio::bool_message::create((*output)->throttle_cut);
+    (*output_map)["throttle_cut"] =
+        sio::bool_message::create((*output)->throttle_cut);
   }
 
   ::std::cout << ::std::endl;
@@ -127,7 +161,7 @@ void MissionReceiver::SendTelemetry() {
 }
 
 void MissionReceiver::SendTelemetryPeriodic() {
-  if (count_++ % 50) return;
+  if (count_++ % 25) return;
   SendTelemetry();
 }
 
@@ -179,7 +213,7 @@ void MissionReceiver::OnConnect() {
   ::std::cout << "========================got on_connect\n";
 
   client_.socket()->on(
-      "execute_commands",
+      "drone_execute_commands",
       sio::socket::event_listener_aux([&](
           std::string const& name, sio::message::ptr const& data, bool isAck,
           sio::message::list& ack_resp) {
@@ -216,10 +250,12 @@ void MissionReceiver::OnConnect() {
           ::std::cerr
               << "Could not send mission to loop. Is the loop running?\n";
         }
+
+        SetState("MISSION");
       }));
 
   client_.socket()->on(
-      "set_state", sio::socket::event_listener_aux([&](
+      "drone_set_state", sio::socket::event_listener_aux([&](
                        std::string const& name, sio::message::ptr const& data,
                        bool isAck, sio::message::list& ack_resp) {
         (void)name;
