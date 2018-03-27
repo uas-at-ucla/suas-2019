@@ -66,6 +66,9 @@ class FlightLoop {
   int takeoff_ticker_;
   bool verbose_;
   int count_;
+
+  int previous_flights_time_;
+  unsigned long current_flight_start_time_;
 };
 
 const std::map<FlightLoop::State, std::string> state_string = {
