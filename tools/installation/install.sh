@@ -65,7 +65,7 @@ cd ../../src/ground/
 echo "Installing npm packages..."
 git submodule init;
 git submodule update --recursive;
-cd client/;
+cd interface/;
 npm install --loglevel=error;
 cd ../../../tools/installation/;
 echo "";
@@ -89,10 +89,10 @@ then
     curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
     sudo apt-get update && sudo apt-get -y -qq install bazel clang-3.9 libc++-dev clang-format-3.5;
     sudo apt-get -y -qq install ruby;
-    for i in $(seq 1 3);
-    do
-        sl;
-    done
+#   for i in $(seq 1 3);
+#   do
+#       sl;
+#   done
 elif [ $OS = "Darwin" ]
 then
     echo "Hi";
@@ -131,7 +131,8 @@ fi
 if [ $OS = "Linux" ]
 then
     echo "Installing Gazebo dependencies..."
-    sudo apt-get -y -qq install libgazebo7-dev libopencv-dev libeigen3-dev protobuf-compiler liblz4-dev;
+    sudo apt-get -y -qq install libgazebo7-dev
+    sudo apt-get -y -qq install libopencv-dev libeigen3-dev protobuf-compiler liblz4-dev;
 fi
 
 #TODO(comran): Gazebo should be installed separately until we get it working
