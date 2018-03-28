@@ -67,6 +67,7 @@ class FlightLoop {
   bool verbose_;
   int count_;
 
+  void EndFlightTimer();
   int previous_flights_time_;
   unsigned long current_flight_start_time_;
 };
