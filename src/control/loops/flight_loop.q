@@ -40,6 +40,7 @@ queue_group FlightLoopQueue {
 
   message Status {
     int32_t state;
+    int32_t flight_time;
   };
 
   message Goal {
