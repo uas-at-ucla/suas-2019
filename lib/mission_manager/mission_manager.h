@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace spinny {
+namespace src {
 
 class Semaphore {
  public:

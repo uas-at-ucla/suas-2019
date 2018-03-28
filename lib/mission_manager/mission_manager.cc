@@ -1,6 +1,6 @@
 #include "mission_manager.h"
 
-namespace spinny {
+namespace src {
 
 Semaphore::Semaphore(unsigned long count) : count_(count) {}
 
