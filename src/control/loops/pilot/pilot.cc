@@ -1,6 +1,6 @@
 #include "pilot.h"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace loops {
 namespace pilot {
@@ -12,16 +12,16 @@ void PilotMissionHandler::operator()() {
   // Listen to ZMQ message queue and update MissionManager with any new missions
   // that come along.
   ::zmq::context_t context(1);
-  ::zmq::socket_t mission_receiver_stream(context, ZMQ_REQ);
-  mission_receiver_stream.connect("ipc:///tmp/mission_command_stream.ipc");
+  ::zmq::socket_t ground_communicator_stream(context, ZMQ_REQ);
+  ground_communicator_stream.connect("ipc:///tmp/mission_command_stream.ipc");
 
   while (true) {
     ::zmq::message_t mission_message;
-    mission_receiver_stream.recv(&mission_message);
+    ground_communicator_stream.recv(&mission_message);
     ::std::string mission_message_string(
         static_cast<char *>(mission_message.data()), mission_message.size());
 
-    ::spinny::control::mission_receiver::Mission mission_protobuf;
+    ::src::controls::ground_communicator::Mission mission_protobuf;
     mission_protobuf.ParseFromString(mission_message_string);
 
     mission_manager_->AddCommands(ParseMissionProtobuf(mission_protobuf));
@@ -30,20 +30,21 @@ void PilotMissionHandler::operator()() {
 
 ::std::vector<::std::shared_ptr<MissionCommand>>
 PilotMissionHandler::ParseMissionProtobuf(
-    ::spinny::control::mission_receiver::Mission mission_protobuf) {
+    ::src::controls::ground_communicator::Mission mission_protobuf) {
+  
   ::std::vector<::std::shared_ptr<MissionCommand>> new_commands;
 
   // Iterate through all commands in the protobuf and convert them to our C++
   // objects for commands.
-  for (::spinny::control::mission_receiver::Command cmd_protobuf :
+  for (::src::controls::ground_communicator::Command cmd_protobuf :
        mission_protobuf.commands()) {
-    if (cmd_protobuf.type() == "GOTO") {
+    if (cmd_protobuf.type() == "goto") {
       new_commands.push_back(
           ::std::make_shared<MissionCommandGoto>(new MissionCommandGoto(
               cmd_protobuf.latitude(), cmd_protobuf.longitude(),
               cmd_protobuf.altitude())));
 
-    } else if (cmd_protobuf.type() == "BOMB_DROP") {
+    } else if (cmd_protobuf.type() == "bomb") {
       new_commands.push_back(::std::make_shared<MissionCommandBombDrop>(
           new MissionCommandBombDrop()));
 
@@ -60,7 +61,7 @@ PilotMissionHandler::ParseMissionProtobuf(
   return new_commands;
 }
 
-Pilot::Pilot() {}
+Pilot::Pilot() : pilot_mission_handler_(&mission_manager_) {}
 
 PilotOutput Pilot::Calculate(Position3D drone_position) {
   ::std::shared_ptr<MissionCommand> cmd_ptr =
@@ -99,6 +100,11 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
   }
 
   return {flight_direction, bomb_drop};
+}
+
+void Pilot::HandleMission() {
+   ::std::cerr << "Able to handle mission from mission_handler" << ::std::endl;
+   pilot_mission_handler_();
 }
 
 }  // namespace pilot
