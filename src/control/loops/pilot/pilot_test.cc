@@ -4,7 +4,7 @@
 
 #include "lib/physics_structs/physics_structs.h"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace loops {
 namespace pilot {

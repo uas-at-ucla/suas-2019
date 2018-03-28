@@ -13,9 +13,9 @@
 #include "lib/mission_manager/mission_manager.h"
 #include "lib/physics_structs/physics_structs.h"
 
-#include "src/control/mission_receiver/mission_commands.pb.h"
+#include "src/control/ground_communicator/mission_commands.pb.h"
 
-namespace spinny {
+namespace src {
 namespace control {
 namespace loops {
 namespace pilot {
@@ -25,28 +25,31 @@ struct PilotOutput {
   bool bomb_drop;
 };
 
-class Pilot {
- public:
-  Pilot();
-
-  PilotOutput Calculate(Position3D drone_position);
-
- private:
-  MissionManager mission_manager_;
-};
-
 class PilotMissionHandler {
  public:
   PilotMissionHandler(MissionManager *mission_manager);
   void operator()();
   ::std::vector<::std::shared_ptr<MissionCommand>> ParseMissionProtobuf(
-      ::spinny::control::mission_receiver::Mission mission_protobuf);
+      ::src::controls::ground_communicator::Mission mission_protobuf);
   void Quit() { run_ = false; }
 
  private:
   MissionManager *mission_manager_;
 
   ::std::atomic<bool> run_{true};
+};
+
+class Pilot {
+ public:
+  Pilot();
+
+  PilotOutput Calculate(Position3D drone_position);
+  
+  void HandleMission();
+
+ private:
+  MissionManager mission_manager_;
+  PilotMissionHandler pilot_mission_handler_;
 };
 
 }  // namespace pilot
