@@ -61,6 +61,8 @@ queue_group FlightLoopQueue {
     bool takeoff;
     bool land;
     bool throttle_cut;
+
+    bool alarm;
   };
 
   queue Sensors sensors;
