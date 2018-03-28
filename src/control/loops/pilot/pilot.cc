@@ -5,7 +5,7 @@ namespace control {
 namespace loops {
 namespace pilot {
 
-PilotMissionHandler::PilotMissionHandler(MissionManager *mission_manager)
+PilotMissionHandler::PilotMissionHandler(::lib::MissionManager *mission_manager)
     : mission_manager_(mission_manager) {}
 
 void PilotMissionHandler::operator()() {
@@ -28,25 +28,24 @@ void PilotMissionHandler::operator()() {
   }
 }
 
-::std::vector<::std::shared_ptr<MissionCommand>>
+::std::vector<::std::shared_ptr<::lib::MissionCommand>>
 PilotMissionHandler::ParseMissionProtobuf(
     ::src::controls::ground_communicator::Mission mission_protobuf) {
-  
-  ::std::vector<::std::shared_ptr<MissionCommand>> new_commands;
+  ::std::vector<::std::shared_ptr<::lib::MissionCommand>> new_commands;
 
   // Iterate through all commands in the protobuf and convert them to our C++
   // objects for commands.
   for (::src::controls::ground_communicator::Command cmd_protobuf :
        mission_protobuf.commands()) {
     if (cmd_protobuf.type() == "goto") {
-      new_commands.push_back(
-          ::std::make_shared<MissionCommandGoto>(new MissionCommandGoto(
-              cmd_protobuf.latitude(), cmd_protobuf.longitude(),
-              cmd_protobuf.altitude())));
+      new_commands.push_back(::std::make_shared<::lib::MissionCommandGoto>(
+          new ::lib::MissionCommandGoto(cmd_protobuf.latitude(),
+                                        cmd_protobuf.longitude(),
+                                        cmd_protobuf.altitude())));
 
     } else if (cmd_protobuf.type() == "bomb") {
-      new_commands.push_back(::std::make_shared<MissionCommandBombDrop>(
-          new MissionCommandBombDrop()));
+      new_commands.push_back(::std::make_shared<::lib::MissionCommandBombDrop>(
+          new ::lib::MissionCommandBombDrop()));
 
     } else {
       // Return an empty command protobuf if we encounter any parsing errors
@@ -54,7 +53,7 @@ PilotMissionHandler::ParseMissionProtobuf(
       ::std::cerr << "ERROR: Invalid command type " << cmd_protobuf.type()
                   << ::std::endl;
 
-      return ::std::vector<::std::shared_ptr<MissionCommand>>();
+      return ::std::vector<::std::shared_ptr<::lib::MissionCommand>>();
     }
   }
 
@@ -64,18 +63,18 @@ PilotMissionHandler::ParseMissionProtobuf(
 Pilot::Pilot() : pilot_mission_handler_(&mission_manager_) {}
 
 PilotOutput Pilot::Calculate(Position3D drone_position) {
-  ::std::shared_ptr<MissionCommand> cmd_ptr =
+  ::std::shared_ptr<::lib::MissionCommand> cmd_ptr =
       mission_manager_.GetCurrentCommand();
 
   Vector3D flight_direction;
   bool bomb_drop = false;
 
   switch (cmd_ptr->type()) {
-    case MissionCommand::GOTO: {
+    case ::lib::MissionCommand::GOTO: {
       constexpr double kSpeed = 15.0;
 
-      ::std::shared_ptr<MissionCommandGoto> goto_cmd_ptr =
-          ::std::static_pointer_cast<MissionCommandGoto>(cmd_ptr);
+      ::std::shared_ptr<::lib::MissionCommandGoto> goto_cmd_ptr =
+          ::std::static_pointer_cast<::lib::MissionCommandGoto>(cmd_ptr);
 
       Position3D goal = {goto_cmd_ptr->latitude(), goto_cmd_ptr->longitude(),
                          goto_cmd_ptr->altitude()};
@@ -86,13 +85,13 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
       break;
     }
 
-    case MissionCommand::BOMB_DROP: {
+    case ::lib::MissionCommand::BOMB_DROP: {
       flight_direction = {0, 0, 0};
       bomb_drop = true;
       break;
     }
 
-    case MissionCommand::DO_NOTHING: {
+    case ::lib::MissionCommand::DO_NOTHING: {
       flight_direction = {0, 0, 0};
       bomb_drop = false;
       break;
@@ -103,11 +102,11 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
 }
 
 void Pilot::HandleMission() {
-   ::std::cerr << "Able to handle mission from mission_handler" << ::std::endl;
-   pilot_mission_handler_();
+  ::std::cerr << "Able to handle mission from mission_handler" << ::std::endl;
+  pilot_mission_handler_();
 }
 
 }  // namespace pilot
 }  // namespace loops
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
