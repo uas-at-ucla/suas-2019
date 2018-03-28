@@ -26,3 +26,4 @@ core
 /src/vision/shape_classifier/darkflow/built_graph
 
 /src/ground/client/build_commit.txt
+src/ground/client/build
