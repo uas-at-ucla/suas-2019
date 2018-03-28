@@ -8,12 +8,19 @@
 
 #include <atomic>
 
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+#include <wiringPi.h>
+#endif
+
 #include "src/control/loops/flight_loop.q.h"
 #include "aos/common/util/phased_loop.h"
 
 namespace src {
 namespace control {
 namespace io {
+namespace {
+const int kAlarmGPIOPin = 0;
+}  // namespace
 
 void quit_handler(int sig);
 
