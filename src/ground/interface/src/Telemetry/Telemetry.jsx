@@ -15,21 +15,30 @@ class Telemetry extends Component {
       this.telemetryText = {
         speed:
           this.round(
-            this.telemetry.sensors["gps_ground_speed"] * METERS_PER_SECOND_TO_MPH,
+            this.telemetry.sensors["gps_ground_speed"] *
+              METERS_PER_SECOND_TO_MPH,
             1
           ) + "mph",
-        altitude: this.round(this.telemetry.sensors["relative_altitude"], 1) + " meters",
+        altitude:
+          this.round(this.telemetry.sensors["relative_altitude"], 1) +
+          " meters",
         position:
           this.round(this.telemetry.sensors["latitude"], 7) +
           ", " +
           this.round(this.telemetry.sensors["longitude"], 7),
-        satellites: this.round(this.telemetry.sensors["gps_satellite_count"], 7),
+        satellites: this.round(
+          this.telemetry.sensors["gps_satellite_count"],
+          7
+        ),
         heading: this.round(this.telemetry.sensors["heading"], 7),
         gps_eph: this.round(this.telemetry.sensors["gps_eph"], 7),
         gps_epv: this.round(this.telemetry.sensors["gps_epv"], 7)
       };
 
-      filteredAltitude = this.round(this.telemetry.sensors["relative_altitude"], 1);
+      filteredAltitude = this.round(
+        this.telemetry.sensors["relative_altitude"],
+        1
+      );
     }
 
     var altimeterHeight = filteredAltitude / MAX_ALTITUDE * 90;
@@ -43,12 +52,18 @@ class Telemetry extends Component {
     }
 
     var boundaryAltLine = null;
-    if (this.telemetry && this.props.homeState.mission && this.props.homeState.mission.fly_zones[0]) {
-      var groundAlt = this.telemetry.sensors["altitude"] - 
-        this.telemetry.sensors["relative_altitude"]
+    if (
+      this.telemetry &&
+      this.props.homeState.mission &&
+      this.props.homeState.mission.fly_zones[0]
+    ) {
+      var groundAlt =
+        this.telemetry.sensors["altitude"] -
+        this.telemetry.sensors["relative_altitude"];
       var boundaryAlt =
-        (this.props.homeState.mission.fly_zones[0].altitude_msl_max * METERS_PER_FOOT)
-         - groundAlt;
+        this.props.homeState.mission.fly_zones[0].altitude_msl_max *
+          METERS_PER_FOOT -
+        groundAlt;
       boundaryAltLine = (
         <p
           id="altimeterBoundaryAlt"
@@ -71,9 +86,7 @@ class Telemetry extends Component {
       <div className="Telemetry">
         <div className="card text-white" id="telemetryNumbers">
           <div id="full_state">
-            <span id="armed_indicator">
-              {this.props.appState.droneState}
-            </span>
+            <span id="armed_indicator">{this.props.appState.droneState}</span>
           </div>
           <table>
             <tbody>
