@@ -31,7 +31,11 @@ MissionReceiver::MissionReceiver()
 }
 
 void MissionReceiver::ConnectToGround() {
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+  client_.connect("http://192.168.2.20:8081");
+#else
   client_.connect("http://0.0.0.0:8081");
+#endif
 }
 
 void MissionReceiver::SendTelemetry() {
@@ -120,6 +124,8 @@ void MissionReceiver::SendTelemetry() {
         static_cast<::src::control::loops::FlightLoop::State>(
             (*status)->state));
     (*status_map)["state"] = sio::string_message::create(state);
+    (*status_map)["flight_time"] = 
+        sio::int_message::create((*status)->flight_time);
   }
 
   if (goal->get()) {
@@ -161,7 +167,7 @@ void MissionReceiver::SendTelemetry() {
 }
 
 void MissionReceiver::SendTelemetryPeriodic() {
-  if (count_++ % 25) return;
+  if (count_++ % 10) return;
   SendTelemetry();
 }
 
@@ -184,7 +190,7 @@ void MissionReceiver::RunIteration() {
   auto flight_loop_goal_message =
       ::src::control::loops::flight_loop_queue.goal.MakeMessage();
 
-  flight_loop_goal_message->run_mission = true;
+  flight_loop_goal_message->run_mission = false;
   flight_loop_goal_message->trigger_failsafe = false;
   flight_loop_goal_message->trigger_throttle_cut = false;
 
