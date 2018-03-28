@@ -317,6 +317,8 @@ toolchain {
   linker_flag: "-Lexternal/gcc_linaro_arm_linux_gnueabihf_raspbian_repo/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/arm-linux-gnueabihf/libc/usr/lib"
   linker_flag: "-Bexternal/gcc_linaro_arm_linux_gnueabihf_raspbian_repo/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/arm-linux-gnueabihf/bin"
 
+  compiler_flag: "-DUAS_AT_UCLA_DEPLOYMENT"
+
   feature {
     name: "opt"
     implies: "all_modes"

@@ -22,8 +22,11 @@ void quit_handler(int sig) {
 }
 
 IO::IO()
-    //  : copter_io_("/dev/ttyS0", 921600) {
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+    : copter_io_("/dev/ttyS0", 921600),
+#else
     : copter_io_("/tmp/virtualcom0", 921600),
+#endif
       autopilot_sensor_reader_(&copter_io_),
       autopilot_output_writer_(&copter_io_) {
   copter_io_quit = &copter_io_;
@@ -67,10 +70,10 @@ void AutopilotSensorReader::RunIteration() {
   autopilot_interface::TimeStamps current_timestamps =
       copter_io_->current_messages.time_stamps;
 
-  if (!(current_timestamps.global_position_int -
-        last_timestamps_.global_position_int)) {
-    return;
-  }
+//if (!(current_timestamps.global_position_int -
+//      last_timestamps_.global_position_int)) {
+//  return;
+//}
 
   last_timestamps_ = current_timestamps;
 
