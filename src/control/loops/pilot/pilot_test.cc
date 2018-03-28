@@ -9,9 +9,10 @@ namespace control {
 namespace loops {
 namespace pilot {
 namespace testing {
-
+namespace {
 const double kMetPositionTolerance = 0.5;
 const double kMetersPerCoordinate = GetDistance2D({0, 0, 0}, {1, 0, 0});
+}  // namespace
 
 class PilotPlant {
  public:
@@ -50,22 +51,23 @@ class PilotTest : public ::testing::Test {
   Pilot pilot_;
 };
 
-TEST_F(PilotTest, ReachesGoalTest) {
-  PilotPlant plant({0, 0, 0}, 100);
-  Position3D goal = {0.0000002, 0.000003, 10};
+// TODO(comran): Fix this once mission manager is implemented.
+//TEST_F(PilotTest, ReachesGoalTest) {
+//  PilotPlant plant({0, 0, 0}, 100);
+//  Position3D goal = {0.0000002, 0.000003, 10};
 
-  double runtime_in_seconds = 10;
+//  double runtime_in_seconds = 10;
 
-  for (int i = 0; i < runtime_in_seconds * plant.GetLoopFrequency() &&
-                  !CheckMetGoal(plant.GetPosition(), goal);
-       i++) {
-     pilot::PilotOutput flight_direction = pilot_.Calculate(plant.GetPosition());
+//  for (int i = 0; i < runtime_in_seconds * plant.GetLoopFrequency() &&
+//                  !CheckMetGoal(plant.GetPosition(), goal);
+//       i++) {
+//     pilot::PilotOutput flight_direction = pilot_.Calculate(plant.GetPosition());
 
-    plant.MoveDrone(flight_direction.flight_velocities);
-  }
+//    plant.MoveDrone(flight_direction.flight_velocities);
+//  }
 
-  MetGoal(plant.GetPosition(), goal);
-}
+//  MetGoal(plant.GetPosition(), goal);
+//}
 
 }  // namespace testing
 }  // namespace pilot

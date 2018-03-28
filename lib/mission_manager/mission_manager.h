@@ -7,7 +7,7 @@
 #include <memory>
 #include <vector>
 
-namespace src {
+namespace lib {
 
 class Semaphore {
  public:
@@ -82,6 +82,6 @@ class MissionManager {
   size_t command_pointer_;
 };
 
-}  // namespace spinny
+}  // namespace lib
 
 #endif  // SPINNY_LIB_MISSION_MANAGER_MISSION_MANAGER_H_
