@@ -4,7 +4,6 @@ import Checkbox from "./Checkbox";
 import "./Analytics.css";
 import MultiGraph from "./MultiGraph";
 
-//TODO: Fix for new telemetry once we get flight time
 
 class Analytics extends Component {
   constructor(props) {
@@ -57,7 +56,7 @@ class Analytics extends Component {
         dataName: "Battery Voltage",
         color: "rgba(255,140,0,1)",
         xData: "flight_time",
-        yData: "voltage"
+        yData: "battery_voltage"
       }
     ];
 
@@ -112,8 +111,8 @@ class Analytics extends Component {
             let dataPoints = [];
             for (let dataPoint of objMapped.dataPoints) {
               dataPoints.push({
-                x: this.telemetry[dataPoint.xData],
-                y: this.telemetry[dataPoint.yData]
+                x: this.telemetry['status'][dataPoint.xData],
+                y: this.telemetry['sensors'][dataPoint.yData]
               });
             }
             return (
@@ -143,8 +142,8 @@ class Analytics extends Component {
                   dataName={objMapped.dataName}
                   color={objMapped.color}
                   dataPoint={{
-                    x: this.telemetry[objMapped.xData],
-                    y: this.telemetry[objMapped.yData]
+                    x: this.telemetry['status'][objMapped.xData],
+                    y: this.telemetry['sensors'][objMapped.yData]
                   }}
                 />
               </div>
