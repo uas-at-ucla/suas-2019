@@ -63,7 +63,7 @@ if __name__ == '__main__':
 
     # Upload the binaries to the drone.
     print_title("Uploading binaries to drone... ")
-    upload_to_drone('tools/scripts/start_drone_code.sh')
+    upload_to_drone('lib/scripts/start_drone_code.sh')
     upload_bin_to_drone('aos/linux_code/core')
     upload_bin_to_drone('src/control/loops/flight_loop')
     upload_bin_to_drone('src/control/io/io')
