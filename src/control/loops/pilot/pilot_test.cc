@@ -59,9 +59,9 @@ TEST_F(PilotTest, ReachesGoalTest) {
   for (int i = 0; i < runtime_in_seconds * plant.GetLoopFrequency() &&
                   !CheckMetGoal(plant.GetPosition(), goal);
        i++) {
-    Vector3D flight_direction = pilot_.Calculate(plant.GetPosition(), goal);
+     pilot::PilotOutput flight_direction = pilot_.Calculate(plant.GetPosition());
 
-    plant.MoveDrone(flight_direction);
+    plant.MoveDrone(flight_direction.flight_velocities);
   }
 
   MetGoal(plant.GetPosition(), goal);
