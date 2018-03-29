@@ -132,6 +132,13 @@ new_git_repository(
   build_file = "lib/third_party/protobuf.BUILD",
 )
 
+new_git_repository(
+  name = "WiringPi",
+  commit = "0f7d03d9f04c226192c299dafe03e1d56ec219c9",
+  remote = "https://github.com/WiringPi/WiringPi.git",
+  build_file = "lib/third_party/WiringPi.BUILD",
+)
+
 new_local_repository(
     name = "python_linux",
     path = "/usr",
