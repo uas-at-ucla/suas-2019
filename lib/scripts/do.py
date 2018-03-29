@@ -32,6 +32,11 @@ def signal_received(signal, frame):
     sys.exit(0)
 
 
+def run_and_die_if_error(command):
+    if(processes.spawn_process_wait_for_code(command) != 0):
+        sys.exit(1)
+
+
 def run_deploy(args):
     processes.spawn_process("python lib/scripts/deploy.py")
     processes.wait_for_complete()
@@ -54,17 +59,12 @@ def run_kill_dangling(args):
 
 
 def run_travis(args):
-    processes.spawn_process("bazel build //src/...")
-    processes.wait_for_complete()
-    processes.spawn_process("bazel build @PX4_sitl//:jmavsim")
-    processes.wait_for_complete()
-    processes.spawn_process("bazel test //src/...")
-    processes.wait_for_complete()
-    processes.spawn_process("bazel test //lib/...")
-    processes.wait_for_complete()
-    processes.spawn_process(
+    run_and_die_if_error("bazel build //src/...")
+    run_and_die_if_error("bazel build @PX4_sitl//:jmavsim")
+    run_and_die_if_error("bazel test //src/...")
+    run_and_die_if_error("bazel test //lib/...")
+    run_and_die_if_error(
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
-    processes.wait_for_complete()
 
 
 def run_simulate(args):
