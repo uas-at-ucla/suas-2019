@@ -12,9 +12,9 @@ RRTAvoidance::RRTAvoidance()
   birrt_.set_asc_enabled(true);
   birrt_.set_min_iterations(4e2);
   birrt_.set_max_iterations(1e4);
-  birrt_.set_goal_bias(0.4);
+  birrt_.set_goal_bias(0.1);
   birrt_.set_step_size(1.0);
-  birrt_.set_max_step_size(50.0);
+  birrt_.set_max_step_size(15.0);
 }
 
 ::std::vector<Position3D> RRTAvoidance::Process(
@@ -37,7 +37,7 @@ RRTAvoidance::RRTAvoidance()
   for (int i = 2; i < rows; i++) {
     m(i, 0) = obstacles.at(i - 2).position.latitude;
     m(i, 1) = obstacles.at(i - 2).position.longitude;
-    m(i, 2) = obstacles.at(i - 2).radius;
+    m(i, 2) = obstacles.at(i - 2).radius * 1.3;
   }
   //::std::cout << m << ::std::endl;
 
