@@ -337,6 +337,8 @@ void AutopilotInterface::Land() {
 }
 
 void AutopilotInterface::FlightTermination() {
+  Disarm();
+
   mavlink_command_long_t com;
   com.target_system = system_id;
   com.target_component = autopilot_id;
