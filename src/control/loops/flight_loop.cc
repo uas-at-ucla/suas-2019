@@ -142,6 +142,8 @@ void FlightLoop::RunIteration() {
   output->land = false;
   output->throttle_cut = false;
 
+  output->alarm = false;
+
   bool run_mission =
       ::src::control::loops::flight_loop_queue.goal->run_mission;
 
