@@ -12,7 +12,7 @@ class Navbar extends Component {
       { _id: 2, section: "Analytics" },
       { _id: 3, section: "Images" },
       { _id: 4, section: "Settings" },
-      { _id: 5, section: "Training"},
+      { _id: 5, section: "Training" }
     ];
   }
 
@@ -39,8 +39,8 @@ class Navbar extends Component {
 
   toggleBatteryGraph() {
     if (this.state.display_bat_graph === "block")
-      this.setState({display_bat_graph: "none"});
-    else this.setState({display_bat_graph: "block"});
+      this.setState({ display_bat_graph: "none" });
+    else this.setState({ display_bat_graph: "block" });
   }
 
   render() {
@@ -51,31 +51,40 @@ class Navbar extends Component {
       var battery_voltage = null;
       if (this.props.appState.telemetry) {
         flight_time = this.props.appState.telemetry.status.flight_time;
-        if (flight_time) flight_time = new Date(flight_time).toISOString().substr(11, 8);
+
+        if (!flight_time)
+          flight_time = 0;
+        flight_time = new Date(flight_time).toISOString().substr(11, 8);
 
         battery_voltage = this.props.appState.telemetry.sensors.battery_voltage;
         battery_voltage = this.round(battery_voltage, 2) + " volts";
-        let cells = this.getBatteryCells(this.props.appState.telemetry.sensors.battery_voltage);
+        let cells = this.getBatteryCells(
+          this.props.appState.telemetry.sensors.battery_voltage
+        );
 
         let runtime = (Date.now() - this.mountTime) / 1000;
         let graph_options = {
           scales: {
-            xAxes: [{
-              display: false,
-              ticks: {
-                max: runtime,
-                min: runtime - 10 * 3,
+            xAxes: [
+              {
+                display: false,
+                ticks: {
+                  max: runtime,
+                  min: runtime - 10 * 3
+                }
               }
-            }],
-            yAxes: [{
-              display: true,
-              position: 'right',
-              ticks: {
-                fontSize: 10,
-                max: cells * 4.4,
-                min: cells * 3.4,
+            ],
+            yAxes: [
+              {
+                display: true,
+                position: "right",
+                ticks: {
+                  fontSize: 10,
+                  max: cells * 4.4,
+                  min: cells * 3.4
+                }
               }
-            }]
+            ]
           },
           legend: {
             display: false
@@ -83,15 +92,16 @@ class Navbar extends Component {
           animation: {
             duration: 0
           },
-          xAxes: [{
-            override: {
-              steps: 10,
+          xAxes: [
+            {
+              override: {
+                steps: 10
+              }
             }
-          }],
-          yAxes: [{
-          }],
-          tooltips: {enabled: false},
-          hover: {mode: null},
+          ],
+          yAxes: [{}],
+          tooltips: { enabled: false },
+          hover: { mode: null }
         };
 
         batteryGraph = (
@@ -113,9 +123,7 @@ class Navbar extends Component {
       }
       batteryAndFlightTime = (
         <div id="flight_time_battery_and_graph">
-          <div id="batteryGraph">
-            {batteryGraph}
-          </div>
+          <div id="batteryGraph">{batteryGraph}</div>
           <div id="flight_time_and_battery">
             <div id="flight_time">
               <p>{flight_time}</p>
@@ -130,9 +138,7 @@ class Navbar extends Component {
 
     return (
       <div className="Navbar">
-        <div className="nav">
-          {this.renderOptions()}
-        </div>
+        <div className="nav">{this.renderOptions()}</div>
         {batteryAndFlightTime}
       </div>
     );
@@ -143,9 +149,9 @@ class Navbar extends Component {
     return Math.round(value * multiplier) / multiplier;
   }
 
-  getBatteryCells = (voltage) => {
+  getBatteryCells = voltage => {
     return Math.floor(voltage / 3.8);
-  }
+  };
 }
 
 export default Navbar;
