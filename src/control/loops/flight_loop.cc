@@ -273,6 +273,7 @@ void receive_mission() {
   memcpy(request.data(), "Hello", 5);
   ground_communicator_stream.send(request);
 
+  ::std::cout << "-----------------Hello-----------------\n";
   ::zmq::message_t reply;
   ground_communicator_stream.recv(&reply);
   for (int i = 0;; i++)
