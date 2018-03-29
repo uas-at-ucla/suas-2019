@@ -40,6 +40,7 @@ queue_group FlightLoopQueue {
 
   message Status {
     int32_t state;
+    int32_t flight_time;
   };
 
   message Goal {
@@ -60,6 +61,8 @@ queue_group FlightLoopQueue {
     bool takeoff;
     bool land;
     bool throttle_cut;
+
+    bool alarm;
   };
 
   queue Sensors sensors;

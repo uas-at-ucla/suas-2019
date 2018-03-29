@@ -27,6 +27,7 @@ cc_library(
     '//aos/common:scoped_fd',
     '//aos/common:time',
     '//aos/common/util:phased_loop',
+    "@WiringPi//:WiringPi",
   ],
 )
 

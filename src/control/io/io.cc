@@ -22,8 +22,11 @@ void quit_handler(int sig) {
 }
 
 IO::IO()
-    //  : copter_io_("/dev/ttyS0", 921600) {
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+    : copter_io_("/dev/ttyS0", 921600),
+#else
     : copter_io_("/tmp/virtualcom0", 921600),
+#endif
       autopilot_sensor_reader_(&copter_io_),
       autopilot_output_writer_(&copter_io_) {
   copter_io_quit = &copter_io_;
@@ -134,7 +137,12 @@ void AutopilotSensorReader::RunIteration() {
 
 AutopilotOutputWriter::AutopilotOutputWriter(
     autopilot_interface::AutopilotInterface *copter_io)
-    : copter_io_(copter_io) {}
+    : copter_io_(copter_io) {
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+  wiringPiSetup();
+  pinMode(kAlarmGPIOPin, OUTPUT);
+#endif
+}
 
 void AutopilotOutputWriter::Read() {
   ::src::control::loops::flight_loop_queue.output.FetchAnother();
@@ -177,11 +185,22 @@ void AutopilotOutputWriter::Write() {
   if (::src::control::loops::flight_loop_queue.output->throttle_cut) {
     copter_io_->FlightTermination();
   }
+
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+  digitalWrite(
+      kAlarmGPIOPin,
+      ::src::control::loops::flight_loop_queue.output->alarm ? HIGH : LOW);
+#endif
 }
 
 void AutopilotOutputWriter::Stop() {
   // No recent output queue messages received, so land drone.
   copter_io_->Land();
+
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+  // Don't leave the alarm on after quitting code.
+  digitalWrite(kAlarmGPIOPin, LOW);
+#endif
 }
 
 }  // namespace io
