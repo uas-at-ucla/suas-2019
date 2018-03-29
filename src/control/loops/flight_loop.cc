@@ -20,7 +20,9 @@ FlightLoop::FlightLoop()
       start_(std::chrono::system_clock::now()),
       takeoff_ticker_(0),
       verbose_(false),
-      count_(0) {
+      count_(0),
+      previous_flights_time_(0),
+      current_flight_start_time_(0) {
   ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
   ::src::control::loops::flight_loop_queue.output.FetchLatest();
@@ -120,10 +122,12 @@ void FlightLoop::RunIteration() {
       ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
   if (::src::control::loops::flight_loop_queue.goal->trigger_failsafe) {
+    EndFlightTimer();
     state_ = FAILSAFE;
   }
 
   if (::src::control::loops::flight_loop_queue.goal->trigger_throttle_cut) {
+    EndFlightTimer();
     state_ = FLIGHT_TERMINATION;
   }
 
@@ -137,6 +141,8 @@ void FlightLoop::RunIteration() {
   output->takeoff = false;
   output->land = false;
   output->throttle_cut = false;
+
+  output->alarm = false;
 
   bool run_mission =
       ::src::control::loops::flight_loop_queue.goal->run_mission;
@@ -169,6 +175,9 @@ void FlightLoop::RunIteration() {
         state_ = ARMING;
       }
 
+      current_flight_start_time_ =
+          std::chrono::duration_cast<std::chrono::milliseconds>(
+          std::chrono::system_clock::now().time_since_epoch()).count();
       state_ = TAKING_OFF;
       break;
 
@@ -237,6 +246,7 @@ void FlightLoop::RunIteration() {
 
     case LANDING:
       if (!::src::control::loops::flight_loop_queue.sensors->armed) {
+        EndFlightTimer();
         state_ = STANDBY;
       }
 
@@ -257,11 +267,29 @@ void FlightLoop::RunIteration() {
   auto status =
       ::src::control::loops::flight_loop_queue.status.MakeMessage();
   status->state = state_;
+  if (current_flight_start_time_ == 0) {
+    status->flight_time = previous_flights_time_;
+  } else {
+    status->flight_time = previous_flights_time_ + (
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count() -
+        current_flight_start_time_);
+  }
   status.Send();
 
   const int iterations = phased_loop_.SleepUntilNext();
   if (iterations < 0) {
     std::cout << "SKIPPED ITERATIONS\n";
+  }
+}
+
+void FlightLoop::EndFlightTimer() {
+  if (current_flight_start_time_ != 0) {
+    previous_flights_time_ +=
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::system_clock::now().time_since_epoch()).count() -
+        current_flight_start_time_;
+    current_flight_start_time_ = 0;
   }
 }
 
