@@ -4,6 +4,7 @@ sys.dont_write_bytecode = True
 import subprocess
 import os
 import signal
+import time
 
 # This class assists in spawning multiple processes and terminating all these
 # processes when a program exits.
@@ -16,15 +17,15 @@ class ProcessManager:
         cwd = self.get_cwd(rel_cwd)
         if show_output:
             proc = subprocess.Popen(command,
-                    shell = True, \
-                    preexec_fn = os.setsid, \
-                    cwd = cwd)
+                    shell=True, \
+                    preexec_fn=os.setsid, \
+                    cwd=cwd)
         else:
             devnull = open(os.devnull, 'wb')
             proc = subprocess.Popen(command,
-                    shell = True, \
-                    preexec_fn = os.setsid, \
-                    cwd = cwd,
+                    shell=True, \
+                    preexec_fn=os.setsid, \
+                    cwd=cwd,
                     stdout=devnull,
                     stderr=devnull)
         if track:
@@ -32,14 +33,24 @@ class ProcessManager:
 
     def wait_for_complete(self):
         for proc in self.procs:
-            os.waitpid(proc.pid, os.WNOHANG)
+            while True:
+                if proc.poll() == None:
+                    time.sleep(0.1)
+                else:
+                    break
 
     def killall(self):
         for proc in self.procs:
-            try:
-                os.killpg(os.getpgid(proc.pid), signal.SIGINT)
-            except:
-                pass
+            # Continuously send interrupt signal until process exits.
+            while True:
+                try:
+                    os.killpg(os.getpgid(proc.pid), signal.SIGINT)
+                except:
+                    pass
+                if proc.poll() == None:
+                    time.sleep(0.1)
+                else:
+                    break
 
     def run_command(self, command, rel_cwd=None):
         cwd = self.get_cwd(rel_cwd)

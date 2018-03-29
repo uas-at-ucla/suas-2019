@@ -1,6 +1,6 @@
 #include "mission_manager.h"
 
-namespace src {
+namespace lib {
 
 Semaphore::Semaphore(unsigned long count) : count_(count) {}
 
@@ -93,4 +93,4 @@ size_t MissionManager::NumberOfCommands() { return commands_.size(); }
   return commands_[command_pointer_];
 }
 
-}  // namespace spinny
+}  // namespace lib

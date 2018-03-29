@@ -2,7 +2,7 @@
 
 #include "lib/mission_manager/mission_manager.h"
 
-namespace spinny {
+namespace lib {
 namespace testing {
 
 TEST(MissionManagerTest, CommandsTest) {
@@ -81,4 +81,4 @@ TEST(MissionManagerTest, MissionManagerTest) {
 }
 
 }  // namespace testing
-}  // namespace spinny
+}  // namespace lib
