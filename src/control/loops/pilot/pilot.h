@@ -2,11 +2,11 @@
 #define SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_
 
 #include <condition_variable>
+#include <iostream>
 #include <map>
+#include <memory>
 #include <string>
 #include <vector>
-#include <memory>
-#include <iostream>
 
 #include "zmq.hpp"
 
@@ -27,14 +27,14 @@ struct PilotOutput {
 
 class PilotMissionHandler {
  public:
-  PilotMissionHandler(MissionManager *mission_manager);
+  PilotMissionHandler(::lib::MissionManager *mission_manager);
   void operator()();
-  ::std::vector<::std::shared_ptr<MissionCommand>> ParseMissionProtobuf(
+  ::std::vector<::std::shared_ptr<::lib::MissionCommand>> ParseMissionProtobuf(
       ::src::controls::ground_communicator::Mission mission_protobuf);
   void Quit() { run_ = false; }
 
  private:
-  MissionManager *mission_manager_;
+  ::lib::MissionManager *mission_manager_;
 
   ::std::atomic<bool> run_{true};
 };
@@ -44,17 +44,17 @@ class Pilot {
   Pilot();
 
   PilotOutput Calculate(Position3D drone_position);
-  
+
   void HandleMission();
 
  private:
-  MissionManager mission_manager_;
+  ::lib::MissionManager mission_manager_;
   PilotMissionHandler pilot_mission_handler_;
 };
 
 }  // namespace pilot
 }  // namespace loops
 }  // namespace control
-}  // namespace spinny
+}  // namespace src
 
 #endif  // SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_
