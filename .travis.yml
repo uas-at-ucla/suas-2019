@@ -9,11 +9,7 @@ addons:
 install:
   - export DISPLAY=':99.0'
   - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-  - sudo $TRAVIS_BUILD_DIR/tools/installation/install.sh
+  - sudo ./do.sh install
 
 script:
- - bazel build //src/...
- - bazel build @PX4_sitl//:jmavsim
- - bazel test //src/...
- - bazel test //lib/...
- - ./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test
+ - ./do.sh travis
