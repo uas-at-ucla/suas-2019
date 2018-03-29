@@ -50,8 +50,8 @@ class Navbar extends Component {
       var flight_time = null;
       var battery_voltage = null;
       if (this.props.appState.telemetry) {
-        flight_time = this.props.appState.telemetry.flight_time; //TODO get flight time on drone
-        if (flight_time) flight_time = new Date(flight_time * 1000).toISOString().substr(11, 8);
+        flight_time = this.props.appState.telemetry.status.flight_time;
+        if (flight_time) flight_time = new Date(flight_time).toISOString().substr(11, 8);
 
         battery_voltage = this.props.appState.telemetry.sensors.battery_voltage;
         battery_voltage = this.round(battery_voltage, 2) + " volts";
