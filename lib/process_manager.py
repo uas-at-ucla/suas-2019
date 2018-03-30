@@ -35,6 +35,7 @@ class ProcessManager:
         proc = subprocess.Popen(command,
                 shell=True, \
                 preexec_fn=os.setsid)
+        self.procs.append(proc)
 
         proc.communicate()
         out = proc.returncode
