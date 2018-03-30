@@ -4,6 +4,7 @@
 #include <vector>
 #include <map>
 #include <string>
+#include <atomic>
 
 #include "lib/physics_structs/physics_structs.h"
 
