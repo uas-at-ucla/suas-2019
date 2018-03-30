@@ -81,9 +81,38 @@ TEST(RRTAvoidance, DodgeObstacles) {
     ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
               end.longitude + 1e-3);
 
+    // CIRCLE LINE SEGMENT COLLISION DETECTION
+    for (size_t i = 1; i < avoidance_path.size(); i++) {
+        
+        // order of lat, long
+        ::std::vector<double> AB;
+        AB.push_back(avoidance_path.at(i).latitude - avoidance_path.at(i-1).latitude);
+        AB.push_back(avoidance_path.at(i).longitude - avoidance_path.at(i-1).longitude);
+        double magAB = sqrt(AB.at(0) * AB.at(0) + AB.at(1) * AB.at(1));
+        
+        for (size_t j = 0; j < obstacles.size(); j++) {
+            
+            ::std::vector<double> AC;
+            AC.push_back(obstacles.at(j).position.latitude - avoidance_path.at(i-1).latitude);
+            AC.push_back(obstacles.at(j).position.longitude - avoidance_path.at(i-1).longitude);
+            double magAC = sqrt(AC.at(0) * AC.at(0) + AC.at(1) * AC.at(1));
+            double R = obstacles.at(j).radius;
+	    double meter_to_coordinate = 1 / GetDistance2D({0, 0, 0}, {1, 0, 0});
+            
+            double projFactor = (AC.at(0) * AB.at(0) + AC.at(1) * AB.at(1)) / (magAB * magAB);
+            ::std::vector<double> AD;
+            AD.push_back(projFactor * AB.at(0));
+            AD.push_back(projFactor * AB.at(1));
+            double magAD = sqrt(AD.at(0) * AD.at(0) + AD.at(1) * AD.at(1));
+            
+            double magCD = sqrt(magAC * magAC - magAD * magAD);
+            ASSERT_GT(magCD, R * meter_to_coordinate);
+        }
+    }
+      
     for (size_t i = 0; i < avoidance_path.size(); i++) {
       ::std::cout << avoidance_path[i].latitude << ", "
-                  << avoidance_path[i].longitude << ::std::endl;
+		  << avoidance_path[i].longitude << ::std::endl;
 
       final_x.push_back(avoidance_path[i].latitude);
       final_y.push_back(avoidance_path[i].longitude);
@@ -137,7 +166,7 @@ TEST(RRTAvoidance, RandomObstacle) {
     ::std::vector<double> final_x, final_y;
     for (size_t i = 0; i < avoidance_path.size(); i++) {
       ::std::cout << avoidance_path[i].latitude << ", "
-                  << avoidance_path[i].longitude << ::std::endl;
+		  << avoidance_path[i].longitude << ::std::endl;
 
       final_x.push_back(avoidance_path[i].latitude);
       final_y.push_back(avoidance_path[i].longitude);
