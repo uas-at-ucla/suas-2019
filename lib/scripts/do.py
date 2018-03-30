@@ -22,7 +22,7 @@ UAS_AT_UCLA_TEXT = '\033[94m' + \
 '    \|_______|\|_______|\|_______|\|__|\|__|    \|_______|\|__|\|__|\_________\ \n' + \
 '                                                                   \|_________| \n' + \
 '\n' + \
-'#################################### do.py #######################################\n' + \
+'#################################### do #######################################\n' + \
 '\033[0m'
 
 
@@ -53,13 +53,20 @@ def run_install(args):
 
 def run_kill_dangling(args):
     processes.spawn_process("killall java")
-    processes.spawn_process("killall python")
     processes.spawn_process("killall px4")
+    processes.spawn_process("killall io")
+    processes.spawn_process("killall flight_loop")
+    processes.spawn_process("killall flight_loop_lib_test")
+    processes.spawn_process("killall ground_communicator")
+    processes.spawn_process("killall node")
+    processes.wait_for_complete()
+    processes.spawn_process("killall python")
     processes.wait_for_complete()
 
 
 def run_travis(args):
     run_and_die_if_error("bazel build //src/...")
+    run_and_die_if_error("bazel build --cpu=raspi //src/...")
     run_and_die_if_error("bazel build @PX4_sitl//:jmavsim")
     run_and_die_if_error("bazel test //src/...")
     run_and_die_if_error("bazel test //lib/...")
