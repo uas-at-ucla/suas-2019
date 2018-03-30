@@ -10,6 +10,7 @@ proto_library(
 
 cc_proto_library(
   name = "mission_commands_cpp",
+  visibility = ['//visibility:public'],
   deps = [
     ":mission_commands",
   ],
