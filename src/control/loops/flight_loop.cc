@@ -234,11 +234,11 @@ void FlightLoop::RunIteration() {
           ::src::control::loops::flight_loop_queue.sensors
               ->relative_altitude};
 
-      Vector3D flight_direction = pilot_.Calculate(position, position);
+      pilot::PilotOutput flight_direction = pilot_.Calculate(position);
 
-      output->velocity_x = flight_direction.x;
-      output->velocity_y = flight_direction.y;
-      output->velocity_z = flight_direction.z;
+      output->velocity_x = flight_direction.flight_velocities.x;
+      output->velocity_y = flight_direction.flight_velocities.y;
+      output->velocity_z = flight_direction.flight_velocities.z;
 
       output->velocity_control = true;
       break;
@@ -301,6 +301,7 @@ void receive_mission() {
   memcpy(request.data(), "Hello", 5);
   ground_communicator_stream.send(request);
 
+  ::std::cout << "-----------------Hello-----------------\n";
   ::zmq::message_t reply;
   ground_communicator_stream.recv(&reply);
   for (int i = 0;; i++)
