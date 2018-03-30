@@ -125,6 +125,15 @@ then
     sudo apt-get -y -qq install ant;
 fi
 
+if [ $OS = "Linux" ]
+then
+    echo "Installing some more random stuff..."
+    sudo apt-get -y -qq install libopencv-dev libeigen3-dev protobuf-compiler liblz4-dev;
+
+    # For running raspi crosscompiler (which is a 32 bit executable) on 64 bit.
+    sudo apt-get -y -qq install libc6-i386 lib32z1-dev lib32stdc++6
+fi
+
 ##########################################################################
 # Do Gazebo stuff
 
@@ -132,7 +141,6 @@ if [ $OS = "Linux" ]
 then
     echo "Installing Gazebo dependencies..."
     sudo apt-get -y -qq install libgazebo7-dev
-    sudo apt-get -y -qq install libopencv-dev libeigen3-dev protobuf-compiler liblz4-dev;
 fi
 
 #TODO(comran): Gazebo should be installed separately until we get it working
