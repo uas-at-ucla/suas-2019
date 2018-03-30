@@ -33,7 +33,8 @@ def signal_received(signal, frame):
 
 
 def run_and_die_if_error(command):
-    if(processes.spawn_process_wait_for_code(command) != 0):
+    if (processes.spawn_process_wait_for_code(command) != 0):
+        processes.killall()
         sys.exit(1)
 
 
@@ -72,6 +73,14 @@ def run_travis(args):
     run_and_die_if_error("bazel test //lib/...")
     run_and_die_if_error(
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
+
+
+def run_build(args):
+    run_and_die_if_error("bazel build //src/...")
+    run_and_die_if_error("bazel build //lib/...")
+    run_and_die_if_error("bazel build //aos/linux_code:core")
+    run_and_die_if_error("bazel build --cpu=raspi //src/...")
+    run_and_die_if_error("bazel build --cpu=raspi //aos/linux_code:core")
 
 
 def run_simulate(args):
@@ -150,6 +159,9 @@ if __name__ == '__main__':
     ground_parser.add_argument(
         '--verbose', action='store_true', help='verbose help')
     ground_parser.set_defaults(func=run_ground)
+
+    build_parser = subparsers.add_parser('build', help='build help')
+    build_parser.set_defaults(func=run_build)
 
     args = parser.parse_args()
     args.func(args)
