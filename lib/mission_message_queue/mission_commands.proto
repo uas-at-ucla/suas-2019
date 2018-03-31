@@ -4,9 +4,12 @@ package lib.mission_message_queue;
 
 message Command {
   required string type = 1;
+
   required double latitude = 2;
   required double longitude = 3;
   required double altitude = 4;
+
+  required double sleep = 5;
 }
 
 message Mission {

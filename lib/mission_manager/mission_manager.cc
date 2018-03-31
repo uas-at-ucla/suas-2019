@@ -54,11 +54,12 @@ MissionCommandDoNothing::MissionCommandDoNothing(MissionCommandDoNothing* cmd) {
 
 MissionManager::MissionManager() : semaphore_(1), command_pointer_(0) {}
 
-void MissionManager::AddCommands(
+void MissionManager::SetCommands(
     ::std::vector<::std::shared_ptr<MissionCommand>> new_commands) {
   semaphore_.Wait();
 
-  commands_.insert(commands_.end(), new_commands.begin(), new_commands.end());
+  commands_ = new_commands;
+  command_pointer_ = 0;
 
   semaphore_.Notify();
 }
@@ -84,9 +85,11 @@ void MissionManager::PopCommand() {
 
 size_t MissionManager::NumberOfCommands() { return commands_.size(); }
 
+int MissionManager::GetCurrentCommandIndex() { return command_pointer_; }
+
 ::std::shared_ptr<MissionCommand> MissionManager::GetCurrentCommand() {
   // Never return a nullptr.
-  if(command_pointer_ >= commands_.size()) {
+  if (command_pointer_ >= commands_.size()) {
     return ::std::shared_ptr<MissionCommand>(new MissionCommandDoNothing());
   }
 
