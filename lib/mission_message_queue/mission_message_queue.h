@@ -1,7 +1,9 @@
 #ifndef LIB_MISSION_MESSAGE_QUEUE_MISSION_MESSAGE_QUEUE_H_
 #define LIB_MISSION_MESSAGE_QUEUE_MISSION_MESSAGE_QUEUE_H_
 
+#include <unistd.h>
 #include <thread>
+#include <functional>
 
 #include "zmq.hpp"
 
@@ -11,34 +13,43 @@
 namespace lib {
 namespace mission_message_queue {
 
+// Sender //////////////////////////////////////////////////////////////////////
 class MissionMessageQueueSender {
  public:
   MissionMessageQueueSender();
 
-  void operator()();
-  void Quit() { run_ = false; }
-
-  ::std::vector<::std::shared_ptr<::lib::MissionCommand>> ParseMissionProtobuf(
-      ::lib::mission_message_queue::Mission mission_protobuf);
+  void SendMission(::lib::mission_message_queue::Mission mission_protobuf);
 
  private:
+  ::zmq::context_t context_;
+  ::zmq::socket_t socket_;
   ::std::atomic<bool> run_{true};
 };
 
+// Receiver ////////////////////////////////////////////////////////////////////
 class MissionMessageQueueReceiver {
  public:
-  MissionMessageQueueReceiver(::lib::MissionManager *mission_manager);
+  MissionMessageQueueReceiver();
+  ~MissionMessageQueueReceiver();
 
-  void operator()();
   void Quit() { run_ = false; }
+
+  ::lib::MissionManager *get_mission_manager() { return &mission_manager_; }
 
   ::std::vector<::std::shared_ptr<::lib::MissionCommand>> ParseMissionProtobuf(
       ::lib::mission_message_queue::Mission mission_protobuf);
 
  private:
-  ::lib::MissionManager *mission_manager_;
+  void ReceiveThread();
+
+  ::lib::MissionManager mission_manager_;
 
   ::std::atomic<bool> run_{true};
+
+  ::zmq::context_t context_;
+  ::zmq::socket_t socket_;
+
+  ::std::thread thread_;
 };
 
 }  // mission_message_queue
