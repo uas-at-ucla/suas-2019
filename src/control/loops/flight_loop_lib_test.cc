@@ -118,7 +118,7 @@ void create_procs() {
 
 void quit_procs() {
   kill_and_wait(io_pid, true);
-  kill_and_wait(simulator_pid, true);
+  kill_and_wait(simulator_pid, false);
   kill_and_wait(socat_pid, true);
 }
 
