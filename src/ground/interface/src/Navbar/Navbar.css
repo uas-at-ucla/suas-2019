@@ -1,0 +1,64 @@
+.Navbar {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  background-color: rgba(0, 0, 0, 0.7);
+  top: 10px
+}
+
+.nav li a {
+  color: white;
+}
+
+.nav button {
+  margin: 5px;
+}
+
+#flight_time_battery_and_graph {
+  min-height: 60px;
+  position: relative;
+}
+
+#flight_time_and_battery {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  width: 25%;
+  height: 100%;
+  margin-right: 5%;
+}
+
+#flight_time {
+  color: white;
+  position: absolute;
+  left: 5px;
+  top: 5px;
+  padding: 5px;
+  width: 100%;
+  font-size: 25px;
+  line-height: 20px;
+  text-align: right;
+}
+
+#battery_v {
+  color: white;
+  position: absolute;
+  top: 32px;
+  left: 12px;
+  padding: 5px;
+  padding-right: 13px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 12px;
+  line-height: 0px;
+  text-align: right;
+}
+
+#batteryGraph {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 70%;
+  height: 100%;
+}

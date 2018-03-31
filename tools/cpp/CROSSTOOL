@@ -12,6 +12,11 @@ default_toolchain {
   toolchain_identifier: "k8_linux"
 }
 
+default_toolchain {
+  cpu: "darwin"
+  toolchain_identifier: "k8_linux"
+}
+
 toolchain {
   abi_version: "local"
   abi_libc_version: "local"
@@ -35,7 +40,7 @@ toolchain {
   tool_path { name: "compat-ld" path: "/usr/bin/ld" }
   tool_path { name: "cpp" path: "/usr/bin/cpp" }
   tool_path { name: "dwp" path: "/usr/bin/dwp" }
-  tool_path { name: "gcc" path: "/usr/bin/clang++-3.9" }
+  tool_path { name: "gcc" path: "/usr/bin/clang-3.9" }
   tool_path { name: "gcov" path: "/usr/bin/gcov" }
   # C(++) compiles invoke the compiler (as that is the one knowing where
   # to find libraries), but we provide LD so other rules can invoke the linker.
@@ -52,20 +57,23 @@ toolchain {
   # to be fixed, maybe with auto-detection?
   cxx_builtin_include_directory: '/usr/include/c++/4.8'
   cxx_builtin_include_directory: '/usr/include/c++/v1'
-  cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu/c++/4.8'
+  cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu/c++/3.9'
   cxx_builtin_include_directory: '/usr/include/c++/4.8/backward'
+  cxx_builtin_include_directory: '/usr/include/libcxxabi'
   cxx_builtin_include_directory: '/usr/local/include'
   cxx_builtin_include_directory: '/usr/lib/llvm-3.6/lib/clang/3.9.1/include'
   cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu'
   cxx_builtin_include_directory: '/usr/include'
   cxx_builtin_include_directory: '/usr/lib/clang/3.9.1/include'
+  cxx_builtin_include_directory: '/usr/include/python2.7'
 
-  compiler_flag: "-std=c++11"
-  compiler_flag: "-stdlib=libc++"
+  cxx_flag: "-isystem"
+  cxx_flag: "/usr/include/libcxxabi"
 
   linker_flag: "-lstdc++"
-  linker_flag: "-std=c++11"
-  linker_flag: "-stdlib=libc++"
+  linker_flag: "-lc++"
+  compiler_flag: "-stdlib=libc++"
+  compiler_flag: "-Wno-error=unused-command-line-argument"
   linker_flag: "-B/usr/bin/"
 
   feature {
@@ -156,6 +164,8 @@ toolchain {
   unfiltered_cxx_flag: "-no-canonical-prefixes"
   linker_flag: "-no-canonical-prefixes"
 
+  compiler_flag: "-Wno-expansion-to-defined"
+
   # Things that the code wants defined.
   compiler_flag: "-D__STDC_FORMAT_MACROS"
   compiler_flag: "-D__STDC_CONSTANT_MACROS"
@@ -163,6 +173,7 @@ toolchain {
   compiler_flag: "-D_FILE_OFFSET_BITS=64"
 
   linker_flag: "-fuse-ld=gold"
+  linker_flag: "-lpthread"
 
   # Make C++ compilation deterministic. Use linkstamping instead of these
   # compiler symbols.
@@ -195,13 +206,12 @@ toolchain {
   compiler_flag: "-Wextra"
   compiler_flag: "-Wpointer-arith"
   compiler_flag: "-Wstrict-aliasing"
-  compiler_flag: "-Wcast-qual"
-  compiler_flag: "-Wcast-align"
   compiler_flag: "-Wwrite-strings"
   compiler_flag: "-Wtype-limits"
   compiler_flag: "-Wsign-compare"
   compiler_flag: "-Wformat=2"
   compiler_flag: "-Werror"
+  compiler_flag: "-Wno-sometimes-uninitialized"
 
   # Keep stack frames for debugging, even in opt mode.
   compiler_flag: "-fno-omit-frame-pointer"
@@ -306,6 +316,8 @@ toolchain {
   linker_flag: "-Lexternal/gcc_linaro_arm_linux_gnueabihf_raspbian_repo/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/arm-linux-gnueabihf/libc/lib"
   linker_flag: "-Lexternal/gcc_linaro_arm_linux_gnueabihf_raspbian_repo/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/arm-linux-gnueabihf/libc/usr/lib"
   linker_flag: "-Bexternal/gcc_linaro_arm_linux_gnueabihf_raspbian_repo/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/arm-linux-gnueabihf/bin"
+
+  compiler_flag: "-DUAS_AT_UCLA_DEPLOYMENT"
 
   feature {
     name: "opt"
