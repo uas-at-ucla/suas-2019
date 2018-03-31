@@ -56,6 +56,14 @@ class MissionCommandBombDrop : public MissionCommand {
   Type type() override { return BOMB_DROP; }
 };
 
+class MissionCommandSleep : public MissionCommand {
+ public:
+  MissionCommandSleep();
+  MissionCommandSleep(MissionCommandSleep* cmd);
+
+  Type type() override { return BOMB_DROP; }
+};
+
 class MissionCommandDoNothing : public MissionCommand {
  public:
   MissionCommandDoNothing();
@@ -67,12 +75,13 @@ class MissionCommandDoNothing : public MissionCommand {
 class MissionManager {
  public:
   MissionManager();
-  void AddCommands(
+  void SetCommands(
       ::std::vector<::std::shared_ptr<MissionCommand>> new_commands);
   void ClearCommands();
   void PopCommand();
   size_t NumberOfCommands();
 
+  int GetCurrentCommandIndex();
   ::std::shared_ptr<MissionCommand> GetCurrentCommand();
 
  private:
