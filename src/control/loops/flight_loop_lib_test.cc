@@ -133,6 +133,7 @@ class FlightLoopTest : public ::testing::Test {
  protected:
   FlightLoopTest()
       : flight_loop_queue_(".src.control.loops.flight_loop_queue", 0x0,
+                           ".src.control.loops.flight_loop_queue.dummy",
                            ".src.control.loops.flight_loop_queue.sensors",
                            ".src.control.loops.flight_loop_queue.status",
                            ".src.control.loops.flight_loop_queue.goal",

@@ -11,8 +11,7 @@ cc_library(
   ],
   deps = [
     '//lib/physics_structs:physics_structs',
-    '//lib/mission_manager:mission_manager',
-    '//src/control/ground_communicator:mission_commands_cpp',
+    '//lib/mission_message_queue:mission_message_queue',
     "@cppzmq//:cppzmq",
   ],
 )

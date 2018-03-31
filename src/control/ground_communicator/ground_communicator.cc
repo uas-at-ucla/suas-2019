@@ -1,7 +1,5 @@
 #include "ground_communicator.h"
 
-#include <iomanip>
-
 namespace src {
 namespace control {
 namespace ground_communicator {
@@ -15,12 +13,9 @@ void on_fail() { socketio_ground_communicator->OnFail(); }
 void connect() { socketio_ground_communicator->ConnectToGround(); }
 
 MissionReceiver::MissionReceiver()
-    : context_(1),
-      mission_command_stream_(context_, ZMQ_REP),
-      phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
+    : phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
       running_(false),
       count_(0) {
-  mission_command_stream_.bind("ipc:///tmp/mission_command_stream.ipc");
 
   socketio_ground_communicator = this;
 
@@ -39,7 +34,7 @@ void MissionReceiver::ConnectToGround() {
 }
 
 void MissionReceiver::SendTelemetry() {
-  ::std::cout << "Sending:" << ::std::endl;
+///:std::cout << "Sending:" << ::std::endl;
 
   auto sensors = &::src::control::loops::flight_loop_queue.sensors;
   auto status = &::src::control::loops::flight_loop_queue.status;
@@ -67,7 +62,7 @@ void MissionReceiver::SendTelemetry() {
       &output_object->get_map();
 
   if (sensors->get()) {
-    ::std::cout << "Sensors" << ::std::endl;
+//  ::std::cout << "Sensors" << ::std::endl;
     (*sensors_map)["latitude"] =
         sio::double_message::create((*sensors)->latitude);
     (*sensors_map)["longitude"] =
@@ -119,17 +114,17 @@ void MissionReceiver::SendTelemetry() {
   }
 
   if (status->get()) {
-    ::std::cout << "Status" << ::std::endl;
+//  ::std::cout << "Status" << ::std::endl;
     std::string state = ::src::control::loops::state_string.at(
         static_cast<::src::control::loops::FlightLoop::State>(
             (*status)->state));
     (*status_map)["state"] = sio::string_message::create(state);
-    (*status_map)["flight_time"] = 
+    (*status_map)["flight_time"] =
         sio::int_message::create((*status)->flight_time);
   }
 
   if (goal->get()) {
-    ::std::cout << "Goal" << ::std::endl;
+//  ::std::cout << "Goal" << ::std::endl;
     (*goal_map)["run_mission"] =
         sio::bool_message::create((*goal)->run_mission);
     (*goal_map)["trigger_failsafe"] =
@@ -139,7 +134,7 @@ void MissionReceiver::SendTelemetry() {
   }
 
   if (output->get()) {
-    ::std::cout << "Output" << ::std::endl;
+//  ::std::cout << "Output" << ::std::endl;
     (*output_map)["velocity_x"] =
         sio::double_message::create((*output)->velocity_x);
     (*output_map)["velocity_y"] =
@@ -156,7 +151,7 @@ void MissionReceiver::SendTelemetry() {
         sio::bool_message::create((*output)->throttle_cut);
   }
 
-  ::std::cout << ::std::endl;
+//::std::cout << ::std::endl;
 
   telemetry->get_map()["sensors"] = sensors_object;
   telemetry->get_map()["status"] = status_object;
@@ -228,10 +223,10 @@ void MissionReceiver::OnConnect() {
         (void)isAck;
         (void)ack_resp;
 
-        ::src::controls::ground_communicator::Mission mission;
+        ::lib::mission_message_queue::Mission mission;
 
         for (size_t i = 0; i < data->get_vector().size(); i++) {
-          ::src::controls::ground_communicator::Command* cmd =
+          ::lib::mission_message_queue::Command* cmd =
               mission.add_commands();
 
           cmd->set_type(
@@ -244,18 +239,7 @@ void MissionReceiver::OnConnect() {
               data->get_vector()[i]->get_map()["alt"]->get_double());
         }
 
-        ::std::string output;
-        mission.SerializeToString(&output);
-
-        zmq::message_t reply(output.size());
-        memcpy((void*)reply.data(), output.c_str(), output.size());
-
-        try {
-          mission_command_stream_.send(reply);
-        } catch (...) {
-          ::std::cerr
-              << "Could not send mission to loop. Is the loop running?\n";
-        }
+        mission_message_queue_sender_.SendMission(mission);
 
         SetState("MISSION");
       }));
