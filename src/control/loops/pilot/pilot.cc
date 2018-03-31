@@ -9,7 +9,8 @@ Pilot::Pilot() {}
 
 PilotOutput Pilot::Calculate(Position3D drone_position) {
   ::std::shared_ptr<::lib::MissionCommand> cmd_ptr =
-      mission_message_queue_receiver_.get_mission_manager()->GetCurrentCommand();
+      mission_message_queue_receiver_.get_mission_manager()
+          ->GetCurrentCommand();
 
   Vector3D flight_direction;
   bool bomb_drop = false;
@@ -47,6 +48,11 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
   }
 
   return {flight_direction, bomb_drop};
+}
+
+int Pilot::GetCurrentCommandIndex() {
+  return mission_message_queue_receiver_.get_mission_manager()
+      ->GetCurrentCommandIndex();
 }
 
 }  // namespace pilot

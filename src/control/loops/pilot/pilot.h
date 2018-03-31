@@ -31,6 +31,7 @@ class Pilot {
   Pilot();
 
   PilotOutput Calculate(Position3D drone_position);
+  int GetCurrentCommandIndex();
 
  private:
   ::lib::mission_message_queue::MissionMessageQueueReceiver
