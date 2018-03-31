@@ -9,7 +9,7 @@ filegroup(
   name = "toolchain_fg",
   srcs = [
     ":cc-compiler-k8",
-    ":linaro_linux_all_files",
+    ":cc-compiler-raspi",
     '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:compiler_components',
   ],
 )
@@ -20,6 +20,7 @@ cc_toolchain_suite(
   toolchains = {
     'raspi|gcc': ':cc-compiler-raspi',
     'k8|clang': ':cc-compiler-k8',
+    'darwin|clang': ':cc-compiler-k8',
   },
 )
 
