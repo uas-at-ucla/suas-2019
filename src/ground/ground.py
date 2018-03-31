@@ -109,7 +109,9 @@ def telemetry(*args):
 
     flask_socketio.emit('on_telemetry', received_telemetry, \
         broadcast=True, include_self=False)
-    print(received_telemetry)
+
+    if len(received_telemetry['sensors']) == 0:
+        return
 
     if USE_INTEROP and interop_client is not None:
         lat = received_telemetry['sensors']['latitude']
