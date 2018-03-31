@@ -47,7 +47,7 @@ TEST(MissionManagerTest, MissionManagerTest) {
   }
 
   ASSERT_EQ(mission_manager.NumberOfCommands(), 0);
-  mission_manager.AddCommands(commands_to_add);
+  mission_manager.SetCommands(commands_to_add);
   ASSERT_EQ(mission_manager.NumberOfCommands(), 2000);
 
   for (int i = 0; i < 2000; i++) {

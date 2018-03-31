@@ -30,7 +30,6 @@ MissionMessageQueueReceiver::MissionMessageQueueReceiver()
 }
 
 MissionMessageQueueReceiver::~MissionMessageQueueReceiver() {
-  ::std::cout << "DESTRUCT\n";
   Quit();
   thread_.join();
 }
@@ -56,7 +55,7 @@ void MissionMessageQueueReceiver::ReceiveThread() {
     ::lib::mission_message_queue::Mission mission_protobuf;
     mission_protobuf.ParseFromString(mission_message_string);
 
-    mission_manager_.AddCommands(ParseMissionProtobuf(mission_protobuf));
+    mission_manager_.SetCommands(ParseMissionProtobuf(mission_protobuf));
   }
 }
 

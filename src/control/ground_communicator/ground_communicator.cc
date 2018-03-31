@@ -211,8 +211,6 @@ void MissionReceiver::RunIteration() {
 }
 
 void MissionReceiver::OnConnect() {
-  ::std::cout << "========================got on_connect\n";
-
   client_.socket()->on(
       "drone_execute_commands",
       sio::socket::event_listener_aux([&](
