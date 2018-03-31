@@ -3,6 +3,7 @@
 
 #include <unistd.h>
 #include <thread>
+#include <atomic>
 #include <functional>
 
 #include "zmq.hpp"
