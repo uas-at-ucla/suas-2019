@@ -86,7 +86,7 @@ size_t MissionManager::NumberOfCommands() { return commands_.size(); }
 
 ::std::shared_ptr<MissionCommand> MissionManager::GetCurrentCommand() {
   // Never return a nullptr.
-  if(!commands_.size()) {
+  if(command_pointer_ >= commands_.size()) {
     return ::std::shared_ptr<MissionCommand>(new MissionCommandDoNothing());
   }
 

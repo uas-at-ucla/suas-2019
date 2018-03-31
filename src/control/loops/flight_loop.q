@@ -1,6 +1,10 @@
 package src.control.loops;
 
 queue_group FlightLoopQueue {
+  // Add a dummy message to fix missing hashing function for first queue group
+  // entry.
+  message Dummy {};
+
   message Sensors {
     double latitude;
     double longitude;
@@ -65,6 +69,7 @@ queue_group FlightLoopQueue {
     bool alarm;
   };
 
+  queue Dummy dummy;
   queue Sensors sensors;
   queue Status status;
   queue Goal goal;
