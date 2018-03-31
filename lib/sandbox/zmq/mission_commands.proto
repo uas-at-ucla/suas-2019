@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package spinny.controls.ground_communicator;
+
+message Command {
+  required string type = 1;
+  required double latitude = 2;
+  required double longitude = 3;
+}
+
+message Mission {
+  repeated Command commands = 1;
+}

@@ -1,10 +1,15 @@
 dist: trusty
 sudo: required
 
+addons:
+    apt:
+      packages:
+        - xvfb
+
 install:
- - sudo $TRAVIS_BUILD_DIR/build/install.sh
+  - export DISPLAY=':99.0'
+  - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
+  - sudo ./do.sh install
 
 script:
- - bazel test //sandbox/...
- - python $TRAVIS_BUILD_DIR/vision/test_vision.py
- - python $TRAVIS_BUILD_DIR/control/test_control.py
+ - ./do.sh travis

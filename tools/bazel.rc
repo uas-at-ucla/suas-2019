@@ -10,3 +10,6 @@ build --strip=never
 build --show_result 15
 # Dump the output of the failing test to stdout.
 test --test_output=errors
+
+build --symlink_prefix=tools/build/bazel-
+test --symlink_prefix=tools/build/bazel-
