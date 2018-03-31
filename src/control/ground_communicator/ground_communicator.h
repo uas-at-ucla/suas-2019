@@ -8,6 +8,7 @@
 #include <mutex>
 #include <thread>
 #include <map>
+#include <iomanip>
 
 #include "sio_socket.h"
 #include "sio_client.h"
@@ -15,7 +16,7 @@
 
 #include "src/control/loops/flight_loop.q.h"
 #include "src/control/loops/flight_loop.h"
-#include "src/control/ground_communicator/mission_commands.pb.h"
+#include "lib/mission_message_queue/mission_commands.pb.h"
 
 namespace src {
 namespace control {
@@ -43,12 +44,12 @@ class MissionReceiver {
   void SetState(::std::string new_state);
   MissionReceiver::GoalState GetState();
 
+  ::lib::mission_message_queue::MissionMessageQueueSender
+      mission_message_queue_sender_;
+
   ::std::mutex state_mutex_;
   GoalState state_;
   ::sio::client client_;
-
-  ::zmq::context_t context_;
-  ::zmq::socket_t mission_command_stream_;
 
   ::aos::time::PhasedLoop phased_loop_;
 
