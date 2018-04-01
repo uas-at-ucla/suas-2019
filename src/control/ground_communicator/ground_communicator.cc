@@ -16,7 +16,6 @@ MissionReceiver::MissionReceiver()
     : phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
       running_(false),
       count_(0) {
-
   socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
@@ -34,7 +33,7 @@ void MissionReceiver::ConnectToGround() {
 }
 
 void MissionReceiver::SendTelemetry() {
-///:std::cout << "Sending:" << ::std::endl;
+  ///:std::cout << "Sending:" << ::std::endl;
 
   auto sensors = &::src::control::loops::flight_loop_queue.sensors;
   auto status = &::src::control::loops::flight_loop_queue.status;
@@ -62,7 +61,7 @@ void MissionReceiver::SendTelemetry() {
       &output_object->get_map();
 
   if (sensors->get()) {
-//  ::std::cout << "Sensors" << ::std::endl;
+    //  ::std::cout << "Sensors" << ::std::endl;
     (*sensors_map)["latitude"] =
         sio::double_message::create((*sensors)->latitude);
     (*sensors_map)["longitude"] =
@@ -114,7 +113,7 @@ void MissionReceiver::SendTelemetry() {
   }
 
   if (status->get()) {
-//  ::std::cout << "Status" << ::std::endl;
+    //  ::std::cout << "Status" << ::std::endl;
     std::string state = ::src::control::loops::state_string.at(
         static_cast<::src::control::loops::FlightLoop::State>(
             (*status)->state));
@@ -124,7 +123,7 @@ void MissionReceiver::SendTelemetry() {
   }
 
   if (goal->get()) {
-//  ::std::cout << "Goal" << ::std::endl;
+    //  ::std::cout << "Goal" << ::std::endl;
     (*goal_map)["run_mission"] =
         sio::bool_message::create((*goal)->run_mission);
     (*goal_map)["trigger_failsafe"] =
@@ -134,7 +133,7 @@ void MissionReceiver::SendTelemetry() {
   }
 
   if (output->get()) {
-//  ::std::cout << "Output" << ::std::endl;
+    //  ::std::cout << "Output" << ::std::endl;
     (*output_map)["velocity_x"] =
         sio::double_message::create((*output)->velocity_x);
     (*output_map)["velocity_y"] =
@@ -151,7 +150,7 @@ void MissionReceiver::SendTelemetry() {
         sio::bool_message::create((*output)->throttle_cut);
   }
 
-//::std::cout << ::std::endl;
+  //::std::cout << ::std::endl;
 
   telemetry->get_map()["sensors"] = sensors_object;
   telemetry->get_map()["status"] = status_object;
@@ -221,20 +220,43 @@ void MissionReceiver::OnConnect() {
         (void)isAck;
         (void)ack_resp;
 
-        ::lib::mission_message_queue::Mission mission;
+        ::lib::mission_manager::Mission mission;
 
         for (size_t i = 0; i < data->get_vector().size(); i++) {
-          ::lib::mission_message_queue::Command* cmd =
-              mission.add_commands();
+          ::lib::mission_manager::Command* cmd = mission.add_commands();
 
-          cmd->set_type(
-              data->get_vector()[i]->get_map()["command_type"]->get_string());
-          cmd->set_latitude(
-              data->get_vector()[i]->get_map()["lat"]->get_double());
-          cmd->set_longitude(
-              data->get_vector()[i]->get_map()["lng"]->get_double());
-          cmd->set_altitude(
-              data->get_vector()[i]->get_map()["alt"]->get_double());
+          if (data->get_vector()[i]->get_map()["command_type"]->get_string() ==
+              "nothing") {
+            ::lib::mission_manager::NothingCommand* nothing_cmd =
+                cmd->mutable_nothing_command();
+            (void)nothing_cmd;
+
+          } else if (data->get_vector()[i]
+                         ->get_map()["command_type"]
+                         ->get_string() == "sleep") {
+            ::lib::mission_manager::SleepCommand* sleep_cmd =
+                cmd->mutable_sleep_command();
+            (void)sleep_cmd;
+
+          } else if (data->get_vector()[i]
+                         ->get_map()["command_type"]
+                         ->get_string() == "goto") {
+            ::lib::mission_manager::GotoCommand* goto_cmd =
+                cmd->mutable_goto_command();
+            goto_cmd->set_latitude(
+                data->get_vector()[i]->get_map()["lat"]->get_double());
+            goto_cmd->set_longitude(
+                data->get_vector()[i]->get_map()["lng"]->get_double());
+            goto_cmd->set_altitude(
+                data->get_vector()[i]->get_map()["alt"]->get_double());
+
+          } else if (data->get_vector()[i]
+                         ->get_map()["command_type"]
+                         ->get_string() == "bomb_drop") {
+            ::lib::mission_manager::BombCommand* bomb_cmd =
+                cmd->mutable_bomb_command();
+            (void)bomb_cmd;
+          }
         }
 
         mission_message_queue_sender_.SendMission(mission);
@@ -243,15 +265,16 @@ void MissionReceiver::OnConnect() {
       }));
 
   client_.socket()->on(
-      "drone_set_state", sio::socket::event_listener_aux([&](
-                       std::string const& name, sio::message::ptr const& data,
-                       bool isAck, sio::message::list& ack_resp) {
-        (void)name;
-        (void)isAck;
-        (void)ack_resp;
+      "drone_set_state",
+      sio::socket::event_listener_aux(
+          [&](std::string const& name, sio::message::ptr const& data,
+              bool isAck, sio::message::list& ack_resp) {
+            (void)name;
+            (void)isAck;
+            (void)ack_resp;
 
-        SetState(data->get_map()["state"]->get_string());
-      }));
+            SetState(data->get_map()["state"]->get_string());
+          }));
 }
 
 void MissionReceiver::OnFail() { ::std::cout << "socketio failed! :(\n"; }
