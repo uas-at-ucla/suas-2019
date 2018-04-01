@@ -10,7 +10,7 @@ MissionMessageQueueSender::MissionMessageQueueSender()
 }
 
 void MissionMessageQueueSender::SendMission(
-    ::lib::mission_message_queue::Mission mission_protobuf) {
+    ::lib::mission_manager::Mission mission_protobuf) {
   ::std::string serialized_mission_protobuf;
   mission_protobuf.SerializeToString(&serialized_mission_protobuf);
 
@@ -34,7 +34,6 @@ MissionMessageQueueReceiver::~MissionMessageQueueReceiver() {
   thread_.join();
 }
 
-
 void MissionMessageQueueReceiver::ReceiveThread() {
   socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
   socket_.bind("ipc:///tmp/mission_command_stream.ipc");
@@ -52,43 +51,11 @@ void MissionMessageQueueReceiver::ReceiveThread() {
     ::std::string mission_message_string(
         static_cast<char *>(mission_message.data()), mission_message.size());
 
-    ::lib::mission_message_queue::Mission mission_protobuf;
+    ::lib::mission_manager::Mission mission_protobuf;
     mission_protobuf.ParseFromString(mission_message_string);
 
-    mission_manager_.SetCommands(ParseMissionProtobuf(mission_protobuf));
+    mission_manager_.SetCommands(mission_protobuf);
   }
-}
-
-::std::vector<::std::shared_ptr<::lib::MissionCommand>>
-MissionMessageQueueReceiver::ParseMissionProtobuf(
-    ::lib::mission_message_queue::Mission mission_protobuf) {
-  ::std::vector<::std::shared_ptr<::lib::MissionCommand>> new_commands;
-
-  // Iterate through all commands in the protobuf and convert them to our C++
-  // objects for commands.
-  for (::lib::mission_message_queue::Command cmd_protobuf :
-       mission_protobuf.commands()) {
-    if (cmd_protobuf.type() == "goto") {
-      new_commands.push_back(::std::make_shared<::lib::MissionCommandGoto>(
-          new ::lib::MissionCommandGoto(cmd_protobuf.latitude(),
-                                        cmd_protobuf.longitude(),
-                                        cmd_protobuf.altitude())));
-
-    } else if (cmd_protobuf.type() == "bomb") {
-      new_commands.push_back(::std::make_shared<::lib::MissionCommandBombDrop>(
-          new ::lib::MissionCommandBombDrop()));
-
-    } else {
-      // Return an empty command protobuf if we encounter any parsing errors
-      // with the mission given.
-      ::std::cerr << "ERROR: Invalid command type " << cmd_protobuf.type()
-                  << ::std::endl;
-
-      return ::std::vector<::std::shared_ptr<::lib::MissionCommand>>();
-    }
-  }
-
-  return new_commands;
 }
 
 }  // mission_message_queue

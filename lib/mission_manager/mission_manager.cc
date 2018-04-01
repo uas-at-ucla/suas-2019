@@ -2,63 +2,13 @@
 
 namespace lib {
 
-Semaphore::Semaphore(unsigned long count) : count_(count) {}
-
-void Semaphore::Notify() {
-  std::unique_lock<decltype(mutex_)> lock(mutex_);
-  count_++;
-  condition_.notify_one();
-}
-
-void Semaphore::Wait() {
-  std::unique_lock<decltype(mutex_)> lock(mutex_);
-  while (!count_)  // Handle spurious wake-ups.
-    condition_.wait(lock);
-  count_--;
-}
-
-bool Semaphore::TryWait() {
-  std::unique_lock<decltype(mutex_)> lock(mutex_);
-  if (count_) {
-    count_--;
-    return true;
-  }
-
-  return false;
-}
-
-MissionCommand::MissionCommand() {}
-
-MissionCommandGoto::MissionCommandGoto(double latitude, double longitude,
-                                       double altitude) {
-  latitude_ = latitude;
-  longitude_ = longitude;
-  altitude_ = altitude;
-}
-
-MissionCommandGoto::MissionCommandGoto(MissionCommandGoto* cmd) {
-  latitude_ = cmd->latitude();
-  longitude_ = cmd->longitude();
-  altitude_ = cmd->altitude();
-}
-
-MissionCommandBombDrop::MissionCommandBombDrop() {}
-MissionCommandBombDrop::MissionCommandBombDrop(MissionCommandBombDrop* cmd) {
-  (void)cmd;
-}
-
-MissionCommandDoNothing::MissionCommandDoNothing() {}
-MissionCommandDoNothing::MissionCommandDoNothing(MissionCommandDoNothing* cmd) {
-  (void)cmd;
-}
-
 MissionManager::MissionManager() : semaphore_(1), command_pointer_(0) {}
 
 void MissionManager::SetCommands(
-    ::std::vector<::std::shared_ptr<MissionCommand>> new_commands) {
+    ::lib::mission_manager::Mission mission) {
   semaphore_.Wait();
 
-  commands_ = new_commands;
+  mission_ = mission;
   command_pointer_ = 0;
 
   semaphore_.Notify();
@@ -67,7 +17,7 @@ void MissionManager::SetCommands(
 void MissionManager::ClearCommands() {
   semaphore_.Wait();
 
-  commands_.clear();
+  mission_ = ::lib::mission_manager::Mission();
   command_pointer_ = 0;
 
   semaphore_.Notify();
@@ -76,24 +26,27 @@ void MissionManager::ClearCommands() {
 void MissionManager::PopCommand() {
   semaphore_.Wait();
 
-  if (command_pointer_ < commands_.size()) {
+  if (command_pointer_ < mission_.commands_size()) {
     command_pointer_++;
   }
 
   semaphore_.Notify();
 }
 
-size_t MissionManager::NumberOfCommands() { return commands_.size(); }
+size_t MissionManager::NumberOfCommands() { return mission_.commands_size(); }
 
 int MissionManager::GetCurrentCommandIndex() { return command_pointer_; }
 
-::std::shared_ptr<MissionCommand> MissionManager::GetCurrentCommand() {
+::lib::mission_manager::Command MissionManager::GetCurrentCommand() {
   // Never return a nullptr.
-  if (command_pointer_ >= commands_.size()) {
-    return ::std::shared_ptr<MissionCommand>(new MissionCommandDoNothing());
+  if (command_pointer_ >= mission_.commands_size()) {
+    ::lib::mission_manager::Command cmd;
+    cmd.mutable_nothing_command();
+
+    return cmd;
   }
 
-  return commands_[command_pointer_];
+  return mission_.commands(command_pointer_);
 }
 
 }  // namespace lib

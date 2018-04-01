@@ -9,7 +9,7 @@
 #include "zmq.hpp"
 
 #include "lib/mission_manager/mission_manager.h"
-#include "lib/mission_message_queue/mission_commands.pb.h"
+#include "lib/mission_manager/mission_commands.pb.h"
 
 namespace lib {
 namespace mission_message_queue {
@@ -19,7 +19,7 @@ class MissionMessageQueueSender {
  public:
   MissionMessageQueueSender();
 
-  void SendMission(::lib::mission_message_queue::Mission mission_protobuf);
+  void SendMission(::lib::mission_manager::Mission mission_protobuf);
 
  private:
   ::zmq::context_t context_;
@@ -36,9 +36,6 @@ class MissionMessageQueueReceiver {
   void Quit() { run_ = false; }
 
   ::lib::MissionManager *get_mission_manager() { return &mission_manager_; }
-
-  ::std::vector<::std::shared_ptr<::lib::MissionCommand>> ParseMissionProtobuf(
-      ::lib::mission_message_queue::Mission mission_protobuf);
 
  private:
   void ReceiveThread();
