@@ -267,6 +267,8 @@ void FlightLoop::RunIteration() {
   auto status =
       ::src::control::loops::flight_loop_queue.status.MakeMessage();
   status->state = state_;
+  status->current_command_index = pilot_.GetCurrentCommandIndex();
+
   if (current_flight_start_time_ == 0) {
     status->flight_time = previous_flights_time_;
   } else {
