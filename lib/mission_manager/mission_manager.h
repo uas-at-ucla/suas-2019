@@ -7,6 +7,8 @@
 #include <memory>
 #include <vector>
 
+#include "lib/mission_manager/mission_commands.pb.h"
+
 namespace lib {
 
 class Semaphore {
@@ -22,64 +24,22 @@ class Semaphore {
   unsigned long count_;
 };
 
-class MissionCommand {
- public:
-  MissionCommand();
-
-  enum Type { GOTO, BOMB_DROP, DO_NOTHING };
-
-  virtual Type type() = 0;
-};
-
-class MissionCommandGoto : public MissionCommand {
- public:
-  MissionCommandGoto(double latitude, double longitude, double altitude);
-  MissionCommandGoto(MissionCommandGoto* cmd);
-
-  Type type() override { return GOTO; }
-
-  double latitude() { return latitude_; }
-  double longitude() { return longitude_; }
-  double altitude() { return altitude_; }
-
- private:
-  double latitude_;
-  double longitude_;
-  double altitude_;
-};
-
-class MissionCommandBombDrop : public MissionCommand {
- public:
-  MissionCommandBombDrop();
-  MissionCommandBombDrop(MissionCommandBombDrop* cmd);
-
-  Type type() override { return BOMB_DROP; }
-};
-
-class MissionCommandDoNothing : public MissionCommand {
- public:
-  MissionCommandDoNothing();
-  MissionCommandDoNothing(MissionCommandDoNothing* cmd);
-
-  Type type() override { return DO_NOTHING; }
-};
-
 class MissionManager {
  public:
   MissionManager();
-  void AddCommands(
-      ::std::vector<::std::shared_ptr<MissionCommand>> new_commands);
+  void SetCommands(::lib::mission_manager::Mission mission);
   void ClearCommands();
   void PopCommand();
   size_t NumberOfCommands();
 
-  ::std::shared_ptr<MissionCommand> GetCurrentCommand();
+  int GetCurrentCommandIndex();
+  ::lib::mission_manager::Command GetCurrentCommand();
 
  private:
-  ::std::vector<::std::shared_ptr<MissionCommand>> commands_;
+  ::lib::mission_manager::Mission mission_;
 
   Semaphore semaphore_;
-  size_t command_pointer_;
+  int command_pointer_;
 };
 
 }  // namespace lib

@@ -8,7 +8,7 @@ cc_library(
     'mission_message_queue.h',
   ],
   deps = [
-    ":mission_commands_cpp",
+    "//lib/mission_manager:mission_commands_cpp",
     "//lib/mission_manager:mission_manager",
     "@cppzmq//:cppzmq",
     "@com_google_protobuf//:protobuf",
@@ -24,22 +24,5 @@ cc_test(
   deps = [
     ":mission_message_queue",
     "@gtest//:googletest_main",
-  ],
-)
-
-proto_library(
-  name = "mission_commands",
-  srcs = [
-    "mission_commands.proto",
-  ],
-  deps = [
-    "@com_google_protobuf//:any_proto",
-  ],
-)
-
-cc_proto_library(
-  name = "mission_commands_cpp",
-  deps = [
-    ":mission_commands",
   ],
 )

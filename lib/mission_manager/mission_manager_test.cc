@@ -5,79 +5,43 @@
 namespace lib {
 namespace testing {
 
-TEST(MissionManagerTest, CommandsTest) {
-  // Goto cmd
-  {
-    double lat = 1.1;
-    double lng = 2.1;
-    double alt = 3.1;
-
-    MissionCommandGoto goto_cmd(lat, lng, alt);
-
-    ASSERT_EQ(goto_cmd.type(), MissionCommand::GOTO);
-    ASSERT_EQ(goto_cmd.latitude(), lat);
-    ASSERT_EQ(goto_cmd.longitude(), lng);
-    ASSERT_EQ(goto_cmd.altitude(), alt);
-  }
-
-  // Bomb cmd
-  {
-    MissionCommandBombDrop bomb_cmd;
-    ASSERT_EQ(bomb_cmd.type(), MissionCommand::BOMB_DROP);
-  }
-}
-
 TEST(MissionManagerTest, MissionManagerTest) {
-  double lat = 1.1;
-  double lng = 2.1;
-  double alt = 3.1;
+  ::lib::mission_manager::Mission mission;
+
+  for (int i = 0; i < 100; i++) {
+    ::lib::mission_manager::Command *cmd = mission.add_commands();
+
+    mission_manager::NothingCommand *nothing_cmd =
+        cmd->mutable_nothing_command();
+    (void)nothing_cmd;
+
+    ASSERT_TRUE(cmd->has_nothing_command());
+    ASSERT_FALSE(cmd->has_sleep_command());
+    ASSERT_FALSE(cmd->has_bomb_command());
+    ASSERT_FALSE(cmd->has_goto_command());
+
+    mission_manager::GotoCommand *goto_cmd = cmd->mutable_goto_command();
+    goto_cmd->set_latitude(1.0 + i);
+    goto_cmd->set_longitude(3.0 + i);
+    goto_cmd->set_altitude(5.0 + i);
+
+    ASSERT_FALSE(cmd->has_nothing_command());
+    ASSERT_FALSE(cmd->has_sleep_command());
+    ASSERT_FALSE(cmd->has_bomb_command());
+    ASSERT_TRUE(cmd->has_goto_command());
+  }
 
   MissionManager mission_manager;
+  mission_manager.SetCommands(mission);
+  ASSERT_EQ(mission_manager.NumberOfCommands(), 100);
 
-  ::std::vector<::std::shared_ptr<MissionCommand>> commands_to_add;
-
-  for (int i = 0; i < 1000; i++) {
-    commands_to_add.push_back(::std::make_shared<MissionCommandGoto>(
-        new MissionCommandGoto(lat + i, lng + i * 2, alt + i * 3)));
-  }
-
-  for (int i = 0; i < 1000; i++) {
-    commands_to_add.push_back(::std::make_shared<MissionCommandBombDrop>(
-        new MissionCommandBombDrop()));
-  }
-
-  ASSERT_EQ(mission_manager.NumberOfCommands(), 0);
-  mission_manager.AddCommands(commands_to_add);
-  ASSERT_EQ(mission_manager.NumberOfCommands(), 2000);
-
-  for (int i = 0; i < 2000; i++) {
-    ::std::shared_ptr<MissionCommand> cmd_ptr =
-        mission_manager.GetCurrentCommand();
-
-    if(i < 1000) {
-      ASSERT_EQ(cmd_ptr->type(), MissionCommand::GOTO);
-    } else {
-      ASSERT_EQ(cmd_ptr->type(), MissionCommand::BOMB_DROP);
-    }
-
-    if (cmd_ptr.get()->type() == MissionCommand::GOTO) {
-      ::std::shared_ptr<MissionCommandGoto> goto_cmd_ptr =
-          ::std::static_pointer_cast<MissionCommandGoto>(cmd_ptr);
-
-      ASSERT_EQ(goto_cmd_ptr->latitude(), lat + i);
-      ASSERT_EQ(goto_cmd_ptr->longitude(), lng + i * 2);
-      ASSERT_EQ(goto_cmd_ptr->altitude(), alt + i * 3);
-    } else if(cmd_ptr->type() == MissionCommand::BOMB_DROP) {
-      ::std::shared_ptr<MissionCommandBombDrop> bomb_drop_cmd_ptr =
-          ::std::static_pointer_cast<MissionCommandBombDrop>(cmd_ptr);
-    }
-
+  for(int i = 0;i < 100;i++) {
+    ::lib::mission_manager::Command cmd = mission_manager.GetCurrentCommand();
     mission_manager.PopCommand();
+    ASSERT_EQ(cmd.goto_command().latitude(), 1.0 + i);
+    ASSERT_EQ(cmd.goto_command().longitude(), 3.0 + i);
+    ASSERT_EQ(cmd.goto_command().altitude(), 5.0 + i);
   }
-
-  mission_manager.ClearCommands();
-
-  ASSERT_EQ(mission_manager.NumberOfCommands(), 0);
 }
 
 }  // namespace testing
