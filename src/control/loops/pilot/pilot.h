@@ -13,7 +13,7 @@
 #include "zmq.hpp"
 
 #include "lib/mission_message_queue/mission_message_queue.h"
-#include "lib/mission_message_queue/mission_commands.pb.h"
+#include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/physics_structs/physics_structs.h"
 
 namespace src {
