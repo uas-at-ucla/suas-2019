@@ -16,7 +16,7 @@
 
 #include "src/control/loops/flight_loop.q.h"
 #include "src/control/loops/flight_loop.h"
-#include "lib/mission_message_queue/mission_commands.pb.h"
+#include "lib/mission_manager/mission_commands.pb.h"
 
 namespace src {
 namespace control {
