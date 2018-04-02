@@ -3,11 +3,11 @@
 
 #include <unistd.h>
 #include <atomic>
+#include <chrono>
 #include <functional>
 #include <sstream>
 #include <string>
 #include <thread>
-#include <chrono>
 
 #include "zmq.hpp"
 
@@ -19,8 +19,8 @@ namespace logger {
 class LogSender {
  public:
   LogSender();
-  void Log(::std::string file, ::std::string function, int line_num,
-           ::std::ostringstream log_line);
+  void Log(const char* file, const char* function, int line_num,
+           ::std::ostream& log_line);
 
  private:
   ::zmq::context_t context_;
@@ -32,10 +32,11 @@ static LogSender log_sender;
 }  // namespace logger
 }  // namespace lib
 
-#define LOG_LINE(args)                                             \
-  do {                                                             \
-    ::lib::logger::log_sender.Log(__FILE__, __func__, __LINE__,    \
-                                  ::std::ostringstream() << args); \
+#define LOG_LINE(args)                                                       \
+  do {                                                                       \
+    ::std::ostringstream __log_line;                                         \
+    __log_line << args;                                                      \
+    ::lib::logger::log_sender.Log(__FILE__, __func__, __LINE__, __log_line); \
   } while (0)
 
 #endif  // LIB_LOGGER_LOG_SENDER_H_
