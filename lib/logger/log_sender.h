@@ -19,6 +19,7 @@ namespace logger {
 class LogSender {
  public:
   LogSender();
+  ~LogSender();
   void Log(const char* file, const char* function, int line_num,
            ::std::ostream& log_line);
 
@@ -27,16 +28,16 @@ class LogSender {
   ::zmq::socket_t socket_;
 };
 
-static LogSender log_sender;
+static LogSender* log_sender = new LogSender();
 
 }  // namespace logger
 }  // namespace lib
 
-#define LOG_LINE(args)                                                       \
-  do {                                                                       \
-    ::std::ostringstream __log_line;                                         \
-    __log_line << args;                                                      \
-    ::lib::logger::log_sender.Log(__FILE__, __func__, __LINE__, __log_line); \
+#define LOG_LINE(args)                                                        \
+  do {                                                                        \
+    ::std::ostringstream __log_line;                                          \
+    __log_line << args;                                                       \
+    ::lib::logger::log_sender->Log(__FILE__, __func__, __LINE__, __log_line); \
   } while (0)
 
 #endif  // LIB_LOGGER_LOG_SENDER_H_
