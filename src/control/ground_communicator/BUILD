@@ -21,6 +21,7 @@ cc_library(
   deps = [
     '//src/control/loops:flight_loop_lib',
     '//lib/mission_message_queue:mission_message_queue',
+    '//lib/logger:log_sender',
     '//aos/linux_code:init',
     "@socketio_client_cpp//:socketio_client_cpp",
     "@cppzmq//:cppzmq",
