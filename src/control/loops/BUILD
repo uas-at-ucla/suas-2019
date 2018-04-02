@@ -65,6 +65,7 @@ cc_library(
     ':flight_loop_queue',
     '//src/control/loops/pilot:pilot',
     '//lib/physics_structs:physics_structs',
+    '//lib/logger:log_sender',
     '//aos/common/util:phased_loop',
     '//aos/linux_code:init',
     '//aos/common:time',
