@@ -59,6 +59,7 @@ if __name__ == '__main__':
     # Make a deploy directory, if it does not already exist.
     print_title("Setting up drone for deployment... ")
     run_cmd_on_drone('mkdir -p /home/pi/suas_2018_deploy')
+    run_cmd_on_drone('mkdir -p /home/pi/suas_2018_deploy/logs')
     processes.wait_for_complete()
 
     # Upload the binaries to the drone.

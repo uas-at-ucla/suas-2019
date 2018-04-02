@@ -106,6 +106,10 @@ def run_simulate(args):
     processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
                             None, True, args.verbose)
 
+    # Log writer.
+    processes.spawn_process("./bazel-out/k8-fastbuild/bin/lib/logger/" \
+            "log_writer");
+
     # Drone control code.
     processes.spawn_process(
             "./bazel-out/k8-fastbuild/bin/src/control/ground_communicator/" \
