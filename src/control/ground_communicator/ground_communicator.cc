@@ -19,6 +19,7 @@ MissionReceiver::MissionReceiver()
   socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
+  LOG_LINE("ground_communicator started.");
 
   ::std::thread ground_socket_thread(connect);
   ground_socket_thread.join();
@@ -33,8 +34,6 @@ void MissionReceiver::ConnectToGround() {
 }
 
 void MissionReceiver::SendTelemetry() {
-  ///:std::cout << "Sending:" << ::std::endl;
-
   auto sensors = &::src::control::loops::flight_loop_queue.sensors;
   auto status = &::src::control::loops::flight_loop_queue.status;
   auto goal = &::src::control::loops::flight_loop_queue.goal;
@@ -60,8 +59,13 @@ void MissionReceiver::SendTelemetry() {
   std::map<std::string, sio::message::ptr>* output_map =
       &output_object->get_map();
 
+  bool send_sensors;
+  bool send_status;
+  bool send_goal;
+  bool send_output;
   if (sensors->get()) {
-    //  ::std::cout << "Sensors" << ::std::endl;
+    send_sensors = true;
+
     (*sensors_map)["latitude"] =
         sio::double_message::create((*sensors)->latitude);
     (*sensors_map)["longitude"] =
@@ -113,7 +117,8 @@ void MissionReceiver::SendTelemetry() {
   }
 
   if (status->get()) {
-    //  ::std::cout << "Status" << ::std::endl;
+    send_status = true;
+
     std::string state = ::src::control::loops::state_string.at(
         static_cast<::src::control::loops::FlightLoop::State>(
             (*status)->state));
@@ -123,7 +128,8 @@ void MissionReceiver::SendTelemetry() {
   }
 
   if (goal->get()) {
-    //  ::std::cout << "Goal" << ::std::endl;
+    send_goal = true;
+
     (*goal_map)["run_mission"] =
         sio::bool_message::create((*goal)->run_mission);
     (*goal_map)["trigger_failsafe"] =
@@ -133,7 +139,8 @@ void MissionReceiver::SendTelemetry() {
   }
 
   if (output->get()) {
-    //  ::std::cout << "Output" << ::std::endl;
+    send_output = true;
+
     (*output_map)["velocity_x"] =
         sio::double_message::create((*output)->velocity_x);
     (*output_map)["velocity_y"] =
@@ -150,7 +157,9 @@ void MissionReceiver::SendTelemetry() {
         sio::bool_message::create((*output)->throttle_cut);
   }
 
-  //::std::cout << ::std::endl;
+  LOG_LINE("sending telemetry: "
+           << (send_sensors ? "sensors " : "") << (send_status ? "status " : "")
+           << (send_goal ? "goal " : "") << (send_output ? "output " : ""));
 
   telemetry->get_map()["sensors"] = sensors_object;
   telemetry->get_map()["status"] = status_object;
@@ -210,6 +219,8 @@ void MissionReceiver::RunIteration() {
 }
 
 void MissionReceiver::OnConnect() {
+  LOG_LINE("Someone connected to ground_communicator");
+
   client_.socket()->on(
       "drone_execute_commands",
       sio::socket::event_listener_aux([&](

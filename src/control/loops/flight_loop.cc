@@ -1,13 +1,14 @@
 #include "flight_loop.h"
 
-#include "src/control/loops/flight_loop.q.h"
-
 #include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <thread>
 
 #include "zmq.hpp"
+
+#include "src/control/loops/flight_loop.q.h"
+#include "lib/logger/log_sender.h"
 
 namespace src {
 namespace control {
@@ -43,16 +44,14 @@ void FlightLoop::DumpSensors() {
       std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start_;
 
-  ::std::cout
-      << "ITERATE in state " << state_ << ::std::endl
+  LOG_LINE("ITERATE in state " << state_ << " "
       << elapsed.count() << " " << std::setprecision(12)
-      << ::src::control::loops::flight_loop_queue.sensors->latitude << ", "
+      << ::src::control::loops::flight_loop_queue.sensors->latitude << " "
       << ::src::control::loops::flight_loop_queue.sensors->longitude
       << " @ alt "
       << ::src::control::loops::flight_loop_queue.sensors->altitude
       << " @ rel_alt "
-      << ::src::control::loops::flight_loop_queue.sensors->relative_altitude
-      << std::endl;
+      << ::src::control::loops::flight_loop_queue.sensors->relative_altitude);
   ::std::cout
       << ::src::control::loops::flight_loop_queue.sensors->accelerometer_x
       << ", "
