@@ -2,6 +2,8 @@
 
 #include <iostream>
 
+#include "lib/logger/log_sender.h"
+
 namespace src {
 namespace control {
 namespace io {
@@ -15,8 +17,7 @@ void quit_handler(int sig) {
 
   try {
     copter_io_quit->handle_quit(sig);
-  } catch (int error) {
-  }
+  } catch (int error) {}
 
   exit(0);
 }

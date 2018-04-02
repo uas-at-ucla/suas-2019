@@ -139,6 +139,13 @@ new_git_repository(
   build_file = "lib/third_party/WiringPi.BUILD",
 )
 
+new_git_repository(
+  name = "spdlog",
+  commit = "93d41b2c0ecd0db7075e2386596ce39cb20546c9",
+  remote = "https://github.com/gabime/spdlog.git",
+  build_file = "lib/third_party/spdlog.BUILD",
+)
+
 new_local_repository(
     name = "python_linux",
     path = "/usr",
