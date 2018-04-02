@@ -80,7 +80,7 @@ class Navbar extends Component {
                 position: "right",
                 ticks: {
                   fontSize: 10,
-                  max: cells * 4.4,
+                  max: cells * 4.22,
                   min: cells * 3.4
                 }
               }
@@ -150,7 +150,7 @@ class Navbar extends Component {
   }
 
   getBatteryCells = voltage => {
-    return Math.floor(voltage / 3.8);
+    return Math.floor(voltage / 3.2);
   };
 }
 
