@@ -11,8 +11,6 @@ namespace io {
 autopilot_interface::AutopilotInterface *copter_io_quit;
 IO *io_quit;
 void quit_handler(int sig) {
-  printf("\n\nTERMINATING AT USER REQUEST\n\n");
-
   io_quit->Quit();
 
   try {
