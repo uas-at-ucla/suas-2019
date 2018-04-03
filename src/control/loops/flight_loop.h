@@ -10,6 +10,7 @@
 #include "src/control/loops/flight_loop.q.h"
 #include "src/control/loops/pilot/pilot.h"
 #include "lib/physics_structs/physics_structs.h"
+#include "lib/alarm/alarm.h"
 
 /*      ________  ________  ___  ________   ________       ___    ___
        |\   ____\|\   __  \|\  \|\   ___  \|\   ___  \    |\  \  /  /|
@@ -70,6 +71,8 @@ class FlightLoop {
   void EndFlightTimer();
   int previous_flights_time_;
   unsigned long current_flight_start_time_;
+
+  ::lib::alarm::Alarm alarm_;
 };
 
 const std::map<FlightLoop::State, std::string> state_string = {
