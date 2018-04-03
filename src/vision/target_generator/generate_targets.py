@@ -98,10 +98,10 @@ def main(visualize):
 "\t\t<truncated>0</truncated>\n" \
 "\t\t<difficult>0</difficult>\n" \
 "\t\t<bndbox>\n" \
-"\t\t\t<xmin>" + str(coords[0]) + "</xmin>\n" \
-"\t\t\t<ymin>" + str(coords[1]) + "</ymin>\n" \
-"\t\t\t<xmax>" + str(coords[2]) + "</xmax>\n" \
-"\t\t\t<ymax>" + str(coords[3]) + "</ymax>\n" \
+"\t\t\t<xmin>" + str(coords[0] * 2) + "</xmin>\n" \
+"\t\t\t<ymin>" + str(coords[1] * 2) + "</ymin>\n" \
+"\t\t\t<xmax>" + str(coords[2] * 2) + "</xmax>\n" \
+"\t\t\t<ymax>" + str(coords[3] * 2) + "</ymax>\n" \
 "\t\t</bndbox>\n" \
 "\t</object>\n" \
 "</annotation>"

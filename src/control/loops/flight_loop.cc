@@ -7,23 +7,28 @@
 
 #include "zmq.hpp"
 
-#include "src/control/loops/flight_loop.q.h"
 #include "lib/logger/log_sender.h"
+#include "src/control/loops/flight_loop.q.h"
 
 namespace src {
 namespace control {
 namespace loops {
 
+int kFlightLoopFrequency = 1e2;
+
 FlightLoop::FlightLoop()
     : state_(STANDBY),
       running_(false),
-      phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
+      phased_loop_(::std::chrono::milliseconds(
+                       static_cast<int>(1e3 / kFlightLoopFrequency)),
+                   ::std::chrono::milliseconds(0)),
       start_(std::chrono::system_clock::now()),
       takeoff_ticker_(0),
       verbose_(false),
       count_(0),
       previous_flights_time_(0),
-      current_flight_start_time_(0) {
+      current_flight_start_time_(0),
+      alarm_(kFlightLoopFrequency) {
   ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
   ::src::control::loops::flight_loop_queue.output.FetchLatest();
@@ -44,12 +49,12 @@ void FlightLoop::DumpSensors() {
       std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start_;
 
-  LOG_LINE("ITERATE in state " << state_ << " "
-      << elapsed.count() << " " << std::setprecision(12)
+  LOG_LINE(
+      "ITERATE in state "
+      << state_ << " " << elapsed.count() << " " << std::setprecision(12)
       << ::src::control::loops::flight_loop_queue.sensors->latitude << " "
       << ::src::control::loops::flight_loop_queue.sensors->longitude
-      << " @ alt "
-      << ::src::control::loops::flight_loop_queue.sensors->altitude
+      << " @ alt " << ::src::control::loops::flight_loop_queue.sensors->altitude
       << " @ rel_alt "
       << ::src::control::loops::flight_loop_queue.sensors->relative_altitude);
   ::std::cout
@@ -95,8 +100,7 @@ void FlightLoop::DumpSensors() {
         << " failsafe "
         << ::src::control::loops::flight_loop_queue.goal->trigger_failsafe
         << " throttle cut "
-        << ::src::control::loops::flight_loop_queue.goal
-               ->trigger_throttle_cut
+        << ::src::control::loops::flight_loop_queue.goal->trigger_throttle_cut
         << ::std::endl
         << ::std::endl;
   }
@@ -112,22 +116,23 @@ void FlightLoop::RunIteration() {
 
   DumpSensorsPeriodic();
 
+  State next_state = state_;
+
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
     return;
   }
 
-  auto output =
-      ::src::control::loops::flight_loop_queue.output.MakeMessage();
+  auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
   if (::src::control::loops::flight_loop_queue.goal->trigger_failsafe) {
     EndFlightTimer();
-    state_ = FAILSAFE;
+    next_state = FAILSAFE;
   }
 
   if (::src::control::loops::flight_loop_queue.goal->trigger_throttle_cut) {
     EndFlightTimer();
-    state_ = FLIGHT_TERMINATION;
+    next_state = FLIGHT_TERMINATION;
   }
 
   // Set defaults for all outputs.
@@ -143,23 +148,22 @@ void FlightLoop::RunIteration() {
 
   output->alarm = false;
 
-  bool run_mission =
-      ::src::control::loops::flight_loop_queue.goal->run_mission;
+  bool run_mission = ::src::control::loops::flight_loop_queue.goal->run_mission;
 
   switch (state_) {
     case STANDBY:
       if (run_mission) {
-        state_ = ARMING;
+        next_state = ARMING;
       }
       break;
 
     case ARMING:
       if (!run_mission) {
-        state_ = LANDING;
+        next_state = LANDING;
       }
 
       if (::src::control::loops::flight_loop_queue.sensors->armed) {
-        state_ = ARMED;
+        next_state = ARMED;
       }
 
       output->arm = true;
@@ -167,32 +171,33 @@ void FlightLoop::RunIteration() {
 
     case ARMED:
       if (!run_mission) {
-        state_ = LANDING;
+        next_state = LANDING;
       }
 
       if (!::src::control::loops::flight_loop_queue.sensors->armed) {
-        state_ = ARMING;
+        next_state = ARMING;
       }
 
       current_flight_start_time_ =
           std::chrono::duration_cast<std::chrono::milliseconds>(
-          std::chrono::system_clock::now().time_since_epoch()).count();
-      state_ = TAKING_OFF;
+              std::chrono::system_clock::now().time_since_epoch())
+              .count();
+      next_state = TAKING_OFF;
       break;
 
     case TAKING_OFF:
       if (!run_mission) {
         takeoff_ticker_ = 0;
-        state_ = LANDING;
+        next_state = LANDING;
       }
 
       if (!::src::control::loops::flight_loop_queue.sensors->armed) {
         takeoff_ticker_ = 0;
-        state_ = ARMING;
+        next_state = ARMING;
       }
 
-      if (::src::control::loops::flight_loop_queue.sensors
-              ->relative_altitude < 0.3) {
+      if (::src::control::loops::flight_loop_queue.sensors->relative_altitude <
+          0.3) {
         takeoff_ticker_++;
       }
 
@@ -203,35 +208,34 @@ void FlightLoop::RunIteration() {
         output->disarm = true;
       }
 
-      if (::src::control::loops::flight_loop_queue.sensors
-              ->relative_altitude > 2.2) {
+      if (::src::control::loops::flight_loop_queue.sensors->relative_altitude >
+          2.2) {
         takeoff_ticker_ = 0;
-        state_ = IN_AIR;
+        next_state = IN_AIR;
       }
       break;
 
     case IN_AIR: {
       if (!run_mission) {
-        state_ = LANDING;
+        next_state = LANDING;
       }
 
       // Check if altitude is below a safe threshold, which may indicate that
       // the autopilot was reset.
-      if (::src::control::loops::flight_loop_queue.sensors
-                  ->relative_altitude > 2.2 &&
-          ::src::control::loops::flight_loop_queue.sensors
-                  ->relative_altitude < 2.5) {
-        state_ = TAKING_OFF;
+      if (::src::control::loops::flight_loop_queue.sensors->relative_altitude >
+              2.2 &&
+          ::src::control::loops::flight_loop_queue.sensors->relative_altitude <
+              2.5) {
+        next_state = TAKING_OFF;
       } else if (::src::control::loops::flight_loop_queue.sensors
                      ->relative_altitude < 2.2) {
-        state_ = LANDING;
+        next_state = LANDING;
       }
 
       Position3D position = {
           ::src::control::loops::flight_loop_queue.sensors->latitude,
           ::src::control::loops::flight_loop_queue.sensors->longitude,
-          ::src::control::loops::flight_loop_queue.sensors
-              ->relative_altitude};
+          ::src::control::loops::flight_loop_queue.sensors->relative_altitude};
 
       pilot::PilotOutput flight_direction = pilot_.Calculate(position);
 
@@ -246,7 +250,7 @@ void FlightLoop::RunIteration() {
     case LANDING:
       if (!::src::control::loops::flight_loop_queue.sensors->armed) {
         EndFlightTimer();
-        state_ = STANDBY;
+        next_state = STANDBY;
       }
 
       output->land = true;
@@ -261,20 +265,29 @@ void FlightLoop::RunIteration() {
       break;
   }
 
+  if(next_state != state_ && next_state == ARMING) {
+    alarm_.AddAlert({0.10, 0.50});
+    alarm_.AddAlert({0.10, 0.50});
+  }
+
+  state_ = next_state;
+
+  output->alarm = alarm_.ShouldAlarm();
   output.Send();
 
-  auto status =
-      ::src::control::loops::flight_loop_queue.status.MakeMessage();
-  status->state = state_;
+  auto status = ::src::control::loops::flight_loop_queue.status.MakeMessage();
+  status->state = next_state;
   status->current_command_index = pilot_.GetCurrentCommandIndex();
 
   if (current_flight_start_time_ == 0) {
     status->flight_time = previous_flights_time_;
   } else {
-    status->flight_time = previous_flights_time_ + (
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count() -
-        current_flight_start_time_);
+    status->flight_time =
+        previous_flights_time_ +
+        (std::chrono::duration_cast<std::chrono::milliseconds>(
+             std::chrono::system_clock::now().time_since_epoch())
+             .count() -
+         current_flight_start_time_);
   }
   status.Send();
 
@@ -288,7 +301,8 @@ void FlightLoop::EndFlightTimer() {
   if (current_flight_start_time_ != 0) {
     previous_flights_time_ +=
         std::chrono::duration_cast<std::chrono::milliseconds>(
-        std::chrono::system_clock::now().time_since_epoch()).count() -
+            std::chrono::system_clock::now().time_since_epoch())
+            .count() -
         current_flight_start_time_;
     current_flight_start_time_ = 0;
   }
