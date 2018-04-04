@@ -8,7 +8,7 @@ class Sidebar extends Component {
     return (
       <div className="Sidebar">
         <div id="sidebar_content">
-          <Panel id="missionPlanner">
+          <Panel id="missionPlanner" title="Mission Plan">
             <MissionPlanner
               homeState={this.props.homeState}
               setHomeState={this.props.setHomeState}
