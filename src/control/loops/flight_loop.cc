@@ -7,7 +7,6 @@
 
 #include "zmq.hpp"
 
-#include "lib/logger/log_sender.h"
 #include "src/control/loops/flight_loop.q.h"
 
 namespace src {
@@ -45,64 +44,54 @@ void FlightLoop::DumpSensorsPeriodic() {
 }
 
 void FlightLoop::DumpSensors() {
-  std::chrono::time_point<std::chrono::system_clock> end =
-      std::chrono::system_clock::now();
-  std::chrono::duration<double> elapsed = end - start_;
-
-  LOG_LINE(
-      "ITERATE in state "
-      << state_ << " " << elapsed.count() << " " << std::setprecision(12)
-      << ::src::control::loops::flight_loop_queue.sensors->latitude << " "
-      << ::src::control::loops::flight_loop_queue.sensors->longitude
-      << " @ alt " << ::src::control::loops::flight_loop_queue.sensors->altitude
-      << " @ rel_alt "
-      << ::src::control::loops::flight_loop_queue.sensors->relative_altitude);
-  ::std::cout
-      << ::src::control::loops::flight_loop_queue.sensors->accelerometer_x
-      << ", "
-      << ::src::control::loops::flight_loop_queue.sensors->accelerometer_y
-      << ", "
-      << ::src::control::loops::flight_loop_queue.sensors->accelerometer_z
-      << ::std::endl;
-
-  ::std::cout << ::src::control::loops::flight_loop_queue.sensors->gyro_x
-              << ", "
-              << ::src::control::loops::flight_loop_queue.sensors->gyro_y
-              << ", "
-              << ::src::control::loops::flight_loop_queue.sensors->gyro_z
-              << ::std::endl;
-
-  ::std::cout
-      << "abs "
-      << ::src::control::loops::flight_loop_queue.sensors->absolute_pressure
-      << " relative_pressure "
-      << ::src::control::loops::flight_loop_queue.sensors->relative_pressure
-      << " pressure_altitude "
-      << ::src::control::loops::flight_loop_queue.sensors->pressure_altitude
-      << " temperature "
-      << ::src::control::loops::flight_loop_queue.sensors->temperature
-      << ::std::endl;
-
-  ::std::cout
-      << ::src::control::loops::flight_loop_queue.sensors->battery_voltage
-      << " volts | current "
-      << ::src::control::loops::flight_loop_queue.sensors->battery_current
-      << ::std::endl;
-
-  ::std::cout << "armed "
-              << ::src::control::loops::flight_loop_queue.sensors->armed
-              << ::std::endl;
+  if (::src::control::loops::flight_loop_queue.sensors.get()) {
+    LOG_LINE(
+        "Flight loop iteration SENSORS..."
+        << " Armed:" << ::src::control::loops::flight_loop_queue.sensors->armed
+        << ::std::setprecision(12) << ::std::fixed << ::std::showpos
+        << " Latitude: "
+        << ::src::control::loops::flight_loop_queue.sensors->latitude
+        << " Longitude: "
+        << ::src::control::loops::flight_loop_queue.sensors->longitude
+        << " Altitude: "
+        << ::src::control::loops::flight_loop_queue.sensors->altitude
+        << " RelativeAltitude: "
+        << ::src::control::loops::flight_loop_queue.sensors->relative_altitude
+        << " AccelX: "
+        << ::src::control::loops::flight_loop_queue.sensors->accelerometer_x
+        << " AccelY: "
+        << ::src::control::loops::flight_loop_queue.sensors->accelerometer_y
+        << " AccelZ: "
+        << ::src::control::loops::flight_loop_queue.sensors->accelerometer_z
+        << " GyroX: "
+        << ::src::control::loops::flight_loop_queue.sensors->gyro_x
+        << " GyroY: "
+        << ::src::control::loops::flight_loop_queue.sensors->gyro_y
+        << " GyroZ: "
+        << ::src::control::loops::flight_loop_queue.sensors->gyro_z
+        << " AbsolutePressure: "
+        << ::src::control::loops::flight_loop_queue.sensors->absolute_pressure
+        << " RelativePressure: "
+        << ::src::control::loops::flight_loop_queue.sensors->relative_pressure
+        << " PressureAltitude: "
+        << ::src::control::loops::flight_loop_queue.sensors->pressure_altitude
+        << " Temperature: "
+        << ::src::control::loops::flight_loop_queue.sensors->temperature
+        << " BattVoltage: "
+        << ::src::control::loops::flight_loop_queue.sensors->battery_voltage
+        << " BattCurrent: "
+        << ::src::control::loops::flight_loop_queue.sensors->battery_current);
+  }
 
   if (::src::control::loops::flight_loop_queue.goal.get()) {
-    ::std::cout
-        << "goal run_mission "
+    LOG_LINE(
+        "Flight loop iteration GOAL... "
+        << " RunMission: "
         << ::src::control::loops::flight_loop_queue.goal->run_mission
-        << " failsafe "
+        << " Failsafe: "
         << ::src::control::loops::flight_loop_queue.goal->trigger_failsafe
-        << " throttle cut "
-        << ::src::control::loops::flight_loop_queue.goal->trigger_throttle_cut
-        << ::std::endl
-        << ::std::endl;
+        << " ThrottleCut: "
+        << ::src::control::loops::flight_loop_queue.goal->trigger_throttle_cut);
   }
 }
 
@@ -114,7 +103,7 @@ void FlightLoop::RunIteration() {
   ::src::control::loops::flight_loop_queue.sensors.FetchAnother();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
 
-  DumpSensorsPeriodic();
+  DumpSensors();
 
   State next_state = state_;
 
@@ -265,14 +254,28 @@ void FlightLoop::RunIteration() {
       break;
   }
 
-  if(next_state != state_ && next_state == ARMING) {
-    alarm_.AddAlert({0.10, 0.50});
-    alarm_.AddAlert({0.10, 0.50});
+  if (next_state != state_) {
+    // Handle state transitions.
+    LOG_LINE("Switching states: " << state_ << " -> " << next_state);
+
+    if (next_state == ARMING) {
+      alarm_.AddAlert({0.10, 0.50});
+      alarm_.AddAlert({0.10, 0.50});
+    }
   }
 
   state_ = next_state;
 
   output->alarm = alarm_.ShouldAlarm();
+  LOG_LINE("Flight loop iteration OUTPUT..."
+           << " VelocityX: " << output->velocity_x << " VelocityY: "
+           << output->velocity_y << " VelocityZ: " << output->velocity_z
+           << " VelocityControl: " << output->velocity_control
+           << " Arm: " << output->arm << " Disarm: " << output->disarm
+           << " Takeoff: " << output->takeoff << " Land: " << output->land
+           << " ThrottleCut: " << output->throttle_cut
+           << " Alarm: " << output->alarm);
+
   output.Send();
 
   auto status = ::src::control::loops::flight_loop_queue.status.MakeMessage();
@@ -289,6 +292,12 @@ void FlightLoop::RunIteration() {
              .count() -
          current_flight_start_time_);
   }
+
+  LOG_LINE("Flight loop iteration STATUS... "
+           << " State: " << status->state
+           << " FlightTime: " << status->flight_time
+           << " CurrentCommandIndex: " << status->current_command_index);
+
   status.Send();
 
   const int iterations = phased_loop_.SleepUntilNext();

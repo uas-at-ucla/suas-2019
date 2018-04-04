@@ -21,7 +21,7 @@ class LogSender {
   LogSender();
   ~LogSender();
   void Log(const char* file, const char* function, int line_num,
-           ::std::ostream& log_line);
+           ::std::ostringstream& log_line);
 
  private:
   ::zmq::context_t context_;
