@@ -10,6 +10,7 @@
 #include "src/control/loops/flight_loop.q.h"
 #include "src/control/loops/pilot/pilot.h"
 #include "lib/physics_structs/physics_structs.h"
+#include "lib/logger/log_sender.h"
 #include "lib/alarm/alarm.h"
 
 /*      ________  ________  ___  ________   ________       ___    ___
