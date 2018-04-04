@@ -21,18 +21,8 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => (
       />
     </td>
     <td>
-      <FormGroup controlId="formControlsSelect">
-        <FormControl
-          componentClass="select"
-          placeholder="select"
-          value={command.options.command_type}
-          onChange={event => self.onCommandTypeChange(myIndex, event)}
-        >
-          <option>goto</option>
-          <option>jump</option>
-          <option>bomb</option>
-          <option>survey</option>
-        </FormControl>
+      <FormGroup controlId="formControlsSelect" className="type_select">
+        {self.commandTypeOptions(myIndex, command)}
       </FormGroup>
     </td>
     <td>
@@ -42,6 +32,9 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => (
         value={command.options.alt}
         onChange={event => self.onCommandAltChange(myIndex, event)}
       />
+    </td>
+    <td>
+      {self.extras(myIndex, command)}
     </td>
   </tr>
 ));
@@ -56,6 +49,7 @@ const SortableList = SortableContainer(({ commands, self }) => {
             <td>Name</td>
             <td>Type</td>
             <td>Alt</td>
+            <td>Extras</td>
           </tr>
           {commands.map((command, index) => (
             <SortableItem
@@ -120,9 +114,75 @@ class MissionPlanner extends Component {
     });
   }
 
+  onLineSepChange(index, event) {
+    let commands = this.props.homeState.commands.slice();
+    commands[index].options.line_sep = Number(event.target.value);
+    this.props.setHomeState({commands: commands});
+  }
+
   onCommandClick(index, event) {
     if (event.target.tagName === "TD") {
       this.props.setHomeState({ focusedCommand: index });
+    }
+  }
+
+  commandTypeOptions(index, command) {
+    if (command.options.command_type === "survey") {
+      return (
+        <FormControl
+          componentClass="select"
+          placeholder="select"
+          value={command.options.command_type}
+          onChange={event => this.onCommandTypeChange(index, event)}
+        >
+          <option>survey</option>
+        </FormControl>
+      );
+    } else {
+      return (
+        <FormControl
+          componentClass="select"
+          placeholder="select"
+          value={command.options.command_type}
+          onChange={event => this.onCommandTypeChange(index, event)}
+        >
+          <option>goto</option>
+          <option>jump</option>
+          <option>bomb</option>
+          <option>off-axis</option>
+        </FormControl>
+      );
+    }
+  }
+
+  extras(index, command) {
+    if (command.options.command_type === "survey") {
+      return (
+        <div>
+          Line Separation:
+          <input
+            type="number"
+            value={command.options.line_sep}
+            onChange={event => this.onLineSepChange(index, event)}
+          />
+        </div>
+      );
+    } else if (command.options.command_type === "off-axis") {
+      if (this.props.homeState.mission && this.props.homeState.mission.off_axis_odlc_pos) {
+        let pos = this.props.homeState.mission.off_axis_odlc_pos;
+        command.options.off_axis_pos = { lat: pos.latitude, lng: pos.longitude };
+        return (
+          <div>
+            Off-Axis Pos: <font color="green">Known</font>
+          </div>
+        );
+      } else {
+        return (
+          <div>
+            Off-Axis Pos: <font color="red">Unknown</font>
+          </div>
+        );
+      }
     }
   }
 }
