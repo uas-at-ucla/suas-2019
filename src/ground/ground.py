@@ -132,23 +132,6 @@ def on_image(*args):
     ground_socketio_server.emit('image', args[0])
 
 
-def drone_connected():
-    print "connected to drone"
-    ground_socketio_server.emit('drone_connected')
-    communications.emit('interop_data', object_to_dict({ \
-        'missions': missions, \
-        'stationary_obstacles': stationary_obstacles, \
-        'moving_obstacles': moving_obstacles \
-    }))
-
-
-def drone_disconnected():
-    print "disconnected from drone!"
-    communications.disconnect()
-    ground_socketio_server.emit('drone_disconnected')
-    listen_for_communications()
-
-
 # Interop. #####################################################################
 def object_to_dict(my_object):
     return json.loads(json.dumps(my_object, default=lambda o: o.__dict__))
@@ -192,7 +175,7 @@ def auto_connect_to_interop():
 
 def refresh_interop_data():
     # This is necessary to talk to the socket from a separate thread
-    interface_client = socketIO_client.SocketIO('0.0.0.0', 8084)
+    interface_client = socketIO_client.SocketIO('0.0.0.0', 8081)
 
     global interop_client
     global missions
