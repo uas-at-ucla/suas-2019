@@ -10,7 +10,7 @@ class Panel extends Component {
           <button
             className="panel-expand"
             data-toggle="modal"
-            data-target={`#${this.props.id}`}
+            data-target={`#${this.props.id}-modal`}
           >
             <i className="fa fa-expand" aria-hidden="true" />
           </button>
@@ -19,13 +19,15 @@ class Panel extends Component {
     }
 
     return (
-      <div className="Panel">
+      <div className="Panel" id={this.props.id}>
         <div className="card text-white">
-          {header}
-          <div className="card-body">{this.props.children}</div>
+          <div className="card-body">
+            {header}
+            {this.props.children}
+          </div>
         </div>
 
-        <div className="modal fade" id={this.props.id}>
+        <div className="modal fade" id={`${this.props.id}-modal`}>
           <div className="modal-dialog modal-lg">
             <div className="modal-content">
               <div className="modal-header">
