@@ -8,7 +8,8 @@ message SleepCommand {
   required double time = 1;
 }
 
-message BombCommand {}
+message BombCommand {
+}
 
 message GotoCommand {
   required double latitude = 1;

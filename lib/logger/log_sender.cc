@@ -8,10 +8,7 @@ LogSender::LogSender() : context_(1), socket_(context_, ZMQ_PUB) {
 }
 
 void LogSender::Log(const char* file, const char* function, int line_num,
-                    ::std::ostream& log_line_raw) {
-  std::ostringstream log_line;
-  log_line << log_line_raw.rdbuf();
-
+                    ::std::ostringstream& log_line) {
   double time = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
                     ::std::chrono::system_clock::now().time_since_epoch())
                     .count() /
