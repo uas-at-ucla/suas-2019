@@ -30,6 +30,8 @@ void LogWriter::ReceiveThread() {
   // Listen to ZMQ message queue for incoming log messages.
   ::zmq::message_t log_message;
 
+  auto last_flush = ::std::chrono::steady_clock::now();
+
   while (run_) {
     if (!socket_.recv(&log_message, ZMQ_NOBLOCK)) {
       usleep(1e6 / 1e4);
@@ -56,6 +58,13 @@ void LogWriter::ReceiveThread() {
                          << log_line_no_commas;
     ::std::string log_line_csv = log_line_csv_sstream.str();
     logger_->info(log_line_csv);
+
+    // Periodically flush log data to file.
+    if (::std::chrono::duration_cast<::std::chrono::milliseconds>(
+            ::std::chrono::steady_clock::now() - last_flush).count() > 1e1) {
+      logger_->flush();
+      last_flush = ::std::chrono::steady_clock::now();
+    }
   }
 }
 
