@@ -49,7 +49,7 @@ const SortableList = SortableContainer(({ commands, self }) => {
             <td>Name</td>
             <td>Type</td>
             <td>Alt</td>
-            <td>Extras</td>
+            <td>Options</td>
           </tr>
           {commands.map((command, index) => (
             <SortableItem
@@ -161,6 +161,7 @@ class MissionPlanner extends Component {
         <div>
           Line Separation:
           <input
+            className="line_sep_input"
             type="number"
             value={command.options.line_sep}
             onChange={event => this.onLineSepChange(index, event)}
