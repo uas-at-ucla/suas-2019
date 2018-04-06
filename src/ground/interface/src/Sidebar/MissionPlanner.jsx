@@ -1,5 +1,12 @@
 import React, { Component } from "react";
-import { FormControl, FormGroup } from "react-bootstrap";
+import {
+  FormControl,
+  FieldGroup,
+  FormGroup,
+  ControlLabel,
+} from "react-bootstrap";
+import { InputGroup, InputGroupAddon, InputGroupText, Input } from 'reactstrap';
+
 import {
   SortableContainer,
   SortableElement,
@@ -13,29 +20,35 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => (
   >
     <td>{myIndex + 1}</td>
     <td>
-      <input
-        className="name_input"
-        type="text"
-        value={command.name}
-        onChange={event => self.onCommandNameChange(myIndex, event)}
-      />
-    </td>
-    <td>
       <FormGroup controlId="formControlsSelect" className="type_select">
         {self.commandTypeOptions(myIndex, command)}
       </FormGroup>
     </td>
     <td>
-      <input
-        className="altitude_input"
-        type="number"
-        value={command.options.alt}
-        onChange={event => self.onCommandAltChange(myIndex, event)}
-      />
+      <InputGroup controlId="lat">
+        <InputGroupAddon addonType="prepend">
+          <InputGroupText>lat</InputGroupText>
+        </InputGroupAddon>
+        <Input placeholder="10" type="number" width="5" bsSize="small"/>
+      </InputGroup>
     </td>
     <td>
-      {self.extras(myIndex, command)}
+      <InputGroup controlId="lng">
+        <InputGroupAddon addonType="prepend">
+          <InputGroupText>lng</InputGroupText>
+        </InputGroupAddon>
+        <Input placeholder="10" type="number" width="5" bsSize="small"/>
+      </InputGroup>
     </td>
+    <td>
+      <InputGroup controlId="alt">
+        <InputGroupAddon addonType="prepend">
+          <InputGroupText>alt</InputGroupText>
+        </InputGroupAddon>
+        <Input placeholder="10" type="number" width="5" bsSize="small"/>
+      </InputGroup>
+    </td>
+    <td>{self.extras(myIndex, command)}</td>
   </tr>
 ));
 
@@ -44,13 +57,6 @@ const SortableList = SortableContainer(({ commands, self }) => {
     <div className="scrollbar">
       <table id="commandList">
         <tbody>
-          <tr className="command_row" id="commandListLabels">
-            <td>#</td>
-            <td>Name</td>
-            <td>Type</td>
-            <td>Alt</td>
-            <td>Options</td>
-          </tr>
           {commands.map((command, index) => (
             <SortableItem
               key={`item-${index}`}
@@ -117,7 +123,7 @@ class MissionPlanner extends Component {
   onLineSepChange(index, event) {
     let commands = this.props.homeState.commands.slice();
     commands[index].options.line_sep = Number(event.target.value);
-    this.props.setHomeState({commands: commands});
+    this.props.setHomeState({ commands: commands });
   }
 
   onCommandClick(index, event) {
@@ -169,9 +175,15 @@ class MissionPlanner extends Component {
         </div>
       );
     } else if (command.options.command_type === "off-axis") {
-      if (this.props.homeState.mission && this.props.homeState.mission.off_axis_odlc_pos) {
+      if (
+        this.props.homeState.mission &&
+        this.props.homeState.mission.off_axis_odlc_pos
+      ) {
         let pos = this.props.homeState.mission.off_axis_odlc_pos;
-        command.options.off_axis_pos = { lat: pos.latitude, lng: pos.longitude };
+        command.options.off_axis_pos = {
+          lat: pos.latitude,
+          lng: pos.longitude
+        };
         return (
           <div>
             Off-Axis Pos: <font color="green">Known</font>
