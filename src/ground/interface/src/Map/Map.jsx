@@ -243,7 +243,11 @@ class Map extends Component {
             command.options.alt +
             " m<br>" +
             '<button class="remove_command btn btn-sm btn-outline-danger">' +
-            "Remove</button></div>"
+            "Remove</button>" +
+            '<button class="drag_command btn btn-sm btn-outline-secondary">' +
+            "Drag</button>" +
+            '<button hidden class="place_command btn btn-sm btn-outline-success">' +
+            "Place</button></div>"
         });
 
         let setupListeners = () => {
@@ -255,12 +259,52 @@ class Map extends Component {
               commands.splice(i, 1);
               this.props.setHomeState({ commands: commands });
             };
+            let drag_btn = div.getElementsByClassName("drag_command")[0];
+            let place_btn = div.getElementsByClassName("place_command")[0];
+            if (command.draggable) {
+              drag_btn.setAttribute("hidden", "hidden");
+              place_btn.removeAttribute("hidden");
+            }
+            drag_btn.onclick = () => {
+              command.draggable = true;
+              this.commands[i].marker.setDraggable(true);
+              this.commands[i].marker.setLabel({
+                fontFamily: "Fontawesome",
+                text: "\uf256",
+                fontSize: "15px"
+              });
+              drag_btn.setAttribute("hidden", "hidden");
+              place_btn.removeAttribute("hidden");
+            };
+            place_btn.onclick = () => {
+              command.draggable = false;
+              this.commands[i].marker.setDraggable(false);
+              this.commands[i].marker.setLabel(null);
+              place_btn.setAttribute("hidden", "hidden");
+              drag_btn.removeAttribute("hidden");
+            };
           }
         };
+
+        if (command.draggable) {
+          marker.setDraggable(true);
+          marker.setLabel({
+            fontFamily: "Fontawesome",
+            text: "\uf256",
+            fontSize: "15px"
+          });
+        }
 
         marker.addListener("click", () => {
           infowindow.open(this.map, marker);
           this.commands[i].onInfoOpened();
+        });
+
+        marker.addListener("dragend", () => {
+          let commands = this.props.homeState.commands.slice();
+          commands[i].options.lat = this.commands[i].marker.getPosition().lat();
+          commands[i].options.lng = this.commands[i].marker.getPosition().lng();
+          this.props.setHomeState({ commands: commands });
         });
 
         google.maps.event.addListener(this.map, "click", () => {
@@ -290,6 +334,10 @@ class Map extends Component {
             lng: pt.lng
           });
         }
+        commandPositions.push({
+          lat: command.options.boundary_pts[0].lat,
+          lng: command.options.boundary_pts[0].lng
+        });
       }
     }
 

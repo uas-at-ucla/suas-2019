@@ -118,6 +118,10 @@
   width: 4em;
 }
 
+.command_row .line_sep_input {
+  width: 4em;
+}
+
 .command_row .name_input {
   width: 9em;
 }
