@@ -3,9 +3,9 @@ import {
   FormControl,
   FieldGroup,
   FormGroup,
-  ControlLabel,
+  ControlLabel
 } from "react-bootstrap";
-import { InputGroup, InputGroupAddon, InputGroupText, Input } from 'reactstrap';
+import { InputGroup, InputGroupAddon, InputGroupText, Input } from "reactstrap";
 
 import {
   SortableContainer,
@@ -29,7 +29,11 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => (
         <InputGroupAddon addonType="prepend">
           <InputGroupText>lat</InputGroupText>
         </InputGroupAddon>
-        <Input placeholder="10" type="number" width="5" bsSize="small"/>
+        <Input
+          value={command.options.lat.toFixed(6)}
+          width="5"
+          bsSize="small"
+        />
       </InputGroup>
     </td>
     <td>
@@ -37,7 +41,11 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => (
         <InputGroupAddon addonType="prepend">
           <InputGroupText>lng</InputGroupText>
         </InputGroupAddon>
-        <Input placeholder="10" type="number" width="5" bsSize="small"/>
+        <Input
+          value={command.options.lng.toFixed(6)}
+          width="5"
+          bsSize="small"
+        />
       </InputGroup>
     </td>
     <td>
@@ -45,7 +53,11 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => (
         <InputGroupAddon addonType="prepend">
           <InputGroupText>alt</InputGroupText>
         </InputGroupAddon>
-        <Input placeholder="10" type="number" width="5" bsSize="small"/>
+        <Input
+          value={command.options.alt.toFixed(1)}
+          width="5"
+          bsSize="small"
+        />
       </InputGroup>
     </td>
     <td>{self.extras(myIndex, command)}</td>

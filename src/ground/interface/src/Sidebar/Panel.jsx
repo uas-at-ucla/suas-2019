@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import MissionPlanner from "./MissionPlanner";
+import MissionPlannerOverview from "./MissionPlannerOverview";
 
 class Panel extends Component {
   render() {
@@ -23,7 +25,10 @@ class Panel extends Component {
         <div className="card text-white">
           <div className="card-body">
             {header}
-            {this.props.children}
+            <MissionPlannerOverview
+              homeState={this.props.homeState}
+              setHomeState={this.props.setHomeState}
+            />
           </div>
         </div>
 
@@ -36,7 +41,12 @@ class Panel extends Component {
                   &times;
                 </button>
               </div>
-              <div className="modal-body">{this.props.children}</div>
+              <div className="modal-body">
+                <MissionPlanner
+                  homeState={this.props.homeState}
+                  setHomeState={this.props.setHomeState}
+                />
+              </div>
             </div>
           </div>
         </div>
