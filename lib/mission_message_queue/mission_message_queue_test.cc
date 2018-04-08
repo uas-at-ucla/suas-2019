@@ -24,7 +24,7 @@ TEST(MissionMessageQueueTest, SendMissionOverQueueTest) {
   for (int i = 0; i < 100; i++) {
     ::lib::mission_manager::Command *cmd = mission.add_commands();
 
-    mission_manager::GotoCommand *goto_cmd = cmd->mutable_goto_command();
+    mission_manager::GotoCommand *goto_cmd = cmd->mutable_gotocommand();
     goto_cmd->set_latitude(1.0);
     goto_cmd->set_longitude(3.0);
     goto_cmd->set_altitude(3.0);
