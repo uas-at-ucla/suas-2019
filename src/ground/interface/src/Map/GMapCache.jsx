@@ -27,10 +27,10 @@ class GMapCache {
 
     this.max_zoom = 21;
 
-    var webStorage = null;
+    this.webStorage = null;
 
     if (window.localStorage) {
-      webStorage = this.LocalStorageWebStorageImpl();
+      this.webStorage = this.LocalStorageWebStorageImpl();
     } else {
       alert("Your browser don't support localStorage");
     }

@@ -44,7 +44,7 @@ void MissionMessageQueueReceiver::ReceiveThread() {
 
   while (run_) {
     if(!socket_.recv(&mission_message, ZMQ_NOBLOCK)) {
-      usleep(1e6 / 1e4);
+      usleep(1e6 / 1e1);
       continue;
     }
 

@@ -1,41 +1,45 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 import {
   FormControl,
   FieldGroup,
   FormGroup,
   ControlLabel
-} from "react-bootstrap";
-import { InputGroup, InputGroupAddon, InputGroupText, Input } from "reactstrap";
+} from 'react-bootstrap';
+import { InputGroup, InputGroupAddon, InputGroupText, Input } from 'reactstrap';
 
 import {
   SortableContainer,
   SortableElement,
   arrayMove
-} from "react-sortable-hoc";
-import "./MissionPlanner.css";
+} from 'react-sortable-hoc';
+import './MissionPlanner.css';
 
-const SortableItem = SortableElement(({ command, myIndex, self }) => (
-  <tr
-    className="command_row"
-    onClick={event => self.onCommandClick(myIndex, event)}
-  >
-    <td>{myIndex + 1}</td>
-    <td>{command.options.command_type}</td>
-    <td>lat: {command.options.lat.toFixed(4)}</td>
-    <td>lng: {command.options.lng.toFixed(4)}</td>
-    <td>alt: {command.options.alt.toFixed(1)}</td>
-  </tr>
-));
+const SortableItem = SortableElement(({ command, myIndex, self }) => {
+  let type = Object.keys(command)[0];
+  let fields = Object.keys(command[type]);
+
+  return (
+    <tr
+      className="command_row"
+      onClick={event => self.onCommandClick(myIndex, event)}
+    >
+      <td>{myIndex + 1}</td>
+      <td>{type}</td>
+      {fields.map((field, index) => (
+        <td key={index}>{parseFloat(command[type][field]).toFixed(3)}</td>
+      ))}
+    </tr>
+  );
+});
 
 const SortableList = SortableContainer(({ commands, self }) => {
-  console.log(commands);
   return (
     <div className="scrollbar">
-      <table id="commandList">
+      <table id="commandListOverview">
         <tbody>
           {commands.map((command, index) => (
             <SortableItem
-              key={`item-${index}`}
+              key={index}
               index={index}
               command={command}
               myIndex={index}
@@ -103,7 +107,7 @@ class MissionPlannerOverview extends Component {
   }
 
   onCommandClick(index, event) {
-    if (event.target.tagName === "TD") {
+    if (event.target.tagName === 'TD') {
       this.props.setHomeState({ focusedCommand: index });
     }
   }
