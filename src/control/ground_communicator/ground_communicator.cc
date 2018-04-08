@@ -239,21 +239,21 @@ void MissionReceiver::OnConnect() {
           if (data->get_vector()[i]->get_map()["command_type"]->get_string() ==
               "nothing") {
             ::lib::mission_manager::NothingCommand* nothing_cmd =
-                cmd->mutable_nothing_command();
+                cmd->mutable_nothingcommand();
             (void)nothing_cmd;
 
           } else if (data->get_vector()[i]
                          ->get_map()["command_type"]
                          ->get_string() == "sleep") {
             ::lib::mission_manager::SleepCommand* sleep_cmd =
-                cmd->mutable_sleep_command();
+                cmd->mutable_sleepcommand();
             (void)sleep_cmd;
 
           } else if (data->get_vector()[i]
                          ->get_map()["command_type"]
-                         ->get_string() == "goto") {
+                         ->get_string() == "Goto") {
             ::lib::mission_manager::GotoCommand* goto_cmd =
-                cmd->mutable_goto_command();
+                cmd->mutable_gotocommand();
             goto_cmd->set_latitude(
                 data->get_vector()[i]->get_map()["lat"]->get_double());
             goto_cmd->set_longitude(
@@ -263,9 +263,9 @@ void MissionReceiver::OnConnect() {
 
           } else if (data->get_vector()[i]
                          ->get_map()["command_type"]
-                         ->get_string() == "bomb_drop") {
+                         ->get_string() == "Bomb") {
             ::lib::mission_manager::BombCommand* bomb_cmd =
-                cmd->mutable_bomb_command();
+                cmd->mutable_bombcommand();
             (void)bomb_cmd;
           }
         }
