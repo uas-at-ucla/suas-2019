@@ -42,10 +42,11 @@ class Controls extends Component {
 
   sendRunMissionCommand = () => {
     let commands = [];
+
     for (let command of this.props.homeState.commands) {
       commands.push(command.options);
     }
-    console.log(commands);
+
     this.props.socketEmit("execute_commands", commands);
   };
 
