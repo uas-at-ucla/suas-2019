@@ -69,10 +69,10 @@ void AutopilotSensorReader::RunIteration() {
   autopilot_interface::TimeStamps current_timestamps =
       copter_io_->current_messages.time_stamps;
 
-//if (!(current_timestamps.global_position_int -
-//      last_timestamps_.global_position_int)) {
-//  return;
-//}
+  if (!(current_timestamps.global_position_int -
+        last_timestamps_.global_position_int)) {
+    return;
+  }
 
   last_timestamps_ = current_timestamps;
 
