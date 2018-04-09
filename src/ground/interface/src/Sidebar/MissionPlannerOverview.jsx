@@ -1,13 +1,5 @@
 import React, { Component } from 'react';
 import {
-  FormControl,
-  FieldGroup,
-  FormGroup,
-  ControlLabel
-} from 'react-bootstrap';
-import { InputGroup, InputGroupAddon, InputGroupText, Input } from 'reactstrap';
-
-import {
   SortableContainer,
   SortableElement,
   arrayMove
@@ -15,7 +7,7 @@ import {
 import './MissionPlanner.css';
 
 const SortableItem = SortableElement(({ command, myIndex, self }) => {
-  let type = Object.keys(command)[0];
+  let type = command.type;
   let fields = Object.keys(command[type]);
 
   return (
@@ -72,39 +64,6 @@ class MissionPlannerOverview extends Component {
       });
     }
   };
-
-  onCommandTypeChange(index, event) {
-    let commands = this.props.homeState.commands.slice();
-    commands[index].options.command_type = event.target.value;
-    this.props.setHomeState({
-      commands: commands,
-      dontRedrawCommands: true
-    });
-  }
-
-  onCommandNameChange(index, event) {
-    let commands = this.props.homeState.commands.slice();
-    commands[index].name = event.target.value;
-    this.props.setHomeState({
-      commands: commands,
-      dontRedrawCommands: true
-    });
-  }
-
-  onCommandAltChange(index, event) {
-    let commands = this.props.homeState.commands.slice();
-    commands[index].options.alt = Number(event.target.value);
-    this.props.setHomeState({
-      commands: commands,
-      dontRedrawCommands: true
-    });
-  }
-
-  onLineSepChange(index, event) {
-    let commands = this.props.homeState.commands.slice();
-    commands[index].options.line_sep = Number(event.target.value);
-    this.props.setHomeState({ commands: commands });
-  }
 
   onCommandClick(index, event) {
     if (event.target.tagName === 'TD') {

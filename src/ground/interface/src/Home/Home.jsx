@@ -12,29 +12,19 @@ class Home extends Component {
   state = {
     isSidebarShown: true,
     mission: this.props.appState.missions[0] || null,
-    command_types: {},
     commands: [],
     dontRedrawCommands: false,
-    focusedCommand: null,
-    add_command: null,
-    make_command: null,
-    trigger_redraw: null,
-    set_home_state: null
+    focusedCommand: null
   };
 
+  command_types = {};
+
   componentDidMount() {
-    let self = this;
-
-    self.state.set_home_state = self.setHomeState;
-
-    protobuf.load('mission_commands.proto', function(err, root) {
+    protobuf.load('mission_commands.proto', (err, root) => {
       if (err) throw err;
 
       let proto_commands = root.toJSON().nested.lib.nested.mission_manager
         .nested;
-      self.state.add_command = self.add_command;
-      self.state.make_command = self.make_command;
-      self.state.trigger_redraw = self.trigger_redraw;
 
       for (let proto_command in proto_commands) {
         if (proto_command == 'Mission' || proto_command == 'Command') break;
@@ -44,10 +34,10 @@ class Home extends Component {
           fields.push(field);
         }
 
-        self.state.command_types[proto_command] = fields;
+        this.command_types[proto_command] = fields;
       }
 
-      self.protobuf_root = root;
+      this.protobuf_root = root;
     });
   }
 
@@ -61,6 +51,7 @@ class Home extends Component {
             setAppState={this.props.setAppState}
             homeState={this.state}
             setHomeState={this.setHomeState}
+            makeCommand={this.make_command}
           />
           <div id="left_side">
             <div
@@ -72,7 +63,9 @@ class Home extends Component {
                 homeState={this.state}
                 setHomeState={this.setHomeState}
                 socketEmit={this.props.socketEmit}
-                ref={this.sidebar}
+                addCommand={this.add_command}
+                makeCommand={this.make_command}
+                commandTypes={this.command_types}
               />
             </div>
           </div>
@@ -104,30 +97,51 @@ class Home extends Component {
   };
 
   make_command = (type, fields) => {
-    let self = this;
-    let Mission = self.protobuf_root.lookupType('lib.mission_manager.Mission');
-    let Command = self.protobuf_root.lookupType('lib.mission_manager.Command');
+    let defaults = {
+      'GotoCommand': {
+        latitude: 38.145298,
+        longitude: -76.42861,
+        altitude: 30
+      },
+      'BombCommand': {
+        latitude: 38.145298,
+        longitude: -76.42861
+      }
+    };
+
+    let Mission = this.protobuf_root.lookupType('lib.mission_manager.Mission');
+    let Command = this.protobuf_root.lookupType('lib.mission_manager.Command');
 
     let command_proto_defs = Object();
-    for (let name of Object.keys(self.state.command_types)) {
-      let cmd = self.protobuf_root.lookupType('lib.mission_manager.' + name);
+    for (let name of Object.keys(this.command_types)) {
+      let cmd = this.protobuf_root.lookupType('lib.mission_manager.' + name);
 
       command_proto_defs[name] = cmd;
     }
 
     if (fields == null) {
-      if (type == 'GotoCommand') {
-        fields = {
-          latitude: 38.145298,
-          longitude: -76.42861,
-          altitude: 10
-        };
+      if (defaults[type]) {
+        fields = defaults[type];
       } else {
         fields = {};
 
-        for(let field of self.state.command_types[type]) {
+        for(let field of this.command_types[type]) {
           console.log(field);
           fields[field] = 0;
+        }
+      }
+    } else {
+      // delete extra fields
+      for(let field of Object.keys(fields)) {
+        if (!this.command_types[type].includes(field)) {
+          delete fields[field];
+        }
+      }
+
+      // add missing fields
+      for(let field of this.command_types[type]) {
+        if (fields[field] == undefined) {
+          fields[field] = defaults[type] ? defaults[type][field] || 0 : 0;
         }
       }
     }
@@ -140,22 +154,16 @@ class Home extends Component {
     cmd_oneof[type] = cmd_inner;
 
     let cmd = Command.create(cmd_oneof);
+    cmd.type = type;
 
     return cmd;
   };
 
   add_command = (type, fields) => {
-    let self = this;
-
-    let cmds = self.state.commands.slice();
-    cmds.push(self.make_command(type, fields));
-
-    self.setState({commands: cmds});
+    let cmds = this.state.commands.slice();
+    cmds.push(this.make_command(type, fields));
+    this.setState({commands: cmds});
   };
-
-  trigger_redraw = () => {
-    this.setState({});
-  }
 }
 
 export default Home;

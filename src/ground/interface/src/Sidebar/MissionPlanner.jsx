@@ -21,7 +21,7 @@ import {
 } from 'react-sortable-hoc';
 
 const SortableItem = SortableElement(({ command, myIndex, self }) => {
-  let type = Object.keys(command)[0];
+  let type = command.type;
   let fields = Object.keys(command[type]);
 
   if (self.state.command_field[myIndex] == null) {
@@ -36,7 +36,7 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => {
     >
       <td>{String(Number(myIndex) + 1)}</td>
       <td>
-        <FormGroup className="type_select" style={{ width: '150px' }}>
+        <FormGroup className="type_select">
           {self.commandTypeOptions(myIndex, command)}
         </FormGroup>
       </td>
@@ -61,6 +61,7 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => {
                   );
                 }}
                 bsSize="small"
+                disabled={command.mission_point && (field === 'latitude' || field === 'longitude')}
               />
             </InputGroup>
           </td>
@@ -86,44 +87,6 @@ const SortableList = SortableContainer(({ commands, self }) => {
           ))}
         </tbody>
       </table>
-      <div className="add_command_button_wrapper">
-        <Button
-          color="primary"
-          className="mission_button"
-          onClick={() =>
-            self.props.homeState.add_command('NothingCommand', null)
-          }
-        >
-          Add Command
-        </Button>
-        <br />
-        <Button
-          color={
-            self.state.command_field_reset
-              ? 'secondary'
-              : self.state.can_apply_modifications ? 'success' : 'danger'
-          }
-          disabled={
-            !self.state.can_apply_modifications ||
-            self.state.command_field_reset
-          }
-          className="mission_button"
-          onClick={() => self.apply_changes()}
-        >
-          {self.state.command_field_reset
-            ? 'No Changes'
-            : 'Apply Modifications'}
-        </Button>
-        <Button
-          color="secondary"
-          className="mission_button"
-          color={self.state.command_field_reset ? "secondary" : "warning"}
-          disabled={self.state.command_field_reset}
-          onClick={() => self.reset_changes()}
-        >
-          Reset Changes
-        </Button>
-      </div>
     </div>
   );
 });
@@ -131,34 +94,67 @@ const SortableList = SortableContainer(({ commands, self }) => {
 class MissionPlanner extends Component {
   state = {
     command_field: {},
-    current_commands: null,
     can_apply_modifications: true,
     command_field_reset: true
   };
 
   componentWillReceiveProps(nextProps) {
-    if (
-      JSON.stringify(nextProps.homeState.commands) !=
-      this.state.current_commands
-    ) {
+    if (nextProps.homeState.commands !== this.props.homeState.commands) {
       if(this.state.command_field_reset) {
         this.setState({command_field: {}});
-        this.state.current_commands = JSON.stringify(
-          nextProps.homeState.commands
-        );
       }
     }
   }
 
   render() {
     return (
-      <SortableList
-        commands={this.props.homeState.commands}
-        onSortEnd={this.onSortEnd}
-        self={this}
-        transitionDuration={200}
-        distance={2}
-      />
+      <div>
+        <SortableList
+          commands={this.props.homeState.commands}
+          onSortEnd={this.onSortEnd}
+          self={this}
+          transitionDuration={200}
+          distance={2}
+        />
+        <div className="add_command_button_wrapper">
+          <Button
+            color="primary"
+            className="mission_button"
+            onClick={() =>
+              this.props.addCommand('NothingCommand', null)
+            }
+          >
+            Add Command
+          </Button>
+          <br />
+          <Button
+            color={
+              this.state.command_field_reset
+                ? 'secondary'
+                : this.state.can_apply_modifications ? 'success' : 'danger'
+            }
+            disabled={
+              !this.state.can_apply_modifications ||
+              this.state.command_field_reset
+            }
+            className="mission_button"
+            onClick={() => this.apply_changes()}
+          >
+            {this.state.command_field_reset
+              ? 'No Changes'
+              : 'Apply Modifications'}
+          </Button>
+          <Button
+            color="secondary"
+            className="mission_button"
+            color={this.state.command_field_reset ? "secondary" : "warning"}
+            disabled={this.state.command_field_reset}
+            onClick={() => this.reset_changes()}
+          >
+            Reset Changes
+          </Button>
+        </div>
+      </div>
     );
   }
 
@@ -172,28 +168,21 @@ class MissionPlanner extends Component {
 
   onCommandTypeChange(index, event) {
     let commands = this.props.homeState.commands.slice();
-    commands[index] = this.props.homeState.make_command(
-      event.target.value,
-      null
+    let type = commands[index].type;
+    let fields = commands[index][type];
+    let newType = event.target.value;
+    let command = this.props.makeCommand(
+      newType,
+      fields
     );
-    this.props.setHomeState({ commands: commands });
-  }
-
-  onCommandNameChange(index, event) {
-    let commands = this.props.homeState.commands.slice();
-    commands[index].name = event.target.value;
-    this.props.setHomeState({ commands: commands });
-  }
-
-  onCommandAltChange(index, event) {
-    let commands = this.props.homeState.commands.slice();
-    commands[index].options.alt = Number(event.target.value);
-    this.props.setHomeState({ commands: commands });
-  }
-
-  onLineSepChange(index, event) {
-    let commands = this.props.homeState.commands.slice();
-    commands[index].options.line_sep = Number(event.target.value);
+    if (commands[index].mission_point && command[newType].latitude) {
+      delete commands[index][type];
+      commands[index].type = newType;
+      commands[index][newType] = command[newType];
+    } else {
+      commands[index] = command;
+    }
+    
     this.props.setHomeState({ commands: commands });
   }
 
@@ -204,13 +193,13 @@ class MissionPlanner extends Component {
   }
 
   commandTypeOptions(index, command) {
-    let items = Object.keys(this.props.homeState.command_types);
+    let items = Object.keys(this.props.commandTypes);
 
     return (
       <FormControl
         componentClass="select"
         placeholder="select"
-        defaultValue={Object.keys(command)[0]}
+        value={command.type}
         onChange={event => this.onCommandTypeChange(index, event)}
         key={index}
       >
@@ -220,8 +209,9 @@ class MissionPlanner extends Component {
   }
 
   changed_command_field(value, command, index) {
-    this.state.command_field[command][index] = value;
-    this.setState({ command_field_reset: false });
+    let new_command_field = {...this.state.command_field};
+    new_command_field[command][index] = value;
+    this.setState({command_field_reset: false, command_field: new_command_field});
 
     this.check_can_apply();
   }
@@ -244,7 +234,7 @@ class MissionPlanner extends Component {
     let cmds_copy = this.props.homeState.commands.slice();
     for (let command of Object.keys(this.state.command_field)) {
       for (let index of Object.keys(this.state.command_field[command])) {
-        let cmd_type = Object.keys(this.props.homeState.commands[command])[0];
+        let cmd_type = this.props.homeState.commands[command].type;
         let field = Object.keys(
           this.props.homeState.commands[command][cmd_type]
         )[index];
@@ -255,7 +245,7 @@ class MissionPlanner extends Component {
       }
     }
 
-    this.props.homeState.set_home_state({ commands: cmds_copy });
+    this.props.setHomeState({ commands: cmds_copy });
     this.setState({ command_field_reset: true });
   }
 
