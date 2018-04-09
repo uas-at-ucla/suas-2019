@@ -12,6 +12,9 @@ class Sidebar extends Component {
             title="Mission Plan"
             homeState={this.props.homeState}
             setHomeState={this.props.setHomeState}
+            addCommand={this.props.addCommand}
+            makeCommand={this.props.makeCommand}
+            commandTypes={this.props.commandTypes}
           />
         </div>
       </div>

@@ -15,17 +15,7 @@ class Map extends Component {
   }
 
   stateDidChange(nextProps, stateProp, key) {
-    let commands_changed = false;
-
-    if (JSON.stringify(nextProps.homeState.commands) != this.last_commands) {
-      commands_changed = true;
-      this.last_commands = JSON.stringify(nextProps.homeState.commands);
-    }
-
-    return (
-      commands_changed ||
-      nextProps[stateProp][key] !== this.props[stateProp][key]
-    );
+    return nextProps[stateProp][key] !== this.props[stateProp][key];
   }
 
   registerStateDepFunction(stateProp, key, func) {
@@ -213,7 +203,7 @@ class Map extends Component {
 
     for (let i = 0; i < commands.length; i++) {
       let command = commands[i];
-      let type = Object.keys(command)[0];
+      let type = command.type;
       let fields = command[type];
 
       if (
@@ -222,61 +212,15 @@ class Map extends Component {
         command.mission_point.marker.getMap()
       ) {
         this.update_mission_point(command, i);
-        this.commands.push(command.mission_point.marker);
-      } else if (type == 'GotoCommand') {
-        let pos = { lat: fields.latitude, lng: fields.longitude };
-
-        if (last_pos != null) {
-          // Create the polyline and add the symbol via the 'icons' property.
-          this.commands_path.push(
-            new google.maps.Polyline({
-              path: [
-                { lat: last_pos.lat, lng: last_pos.lng },
-                { lat: pos.lat, lng: pos.lng }
-              ],
-              icons: [
-                {
-                  icon: line_symbol,
-                  offset: '100%'
-                }
-              ],
-              strokeColor: '#0000FF',
-              map: this.map
-            })
-          );
-        }
-        last_pos = pos;
-
+        this.commands.push(null);
+      } else if (fields.latitude && fields.longitude) {
         let marker = new google.maps.Marker({
           map: this.map,
           position: { lat: fields.latitude, lng: fields.longitude }
         });
 
-        let title = type;
-
         let infowindow = new google.maps.InfoWindow({
-          content:
-            '<div id="command_infowindow_' +
-            i +
-            '">' +
-            '<h6>' +
-            title +
-            '</h6>' +
-            'Lat: ' +
-            fields.latitude +
-            '<br>' +
-            'Lng: ' +
-            fields.longitude +
-            '<br>' +
-            'Alt: ' +
-            fields.longitude +
-            ' m<br>' +
-            '<button class="remove_command btn btn-sm btn-outline-danger">' +
-            'Remove</button>' +
-            '<button class="drag_command btn btn-sm btn-outline-secondary">' +
-            'Drag</button>' +
-            '<button hidden class="place_command btn btn-sm btn-outline-success">' +
-            'Place</button></div>'
+          content: this.command_info(i, type, fields)
         });
 
         let setup_listeners = () => {
@@ -351,11 +295,29 @@ class Map extends Component {
         this.commands.push(null);
       }
 
-      if (type == 'GotoCommand') {
-        commandPositions.push({
-          lat: fields.latitude,
-          lng: fields.longitude
-        });
+      if (fields.latitude && fields.longitude) {
+        let pos = { lat: fields.latitude, lng: fields.longitude };
+
+        if (last_pos != null) {
+          // Create the polyline and add the symbol via the 'icons' property.
+          this.commands_path.push(
+            new google.maps.Polyline({
+              path: [
+                { lat: last_pos.lat, lng: last_pos.lng },
+                { lat: pos.lat, lng: pos.lng }
+              ],
+              icons: [
+                {
+                  icon: line_symbol,
+                  offset: '100%'
+                }
+              ],
+              strokeColor: '#0000FF',
+              map: this.map
+            })
+          );
+        }
+        last_pos = pos;
       } /*else {
         for (let pt of command.options.boundary_pts) {
           //TODO: generate search path
@@ -379,7 +341,7 @@ class Map extends Component {
       let point =
         this.commands[props.homeState.focusedCommand] ||
         props.homeState.commands[props.homeState.focusedCommand].mission_point;
-      if (point.marker) {
+      if (point && point.marker) {
         this.map.panTo(point.marker.getPosition());
         point.marker.setAnimation(google.maps.Animation.BOUNCE);
         setTimeout(() => point.marker.setAnimation(null), 1400);
@@ -409,19 +371,23 @@ class Map extends Component {
   };
 
   add_goto_command(lat, lng, alt, name, mission_point) {
-    this.props.homeState.add_command('GotoCommand', {
+    let command = this.props.makeCommand('GotoCommand', {
       latitude: lat,
       longitude: lng,
       altitude: alt
     });
+    command.name = name;
+    command.mission_point = mission_point;
+    this.props.setHomeState({commands: this.props.homeState.commands.concat(command)});
   }
 
-  add_survey_command(boundary_pts, name, mission_point) {
+  //TODO make survey command work with protobuf format
+  add_survey_command(boundary_pts, name, polygon) {
     let commands = this.props.homeState.commands.slice();
 
     commands.push({
       name: name || '',
-      mission_point: mission_point,
+      polygon: polygon,
       options: {
         command_type: 'survey',
         boundary_pts: boundary_pts,
@@ -443,36 +409,43 @@ class Map extends Component {
         command.mission_point.marker.getMap()
       ) {
         this.update_mission_point(command, i);
-      } else if (
-        this.commands[i] &&
-        command.options.command_type !== 'survey'
-      ) {
-        let title = i + 1 + ') ' + command.options.command_type;
-        if (command.name) {
-          title = title + ': ' + command.name;
-        }
-        this.commands[i].infowindow.setContent(
-          '<div id="command_infowindow_' +
-            i +
-            '">' +
-            '<h6>' +
-            title +
-            '</h6>' +
-            'Lat: ' +
-            command.options.lat +
-            '<br>' +
-            'Lng: ' +
-            command.options.lng +
-            '<br>' +
-            'Alt: ' +
-            command.options.alt +
-            ' m<br>' +
-            '<button class="remove_command btn btn-sm btn-outline-danger">' +
-            'Remove</button></div>'
-        );
+      } else if (this.commands[i]) {
+        let type = command.type;
+        let fields = command[type];
+
+        this.commands[i].infowindow.setContent(this.command_info(i, type, fields));
         this.commands[i].onInfoChanged();
       }
     }
+  }
+
+  command_info(i, type, fields) {
+    let title = i + 1 + ') ' + type;
+
+    let info = '<div id="command_infowindow_' +
+        i +
+        '">' +
+        '<h6>' +
+        title +
+        '</h6>' +
+        'Lat: ' +
+        fields.latitude +
+        '<br>' +
+        'Lng: ' +
+        fields.longitude +
+        '<br>';
+    if (fields.altitude != undefined) {
+      info += 'Alt: ' +
+        fields.altitude +
+        ' m<br>';
+    }
+    info += '<button class="remove_command btn btn-sm btn-outline-danger">' +
+        'Remove</button>' +
+        '<button class="drag_command btn btn-sm btn-outline-secondary">' +
+        'Drag</button>' +
+        '<button hidden class="place_command btn btn-sm btn-outline-success">' +
+        'Place</button></div>'
+    return info;
   }
 
   mission_point_title(mission_point_key, pos) {
@@ -642,7 +615,7 @@ class Map extends Component {
   update_mission_point(command, index) {
     let div = document.createElement('div');
     div.innerHTML = command.mission_point.infowindow.getContent();
-    let command_info = index + 1 + ') ' + command.options.command_type + ': ';
+    let command_info = index + 1 + ') ' + command.type + ': ';
     div.getElementsByClassName('command_info')[0].textContent = command_info;
     command.mission_point.infowindow.setContent(div.innerHTML);
     command.mission_point.onInfoChanged();
@@ -699,8 +672,6 @@ class Map extends Component {
       content: ReactDOMServer.renderToString(info)
     });
 
-    let mission_point = polygon;
-
     let setup_listeners = () => {
       let div = document.getElementById('mission_point_infowindow_search');
       if (div) {
@@ -716,12 +687,12 @@ class Map extends Component {
           this.add_survey_command(
             boundary_coordinates,
             'Search Area',
-            mission_point
+            polygon
           );
         };
         remove_btn.onclick = () => {
           let command_index = this.props.homeState.commands.findIndex(
-            el => el.mission_point === mission_point
+            el => el.polygon === polygon
           );
           if (command_index !== -1) {
             remove_btn.setAttribute('hidden', 'hidden');
