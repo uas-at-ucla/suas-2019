@@ -35,6 +35,7 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => {
       key={myIndex}
     >
       <td>{String(Number(myIndex) + 1)}</td>
+      <td>{command.name}</td>
       <td>
         <FormGroup className="type_select">
           {self.commandTypeOptions(myIndex, command)}
