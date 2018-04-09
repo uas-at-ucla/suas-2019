@@ -14,7 +14,8 @@ class Home extends Component {
     mission: this.props.appState.missions[0] || null,
     commands: [],
     dontRedrawCommands: false,
-    focusedCommand: null
+    focusedCommand: null,
+    get_mission: null
   };
 
   command_types = {};
@@ -39,6 +40,8 @@ class Home extends Component {
 
       this.protobuf_root = root;
     });
+
+    this.state.get_mission = this.get_mission;
   }
 
   render() {
@@ -96,7 +99,19 @@ class Home extends Component {
     this.setState({ isSidebarShown: !this.state.isSidebarShown });
   };
 
+  get_mission = () => {
+    const Mission = this.protobuf_root.lookupType('lib.mission_manager.Mission');
+
+    const cmds = {commands: this.state.commands.slice()};
+    const mission = Mission.create(cmds);
+    const serialized_mission = Mission.encode(mission).finish();
+
+    return serialized_mission;
+  }
+
   make_command = (type, fields) => {
+    let Command = this.protobuf_root.lookupType('lib.mission_manager.Command');
+
     let defaults = {
       'GotoCommand': {
         latitude: 38.145298,
@@ -108,9 +123,6 @@ class Home extends Component {
         longitude: -76.42861
       }
     };
-
-    let Mission = this.protobuf_root.lookupType('lib.mission_manager.Mission');
-    let Command = this.protobuf_root.lookupType('lib.mission_manager.Command');
 
     let command_proto_defs = Object();
     for (let name of Object.keys(this.command_types)) {
@@ -126,7 +138,6 @@ class Home extends Component {
         fields = {};
 
         for(let field of this.command_types[type]) {
-          console.log(field);
           fields[field] = 0;
         }
       }
@@ -145,8 +156,6 @@ class Home extends Component {
         }
       }
     }
-
-    console.log(fields);
 
     let cmd_inner = command_proto_defs[type].create(fields);
 
