@@ -451,7 +451,7 @@ class Map extends Component {
   mission_point_title(mission_point_key, pos) {
     switch (mission_point_key) {
       case 'waypoints':
-        return 'Mission Waypoint ' + pos.order;
+        return 'Waypoint ' + pos.order;
       case 'person':
         return 'Person';
       case 'off_axis_object':

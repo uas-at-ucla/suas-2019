@@ -16,6 +16,7 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => {
       onClick={event => self.onCommandClick(myIndex, event)}
     >
       <td>{myIndex + 1}</td>
+      <td>{command.name}</td>
       <td>{type}</td>
       {fields.map((field, index) => (
         <td key={index}>{parseFloat(command[type][field]).toFixed(3)}</td>
