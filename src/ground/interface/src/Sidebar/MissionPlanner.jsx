@@ -20,13 +20,9 @@ import {
   arrayMove
 } from 'react-sortable-hoc';
 
-const SortableItem = SortableElement(({ command, myIndex, self }) => {
+const SortableItem = SortableElement(({ command, changedCommands, myIndex, self }) => {
   let type = command.type;
   let fields = Object.keys(command[type]);
-
-  if (self.state.command_field[myIndex] == null) {
-    self.state.command_field[myIndex] = {};
-  }
 
   return (
     <tr
@@ -42,9 +38,6 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => {
         </FormGroup>
       </td>
       {fields.map((field, index) => {
-        if (self.state.command_field[myIndex][index] == null) {
-          self.state.command_field[myIndex][index] = command[type][field];
-        }
         return (
           <td key={index}>
             <InputGroup>
@@ -52,13 +45,14 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => {
                 <InputGroupText>{field}</InputGroupText>
               </InputGroupAddon>
               <Input
-                value={self.state.command_field[myIndex][index]}
+                type="number"
+                value={command[type][field]}
                 className="command_input"
                 onChange={new_value => {
                   self.changed_command_field(
                     new_value.target.value,
                     myIndex,
-                    index
+                    field
                   );
                 }}
                 bsSize="small"
@@ -72,16 +66,26 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => {
   );
 });
 
-const SortableList = SortableContainer(({ commands, self }) => {
+class MySortableItem extends SortableItem {
+  shouldComponentUpdate(nextProps, nextState) {
+    let result = nextProps.changedCommands === null || (
+        nextProps.changedCommands.startIndex <= nextProps.myIndex &&
+        nextProps.myIndex <= nextProps.changedCommands.endIndex);
+    return result;
+  }
+}
+
+const SortableList = SortableContainer(({ commands, changedCommands, self }) => {
   return (
     <div className="scrollbar">
       <table id="commandList">
         <tbody>
           {commands.map((command, index) => (
-            <SortableItem
+            <MySortableItem
               key={index}
               index={index}
               command={command}
+              changedCommands={changedCommands}
               myIndex={index}
               self={self}
             />
@@ -93,25 +97,13 @@ const SortableList = SortableContainer(({ commands, self }) => {
 });
 
 class MissionPlanner extends Component {
-  state = {
-    command_field: {},
-    can_apply_modifications: true,
-    command_field_reset: true
-  };
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.homeState.commands !== this.props.homeState.commands) {
-      if(this.state.command_field_reset) {
-        this.setState({command_field: {}});
-      }
-    }
-  }
 
   render() {
     return (
       <div>
         <SortableList
           commands={this.props.homeState.commands}
+          changedCommands={this.props.homeState.changedCommands}
           onSortEnd={this.onSortEnd}
           self={this}
           transitionDuration={200}
@@ -121,48 +113,32 @@ class MissionPlanner extends Component {
           <Button
             color="primary"
             className="mission_button"
-            onClick={() =>
-              this.props.addCommand('NothingCommand', null)
-            }
+            onClick={this.addCommand}
           >
             Add Command
-          </Button>
-          <br />
-          <Button
-            color={
-              this.state.command_field_reset
-                ? 'secondary'
-                : this.state.can_apply_modifications ? 'success' : 'danger'
-            }
-            disabled={
-              !this.state.can_apply_modifications ||
-              this.state.command_field_reset
-            }
-            className="mission_button"
-            onClick={() => this.apply_changes()}
-          >
-            {this.state.command_field_reset
-              ? 'No Changes'
-              : 'Apply Modifications'}
-          </Button>
-          <Button
-            color="secondary"
-            className="mission_button"
-            color={this.state.command_field_reset ? "secondary" : "warning"}
-            disabled={this.state.command_field_reset}
-            onClick={() => this.reset_changes()}
-          >
-            Reset Changes
           </Button>
         </div>
       </div>
     );
   }
 
+  addCommand = () => {
+    let command = this.props.makeCommand('NothingCommand', null);
+    let commands = this.props.homeState.commands;
+    this.props.setHomeState({
+      commands: commands.concat(command),
+      changedCommands: {startIndex: commands.length, endIndex: commands.length}
+    });
+  }
+
   onSortEnd = ({ oldIndex, newIndex }) => {
     if (oldIndex !== newIndex) {
       this.props.setHomeState({
-        commands: arrayMove(this.props.homeState.commands, oldIndex, newIndex)
+        commands: arrayMove(this.props.homeState.commands, oldIndex, newIndex),
+        changedCommands: {
+          startIndex: Math.min(oldIndex, newIndex), 
+          endIndex: Math.max(oldIndex, newIndex)
+        }
       });
     }
   };
@@ -184,7 +160,10 @@ class MissionPlanner extends Component {
       commands[index] = command;
     }
     
-    this.props.setHomeState({ commands: commands });
+    this.props.setHomeState({
+      commands: commands,
+      changedCommands: {startIndex: index, endIndex: index}
+    });
   }
 
   onCommandClick(index, event) {
@@ -209,49 +188,14 @@ class MissionPlanner extends Component {
     );
   }
 
-  changed_command_field(value, command, index) {
-    let new_command_field = {...this.state.command_field};
-    new_command_field[command][index] = value;
-    this.setState({command_field_reset: false, command_field: new_command_field});
-
-    this.check_can_apply();
-  }
-
-  check_can_apply() {
-    for (let command of Object.keys(this.state.command_field)) {
-      for (let index of Object.keys(this.state.command_field[command])) {
-        if (isNaN(this.state.command_field[command][index])) {
-          this.setState({ can_apply_modifications: false });
-          return;
-        }
-      }
-    }
-
-    this.setState({ can_apply_modifications: true });
-    return;
-  }
-
-  apply_changes() {
-    let cmds_copy = this.props.homeState.commands.slice();
-    for (let command of Object.keys(this.state.command_field)) {
-      for (let index of Object.keys(this.state.command_field[command])) {
-        let cmd_type = this.props.homeState.commands[command].type;
-        let field = Object.keys(
-          this.props.homeState.commands[command][cmd_type]
-        )[index];
-
-        cmds_copy[command][cmd_type][field] = parseFloat(
-          this.state.command_field[command][index]
-        );
-      }
-    }
-
-    this.props.setHomeState({ commands: cmds_copy });
-    this.setState({ command_field_reset: true });
-  }
-
-  reset_changes() {
-    this.setState({ command_field: {}, command_field_reset: true });
+  changed_command_field(value, command, field) {
+    let commands = this.props.homeState.commands.slice();
+    let type = commands[command].type;
+    commands[command][type][field] = parseFloat(value);
+    this.props.setHomeState({
+      commands: commands,
+      changedCommands: {startIndex: command, endIndex: command}
+    });
   }
 }
 

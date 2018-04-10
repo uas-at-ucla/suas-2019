@@ -13,7 +13,7 @@ class Home extends Component {
     isSidebarShown: true,
     mission: this.props.appState.missions[0] || null,
     commands: [],
-    dontRedrawCommands: false,
+    changedCommands: null,
     focusedCommand: null,
     get_mission: null
   };
@@ -66,7 +66,6 @@ class Home extends Component {
                 homeState={this.state}
                 setHomeState={this.setHomeState}
                 socketEmit={this.props.socketEmit}
-                addCommand={this.add_command}
                 makeCommand={this.make_command}
                 commandTypes={this.command_types}
               />
@@ -166,12 +165,6 @@ class Home extends Component {
     cmd.type = type;
 
     return cmd;
-  };
-
-  add_command = (type, fields) => {
-    let cmds = this.state.commands.slice();
-    cmds.push(this.make_command(type, fields));
-    this.setState({commands: cmds});
   };
 }
 

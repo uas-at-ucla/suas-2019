@@ -175,22 +175,28 @@ class Map extends Component {
   draw_command_path = props => {
     let commands = props.homeState.commands;
 
-    if (props.homeState.dontRedrawCommands) {
-      this.props.setHomeState({ dontRedrawCommands: false });
-      this.update_commands(commands);
-      return;
+    let startIndex = 0;
+    let endIndex = commands.length-1;
+    if (props.homeState.changedCommands !== null) {
+      startIndex = props.homeState.changedCommands.startIndex;
+      endIndex = props.homeState.changedCommands.endIndex
     }
 
     // Reset command annotations on map.
-    for (let command_object of this.commands) {
-      if (command_object) {
-        command_object.marker.setMap(null);
+    for (let i = startIndex; i <= endIndex; i++) {
+      if (this.commands[i]) {
+        this.commands[i].marker.setMap(null);
+      }
+      if (this.commands_path[i]) {
+        this.commands_path[i].setMap(null);
       }
     }
-    for (let command_segment of this.commands_path) {
-      command_segment.setMap(null);
+    if (this.commands_path[endIndex+1]) {
+      this.commands_path[endIndex+1].setMap(null);
     }
-    this.commands.length = 0;
+
+    this.commands.length = commands.length;
+    this.commands_path.length = commands.length;
     let commandPositions = [];
 
     // Draw the command path.
@@ -201,106 +207,117 @@ class Map extends Component {
 
     let last_pos = null;
 
-    for (let i = 0; i < commands.length; i++) {
+    for (let i = startIndex-1; i <= endIndex+1; i++) {
+      if (!(0 <= i && i < commands.length)) {
+        continue;
+      }
+
       let command = commands[i];
       let type = command.type;
       let fields = command[type];
 
-      if (
-        command.mission_point &&
-        command.mission_point.marker &&
-        command.mission_point.marker.getMap()
-      ) {
-        this.update_mission_point(command, i);
-        this.commands.push(null);
-      } else if (fields.latitude && fields.longitude) {
-        let marker = new google.maps.Marker({
-          map: this.map,
-          position: { lat: fields.latitude, lng: fields.longitude }
-        });
-
-        let infowindow = new google.maps.InfoWindow({
-          content: this.command_info(i, type, fields)
-        });
-
-        let setup_listeners = () => {
-          let div = document.getElementById('command_infowindow_' + i);
-          if (div) {
-            let remove_btn = div.getElementsByClassName('remove_command')[0];
-            remove_btn.onclick = () => {
-              let commands = this.props.homeState.commands.slice();
-              commands.splice(i, 1);
-              this.props.setHomeState({ commands: commands });
-            };
-            let drag_btn = div.getElementsByClassName('drag_command')[0];
-            let place_btn = div.getElementsByClassName('place_command')[0];
-            if (command.draggable) {
-              drag_btn.setAttribute('hidden', 'hidden');
-              place_btn.removeAttribute('hidden');
-            }
-            drag_btn.onclick = () => {
-              command.draggable = true;
-              this.commands[i].marker.setDraggable(true);
-              this.commands[i].marker.setLabel({
-                fontFamily: 'Fontawesome',
-                text: '\uf256',
-                fontSize: '15px'
-              });
-              drag_btn.setAttribute('hidden', 'hidden');
-              place_btn.removeAttribute('hidden');
-            };
-            place_btn.onclick = () => {
-              command.draggable = false;
-              this.commands[i].marker.setDraggable(false);
-              this.commands[i].marker.setLabel(null);
-              place_btn.setAttribute('hidden', 'hidden');
-              drag_btn.removeAttribute('hidden');
-            };
-          }
-        };
-
-        if (command.draggable) {
-          marker.setDraggable(true);
-          marker.setLabel({
-            fontFamily: 'Fontawesome',
-            text: '\uf256',
-            fontSize: '15px'
+      if (startIndex <= i && i <= endIndex) {
+        if (
+          command.mission_point &&
+          command.mission_point.marker &&
+          command.mission_point.marker.getMap()
+        ) {
+          this.update_mission_point(command, i);
+          this.commands[i] = null;
+        } else if (fields.latitude && fields.longitude) {
+          let marker = new google.maps.Marker({
+            map: this.map,
+            position: { lat: fields.latitude, lng: fields.longitude }
           });
+
+          let infowindow = new google.maps.InfoWindow({
+            content: this.command_info(i, type, fields)
+          });
+
+          let setup_listeners = () => {
+            let div = document.getElementById('command_infowindow_' + i);
+            if (div) {
+              let remove_btn = div.getElementsByClassName('remove_command')[0];
+              remove_btn.onclick = () => {
+                let commands = this.props.homeState.commands.slice();
+                commands.splice(i, 1);
+                this.props.setHomeState({
+                  commands: commands,
+                  changedCommands: {startIndex: i, endIndex: commands.length}
+                });
+              };
+              let drag_btn = div.getElementsByClassName('drag_command')[0];
+              let place_btn = div.getElementsByClassName('place_command')[0];
+              if (command.draggable) {
+                drag_btn.setAttribute('hidden', 'hidden');
+                place_btn.removeAttribute('hidden');
+              }
+              drag_btn.onclick = () => {
+                command.draggable = true;
+                this.commands[i].marker.setDraggable(true);
+                this.commands[i].marker.setLabel({
+                  fontFamily: 'Fontawesome',
+                  text: '\uf256',
+                  fontSize: '15px'
+                });
+                drag_btn.setAttribute('hidden', 'hidden');
+                place_btn.removeAttribute('hidden');
+              };
+              place_btn.onclick = () => {
+                command.draggable = false;
+                this.commands[i].marker.setDraggable(false);
+                this.commands[i].marker.setLabel(null);
+                place_btn.setAttribute('hidden', 'hidden');
+                drag_btn.removeAttribute('hidden');
+              };
+            }
+          };
+
+          if (command.draggable) {
+            marker.setDraggable(true);
+            marker.setLabel({
+              fontFamily: 'Fontawesome',
+              text: '\uf256',
+              fontSize: '15px'
+            });
+          }
+
+          marker.addListener('click', () => {
+            infowindow.open(this.map, marker);
+            this.commands[i].onInfoOpened();
+          });
+
+          marker.addListener('dragend', () => {
+            let commands = this.props.homeState.commands.slice();
+            fields.latitude = marker.getPosition().lat();
+            fields.longitude = marker.getPosition().lng();
+
+            this.props.setHomeState({
+              commands: commands,
+              changedCommands: {startIndex: i, endIndex: i}
+            });
+          });
+
+          google.maps.event.addListener(this.map, 'click', () => {
+            infowindow.close();
+          });
+
+          this.commands[i] = {
+            marker: marker,
+            infowindow: infowindow,
+            onInfoChanged: setup_listeners,
+            onInfoOpened: setup_listeners
+          };
+        } else {
+          this.commands[i] = null;
         }
-
-        marker.addListener('click', () => {
-          infowindow.open(this.map, marker);
-          this.commands[i].onInfoOpened();
-        });
-
-        marker.addListener('dragend', () => {
-          let commands = this.props.homeState.commands.slice();
-          fields.latitude = marker.getPosition().lat();
-          fields.longitude = marker.getPosition().lng();
-
-          this.props.setHomeState({ commands: commands });
-        });
-
-        google.maps.event.addListener(this.map, 'click', () => {
-          infowindow.close();
-        });
-
-        this.commands.push({
-          marker: marker,
-          infowindow: infowindow,
-          onInfoChanged: setup_listeners,
-          onInfoOpened: setup_listeners
-        });
-      } else {
-        this.commands.push(null);
       }
 
       if (fields.latitude && fields.longitude) {
         let pos = { lat: fields.latitude, lng: fields.longitude };
-
         if (last_pos != null) {
           // Create the polyline and add the symbol via the 'icons' property.
-          this.commands_path.push(
+          this.commands_path[i] =
             new google.maps.Polyline({
               path: [
                 { lat: last_pos.lat, lng: last_pos.lng },
@@ -313,11 +330,13 @@ class Map extends Component {
                 }
               ],
               strokeColor: '#0000FF',
+              zIndex: 10,
               map: this.map
-            })
-          );
+            });
         }
         last_pos = pos;
+      } else {
+        this.commands_path[i] = null;
       } /*else {
         for (let pt of command.options.boundary_pts) {
           //TODO: generate search path
@@ -378,7 +397,11 @@ class Map extends Component {
     });
     command.name = name;
     command.mission_point = mission_point;
-    this.props.setHomeState({commands: this.props.homeState.commands.concat(command)});
+    let commands = this.props.homeState.commands;
+    this.props.setHomeState({
+      commands: commands.concat(command),
+      changedCommands: {startIndex: commands.length, endIndex: commands.length}
+    });
   }
 
   //TODO make survey command work with protobuf format
@@ -396,7 +419,10 @@ class Map extends Component {
       }
     });
 
-    this.props.setHomeState({ commands: commands });
+    this.props.setHomeState({
+      commands: commands,
+      changedCommands: {startIndex: commands.length, endIndex: commands.length}
+    });
   }
 
   update_commands(commands) {
@@ -703,7 +729,10 @@ class Map extends Component {
             setup_listeners();
             let commands = this.props.homeState.commands.slice();
             commands.splice(command_index, 1);
-            this.props.setHomeState({ commands: commands });
+            this.props.setHomeState({
+              commands: commands,
+              changedCommands: {startIndex: command_index, endIndex: commands.length}
+            });
           }
         };
       }
@@ -826,7 +855,10 @@ class Map extends Component {
               mission_point.onInfoChanged();
               let commands = this.props.homeState.commands.slice();
               commands.splice(command_index, 1);
-              this.props.setHomeState({ commands: commands });
+              this.props.setHomeState({
+                commands: commands,
+                changedCommands: {startIndex: command_index, endIndex: commands.length}
+              });
             }
           };
         }
