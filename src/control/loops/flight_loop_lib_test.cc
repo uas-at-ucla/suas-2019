@@ -273,7 +273,7 @@ TEST_F(FlightLoopTest, FailsafeCheck) {
   }
 
   ASSERT_TRUE(flight_loop_queue_.sensors->armed);
-  ASSERT_TRUE(flight_loop_queue_.sensors->relative_altitude >= 2);
+  ASSERT_GE(flight_loop_queue_.sensors->relative_altitude, 2);
 
   ::std::cout << "triggering failsafe" << ::std::endl;
   for (int i = 0; i < 10000 && flight_loop_queue.sensors->armed; i++) {
@@ -317,7 +317,7 @@ TEST_F(FlightLoopTest, ThrottleCutCheck) {
   ASSERT_GE(flight_loop_queue_.sensors->relative_altitude, 2.1);
 
   ::std::cout << "throttle cut" << ::std::endl;
-  for (int i = 0; i < 50 && flight_loop_queue.sensors->relative_altitude > 0.1;
+  for (int i = 0; i < 200 && flight_loop_queue.sensors->relative_altitude > 0.1;
        i++) {
     flight_loop_queue_.goal.MakeWithBuilder()
         .run_mission(true)
@@ -329,7 +329,7 @@ TEST_F(FlightLoopTest, ThrottleCutCheck) {
     ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
   }
 
-  ASSERT_TRUE(flight_loop_queue.sensors->relative_altitude < 0.1);
+  ASSERT_LT(flight_loop_queue.sensors->relative_altitude, 0.1);
   ::std::cout << "CRASH!" << ::std::endl;
 
   if(verbose) {
