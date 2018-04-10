@@ -1,8 +1,64 @@
+#include <bitset>
 #include "ground_communicator.h"
 
 namespace src {
 namespace control {
 namespace ground_communicator {
+
+// Taken from here:
+// https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
+static const std::string base64_chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789+/";
+
+static inline bool is_base64(unsigned char c) {
+  return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
+std::string base64_decode(std::string const& encoded_string) {
+  int in_len = encoded_string.size();
+  int i = 0;
+  int j = 0;
+  int in_ = 0;
+  unsigned char char_array_4[4], char_array_3[3];
+  std::string ret;
+
+  while (in_len-- && (encoded_string[in_] != '=') &&
+         is_base64(encoded_string[in_])) {
+    char_array_4[i++] = encoded_string[in_];
+    in_++;
+    if (i == 4) {
+      for (i = 0; i < 4; i++)
+        char_array_4[i] = base64_chars.find(char_array_4[i]);
+
+      char_array_3[0] =
+          (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+      char_array_3[1] =
+          ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+      for (i = 0; (i < 3); i++) ret += char_array_3[i];
+      i = 0;
+    }
+  }
+
+  if (i) {
+    for (j = i; j < 4; j++) char_array_4[j] = 0;
+
+    for (j = 0; j < 4; j++)
+      char_array_4[j] = base64_chars.find(char_array_4[j]);
+
+    char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+    char_array_3[1] =
+        ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+    char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+    for (j = 0; (j < i - 1); j++) ret += char_array_3[j];
+  }
+
+  return ret;
+}
 
 MissionReceiver* socketio_ground_communicator;
 
@@ -233,42 +289,12 @@ void MissionReceiver::OnConnect() {
 
         ::lib::mission_manager::Mission mission;
 
-        for (size_t i = 0; i < data->get_vector().size(); i++) {
-          ::lib::mission_manager::Command* cmd = mission.add_commands();
+        ::std::string serialized_protobuf_mission = data->get_string();
 
-          if (data->get_vector()[i]->get_map()["command_type"]->get_string() ==
-              "nothing") {
-            ::lib::mission_manager::NothingCommand* nothing_cmd =
-                cmd->mutable_nothing_command();
-            (void)nothing_cmd;
+        serialized_protobuf_mission =
+            base64_decode(serialized_protobuf_mission);
 
-          } else if (data->get_vector()[i]
-                         ->get_map()["command_type"]
-                         ->get_string() == "sleep") {
-            ::lib::mission_manager::SleepCommand* sleep_cmd =
-                cmd->mutable_sleep_command();
-            (void)sleep_cmd;
-
-          } else if (data->get_vector()[i]
-                         ->get_map()["command_type"]
-                         ->get_string() == "goto") {
-            ::lib::mission_manager::GotoCommand* goto_cmd =
-                cmd->mutable_goto_command();
-            goto_cmd->set_latitude(
-                data->get_vector()[i]->get_map()["lat"]->get_double());
-            goto_cmd->set_longitude(
-                data->get_vector()[i]->get_map()["lng"]->get_double());
-            goto_cmd->set_altitude(
-                data->get_vector()[i]->get_map()["alt"]->get_double());
-
-          } else if (data->get_vector()[i]
-                         ->get_map()["command_type"]
-                         ->get_string() == "bomb_drop") {
-            ::lib::mission_manager::BombCommand* bomb_cmd =
-                cmd->mutable_bomb_command();
-            (void)bomb_cmd;
-          }
-        }
+        mission.ParseFromString(serialized_protobuf_mission);
 
         mission_message_queue_sender_.SendMission(mission);
 
