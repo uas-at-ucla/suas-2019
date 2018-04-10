@@ -6,7 +6,7 @@ import {
 } from 'react-sortable-hoc';
 import './MissionPlanner.css';
 
-const SortableItem = SortableElement(({ command, myIndex, self }) => {
+const SortableItem = SortableElement(({ command, changedCommands, myIndex, self }) => {
   let type = command.type;
   let fields = Object.keys(command[type]);
 
@@ -25,16 +25,26 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => {
   );
 });
 
-const SortableList = SortableContainer(({ commands, self }) => {
+class MySortableItem extends SortableItem {
+  shouldComponentUpdate(nextProps, nextState) {
+    let result = nextProps.changedCommands === null || (
+        nextProps.changedCommands.startIndex <= nextProps.myIndex &&
+        nextProps.myIndex <= nextProps.changedCommands.endIndex);
+    return result;
+  }
+}
+
+const SortableList = SortableContainer(({ commands, changedCommands, self }) => {
   return (
     <div className="scrollbar">
       <table id="commandListOverview">
         <tbody>
           {commands.map((command, index) => (
-            <SortableItem
+            <MySortableItem
               key={index}
               index={index}
               command={command}
+              changedCommands={changedCommands}
               myIndex={index}
               self={self}
             />
@@ -50,6 +60,7 @@ class MissionPlannerOverview extends Component {
     return (
       <SortableList
         commands={this.props.homeState.commands}
+        changedCommands={this.props.homeState.changedCommands}
         onSortEnd={this.onSortEnd}
         self={this}
         transitionDuration={200}
@@ -61,7 +72,11 @@ class MissionPlannerOverview extends Component {
   onSortEnd = ({ oldIndex, newIndex }) => {
     if (oldIndex !== newIndex) {
       this.props.setHomeState({
-        commands: arrayMove(this.props.homeState.commands, oldIndex, newIndex)
+        commands: arrayMove(this.props.homeState.commands, oldIndex, newIndex),
+        changedCommands: {
+          startIndex: Math.min(oldIndex, newIndex), 
+          endIndex: Math.max(oldIndex, newIndex)
+        }
       });
     }
   };
