@@ -8,7 +8,10 @@ message SleepCommand {
   required double time = 1;
 }
 
-message BombCommand {}
+message BombCommand {
+  required double latitude = 1;
+  required double longitude = 2;
+}
 
 message GotoCommand {
   required double latitude = 1;
@@ -18,10 +21,10 @@ message GotoCommand {
 
 message Command {
   oneof command {
-    NothingCommand nothing_command = 1;
-    SleepCommand sleep_command = 2;
-    BombCommand bomb_command = 3;
-    GotoCommand goto_command = 4;
+    NothingCommand NothingCommand = 1;
+    SleepCommand SleepCommand = 2;
+    BombCommand BombCommand = 3;
+    GotoCommand GotoCommand = 4;
   }
 }
 

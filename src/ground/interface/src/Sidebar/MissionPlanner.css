@@ -1,0 +1,121 @@
+#commandList {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+}
+
+#commandListOverview {
+  -webkit-touch-callout: none; /* iOS Safari */
+  -webkit-user-select: none; /* Safari */
+  -khtml-user-select: none; /* Konqueror HTML */
+  -moz-user-select: none; /* Firefox */
+  -ms-user-select: none; /* Internet Explorer/Edge */
+  user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome and Opera */
+  font-size: 11px;
+}
+
+.command_input {
+  width: 120px;
+  min-width: 120px;
+}
+
+.command_row {
+  text-align: left;
+}
+
+.command_row td:first-child {
+  width: 40px !important;
+}
+
+.command_row td:nth-child(2) {
+  width: 50px !important;
+}
+
+.modal-lg {
+  max-width: 1200px !important;
+}
+
+.add_command_button_wrapper {
+  width: 100%;
+  text-align: center;
+}
+
+.mission_button {
+  width: 180px;
+  display: inline-block;
+  margin-right: 15px;
+  margin-top: 10px;
+}
+
+.scrollbar {
+  width: 100%;
+  overflow-y: auto;
+}
+
+.card .scrollbar {
+  max-height: 350px;
+}
+
+.modal .scrollbar {
+  max-height: 65vh;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 5px;
+  background-color: rgba(100, 100, 100, 0.2);
+}
+
+.scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+  border-radius: 5px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.3);
+  background-color: rgba(200, 200, 200, 0.5);
+}
+
+.scrollbar::-webkit-scrollbar-corner {
+  background-color: rgba(200, 200, 200, 0.5);
+}
+
+#commandListLabelsTable {
+  width: 100%;
+  text-align: center;
+}
+
+#commandList {
+  width: 100%;
+  text-align: center;
+}
+
+.command_row td {
+  text-align: center;
+  vertical-align: middle;
+  color: white;
+  white-space: nowrap;
+}
+
+.command_row .form-group {
+  margin: 0;
+  display: inline-block;
+}
+
+.command_row select {
+  font-size: 15px;
+}
+
+#commandListLabels {
+  font-weight: bold;
+}
+
+.command_row .type_select {
+  width: 150px;
+}
