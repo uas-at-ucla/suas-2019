@@ -207,8 +207,17 @@ class Map extends Component {
 
     let last_pos = null;
 
-    for (let i = startIndex-1; i <= endIndex+1; i++) {
-      if (!(0 <= i && i < commands.length)) {
+    for (let i = 0; i <= startIndex-1; i++) {
+      let command = commands[i];
+      let type = command.type;
+      let fields = command[type];
+      if (fields.latitude && fields.longitude) {
+        last_pos = { lat: fields.latitude, lng: fields.longitude };
+      }
+    }
+
+    for (let i = startIndex; i <= endIndex+1; i++) {
+      if (!(i < commands.length)) {
         continue;
       }
 
@@ -216,7 +225,7 @@ class Map extends Component {
       let type = command.type;
       let fields = command[type];
 
-      if (startIndex <= i && i <= endIndex) {
+      if (i <= endIndex) {
         if (
           command.mission_point &&
           command.mission_point.marker &&
