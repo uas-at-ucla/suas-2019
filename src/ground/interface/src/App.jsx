@@ -139,7 +139,6 @@ class App extends Component {
         this.receivedInteropStatus(true);
 
         console.log("MISSION DATA!!!");
-        console.log(data.missions[0]);
       }
     });
 

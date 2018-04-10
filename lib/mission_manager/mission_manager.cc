@@ -41,7 +41,7 @@ int MissionManager::GetCurrentCommandIndex() { return command_pointer_; }
   // Never return a nullptr.
   if (command_pointer_ >= mission_.commands_size()) {
     ::lib::mission_manager::Command cmd;
-    cmd.mutable_nothing_command();
+    cmd.mutable_nothingcommand();
 
     return cmd;
   }
