@@ -191,8 +191,11 @@ class Map extends Component {
         this.commands_path[i].setMap(null);
       }
     }
-    if (this.commands_path[endIndex+1]) {
-      this.commands_path[endIndex+1].setMap(null);
+    for (let i = endIndex+1; i < this.commands_path.length; i++) {
+      if (this.commands_path[i]) {
+        this.commands_path[i].setMap(null);
+        break;
+      }
     }
 
     this.commands.length = commands.length;
@@ -216,11 +219,7 @@ class Map extends Component {
       }
     }
 
-    for (let i = startIndex; i <= endIndex+1; i++) {
-      if (!(i < commands.length)) {
-        continue;
-      }
-
+    for (let i = startIndex; i < commands.length; i++) {
       let command = commands[i];
       let type = command.type;
       let fields = command[type];
@@ -342,6 +341,10 @@ class Map extends Component {
               zIndex: 10,
               map: this.map
             });
+
+            if (i > endIndex) {
+              break;
+            }
         }
         last_pos = pos;
       } else {
