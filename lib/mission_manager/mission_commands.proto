@@ -2,32 +2,71 @@ syntax = "proto2";
 
 package lib.mission_manager;
 
+message Position2D {
+  required double latitude = 1;
+  required double longitude = 2;
+}
+
+message Position3D {
+  required Position2D position = 1;
+  required double altitude = 2;
+}
+
+// Commands ####################################################################
+message WaypointCommand {
+  required Position3D goal = 1;
+
+  optional Mission sub_mission = 2;
+}
+
+message BombDropCommand {
+  required Position2D drop_zone = 1;
+
+  optional Mission sub_mission = 2;
+}
+
+message SurveyCommand {
+  repeated Position2D survey_polygon = 1;
+  required double altitude = 2;
+
+  optional Mission sub_mission = 3;
+}
+
+message OffAxisCommand {
+  required Position3D photographer_location = 1;
+  required Position2D subject_location = 2;
+
+  optional Mission sub_mission = 3;
+}
+
 message NothingCommand {}
 
 message SleepCommand {
   required double time = 1;
 }
 
-message BombCommand {
-  required double latitude = 1;
-  required double longitude = 2;
+message GotoCommand {
+  required Position3D goal = 1;
 }
 
-message GotoCommand {
-  required double latitude = 1;
-  required double longitude = 2;
-  required double altitude = 3;
+message GotoRawCommand {
+  required Position3D goal = 1;
 }
 
 message Command {
   oneof command {
-    NothingCommand NothingCommand = 1;
-    SleepCommand SleepCommand = 2;
-    BombCommand BombCommand = 3;
-    GotoCommand GotoCommand = 4;
+    WaypointCommand WaypointCommand = 1;
+    BombDropCommand BombDropCommand = 2;
+    SurveyCommand SurveyCommand = 3;
+    OffAxisCommand OffAxisCommand = 4;
+    NothingCommand NothingCommand = 5;
+    SleepCommand SleepCommand = 6;
+    GotoCommand GotoCommand = 7;
+    GotoRawCommand GotoRawCommand = 8;
   }
 }
 
 message Mission {
   repeated Command commands = 1;
+  required int32 current_command = 2;
 }
