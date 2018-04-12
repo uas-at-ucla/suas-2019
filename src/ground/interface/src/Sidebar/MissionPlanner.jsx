@@ -22,7 +22,7 @@ import {
 
 const SortableItem = SortableElement(({ command, changedCommands, myIndex, self }) => {
   let type = command.type;
-  let fields = Object.keys(command[type]);
+  let fields = self.props.commandTypes[type];
 
   return (
     <tr
