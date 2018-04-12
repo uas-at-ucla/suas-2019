@@ -41,7 +41,7 @@ class Controls extends Component {
   }
 
   sendRunMissionCommand = () => {
-    const serialized_mission = this.props.homeState.get_mission();
+    const serialized_mission = this.props.getMission();
 
     this.props.socketEmit(
       'execute_commands',

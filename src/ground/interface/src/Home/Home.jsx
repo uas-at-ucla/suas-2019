@@ -14,11 +14,13 @@ class Home extends Component {
     mission: this.props.appState.missions[0] || null,
     commands: [],
     changedCommands: null,
-    focusedCommand: null,
-    get_mission: null
+    focusedCommand: null
   };
 
   command_types = {};
+
+  commandChangeSendQueue = [];
+  lastCommandSendTime = 0;
 
   componentDidMount() {
     protobuf.load('mission_commands.proto', (err, root) => {
@@ -39,9 +41,27 @@ class Home extends Component {
       }
 
       this.protobuf_root = root;
-    });
 
-    this.state.get_mission = this.get_mission;
+
+      this.props.socketOn('commands_changed', newState => {
+        if (this.state.invalidCommands) {
+          newState.changedCommands = null;
+          newState.invalidCommands = false;
+        } else if (newState.changedCommands) {
+          for (let i = 0; i < newState.changedCommands.startIndex; i++) {
+            newState.commands[i] = this.state.commands[i];
+          }
+          for (let i = newState.changedCommands.endIndex+1; 
+               i < this.state.commands.length && i < newState.commands.length; i++) {
+            newState.commands[i] = this.state.commands[i];
+          }
+        }
+        newState.dontSendCommandChanges = true;
+        this.setState(newState);
+      });
+
+      this.props.socketEmit('request_commands');
+    });
   }
 
   render() {
@@ -76,23 +96,88 @@ class Home extends Component {
           </div>
         </div>
 
-        <Controls homeState={this.state} socketEmit={this.props.socketEmit} />
+        <Controls homeState={this.state} socketEmit={this.props.socketEmit}
+                  getMission={this.get_mission} />
       </div>
     );
   }
 
   componentWillReceiveProps(nextProps) {
-    if (
-      nextProps.appState.missions.length > 0 &&
-      nextProps.appState.missions !== this.props.appState.missions
-    ) {
-      this.setState({ mission: nextProps.appState.missions[0] });
+    if (nextProps.appState.missions !== this.props.appState.missions) {
+      if (nextProps.appState.missions.length > 0) {
+        this.setState({ mission: nextProps.appState.missions[0] });
+      } else {
+        this.setState({ mission: {} });
+      }
     }
   }
 
   setHomeState = newState => {
+    if (newState.commands && this.state.invalidCommands && newState.invalidCommands !== false) {
+      return false;
+    }
+
     this.setState(newState);
+
+    if (newState.commands && !newState.dontSendCommandChanges) {
+      let commands_info = [];
+      for (let command of newState.commands) {
+        let command_info = {};
+        command_info.type = command.type;
+        command_info[command.type] = command[command.type];
+        command_info.interop_object = command.interop_object;
+        command_info.name = command.name;
+        commands_info.push(command_info);
+      }
+      let obj = {
+        commands: commands_info,
+        changedCommands: newState.changedCommands
+      };
+
+      let currentTime = Date.now();
+      let timePassed = currentTime - this.lastCommandSendTime;
+      if (timePassed >= 250 && this.commandChangeSendQueue.length === 0) {
+        this.lastCommandSendTime = currentTime;
+        this.props.socketEmit('commands_changed', obj);
+      } else {
+        if (this.commandChangeSendQueue.length === 0) {
+          setTimeout(this.sendQueuedCommands, 250-timePassed);
+        }
+        this.addToCommandSendQueue(obj);
+      }
+    }
+
+    return true;
   };
+
+  sendQueuedCommands = () => {
+    this.lastCommandSendTime = Date.now();
+    let obj = this.commandChangeSendQueue.shift();
+    this.props.socketEmit('commands_changed', obj);
+    if (this.commandChangeSendQueue.length > 0) {
+      setTimeout(this.sendQueuedCommands, 250);
+    }
+  }
+
+  addToCommandSendQueue(obj) {
+    let lastChange = this.commandChangeSendQueue[this.commandChangeSendQueue.length-1];
+    lastChange = lastChange ? lastChange.changedCommands : null;
+    if (lastChange && obj.changedCommands &&
+        obj.changedCommands.startIndex <= lastChange.endIndex+1 &&
+        obj.changedCommands.endIndex >= lastChange.startIndex-1) {
+      obj.changedCommands.startIndex = Math.min(
+        obj.changedCommands.startIndex,
+        lastChange.startIndex
+      );
+      obj.changedCommands.endIndex = Math.max(
+        obj.changedCommands.endIndex,
+        lastChange.endIndex
+      );
+      this.commandChangeSendQueue[this.commandChangeSendQueue.length-1] = obj;
+    } else {
+      this.commandChangeSendQueue.push(obj);
+    }
+  }
 
   toggleSidebar = () => {
     this.setState({ isSidebarShown: !this.state.isSidebarShown });

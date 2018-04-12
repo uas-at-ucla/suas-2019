@@ -22,13 +22,14 @@ import {
 
 const SortableItem = SortableElement(({ command, changedCommands, myIndex, self }) => {
   let type = command.type;
-  let fields = Object.keys(command[type]);
+  let fields = self.props.commandTypes[type];
 
   return (
     <tr
       className="command_row"
       onClick={event => self.onCommandClick(myIndex, event)}
       key={myIndex}
+      data-index={myIndex}
     >
       <td>{String(Number(myIndex) + 1)}</td>
       <td>{command.name}</td>
@@ -77,7 +78,7 @@ class MySortableItem extends SortableItem {
 
 const SortableList = SortableContainer(({ commands, changedCommands, self }) => {
   return (
-    <div className="scrollbar">
+    <div className="scrollbar" onScroll={self.hideDeleteBtn}>
       <table id="commandList">
         <tbody>
           {commands.map((command, index) => (
@@ -97,6 +98,37 @@ const SortableList = SortableContainer(({ commands, changedCommands, self }) => 
 });
 
 class MissionPlanner extends Component {
+
+  state = {
+    deleteBtnIndex: null,
+    deleteBtnX: null,
+    deleteBtnY: null
+  }
+
+  componentDidMount() {
+    let modal = document.getElementById('missionPlanner').getElementsByClassName('modal-dialog')[0];
+
+    modal.addEventListener('contextmenu', (e) => {
+      let parentElement = e.target.parentElement;
+      while (parentElement) {
+        if (parentElement.className === 'command_row') {
+          let index = parentElement.getAttribute('data-index');
+          this.setState({
+            deleteBtnIndex: index,
+            deleteBtnX: e.clientX - modal.offsetLeft,
+            deleteBtnY: e.clientY - modal.offsetTop
+          });
+          e.preventDefault();
+          break;
+        }
+        parentElement = parentElement.parentElement;
+      }
+    });
+
+    document.addEventListener('click', (e) => {
+      this.hideDeleteBtn();
+    });
+  }
 
   render() {
     return (
@@ -118,6 +150,7 @@ class MissionPlanner extends Component {
             Add Command
           </Button>
         </div>
+        {this.deleteBtn()}
       </div>
     );
   }
@@ -131,8 +164,19 @@ class MissionPlanner extends Component {
     });
   }
 
+
+  deleteCommand = (index) => {
+    let commands = this.props.homeState.commands.slice();
+    commands.splice(index, 1);
+    this.props.setHomeState({
+      commands: commands,
+      changedCommands: {startIndex: index, endIndex: commands.length}
+    });
+  }
+
   onSortEnd = ({ oldIndex, newIndex }) => {
     if (oldIndex !== newIndex) {
+      this.hideDeleteBtn();
       this.props.setHomeState({
         commands: arrayMove(this.props.homeState.commands, oldIndex, newIndex),
         changedCommands: {
@@ -186,6 +230,31 @@ class MissionPlanner extends Component {
         {items.map((item, index) => <option key={index}>{item}</option>)};
       </FormControl>
     );
+  }
+
+  deleteBtn() {
+    if (this.state.deleteBtnIndex == null) {
+      return null;
+    }
+    return (
+      <button
+        className="btn btn-danger"
+        style={{
+          position: 'fixed',
+          left: this.state.deleteBtnX,
+          top: this.state.deleteBtnY
+        }}
+        onClick={() => this.deleteCommand(this.state.deleteBtnIndex)}
+      >
+        Delete Command {Number(this.state.deleteBtnIndex)+1}
+      </button>
+    );
+  }
+
+  hideDeleteBtn = () => {
+    if (this.state.deleteBtnIndex != null) {
+      this.setState({deleteBtnIndex: null});
+    }
   }
 
   changed_command_field(value, command, field) {
