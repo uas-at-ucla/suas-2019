@@ -14,6 +14,15 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, '../../lib')
 import process_manager
 
+# Defaults #####################################################################
+SECRET_KEY = 'flappy'
+DEFAULT_SRV_IP = '0.0.0.0'
+DEFAULT_SRV_PORT = 8099
+DEFAULT_VSN_SRV = DEFAULT_SRV_IP + ':' + str(DEFAULT_SRV_PORT)
+DEFAULT_YOLO_CFG = 'localizer/cfg/yolo-auvsi.cfg'
+DEFAULT_YOLO_WEIGHTS = 'localizer/bin/tiny-yolo-voc.weights'
+DEFAULT_YOLO_THRESH = 0.1
+
 processes = process_manager.ProcessManager()
 
 verbose = False
@@ -26,7 +35,7 @@ def signal_received(signal, frame):
 
 # Server #######################################################################
 socketio_app = Flask(__name__)
-socketio_app.config['SECRET_KEY'] = 'flappy'
+socketio_app.config['SECRET_KEY'] = SECRET_KEY
 vision_socketio_server = flask_socketio.SocketIO(socketio_app)
 
 
@@ -73,7 +82,7 @@ def client_worker(args, worker_class):
     # initialize worker and listen for tasks
     global work_queue
     client_worker = worker_class(work_queue, args)
-    vision_client.on(client_worker.get_name(), client_add_task)
+    vision_client.on(client_worker.get_event_name(), client_add_task)
     vision_client.wait()
 
 class ClientWorker(threading.Thread):
@@ -85,7 +94,7 @@ class ClientWorker(threading.Thread):
     def _do_work(self, task):
         raise NotImplementedError("Client Worker doesn't know what to do.")
 
-    def get_name(self):
+    def get_event_name(self):
         raise NotImplementedError("Client Worker needs a name.")
 
     def run(self):
@@ -115,7 +124,7 @@ class RsyncWorker(ClientWorker):
         vision_client.emit('download_complete',
                            {'local_file_path': 'dummy_local_path'})
 
-    def get_name(self):
+    def get_event_name(self):
         return 'rsync'
 
 def rsync_worker(args):
@@ -128,9 +137,9 @@ class YoloWorker(ClientWorker):
 
         # load model
         yolo_options = {
-            "model": "cfg/yolo-auvsi.cfg",
-            "load": "bin/tiny-yolo-voc.weights",
-            "threshold": 0.1
+            "model": args.yolo_cfg,
+            "load": args.yolo_weights,
+            "threshold": args.yolo_threshold
         }
         self.tfnet = TFNet(options)
         
@@ -147,7 +156,7 @@ class YoloWorker(ClientWorker):
         results = self.tfnet.return_predict(img)
         vision_client.emit('yolo_done', {'img_processed': task[0], 'results': results})
         
-    def get_name(self):
+    def get_event_name(self):
         return 'yolo'
 
 def yolo_worker(args):
@@ -166,13 +175,13 @@ if __name__ == '__main__':
     server_port = None
     server_parser = subparsers.add_parser('server', help='server help')
     server_parser.add_argument(
-        "--port", action='store', dest='port', required=True)
+        "--port", action='store', dest='port', default=DEFAULT_SRV_PORT)
     server_parser.set_defaults(func=server_worker)
 
     # Client Parsers ###################################################
     client_parser = subparsers.add_parser('client', help='client help')
     client_parser.add_argument(
-        "--vision-srv", action='store', dest='vision_srv', required=True)
+        "--vision-srv", action='store', dest='vision_srv', default=DEFAULT_VSN_SRV)
     client_subparsers = client_parser.add_subparsers()
 
     # Rsync specific args
@@ -189,6 +198,12 @@ if __name__ == '__main__':
 
     # Yolo specific args
     yolo_parser = subparsers.client_subparsers('yolo', help='yolo help')
+    yolo_parser.add_argument(
+            "--cfg", action='store', dest='yolo_cfg', default=DEFAULT_YOLO_CFG)
+    yolo_parser.add_argument(
+            "--weights", action='store', dest='yolo_weights', default=DEFAULT_YOLO_WEIGHTS)
+    yolo_parser.add_argument(
+            "--thresh", action='store', dest='yolo_threshold', default=DEFAULT_YOLO_THRESH)
     yolo_parser.set_defaults(func=yolo_worker)
 
     args = parser.parse_args()
