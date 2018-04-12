@@ -28,6 +28,7 @@ class Panel extends Component {
             <MissionPlannerOverview
               homeState={this.props.homeState}
               setHomeState={this.props.setHomeState}
+              commandTypes={this.props.commandTypes}
             />
           </div>
         </div>
