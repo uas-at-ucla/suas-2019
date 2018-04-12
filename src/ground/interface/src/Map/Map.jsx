@@ -176,7 +176,7 @@ class Map extends Component {
     let commands = props.homeState.commands;
 
     let startIndex = 0;
-    let endIndex = commands.length-1;
+    let endIndex = Math.max(commands.length, this.commands.length) - 1;
     if (props.homeState.changedCommands !== null) {
       startIndex = props.homeState.changedCommands.startIndex;
       endIndex = props.homeState.changedCommands.endIndex
@@ -186,6 +186,14 @@ class Map extends Component {
     for (let i = startIndex; i <= endIndex; i++) {
       if (this.commands[i]) {
         this.commands[i].marker.setMap(null);
+      } else if (this.props.homeState.commands[i] && 
+                 this.props.homeState.commands[i].mission_point) {
+        let command_index = commands.findIndex(
+          el => el.mission_point === this.props.homeState.commands[i].mission_point
+        );
+        if (command_index === -1) {
+          this.update_mission_point(this.props.homeState.commands[i], i, false);
+        }
       }
       if (this.commands_path[i]) {
         this.commands_path[i].setMap(null);
@@ -219,19 +227,47 @@ class Map extends Component {
       }
     }
 
+    let new_commands = commands.slice();
+    let new_start_index = -1;
+    let new_end_index = -1;
+
     for (let i = startIndex; i < commands.length; i++) {
       let command = commands[i];
       let type = command.type;
       let fields = command[type];
 
       if (i <= endIndex) {
-        if (
-          command.mission_point &&
-          command.mission_point.marker &&
-          command.mission_point.marker.getMap()
-        ) {
-          this.update_mission_point(command, i);
-          this.commands[i] = null;
+        if (command.interop_object) {
+          if (command.mission_point) {
+            this.update_mission_point(command, i, true);
+            this.commands[i] = null;
+          } else {
+            
+            let mission_point = null;
+            if (command.interop_object.split('_')[0] === 'waypoints') {
+              let waypoint_index = command.interop_object.split('_')[1] - 1;
+              mission_point = this.mission_points['waypoints'][waypoint_index];
+            } else {
+              mission_point = this.mission_points[command.interop_object];
+            }
+            if (mission_point) {
+              new_commands[i].mission_point = mission_point;
+              if (new_start_index === -1) {
+                new_start_index = i;
+              }
+              new_end_index = i;
+            } else {
+              let err_command = this.props.makeCommand('NothingCommand', null);
+              err_command.name = "Interop data not synced between interfaces!!!";
+              this.props.setHomeState({
+                commands: [err_command],
+                changedCommands: null,
+                dontSendCommandChanges: true,
+                invalidCommands: true
+              });
+              return;
+            }
+          }
         } else if (fields.latitude && fields.longitude) {
           let marker = new google.maps.Marker({
             map: this.map,
@@ -363,6 +399,14 @@ class Map extends Component {
         });
       }*/
     }
+
+    if (new_start_index !== -1) {
+      this.props.setHomeState({
+        commands: new_commands,
+        changedCommands: {startIndex: new_start_index, endIndex: new_end_index},
+        dontSendCommandChanges: true
+      });
+    }
   };
 
   focus_on_command = props => {
@@ -401,7 +445,7 @@ class Map extends Component {
     }
   };
 
-  add_goto_command(lat, lng, alt, name, mission_point) {
+  add_goto_command(lat, lng, alt, name, mission_point, interop_object_name) {
     let command = this.props.makeCommand('GotoCommand', {
       latitude: lat,
       longitude: lng,
@@ -409,8 +453,9 @@ class Map extends Component {
     });
     command.name = name;
     command.mission_point = mission_point;
+    command.interop_object = interop_object_name;
     let commands = this.props.homeState.commands;
-    this.props.setHomeState({
+    return this.props.setHomeState({
       commands: commands.concat(command),
       changedCommands: {startIndex: commands.length, endIndex: commands.length}
     });
@@ -435,26 +480,6 @@ class Map extends Component {
       commands: commands,
       changedCommands: {startIndex: commands.length, endIndex: commands.length}
     });
-  }
-
-  update_commands(commands) {
-    for (let i = 0; i < commands.length; i++) {
-      let command = commands[i];
-
-      if (
-        command.mission_point &&
-        command.mission_point.marker &&
-        command.mission_point.marker.getMap()
-      ) {
-        this.update_mission_point(command, i);
-      } else if (this.commands[i]) {
-        let type = command.type;
-        let fields = command[type];
-
-        this.commands[i].infowindow.setContent(this.command_info(i, type, fields));
-        this.commands[i].onInfoChanged();
-      }
-    }
   }
 
   command_info(i, type, fields) {
@@ -547,6 +572,8 @@ class Map extends Component {
 
     this.fly_zones.length = 0;
 
+    if (!fly_zones) return;
+
     for (let fly_zone of fly_zones) {
       let bigRect = [];
       bigRect.push({
@@ -601,11 +628,25 @@ class Map extends Component {
       this.waypoint_path.setMap(null);
     }
     for (let waypoint of this.mission_points.waypoints) {
+      let command_index = this.props.homeState.commands.findIndex(
+        el => el.mission_point === waypoint
+      );
+      if (command_index !== -1) {
+        let commands = this.props.homeState.commands.slice();
+        commands[command_index].mission_point = null;
+        commands[command_index].interop_object = null;
+        commands[command_index].name = null;
+        this.props.setHomeState({
+          commands: commands,
+          changedCommands: {startIndex: command_index, endIndex: command_index}
+        });
+      }
+
       waypoint.marker.setMap(null);
     }
     this.mission_points.waypoints.length = 0;
 
-    if (waypoints === undefined) return;
+    if (!waypoints) return;
 
     let positions = [];
 
@@ -643,18 +684,46 @@ class Map extends Component {
 
   draw_mission_point(mission_point_key, pos) {
     if (this.mission_points[mission_point_key]) {
+      let command_index = this.props.homeState.commands.findIndex(
+        el => el.mission_point === this.mission_points[mission_point_key]
+      );
+      if (command_index !== -1) {
+        let commands = this.props.homeState.commands.slice();
+        commands[command_index].mission_point = null;
+        commands[command_index].interop_object = null;
+        commands[command_index].name = null;
+        this.props.setHomeState({
+          commands: commands,
+          changedCommands: {startIndex: command_index, endIndex: command_index}
+        });
+      }
+
       this.mission_points[mission_point_key].marker.setMap(null);
     }
+
+    if (!pos) return;
 
     let mission_point = this.make_mission_marker(mission_point_key, pos);
     this.mission_points[mission_point_key] = mission_point;
   }
 
-  update_mission_point(command, index) {
+  update_mission_point(command, index, in_mission) {
+    console.log(command.name)
     let div = document.createElement('div');
     div.innerHTML = command.mission_point.infowindow.getContent();
-    let command_info = index + 1 + ') ' + command.type + ': ';
-    div.getElementsByClassName('command_info')[0].textContent = command_info;
+    let command_info_el = div.getElementsByClassName('command_info')[0];
+    let add_btn = div.getElementsByClassName('add_point_to_plan')[0];
+    let remove_btn = div.getElementsByClassName('remove_point_from_plan')[0];
+    if (in_mission) {
+      let command_info = index + 1 + ') ' + command.type + ': ';
+      command_info_el.textContent = command_info;
+      add_btn.setAttribute('hidden', 'hidden');
+      remove_btn.removeAttribute('hidden');
+    } else {
+      command_info_el.textContent = '';
+      remove_btn.setAttribute('hidden', 'hidden');
+      add_btn.removeAttribute('hidden');
+    }
     command.mission_point.infowindow.setContent(div.innerHTML);
     command.mission_point.onInfoChanged();
   }
@@ -663,6 +732,8 @@ class Map extends Component {
     if (this.search_grid) {
       this.search_grid.setMap(null);
     }
+
+    if (!points) return;
 
     let boundary_coordinates = [];
     let avg_lat = 0;
@@ -689,7 +760,7 @@ class Map extends Component {
     });
 
     let info = (
-      <div id="mission_point_infowindow_search">
+      <div id="infowindow_search_area">
         <h6 class="infowindow_title">
           <span class="command_info" />
           Search Area
@@ -711,22 +782,22 @@ class Map extends Component {
     });
 
     let setup_listeners = () => {
-      let div = document.getElementById('mission_point_infowindow_search');
+      let div = document.getElementById('infowindow_search_area');
       if (div) {
         let add_btn = div.getElementsByClassName('add_point_to_plan')[0];
         let remove_btn = div.getElementsByClassName(
           'remove_point_from_plan'
         )[0];
         add_btn.onclick = () => {
-          add_btn.setAttribute('hidden', 'hidden');
-          remove_btn.removeAttribute('hidden');
-          infowindow.setContent(div.outerHTML);
-          setup_listeners();
-          this.add_survey_command(
-            boundary_coordinates,
-            'Search Area',
-            polygon
-          );
+          // add_btn.setAttribute('hidden', 'hidden');
+          // remove_btn.removeAttribute('hidden');
+          // infowindow.setContent(div.outerHTML);
+          // setup_listeners();
+          // this.add_survey_command(
+          //   boundary_coordinates,
+          //   'Search Area',
+          //   polygon
+          // );
         };
         remove_btn.onclick = () => {
           let command_index = this.props.homeState.commands.findIndex(
@@ -842,17 +913,19 @@ class Map extends Component {
             'remove_point_from_plan'
           )[0];
           add_btn.onclick = () => {
-            add_btn.setAttribute('hidden', 'hidden');
-            remove_btn.removeAttribute('hidden');
-            infowindow.setContent(div.outerHTML);
-            mission_point.onInfoChanged();
-            this.add_goto_command(
+            if (this.add_goto_command(
               coords.lat,
               coords.lng,
               coords.alt || 80,
               title,
-              mission_point
-            );
+              mission_point,
+              id
+            )) {
+              add_btn.setAttribute('hidden', 'hidden');
+              remove_btn.removeAttribute('hidden');
+              infowindow.setContent(div.outerHTML);
+              mission_point.onInfoChanged();
+            }
           };
           remove_btn.onclick = () => {
             let command_index = this.props.homeState.commands.findIndex(
