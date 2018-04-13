@@ -212,7 +212,7 @@ class MissionPlanner extends Component {
     }
     if (!isNaN(subcommand)) {
       return (
-        <td key={id}>
+        <td key={id} className="input_td">
           <InputGroup>
             <InputGroupAddon addonType="prepend">
               <InputGroupText>{key}</InputGroupText>
@@ -243,7 +243,7 @@ class MissionPlanner extends Component {
               <tbody>
                 {subcommand.map((cmd, i) => 
                   <tr key={i}>
-                    <td>{key}:</td>
+                    <td>{key} {i+1}:</td>
                     {fields.map((next_field, j) => {
                       return this.commandFieldInput(index, command, field+'.'+i+'.'+next_field.name, j);
                     })}
@@ -329,7 +329,12 @@ class MissionPlanner extends Component {
         }
       }
 
-      subcommand[field] = newValue;
+      if (Array.isArray(subcommand)) {
+        subcommand[parseInt(field)] = newValue;
+      } else {
+        subcommand[field] = newValue;
+      }
+
       this.props.setHomeState({
         commands: commands,
         changedCommands: {startIndex: command, endIndex: command}
