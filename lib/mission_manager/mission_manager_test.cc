@@ -17,17 +17,18 @@ TEST(MissionManagerTest, MissionManagerTest) {
 
     ASSERT_TRUE(cmd->has_nothingcommand());
     ASSERT_FALSE(cmd->has_sleepcommand());
-    ASSERT_FALSE(cmd->has_bombcommand());
+    ASSERT_FALSE(cmd->has_bombdropcommand());
     ASSERT_FALSE(cmd->has_gotocommand());
 
     mission_manager::GotoCommand *goto_cmd = cmd->mutable_gotocommand();
-    goto_cmd->set_latitude(1.0 + i);
-    goto_cmd->set_longitude(3.0 + i);
-    goto_cmd->set_altitude(5.0 + i);
+    mission_manager::Position3D *goal = goto_cmd->mutable_goal();
+    goal->set_latitude(1.0 + i);
+    goal->set_longitude(3.0 + i);
+    goal->set_altitude(5.0 + i);
 
     ASSERT_FALSE(cmd->has_nothingcommand());
     ASSERT_FALSE(cmd->has_sleepcommand());
-    ASSERT_FALSE(cmd->has_bombcommand());
+    ASSERT_FALSE(cmd->has_bombdropcommand());
     ASSERT_TRUE(cmd->has_gotocommand());
   }
 
@@ -38,9 +39,9 @@ TEST(MissionManagerTest, MissionManagerTest) {
   for(int i = 0;i < 100;i++) {
     ::lib::mission_manager::Command cmd = mission_manager.GetCurrentCommand();
     mission_manager.PopCommand();
-    ASSERT_EQ(cmd.gotocommand().latitude(), 1.0 + i);
-    ASSERT_EQ(cmd.gotocommand().longitude(), 3.0 + i);
-    ASSERT_EQ(cmd.gotocommand().altitude(), 5.0 + i);
+    ASSERT_EQ(cmd.gotocommand().goal().latitude(), 1.0 + i);
+    ASSERT_EQ(cmd.gotocommand().goal().longitude(), 3.0 + i);
+    ASSERT_EQ(cmd.gotocommand().goal().altitude(), 5.0 + i);
   }
 }
 
