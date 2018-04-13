@@ -318,12 +318,16 @@ void MissionReceiver::OnFail() { ::std::cout << "socketio failed! :(\n"; }
 
 void MissionReceiver::SetState(::std::string new_state_string) {
   auto sensors = &::src::control::loops::flight_loop_queue.sensors;
+  auto status = &::src::control::loops::flight_loop_queue.status;
   sensors->FetchLatest();
+  status->FetchLatest();
 
   GoalState new_state;
 
   if (new_state_string == "MISSION") {
-    if (GetState() == LAND && (*sensors)->relative_altitude < 5.0) {
+    if ((*status)->state ==
+            ::src::control::loops::FlightLoop::State::LANDING &&
+        (*sensors)->relative_altitude < 5.0) {
       ::std::cerr << "Cannot switch to mission: landing and at unsafe altitude."
                   << ::std::endl;
       return;
