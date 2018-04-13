@@ -149,7 +149,7 @@ class Navbar extends Component {
   }
 
   getBatteryCells = voltage => {
-    return Math.floor(voltage / 3.2);
+    return Math.min(Math.floor(voltage / 3.2), 12);
   };
 }
 

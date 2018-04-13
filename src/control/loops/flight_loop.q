@@ -40,6 +40,8 @@ queue_group FlightLoopQueue {
 
     bool armed;
     int32_t autopilot_state;
+
+    double last_gps;
   };
 
   message Status {
