@@ -18,9 +18,9 @@ const SortableItem = SortableElement(({ command, changedCommands, myIndex, self 
       <td>{myIndex + 1}</td>
       <td>{command.name}</td>
       <td>{type}</td>
-      {fields.map((field, index) => (
-        <td key={index}>{parseFloat(command[type][field]).toFixed(3)}</td>
-      ))}
+      {fields.map((field, index) => {
+        return self.commandField(command, field.name, index);
+      })}
     </tr>
   );
 });
@@ -84,6 +84,60 @@ class MissionPlannerOverview extends Component {
   onCommandClick(index, event) {
     if (event.target.tagName === 'TD') {
       this.props.setHomeState({ focusedCommand: index });
+    }
+  }
+
+  commandField(command, field, id) {
+    let type = command.type;
+    let keys = field.split('.');
+    let subcommand = command[type];
+    let key = null;
+    for (key of keys) {
+      if (Array.isArray(subcommand)) {
+        subcommand = subcommand[parseInt(key)];
+      } else {
+        type = this.props.commandTypes[type].find(el => el.name === key).type;
+        subcommand = subcommand[key];
+      }
+      if (subcommand == null) {
+        return null;
+      }
+    }
+
+    if (!isNaN(subcommand)) {
+      return <td key={id}>{parseFloat(subcommand).toFixed(3)}</td>;
+    } else {
+      let fields = this.props.commandTypes[type];
+      if (Array.isArray(subcommand)) {
+        return (
+          <td key={id}>
+            <table>
+              <tbody>
+                {subcommand.map((cmd, i) => 
+                  <tr>
+                    {fields.map((next_field, j) => {
+                      return this.commandField(command, field+'.'+i+'.'+next_field.name, j);
+                    })}
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </td>
+        );
+      }
+      return (
+        <td key={id}>
+          <table>
+            <tbody>
+              <tr>
+                {fields.map((next_field, i) => {
+                  return this.commandField(command, field+'.'+next_field.name, i);
+                })}
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      );
     }
   }
 }

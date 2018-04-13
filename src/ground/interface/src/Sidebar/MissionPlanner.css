@@ -103,6 +103,10 @@
   white-space: nowrap;
 }
 
+.command_row table {
+  margin-bottom: 0;
+}
+
 .command_row .form-group {
   margin: 0;
   display: inline-block;
@@ -118,4 +122,12 @@
 
 .command_row .type_select {
   width: 150px;
+}
+
+.card td {
+  padding: 5px;
+}
+
+.card td td {
+  padding: 1px;
 }

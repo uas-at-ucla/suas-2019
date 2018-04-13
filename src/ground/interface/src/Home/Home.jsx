@@ -34,7 +34,9 @@ class Home extends Component {
 
         let fields = Array();
         for (let field in proto_commands[proto_command].fields) {
-          fields.push(field);
+          let field_info = proto_commands[proto_command].fields[field];
+          field_info.name = field;
+          fields.push(field_info);
         }
 
         this.command_types[proto_command] = fields;
@@ -193,23 +195,21 @@ class Home extends Component {
     return serialized_mission;
   }
 
-  make_command = (type, fields) => {
-    let Command = this.protobuf_root.lookupType('lib.mission_manager.Command');
-
+  make_inner_command = (type, fields) => {
     let defaults = {
-      'GotoCommand': {
-        latitude: 38.145298,
-        longitude: -76.42861,
-        altitude: 30
-      },
-      'BombCommand': {
-        latitude: 38.145298,
-        longitude: -76.42861
-      }
+      // 'GotoCommand': {
+      //   latitude: 38.145298,
+      //   longitude: -76.42861,
+      //   altitude: 30
+      // },
+      // 'BombCommand': {
+      //   latitude: 38.145298,
+      //   longitude: -76.42861
+      // }
     };
 
     let command_proto_defs = Object();
-    for (let name of Object.keys(this.command_types)) {
+    for (let name in this.command_types) {
       let cmd = this.protobuf_root.lookupType('lib.mission_manager.' + name);
 
       command_proto_defs[name] = cmd;
@@ -221,27 +221,35 @@ class Home extends Component {
       } else {
         fields = {};
 
-        for(let field of this.command_types[type]) {
-          fields[field] = 0;
+        for (let field of this.command_types[type]) {
+          fields[field.name] = this.add_field(type, field);
         }
       }
     } else {
       // delete extra fields
-      for(let field of Object.keys(fields)) {
-        if (!this.command_types[type].includes(field)) {
+      for(let field in fields) {
+        if (!this.command_types[type].find(el => el.name === field)) {
           delete fields[field];
         }
       }
 
       // add missing fields
       for(let field of this.command_types[type]) {
-        if (fields[field] == undefined) {
-          fields[field] = defaults[type] ? defaults[type][field] || 0 : 0;
+        if (fields[field.name] == undefined) {
+          fields[field.name] = defaults[type] ? defaults[type][field] || 
+            this.add_field(type, field) : this.add_field(type, field);
         }
       }
     }
 
     let cmd_inner = command_proto_defs[type].create(fields);
+    return cmd_inner;
+  };
+
+  make_command = (type, fields) => {
+    let Command = this.protobuf_root.lookupType('lib.mission_manager.Command');
+
+    let cmd_inner = this.make_inner_command(type, fields);
 
     let cmd_oneof = {};
     cmd_oneof[type] = cmd_inner;
@@ -251,6 +259,19 @@ class Home extends Component {
 
     return cmd;
   };
+
+  add_field(command_type, field) {
+    if (field.type === 'Mission') {
+      return null;
+    }
+    if (Object.keys(this.command_types).includes(field.type)) {
+      if (this.command_types[command_type].find(el => el.name === field.name).rule === 'repeated') {
+        return [this.make_inner_command(field.type, null), this.make_inner_command(field.type, null)];
+      }
+      return this.make_inner_command(field.type, null);
+    }
+    return 0;
+  }
 }
 
 export default Home;
