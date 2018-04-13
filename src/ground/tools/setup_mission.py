@@ -55,50 +55,41 @@ mission2 = {
     'altitude_msl_min': 0,
     'altitude_msl_max': 750,
     'boundary_pts': [
-        { 'latitude': 34.17454570730207, 'longitude': -118.48195468851634 }, 
-        { 'latitude': 34.17374683740902, 'longitude': -118.48178302713939 }, 
-        { 'latitude': 34.17305447738462, 'longitude': -118.48221218058177},
-        { 'latitude': 34.1712791693163, 'longitude': -118.47794210383006 },
-        { 'latitude': 34.17186502510723, 'longitude':-118.476311320749 },
-        { 'latitude': 34.17486525314176, 'longitude': -118.4774271196992 }, 
-        { 'latitude': 34.17688901536091, 'longitude': -118.47858583399363 }, 
-        { 'latitude': 34.177989637595054, 'longitude': -118.48043119379588 },
-        { 'latitude': 34.1789482323599, 'longitude': -118.48182594248362 },
-        { 'latitude': 34.179445277209695, 'longitude': -118.48259841867991 },
-        { 'latitude': 34.179179003547155, 'longitude': -118.48352109858104 },
-        { 'latitude': 34.17749258417026, 'longitude': -118.48334943720408 },
-        { 'latitude': 34.176019158600056, 'longitude': -118.4832636065156 },
-        { 'latitude': 34.17553984594091, 'longitude': -118.48242675730296 }
+        { 'latitude': 34.17403661272721, 'longitude':   -118.48180172782406 }, 
+        { 'latitude': 34.17369931099332, 'longitude': -118.48175881247982 }, 
+        { 'latitude': 34.1730247034811, 'longitude': -118.48220942359433},
+        { 'latitude': 34.17126714805826, 'longitude': -118.4779178891705 },
+        { 'latitude': 34.171853003932654, 'longitude': -118.47630856376156 },
+        { 'latitude': 34.17511951970793, 'longitude': -118.47753165107235 }
     ],
     'search_grid_points': [
-        { 'latitude': 34.17483782187238, 'longitude': -118.48089512794269 },
-        { 'latitude': 34.17510410923441, 'longitude': -118.47971495597614 }, 
-        { 'latitude': 34.17538814816107, 'longitude': -118.47832020728839 },
-        { 'latitude': 34.173524125255206, 'longitude': -118.47741898505939}, 
-        { 'latitude': 34.173630641959, 'longitude': -118.48014410941852}  
+        { 'latitude': 34.17408936092683, 'longitude': -118.48073169311522 },
+        { 'latitude': 34.17352127337439, 'longitude': -118.48036691268919 }, 
+        { 'latitude': 34.17343250934888, 'longitude': -118.47729846557615 },
+        { 'latitude': 34.17453317666632, 'longitude': -118.47770616134642 }
     ],
     'waypoints': [
-        { 'latitude': 34.1787787890196, 'longitude': -118.48263319938434, 'altitude_msl': 150 },
-        { 'latitude': 34.17797995920098, 'longitude': -118.4830408951546, 'altitude_msl': 200 }, 
-        { 'latitude': 34.176666311499744, 'longitude':  -118.48299797981036, 'altitude_msl': 200 },
-        { 'latitude': 34.17599172770578, 'longitude': -118.4822469612862, 'altitude_msl': 200 }, 
-        { 'latitude': 34.17654204646923, 'longitude':  -118.47928580253375, 'altitude_msl': 200 },
-        { 'latitude': 34.17792670361084, 'longitude': -118.48083075492633, 'altitude_msl': 250 }   
+        { 'latitude': 34.17272239378375, 'longitude':  -118.48094626983641, 'altitude_msl': 150 },
+        { 'latitude': 34.17327273386768, 'longitude': -118.48047420104979, 'altitude_msl': 200 }, 
+        { 'latitude': 34.17329048671387, 'longitude':  -118.47819968780516, 'altitude_msl': 200 },
+        { 'latitude': 34.17316621671217, 'longitude': -118.47740575393675, 'altitude_msl': 200 }, 
+        { 'latitude':  34.17242059285922, 'longitude':  -118.4775774153137, 'altitude_msl': 200 },
+        { 'latitude': 34.171870247218436, 'longitude': -118.47845717987059, 'altitude_msl': 250 }   
     ],
     'emergent_object': { 'latitude': 34.17311547855627, 'longitude': -118.48121668488153 },
-    'off_axis_object': { 'latitude': 34.17812929763678, 'longitude': -118.47852867027945 },
-    'home': { 'latitude': 34.175048, 'longitude': -118.481590 },
+    'off_axis_object': { 'latitude': 34.17377032199672, 'longitude': -118.47536036387527 },
+    'home': { 'latitude': 34.17147967716717, 'longitude': -118.47792073806761 },
     'air_drop': { 'latitude': 34.17230771859926, 'longitude':  -118.47723628670343 },
     'stationary_obstacles': [
-        { 'latitude': 34.1760243804542, 'longitude': -118.47882196029661, 'radius': 100, 'height': 100 }
+        { 'latitude': 34.17481721751467, 'longitude': -118.4776847036743, 'radius': 100, 'height': 100 }
     ],
     'moving_obstacles': [
         { 
             'radius': 300,
             'speed_avg': 30,
             'waypoints': [
-                { 'latitude': 34.17801261118003, 'longitude': -118.48231956085203, 'altitude_msl': 100},
-                { 'latitude': 34.17358045847341, 'longitude': -118.47910091003416, 'altitude_msl': 150}
+                { 'latitude': 34.1721010377628, 'longitude': -118.47663327774046, 'altitude_msl': 100},
+                { 'latitude': 34.173574531744876, 'longitude': -118.47714826187132, 'altitude_msl': 150}
             ]
         }
     ]

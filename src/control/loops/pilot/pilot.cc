@@ -22,9 +22,9 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
   } else if (cmd.has_gotocommand()) {
     constexpr double kSpeed = 15.0;
 
-    Position3D goal = {cmd.gotocommand().latitude(),
-                       cmd.gotocommand().longitude(),
-                       cmd.gotocommand().altitude()};
+    Position3D goal = {cmd.gotocommand().goal().latitude(),
+                       cmd.gotocommand().goal().longitude(),
+                       cmd.gotocommand().goal().altitude()};
 
     flight_direction = PointTowards(drone_position, goal);
     flight_direction *= kSpeed;
@@ -32,7 +32,7 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
     if (GetDistance2D(drone_position, goal) < kSpeed) {
       mission_message_queue_receiver_.get_mission_manager()->PopCommand();
     }
-  } else if (cmd.has_bombcommand()) {
+  } else if (cmd.has_bombdropcommand()) {
     flight_direction = {0, 0, 0};
     bomb_drop = true;
   } else {
