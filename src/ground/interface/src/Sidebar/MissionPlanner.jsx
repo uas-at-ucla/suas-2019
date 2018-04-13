@@ -39,29 +39,7 @@ const SortableItem = SortableElement(({ command, changedCommands, myIndex, self 
         </FormGroup>
       </td>
       {fields.map((field, index) => {
-        return (
-          <td key={index}>
-            <InputGroup>
-              <InputGroupAddon addonType="prepend">
-                <InputGroupText>{field}</InputGroupText>
-              </InputGroupAddon>
-              <Input
-                type="number"
-                value={command[type][field]}
-                className="command_input"
-                onChange={new_value => {
-                  self.changed_command_field(
-                    new_value.target.value,
-                    myIndex,
-                    field
-                  );
-                }}
-                bsSize="small"
-                disabled={command.mission_point && (field === 'latitude' || field === 'longitude')}
-              />
-            </InputGroup>
-          </td>
-        );
+        return self.commandFieldInput(myIndex, command, field.name, index);
       })}
     </tr>
   );
@@ -216,6 +194,83 @@ class MissionPlanner extends Component {
     }
   }
 
+  commandFieldInput(index, command, field, id) {
+    let type = command.type;
+    let keys = field.split('.');
+    let subcommand = command[type];
+    let key = null;
+    for (key of keys) {
+      if (Array.isArray(subcommand)) {
+        subcommand = subcommand[parseInt(key)];
+      } else {
+        type = this.props.commandTypes[type].find(el => el.name === key).type;
+        subcommand = subcommand[key];
+      }
+      if (subcommand == null) {
+        return null;
+      }
+    }
+    if (!isNaN(subcommand)) {
+      return (
+        <td key={id}>
+          <InputGroup>
+            <InputGroupAddon addonType="prepend">
+              <InputGroupText>{key}</InputGroupText>
+            </InputGroupAddon>
+            <Input
+              type="number"
+              value={subcommand}
+              className="command_input"
+              onChange={new_value => {
+                this.changed_command_field(
+                  new_value.target.value,
+                  index,
+                  field
+                );
+              }}
+              bsSize="small"
+              disabled={command.mission_point && (key === 'latitude' || key === 'longitude')}
+            />
+          </InputGroup>
+        </td>
+      );
+    } else {
+      let fields = this.props.commandTypes[type];
+      if (Array.isArray(subcommand)) {
+        return (
+          <td key={id}>
+            <table>
+              <tbody>
+                {subcommand.map((cmd, i) => 
+                  <tr key={i}>
+                    <td>{key}:</td>
+                    {fields.map((next_field, j) => {
+                      return this.commandFieldInput(index, command, field+'.'+i+'.'+next_field.name, j);
+                    })}
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </td>
+        );
+      }
+      return (
+        <td key={id}>
+          <table>
+            <tbody>
+              <tr>
+                <td>{key}:</td>
+                {fields.map((next_field, i) => {
+                  return this.commandFieldInput(index, command, field+'.'+next_field.name, i);
+                })}
+              </tr>
+            </tbody>
+          </table>
+        </td>
+      );
+    }
+  }
+
   commandTypeOptions(index, command) {
     let items = Object.keys(this.props.commandTypes);
 
@@ -262,7 +317,19 @@ class MissionPlanner extends Component {
     if (!isNaN(newValue)) {
       let commands = this.props.homeState.commands.slice();
       let type = commands[command].type;
-      commands[command][type][field] = newValue;
+
+      let keys = field.split('.');
+      field = keys.pop();
+      let subcommand = commands[command][type];
+      for (let key of keys) {
+        if (Array.isArray(subcommand)) {
+          subcommand = subcommand[parseInt(key)];
+        } else {
+          subcommand = subcommand[key];
+        }
+      }
+
+      subcommand[field] = newValue;
       this.props.setHomeState({
         commands: commands,
         changedCommands: {startIndex: command, endIndex: command}
