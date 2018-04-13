@@ -8,35 +8,28 @@ message Position2D {
 }
 
 message Position3D {
-  required Position2D position = 1;
-  required double altitude = 2;
+  required double latitude = 1;
+  required double longitude = 2;
+  required double altitude = 3;
 }
 
 // Commands ####################################################################
 message WaypointCommand {
   required Position3D goal = 1;
-
-  optional Mission sub_mission = 2;
 }
 
 message BombDropCommand {
   required Position2D drop_zone = 1;
-
-  optional Mission sub_mission = 2;
 }
 
 message SurveyCommand {
   repeated Position2D survey_polygon = 1;
   required double altitude = 2;
-
-  optional Mission sub_mission = 3;
 }
 
 message OffAxisCommand {
   required Position3D photographer_location = 1;
   required Position2D subject_location = 2;
-
-  optional Mission sub_mission = 3;
 }
 
 message NothingCommand {}
@@ -54,19 +47,29 @@ message GotoRawCommand {
 }
 
 message Command {
+  // Nested mission containing simpler, lower-level commands for executing a
+  // more complicated command.
+  // The mission preprocessor will set/modify the sub_mission to create the
+  // complete mission tree before execution, while the flight_loop will only
+  // execute the LEAVES of this command tree.
+  optional Mission sub_mission = 1;
+
   oneof command {
-    WaypointCommand WaypointCommand = 1;
-    BombDropCommand BombDropCommand = 2;
-    SurveyCommand SurveyCommand = 3;
-    OffAxisCommand OffAxisCommand = 4;
-    NothingCommand NothingCommand = 5;
-    SleepCommand SleepCommand = 6;
-    GotoCommand GotoCommand = 7;
-    GotoRawCommand GotoRawCommand = 8;
+    // Only one of these can be set at a time. The type of this command is
+    // determined by which one is set.
+
+    WaypointCommand WaypointCommand = 2;
+    BombDropCommand BombDropCommand = 3;
+    SurveyCommand SurveyCommand = 4;
+    OffAxisCommand OffAxisCommand = 5;
+    NothingCommand NothingCommand = 6;
+    SleepCommand SleepCommand = 7;
+    GotoCommand GotoCommand = 8;
+    GotoRawCommand GotoRawCommand = 9;
   }
 }
 
 message Mission {
   repeated Command commands = 1;
-  required int32 current_command = 2;
+  optional int32 current_command = 2 [default = 0];
 }
