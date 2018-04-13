@@ -258,13 +258,16 @@ class MissionPlanner extends Component {
   }
 
   changed_command_field(value, command, field) {
-    let commands = this.props.homeState.commands.slice();
-    let type = commands[command].type;
-    commands[command][type][field] = parseFloat(value);
-    this.props.setHomeState({
-      commands: commands,
-      changedCommands: {startIndex: command, endIndex: command}
-    });
+    let newValue = parseFloat(value);
+    if (!isNaN(newValue)) {
+      let commands = this.props.homeState.commands.slice();
+      let type = commands[command].type;
+      commands[command][type][field] = newValue;
+      this.props.setHomeState({
+        commands: commands,
+        changedCommands: {startIndex: command, endIndex: command}
+      });
+    }
   }
 }
 
