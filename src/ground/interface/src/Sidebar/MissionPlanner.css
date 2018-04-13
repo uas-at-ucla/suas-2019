@@ -19,21 +19,12 @@
   font-size: 11px;
 }
 
-.command_input {
-  width: 120px;
-  min-width: 120px;
-}
-
 .command_row {
   text-align: left;
 }
 
-.command_row td:first-child {
-  width: 40px !important;
-}
-
-.command_row td:nth-child(2) {
-  width: 50px !important;
+.command_row .input_td {
+  min-width: 15em;
 }
 
 .modal-lg {
@@ -129,5 +120,5 @@
 }
 
 .card td td {
-  padding: 1px;
+  padding: 0px 5px 0px 5px;
 }
