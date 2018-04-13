@@ -25,9 +25,10 @@ TEST(MissionMessageQueueTest, SendMissionOverQueueTest) {
     ::lib::mission_manager::Command *cmd = mission.add_commands();
 
     mission_manager::GotoCommand *goto_cmd = cmd->mutable_gotocommand();
-    goto_cmd->set_latitude(1.0);
-    goto_cmd->set_longitude(3.0);
-    goto_cmd->set_altitude(3.0);
+    mission_manager::Position3D *goal = goto_cmd->mutable_goal();
+    goal->set_latitude(1.0);
+    goal->set_longitude(3.0);
+    goal->set_altitude(3.0);
   }
 
   mission_message_queue_sender.SendMission(mission);
