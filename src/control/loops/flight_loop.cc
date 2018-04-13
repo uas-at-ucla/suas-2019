@@ -3,6 +3,7 @@
 #include <chrono>
 #include <iomanip>
 #include <iostream>
+#include <limits>
 #include <thread>
 
 #include "zmq.hpp"
@@ -27,7 +28,9 @@ FlightLoop::FlightLoop()
       count_(0),
       previous_flights_time_(0),
       current_flight_start_time_(0),
-      alarm_(kFlightLoopFrequency) {
+      alarm_(kFlightLoopFrequency),
+      got_sensors_(false),
+      last_loop_(0) {
   ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
   ::src::control::loops::flight_loop_queue.output.FetchLatest();
@@ -103,9 +106,30 @@ void FlightLoop::RunIteration() {
   ::src::control::loops::flight_loop_queue.sensors.FetchAnother();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
 
+  if (!got_sensors_) {
+    // Send out an alarm chirp to signal that the drone loop is running
+    // successfully.
+    alarm_.AddAlert({0.02, 0.50});
+  }
+
+  got_sensors_ = true;
+
   DumpSensors();
 
   State next_state = state_;
+
+  double current_time =
+      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+          ::std::chrono::system_clock::now().time_since_epoch())
+          .count() *
+      1e-9;
+  LOG_LINE("Flight Loop dt: " << std::setprecision(14)
+                              << current_time - last_loop_ - 0.01);
+  if (current_time - last_loop_ > 0.01 + 0.002) {
+    LOG_LINE("Flight LOOP RUNNING SLOW: dt: " << std::setprecision(14)
+                                              << current_time - last_loop_ - 0.01);
+  }
+  last_loop_ = current_time;
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
@@ -143,16 +167,31 @@ void FlightLoop::RunIteration() {
     case STANDBY:
       if (run_mission) {
         next_state = ARMING;
+        alarm_.AddAlert({0.10, 0.50});
+        alarm_.AddAlert({0.10, 0.50});
       }
       break;
 
     case ARMING:
+      // Check if we have GPS.
+      if (::src::control::loops::flight_loop_queue.sensors->last_gps <
+          current_time - 0.5) {
+        LOG_LINE("can't arm; no GPS (last gps: "
+                 << ::src::control::loops::flight_loop_queue.sensors->last_gps
+                 << " current time: " << current_time);
+
+        next_state = STANDBY;
+        break;
+      }
+
       if (!run_mission) {
         next_state = LANDING;
+        break;
       }
 
       if (::src::control::loops::flight_loop_queue.sensors->armed) {
         next_state = ARMED;
+        break;
       }
 
       output->arm = true;
@@ -161,10 +200,12 @@ void FlightLoop::RunIteration() {
     case ARMED:
       if (!run_mission) {
         next_state = LANDING;
+        break;
       }
 
       if (!::src::control::loops::flight_loop_queue.sensors->armed) {
         next_state = ARMING;
+        break;
       }
 
       current_flight_start_time_ =
@@ -178,11 +219,13 @@ void FlightLoop::RunIteration() {
       if (!run_mission) {
         takeoff_ticker_ = 0;
         next_state = LANDING;
+        break;
       }
 
       if (!::src::control::loops::flight_loop_queue.sensors->armed) {
         takeoff_ticker_ = 0;
         next_state = ARMING;
+        break;
       }
 
       if (::src::control::loops::flight_loop_queue.sensors->relative_altitude <
@@ -205,8 +248,19 @@ void FlightLoop::RunIteration() {
       break;
 
     case IN_AIR: {
+      if (::src::control::loops::flight_loop_queue.sensors->last_gps <
+          current_time - 0.5) {
+        LOG_LINE("no GPS; landing (last gps: "
+                 << ::src::control::loops::flight_loop_queue.sensors->last_gps
+                 << " current time: " << current_time);
+
+        next_state = STANDBY;
+        break;
+      }
+
       if (!run_mission) {
         next_state = LANDING;
+        break;
       }
 
       // Check if altitude is below a safe threshold, which may indicate that
@@ -240,12 +294,14 @@ void FlightLoop::RunIteration() {
       if (!::src::control::loops::flight_loop_queue.sensors->armed) {
         EndFlightTimer();
         next_state = STANDBY;
+        break;
       }
 
       if (::src::control::loops::flight_loop_queue.goal->run_mission &&
           ::src::control::loops::flight_loop_queue.sensors->relative_altitude >
               3.0) {
         next_state = IN_AIR;
+        break;
       }
 
       output->land = true;
@@ -263,11 +319,6 @@ void FlightLoop::RunIteration() {
   if (next_state != state_) {
     // Handle state transitions.
     LOG_LINE("Switching states: " << state_ << " -> " << next_state);
-
-    if (next_state == ARMING) {
-      alarm_.AddAlert({0.10, 0.50});
-      alarm_.AddAlert({0.10, 0.50});
-    }
   }
 
   state_ = next_state;
@@ -323,31 +374,8 @@ void FlightLoop::EndFlightTimer() {
   }
 }
 
-void receive_mission() {
-  ::zmq::context_t context(1);
-  ::zmq::socket_t ground_communicator_stream(context, ZMQ_REQ);
-  ground_communicator_stream.connect("ipc:///tmp/mission_command_stream.ipc");
-  ::zmq::message_t request(5);
-  memcpy(request.data(), "Hello", 5);
-  ground_communicator_stream.send(request);
-
-  ::std::cout << "-----------------Hello-----------------\n";
-  ::zmq::message_t reply;
-  ground_communicator_stream.recv(&reply);
-  for (int i = 0;; i++)
-    if (i % 1000000 == 0)
-      ::std::cout << "got a reply <><><><><><><><><><><><><><><\n";
-}
-
 void FlightLoop::Run() {
   running_ = true;
-
-  ::std::cout << "<<<<<<<<<<<<<<< Creating new ground_communicator_thread\n";
-
-  ::std::thread ground_communicator_thread(receive_mission);
-  ground_communicator_thread.detach();
-
-  ::std::cout << "<<<<<<<<<<<<<<< Detatched ground_communicator_thread\n";
 
   while (running_) {
     RunIteration();
