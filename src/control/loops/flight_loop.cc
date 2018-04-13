@@ -242,6 +242,12 @@ void FlightLoop::RunIteration() {
         next_state = STANDBY;
       }
 
+      if (::src::control::loops::flight_loop_queue.goal->run_mission &&
+          ::src::control::loops::flight_loop_queue.sensors->relative_altitude >
+              3.0) {
+        next_state = IN_AIR;
+      }
+
       output->land = true;
       break;
 
