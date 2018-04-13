@@ -1,5 +1,4 @@
 # THIS FILE CANNOT CONTAIN BACKSLASHES OR DOUBLE QUOTES
-
 mission1 = {
     'altitude_msl_min': 0,
     'altitude_msl_max': 750, #feet
@@ -51,7 +50,52 @@ mission1 = {
     ]
 }
 
-mission = mission1
+
+mission2 = {
+    'altitude_msl_min': 0,
+    'altitude_msl_max': 750,
+    'boundary_pts': [
+        { 'latitude': 34.17403661272721, 'longitude':   -118.48180172782406 }, 
+        { 'latitude': 34.17369931099332, 'longitude': -118.48175881247982 }, 
+        { 'latitude': 34.1730247034811, 'longitude': -118.48220942359433},
+        { 'latitude': 34.17126714805826, 'longitude': -118.4779178891705 },
+        { 'latitude': 34.171853003932654, 'longitude': -118.47630856376156 },
+        { 'latitude': 34.17511951970793, 'longitude': -118.47753165107235 }
+    ],
+    'search_grid_points': [
+        { 'latitude': 34.17408936092683, 'longitude': -118.48073169311522 },
+        { 'latitude': 34.17352127337439, 'longitude': -118.48036691268919 }, 
+        { 'latitude': 34.17343250934888, 'longitude': -118.47729846557615 },
+        { 'latitude': 34.17453317666632, 'longitude': -118.47770616134642 }
+    ],
+    'waypoints': [
+        { 'latitude': 34.17272239378375, 'longitude':  -118.48094626983641, 'altitude_msl': 150 },
+        { 'latitude': 34.17327273386768, 'longitude': -118.48047420104979, 'altitude_msl': 200 }, 
+        { 'latitude': 34.17329048671387, 'longitude':  -118.47819968780516, 'altitude_msl': 200 },
+        { 'latitude': 34.17316621671217, 'longitude': -118.47740575393675, 'altitude_msl': 200 }, 
+        { 'latitude':  34.17242059285922, 'longitude':  -118.4775774153137, 'altitude_msl': 200 },
+        { 'latitude': 34.171870247218436, 'longitude': -118.47845717987059, 'altitude_msl': 250 }   
+    ],
+    'emergent_object': { 'latitude': 34.17311547855627, 'longitude': -118.48121668488153 },
+    'off_axis_object': { 'latitude': 34.17377032199672, 'longitude': -118.47536036387527 },
+    'home': { 'latitude': 34.17147967716717, 'longitude': -118.47792073806761 },
+    'air_drop': { 'latitude': 34.17230771859926, 'longitude':  -118.47723628670343 },
+    'stationary_obstacles': [
+        { 'latitude': 34.17481721751467, 'longitude': -118.4776847036743, 'radius': 100, 'height': 100 }
+    ],
+    'moving_obstacles': [
+        { 
+            'radius': 300,
+            'speed_avg': 30,
+            'waypoints': [
+                { 'latitude': 34.1721010377628, 'longitude': -118.47663327774046, 'altitude_msl': 100},
+                { 'latitude': 34.173574531744876, 'longitude': -118.47714826187132, 'altitude_msl': 150}
+            ]
+        }
+    ]
+}
+
+mission = mission2
 
 altitude_msl_min = mission['altitude_msl_min']
 altitude_msl_max = mission['altitude_msl_max']
