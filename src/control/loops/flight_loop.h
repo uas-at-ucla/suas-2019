@@ -74,6 +74,9 @@ class FlightLoop {
   unsigned long current_flight_start_time_;
 
   ::lib::alarm::Alarm alarm_;
+
+  bool got_sensors_;
+  double last_loop_;
 };
 
 const std::map<FlightLoop::State, std::string> state_string = {

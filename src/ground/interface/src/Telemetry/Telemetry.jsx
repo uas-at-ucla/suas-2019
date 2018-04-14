@@ -55,6 +55,7 @@ class Telemetry extends Component {
     if (
       this.telemetry &&
       this.props.homeState.mission &&
+      this.props.homeState.mission.fly_zones &&
       this.props.homeState.mission.fly_zones[0]
     ) {
       var groundAlt =
