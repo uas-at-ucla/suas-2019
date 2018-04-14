@@ -48,6 +48,7 @@ class Panel extends Component {
                   setHomeState={this.props.setHomeState}
                   makeCommand={this.props.makeCommand}
                   commandTypes={this.props.commandTypes}
+                  getCommandPosKey={this.props.getCommandPosKey}
                 />
               </div>
             </div>

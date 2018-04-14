@@ -172,9 +172,10 @@ class MissionPlanner extends Component {
     let newType = event.target.value;
     let command = this.props.makeCommand(
       newType,
-      fields
+      fields,
+      type
     );
-    if (commands[index].mission_point && command[newType].latitude) {
+    if (commands[index].mission_point && this.props.getCommandPosKey(newType)) {
       delete commands[index][type];
       commands[index].type = newType;
       commands[index][newType] = command[newType];
@@ -243,7 +244,7 @@ class MissionPlanner extends Component {
               <tbody>
                 {subcommand.map((cmd, i) => 
                   <tr key={i}>
-                    <td>{key} {i+1}:</td>
+                    <td><b>{key} {i+1}:</b></td>
                     {fields.map((next_field, j) => {
                       return this.commandFieldInput(index, command, field+'.'+i+'.'+next_field.name, j);
                     })}
@@ -259,7 +260,7 @@ class MissionPlanner extends Component {
           <table>
             <tbody>
               <tr>
-                <td>{key}:</td>
+                <td><b>{key}:</b></td>
                 {fields.map((next_field, i) => {
                   return this.commandFieldInput(index, command, field+'.'+next_field.name, i);
                 })}
@@ -293,6 +294,7 @@ class MissionPlanner extends Component {
     }
     return (
       <button
+        id="delete_command_btn"
         className="btn btn-danger"
         style={{
           position: 'fixed',

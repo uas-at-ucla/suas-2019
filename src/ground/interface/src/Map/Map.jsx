@@ -174,6 +174,15 @@ class Map extends Component {
     }
   };
 
+  get_command_pos(command, type) {
+    let key = this.props.getCommandPosKey(type);
+    if (key) {
+      return command[key];
+    }
+
+    return null;
+  }
+
   draw_command_path = props => {
     let commands = props.homeState.commands;
 
@@ -224,8 +233,9 @@ class Map extends Component {
       let command = commands[i];
       let type = command.type;
       let fields = command[type];
-      if (fields.latitude && fields.longitude) {
-        last_pos = { lat: fields.latitude, lng: fields.longitude };
+      let pos = this.get_command_pos(fields, type);
+      if (pos) {
+        last_pos = { lat: pos.latitude, lng: pos.longitude };
       }
     }
 
@@ -237,6 +247,7 @@ class Map extends Component {
       let command = commands[i];
       let type = command.type;
       let fields = command[type];
+      let pos = this.get_command_pos(fields, type);
 
       if (i <= endIndex) {
         if (command.interop_object) {
@@ -270,14 +281,14 @@ class Map extends Component {
               return;
             }
           }
-        } else if (fields.latitude && fields.longitude) {
+        } else if (pos) {
           let marker = new google.maps.Marker({
             map: this.map,
-            position: { lat: fields.latitude, lng: fields.longitude }
+            position: { lat: pos.latitude, lng: pos.longitude }
           });
 
           let infowindow = new google.maps.InfoWindow({
-            content: this.command_info(i, type, fields)
+            content: this.command_info(i, type, pos)
           });
 
           let setup_listeners = () => {
@@ -335,8 +346,8 @@ class Map extends Component {
 
           marker.addListener('dragend', () => {
             let commands = this.props.homeState.commands.slice();
-            fields.latitude = marker.getPosition().lat();
-            fields.longitude = marker.getPosition().lng();
+            pos.latitude = marker.getPosition().lat();
+            pos.longitude = marker.getPosition().lng();
 
             this.props.setHomeState({
               commands: commands,
@@ -359,15 +370,15 @@ class Map extends Component {
         }
       }
 
-      if (fields.latitude && fields.longitude) {
-        let pos = { lat: fields.latitude, lng: fields.longitude };
+      if (pos) {
+        let this_pos = { lat: pos.latitude, lng: pos.longitude };
         if (last_pos != null) {
           // Create the polyline and add the symbol via the 'icons' property.
           this.commands_path[i] =
             new google.maps.Polyline({
               path: [
                 { lat: last_pos.lat, lng: last_pos.lng },
-                { lat: pos.lat, lng: pos.lng }
+                { lat: this_pos.lat, lng: this_pos.lng }
               ],
               icons: [
                 {
@@ -384,7 +395,7 @@ class Map extends Component {
               break;
             }
         }
-        last_pos = pos;
+        last_pos = this_pos;
       } else {
         this.commands_path[i] = null;
       } /*else {
@@ -449,9 +460,11 @@ class Map extends Component {
 
   add_goto_command(lat, lng, alt, name, mission_point, interop_object_name) {
     let command = this.props.makeCommand('GotoCommand', {
-      latitude: lat,
-      longitude: lng,
-      altitude: alt
+      goal: {
+        latitude: lat,
+        longitude: lng,
+        altitude: alt
+      }
     });
     command.name = name;
     command.mission_point = mission_point;
