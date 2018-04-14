@@ -77,6 +77,8 @@ class Home extends Component {
             homeState={this.state}
             setHomeState={this.setHomeState}
             makeCommand={this.make_command}
+            commandTypes={this.command_types}
+            getCommandPosKey={this.get_command_pos_key}
           />
           <div id="left_side">
             <div
@@ -90,6 +92,7 @@ class Home extends Component {
                 socketEmit={this.props.socketEmit}
                 makeCommand={this.make_command}
                 commandTypes={this.command_types}
+                getCommandPosKey={this.get_command_pos_key}
               />
             </div>
           </div>
@@ -246,8 +249,19 @@ class Home extends Component {
     return cmd_inner;
   };
 
-  make_command = (type, fields) => {
+  make_command = (type, fields, old_type) => {
     let Command = this.protobuf_root.lookupType('lib.mission_manager.Command');
+
+    if (fields && old_type) {
+      let pos = this.get_command_pos(fields, old_type);
+      if (pos) {
+        let pos_key = this.get_command_pos_key(type);
+        if (pos_key) {
+          let pos_type = this.command_types[type].find(el => el.name === pos_key).type;
+          fields[pos_key] = this.make_inner_command(pos_type, pos);
+        }
+      }
+    }
 
     let cmd_inner = this.make_inner_command(type, fields);
 
@@ -266,11 +280,41 @@ class Home extends Component {
     }
     if (Object.keys(this.command_types).includes(field.type)) {
       if (this.command_types[command_type].find(el => el.name === field.name).rule === 'repeated') {
-        return [this.make_inner_command(field.type, null), this.make_inner_command(field.type, null)];
+        return [
+          this.make_inner_command(field.type, null),
+          this.make_inner_command(field.type, null),
+          this.make_inner_command(field.type, null)
+        ];
       }
       return this.make_inner_command(field.type, null);
     }
     return 0;
+  }
+
+  get_command_pos_key = (type) => {
+    let fieldTypes = this.command_types[type].map((field) => field.type);
+    let index2D = fieldTypes.indexOf('Position2D');
+    let index3D = fieldTypes.indexOf('Position3D');
+    if (index2D === -1) index2D = Infinity;
+    if (index3D === -1) index3D = Infinity;
+    let index = Math.min(index2D, index3D);
+    if (index !== Infinity) {
+      let field = this.command_types[type][index];
+      if (field.rule !== 'repeated') {
+        return field.name;
+      }
+    }
+
+    return null;
+  }
+
+  get_command_pos(command, type) {
+    let key = this.get_command_pos_key(type);
+    if (key) {
+      return command[key];
+    }
+
+    return null;
   }
 }
 
