@@ -122,3 +122,7 @@
 .card td td {
   padding: 0px 5px 0px 5px;
 }
+
+#delete_command_btn {
+  z-index: 100;
+}
