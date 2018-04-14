@@ -19,7 +19,7 @@ namespace src {
 namespace control {
 namespace io {
 namespace {
-const int kAlarmGPIOPin = 0;
+const int kAlarmGPIOPin = 2;
 }  // namespace
 
 void quit_handler(int sig);
@@ -32,6 +32,8 @@ class AutopilotSensorReader : public LoopInputHandler {
   void RunIteration();
   autopilot_interface::AutopilotInterface *copter_io_;
   autopilot_interface::TimeStamps last_timestamps_;
+
+  double last_gps_;
 };
 
 class AutopilotOutputWriter : public LoopOutputHandler {
