@@ -279,27 +279,27 @@ void MissionReceiver::OnConnect() {
 
   client_.socket()->on(
       "drone_execute_commands",
-      sio::socket::event_listener_aux([&](
-          std::string const& name, sio::message::ptr const& data, bool isAck,
-          sio::message::list& ack_resp) {
+      sio::socket::event_listener_aux(
+          [&](std::string const& name, sio::message::ptr const& data,
+              bool isAck, sio::message::list& ack_resp) {
 
-        (void)name;
-        (void)isAck;
-        (void)ack_resp;
+            (void)name;
+            (void)isAck;
+            (void)ack_resp;
 
-        ::lib::mission_manager::Mission mission;
+            ::lib::mission_manager::Mission mission;
 
-        ::std::string serialized_protobuf_mission = data->get_string();
+            ::std::string serialized_protobuf_mission = data->get_string();
 
-        serialized_protobuf_mission =
-            base64_decode(serialized_protobuf_mission);
+            serialized_protobuf_mission =
+                base64_decode(serialized_protobuf_mission);
 
-        mission.ParseFromString(serialized_protobuf_mission);
+            mission.ParseFromString(serialized_protobuf_mission);
 
-        mission_message_queue_sender_.SendMission(mission);
+            mission_message_queue_sender_.SendMission(mission);
 
-        SetState("MISSION");
-      }));
+            SetState("MISSION");
+          }));
 
   client_.socket()->on(
       "drone_set_state",
@@ -317,9 +317,21 @@ void MissionReceiver::OnConnect() {
 void MissionReceiver::OnFail() { ::std::cout << "socketio failed! :(\n"; }
 
 void MissionReceiver::SetState(::std::string new_state_string) {
+  auto sensors = &::src::control::loops::flight_loop_queue.sensors;
+  auto status = &::src::control::loops::flight_loop_queue.status;
+  sensors->FetchLatest();
+  status->FetchLatest();
+
   GoalState new_state;
 
   if (new_state_string == "MISSION") {
+    if ((*status)->state ==
+            ::src::control::loops::FlightLoop::State::LANDING &&
+        (*sensors)->relative_altitude < 5.0) {
+      ::std::cerr << "Cannot switch to mission: landing and at unsafe altitude."
+                  << ::std::endl;
+      return;
+    }
     new_state = RUN_MISSION;
   } else if (new_state_string == "LAND") {
     new_state = LAND;

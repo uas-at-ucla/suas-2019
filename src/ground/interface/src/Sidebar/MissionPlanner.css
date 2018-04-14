@@ -19,21 +19,12 @@
   font-size: 11px;
 }
 
-.command_input {
-  width: 120px;
-  min-width: 120px;
-}
-
 .command_row {
   text-align: left;
 }
 
-.command_row td:first-child {
-  width: 40px !important;
-}
-
-.command_row td:nth-child(2) {
-  width: 50px !important;
+.command_row .input_td {
+  min-width: 15em;
 }
 
 .modal-lg {
@@ -103,6 +94,10 @@
   white-space: nowrap;
 }
 
+.command_row table {
+  margin-bottom: 0;
+}
+
 .command_row .form-group {
   margin: 0;
   display: inline-block;
@@ -118,4 +113,16 @@
 
 .command_row .type_select {
   width: 150px;
+}
+
+.card td {
+  padding: 5px;
+}
+
+.card td td {
+  padding: 0px 5px 0px 5px;
+}
+
+#delete_command_btn {
+  z-index: 100;
 }

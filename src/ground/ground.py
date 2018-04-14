@@ -30,6 +30,9 @@ interop_client = None
 missions = None
 stationary_obstacles = None
 moving_obstacles = None
+
+commands = []
+
 processes = process_manager.ProcessManager()
 
 
@@ -44,18 +47,21 @@ def signal_received(signal, frame):
 @ground_socketio_server.on('connect')
 def connect():
     print("Someone connected!")
+    data = None
     if USE_INTEROP and interop_client is not None:
         data = object_to_dict({ \
             'missions': missions, \
             'stationary_obstacles': stationary_obstacles, \
             'moving_obstacles': moving_obstacles})
-        flask_socketio.emit('initial_data', data)
     else:
-        flask_socketio.emit('initial_data', {'interop_disconnected': True})
+        data = {'interop_disconnected': True}
+    flask_socketio.emit('initial_data', data)
 
 
 @ground_socketio_server.on('connect_to_interop')
 def connect_to_interop(data):
+    global interop_client
+
     if USE_INTEROP:
         try:
             interop_username = 'testuser'
@@ -71,10 +77,10 @@ def connect_to_interop(data):
                 'missions': missions, \
                 'stationary_obstacles': stationary_obstacles, \
                 'moving_obstacles': moving_obstacles
-            }))
+            }), broadcast=True)
         except:
             interop_client = None
-            flask_socketio.emit('interop_disconnected')
+            flask_socketio.emit('interop_disconnected', broadcast=True)
 
 
 @ground_socketio_server.on('interop_data')
@@ -92,6 +98,21 @@ def send_commands(data):
 @ground_socketio_server.on('set_state')
 def send_commands(data):
     flask_socketio.emit('drone_set_state', data, \
+        broadcast=True, include_self=False)
+
+    
+@ground_socketio_server.on('request_commands')
+def give_commands():
+    flask_socketio.emit('commands_changed', {
+        'commands': commands,
+        'changedCommands': None
+    })
+
+@ground_socketio_server.on('commands_changed')
+def commands_changed(data):
+    global commands
+    commands = data['commands']
+    flask_socketio.emit('commands_changed', data, \
         broadcast=True, include_self=False)
 
 
@@ -194,28 +215,32 @@ def refresh_interop_data():
 
                 new_missions = object_to_dict(missions)
                 send_missions = False
-                if len(new_missions) == len(old_missions):
-                    for i in range(len(new_missions)):
-                        if (json.dumps(new_missions[i]) != json.dumps(
-                                old_missions[i])):
-                            send_missions = True
-                            break
-                else:
-                    send_missions = True
+                if new_missions:
+                    if len(new_missions) == len(old_missions):
+                        for i in range(len(new_missions)):
+                            if (json.dumps(new_missions[i]) != json.dumps(
+                                    old_missions[i])):
+                                send_missions = True
+                                break
+                    else:
+                        send_missions = True
 
                 new_stationary_obstacles = object_to_dict(stationary_obstacles)
                 send_stationary_obstacles = False
-                if len(new_stationary_obstacles) == len(
-                        old_stationary_obstacles):
-                    for i in range(len(new_stationary_obstacles)):
-                        if (json.dumps(new_stationary_obstacles[i]) !=
-                                json.dumps(old_stationary_obstacles[i])):
-                            send_stationary_obstacles = True
-                            break
-                else:
-                    send_stationary_obstacles = True
+                if new_stationary_obstacles:
+                    if len(new_stationary_obstacles) == len(
+                            old_stationary_obstacles):
+                        for i in range(len(new_stationary_obstacles)):
+                            if (json.dumps(new_stationary_obstacles[i]) !=
+                                    json.dumps(old_stationary_obstacles[i])):
+                                send_stationary_obstacles = True
+                                break
+                    else:
+                        send_stationary_obstacles = True
 
-                data = {'moving_obstacles': moving_obstacles}
+                data = {}
+                if moving_obstacles:
+                    data['moving_obstacles'] = moving_obstacles
                 if send_stationary_obstacles:
                     data['stationary_obstacles'] = stationary_obstacles
                 if send_missions:
