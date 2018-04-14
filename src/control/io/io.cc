@@ -1,6 +1,7 @@
 #include "io.h"
 
 #include <iostream>
+#include <limits>
 
 #include "lib/logger/log_sender.h"
 
@@ -15,7 +16,8 @@ void quit_handler(int sig) {
 
   try {
     copter_io_quit->handle_quit(sig);
-  } catch (int error) {}
+  } catch (int error) {
+  }
 
   exit(0);
 }
@@ -60,7 +62,7 @@ void IO::Quit() {
 
 AutopilotSensorReader::AutopilotSensorReader(
     autopilot_interface::AutopilotInterface *copter_io)
-    : copter_io_(copter_io) {
+    : copter_io_(copter_io), last_gps_(-::std::numeric_limits<double>::infinity()) {
   last_timestamps_.reset_timestamps();
 }
 
@@ -69,9 +71,12 @@ void AutopilotSensorReader::RunIteration() {
   autopilot_interface::TimeStamps current_timestamps =
       copter_io_->current_messages.time_stamps;
 
-  if (!(current_timestamps.global_position_int -
-        last_timestamps_.global_position_int)) {
-    return;
+  if (current_timestamps.global_position_int -
+      last_timestamps_.global_position_int) {
+    last_gps_ = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+                    ::std::chrono::system_clock::now().time_since_epoch())
+                    .count() *
+                1e-9;
   }
 
   last_timestamps_ = current_timestamps;
@@ -119,6 +124,7 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->relative_pressure = imu.diff_pressure;
   flight_loop_sensors_message->pressure_altitude = imu.pressure_alt;
   flight_loop_sensors_message->temperature = imu.temperature;
+  flight_loop_sensors_message->last_gps = last_gps_;
 
   // Battery data.
   mavlink_sys_status_t sys_status = copter_io_->current_messages.sys_status;

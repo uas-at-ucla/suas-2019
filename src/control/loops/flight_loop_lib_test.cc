@@ -178,7 +178,7 @@ class FlightLoopTest : public ::testing::Test {
 };
 
 TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 1000; i++) {
     flight_loop_queue_.goal.MakeWithBuilder()
         .run_mission(false)
         .trigger_failsafe(false)

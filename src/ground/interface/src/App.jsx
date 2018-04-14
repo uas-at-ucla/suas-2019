@@ -42,7 +42,7 @@ class App extends Component {
       case "Control":
       default:
         return <Home appState={this.state} socketEmit={this.socketEmit}
-                     setAppState={this.setAppState}/>;
+                     setAppState={this.setAppState} socketOn={this.socketOn} />;
     }
   }
 
@@ -76,14 +76,16 @@ class App extends Component {
     }
   }
 
-  componentDidMount() {
+  componentWillMount() {
     const SOCKET_DOMAIN = document.domain; // Gets domain from browser
     const SOCKET_PORT = 8081;
 
     const SOCKET_ADDRESS = "http://" + SOCKET_DOMAIN + ":" + SOCKET_PORT;
 
     this.socket = io.connect(SOCKET_ADDRESS);
+  }
 
+  componentDidMount() {
     this.socket.on("connect", () => {
       console.log("Connected to ground interface feeder!");
 
@@ -160,6 +162,10 @@ class App extends Component {
     }
   };
 
+  socketOn = (message, func) => {
+    this.socket.on(message, func);
+  };
+
   receivedInteropStatus(is_interop_connected) {
     if (is_interop_connected) {
       let new_state = {
@@ -175,7 +181,10 @@ class App extends Component {
     } else {
       this.setState({
         interopBtnText: "Cannot Connect to Interop Server!",
-        interopBtnEnabled: true
+        interopBtnEnabled: true,
+        stationary_obstacles: [],
+        moving_obstacles: [],
+        missions: []
       });
       setTimeout(
         () =>
