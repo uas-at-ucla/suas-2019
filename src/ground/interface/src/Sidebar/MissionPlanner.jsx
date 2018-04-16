@@ -31,13 +31,13 @@ const SortableItem = SortableElement(({ command, changedCommands, myIndex, self 
       key={myIndex}
       data-index={myIndex}
     >
-      <td>{String(Number(myIndex) + 1)}</td>
-      <td>{command.name}</td>
-      <td>
+      <td><div>{String(Number(myIndex) + 1)}</div></td>
+      <td><div>{command.name}</div></td>
+      <td><div>
         <FormGroup className="type_select">
           {self.commandTypeOptions(myIndex, command)}
         </FormGroup>
-      </td>
+      </div></td>
       {fields.map((field, index) => {
         return self.commandFieldInput(myIndex, command, field.name, index);
       })}
@@ -190,7 +190,9 @@ class MissionPlanner extends Component {
   }
 
   onCommandClick(index, event) {
-    if (event.target.tagName === 'TD') {
+    console.log(event.target.tagName);
+    if (event.target.tagName === 'TD' || event.target.tagName === 'DIV'
+        || event.target.tagName === 'B') {
       this.props.setHomeState({ focusedCommand: index });
     }
   }
@@ -214,6 +216,7 @@ class MissionPlanner extends Component {
     if (!isNaN(subcommand)) {
       return (
         <td key={id} className="input_td">
+          <div>
           <InputGroup>
             <InputGroupAddon addonType="prepend">
               <InputGroupText>{key}</InputGroupText>
@@ -233,6 +236,7 @@ class MissionPlanner extends Component {
               disabled={command.mission_point && (key === 'latitude' || key === 'longitude')}
             />
           </InputGroup>
+          </div>
         </td>
       );
     } else {
@@ -240,6 +244,7 @@ class MissionPlanner extends Component {
       if (Array.isArray(subcommand)) {
         return (
           <td key={id}>
+            <div>
             <table>
               <tbody>
                 {subcommand.map((cmd, i) => 
@@ -252,11 +257,13 @@ class MissionPlanner extends Component {
                 )}
               </tbody>
             </table>
+            </div>
           </td>
         );
       }
       return (
         <td key={id}>
+          <div>
           <table>
             <tbody>
               <tr>
@@ -267,6 +274,7 @@ class MissionPlanner extends Component {
               </tr>
             </tbody>
           </table>
+          </div>
         </td>
       );
     }
@@ -315,6 +323,7 @@ class MissionPlanner extends Component {
   }
 
   changed_command_field(value, command, field) {
+    if (value === '') value = 0;
     let newValue = parseFloat(value);
     if (!isNaN(newValue)) {
       let commands = this.props.homeState.commands.slice();
