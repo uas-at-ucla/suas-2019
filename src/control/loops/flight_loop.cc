@@ -133,6 +133,11 @@ void FlightLoop::RunIteration() {
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
+
+    const int iterations = phased_loop_.SleepUntilNext();
+    if (iterations < 0) {
+      std::cout << "SKIPPED ITERATIONS\n";
+    }
     return;
   }
 
