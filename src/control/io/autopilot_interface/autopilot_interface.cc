@@ -156,6 +156,12 @@ void AutopilotInterface::read_messages() {
           this_timestamps.attitude = current_messages.time_stamps.attitude;
           break;
 
+        case MAVLINK_MSG_ID_VFR_HUD:
+          mavlink_msg_vfr_hud_decode(&message, &(current_messages.vfr_hud));
+          current_messages.time_stamps.vfr_hud = get_time_usec();
+          this_timestamps.vfr_hud = current_messages.time_stamps.vfr_hud;
+          break;
+
         default:
           break;
       }
