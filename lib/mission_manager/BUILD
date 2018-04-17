@@ -28,6 +28,7 @@ cc_library(
   ],
   deps = [
     ':mission_commands_cpp',
+    '//lib/rrt_avoidance:rrt_avoidance',
     '//lib/semaphore:semaphore',
   ],
 )
@@ -40,8 +41,5 @@ cc_test(
   deps = [
     ':mission_manager',
     '@gtest//:googletest_main',
-  ],
-  linkopts = [
-    '-g',
   ],
 )
