@@ -45,5 +45,29 @@ TEST(MissionManagerTest, MissionManagerTest) {
   }
 }
 
+TEST(MissionManagerTest, PreprocessorTest) {
+  ::lib::mission_manager::Mission mission;
+
+  for(int i = 0;i < 10;i++) {
+    ::lib::mission_manager::Command *cmd = mission.add_commands();
+    mission_manager::NothingCommand *nothing_cmd =
+        cmd->mutable_nothingcommand();
+    (void)nothing_cmd;
+  }
+
+  {
+    ::lib::mission_manager::Command *cmd = mission.add_commands();
+    mission_manager::WaypointCommand *waypoint_cmd =
+        cmd->mutable_waypointcommand();
+    (void)waypoint_cmd;
+  }
+
+  MissionManager mission_manager;
+  mission_manager.SetCommands(mission);
+
+  mission_manager.Preprocess();
+  mission_manager.DumpMission();
+}
+
 }  // namespace testing
 }  // namespace lib
