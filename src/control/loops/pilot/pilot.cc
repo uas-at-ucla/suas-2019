@@ -17,10 +17,11 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
 
   if (cmd.has_nothingcommand()) {
     // Do nothing.
+      mission_message_queue_receiver_.get_mission_manager()->PopCommand();
   } else if (cmd.has_sleepcommand()) {
     // Sleep.
   } else if (cmd.has_gotocommand()) {
-    constexpr double kSpeed = 15.0;
+    constexpr double kSpeed = 3.0;
 
     Position3D goal = {cmd.gotocommand().goal().latitude(),
                        cmd.gotocommand().goal().longitude(),
