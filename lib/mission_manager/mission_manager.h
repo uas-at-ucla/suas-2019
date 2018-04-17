@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "lib/mission_manager/mission_commands.pb.h"
+#include "lib/rrt_avoidance/rrt_avoidance.h"
 
 namespace lib {
 
@@ -29,19 +30,26 @@ class MissionManager {
  public:
   MissionManager();
   void SetCommands(::lib::mission_manager::Mission mission);
+  void SetObstacles(::lib::mission_manager::Obstacles obstacles);
+
   void ClearCommands();
   void PopCommand();
   size_t NumberOfCommands();
 
   int GetCurrentCommandIndex();
   ::lib::mission_manager::Command GetCurrentCommand();
-  void UnrollMission(
-      ::lib::mission_manager::Mission *mission);
-  void Preprocess();
+  void Preprocess(Position3D drone_position);
   void DumpMission();
 
+  void UnrollMission(
+      ::lib::mission_manager::Mission *mission, Position3D drone_position);
+
  private:
+  rrt_avoidance::RRTAvoidance rrt_avoidance_;
+
   ::lib::mission_manager::Mission mission_;
+  ::lib::mission_manager::Obstacles obstacles_;
+
   void DumpMission(::lib::mission_manager::Mission, int nest);
 
   Semaphore semaphore_;

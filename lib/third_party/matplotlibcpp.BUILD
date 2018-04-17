@@ -10,4 +10,7 @@ cc_library(
   deps = [
     '@python_linux//:python27-lib',
   ],
+  copts = [
+    '-Wno-unused-variable',
+  ],
 )
