@@ -126,8 +126,8 @@ void FlightLoop::RunIteration() {
   LOG_LINE("Flight Loop dt: " << std::setprecision(14)
                               << current_time - last_loop_ - 0.01);
   if (current_time - last_loop_ > 0.01 + 0.002) {
-    LOG_LINE("Flight LOOP RUNNING SLOW: dt: " << std::setprecision(14)
-                                              << current_time - last_loop_ - 0.01);
+    LOG_LINE("Flight LOOP RUNNING SLOW: dt: "
+             << std::setprecision(14) << current_time - last_loop_ - 0.01);
   }
   last_loop_ = current_time;
 
@@ -248,16 +248,6 @@ void FlightLoop::RunIteration() {
       break;
 
     case IN_AIR: {
-      if (::src::control::loops::flight_loop_queue.sensors->last_gps <
-          current_time - 0.5) {
-        LOG_LINE("no GPS; landing (last gps: "
-                 << ::src::control::loops::flight_loop_queue.sensors->last_gps
-                 << " current time: " << current_time);
-
-        next_state = STANDBY;
-        break;
-      }
-
       if (!run_mission) {
         next_state = LANDING;
         break;
@@ -299,7 +289,7 @@ void FlightLoop::RunIteration() {
 
       if (::src::control::loops::flight_loop_queue.goal->run_mission &&
           ::src::control::loops::flight_loop_queue.sensors->relative_altitude >
-              3.0) {
+              5.0) {
         next_state = IN_AIR;
         break;
       }
@@ -314,6 +304,17 @@ void FlightLoop::RunIteration() {
     case FLIGHT_TERMINATION:
       output->throttle_cut = true;
       break;
+  }
+
+  // Land if the GPS data is old.
+  if (next_state == IN_AIR &&
+      ::src::control::loops::flight_loop_queue.sensors->last_gps <
+          current_time - 0.5) {
+    LOG_LINE("no GPS; landing (last gps: "
+             << ::src::control::loops::flight_loop_queue.sensors->last_gps
+             << " current time: " << current_time);
+
+    next_state = LANDING;
   }
 
   if (next_state != state_) {
