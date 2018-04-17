@@ -41,4 +41,7 @@ cc_test(
     ':mission_manager',
     '@gtest//:googletest_main',
   ],
+  linkopts = [
+    '-g',
+  ],
 )
