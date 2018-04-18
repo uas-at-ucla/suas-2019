@@ -28,6 +28,7 @@ cc_library(
   ],
   deps = [
     ':mission_commands_cpp',
+    '//lib/rrt_avoidance:rrt_avoidance',
     '//lib/semaphore:semaphore',
   ],
 )
