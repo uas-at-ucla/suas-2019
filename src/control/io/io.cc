@@ -62,7 +62,8 @@ void IO::Quit() {
 
 AutopilotSensorReader::AutopilotSensorReader(
     autopilot_interface::AutopilotInterface *copter_io)
-    : copter_io_(copter_io), last_gps_(-::std::numeric_limits<double>::infinity()) {
+    : copter_io_(copter_io),
+      last_gps_(-::std::numeric_limits<double>::infinity()) {
   last_timestamps_.reset_timestamps();
 }
 
@@ -91,7 +92,9 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->latitude = static_cast<double>(gps.lat) / 1e7;
   flight_loop_sensors_message->longitude = static_cast<double>(gps.lon) / 1e7;
   flight_loop_sensors_message->altitude = static_cast<float>(gps.alt) / 1e3;
-  flight_loop_sensors_message->heading = static_cast<float>(gps.hdg) / 1e2;
+
+  flight_loop_sensors_message->heading =
+      static_cast<float>(copter_io_->current_messages.vfr_hud.heading);
 
   flight_loop_sensors_message->relative_altitude =
       static_cast<float>(gps.relative_alt) / 1e3;
