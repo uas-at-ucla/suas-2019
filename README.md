@@ -3,6 +3,8 @@ Code used on our drone competing in the AUVSI SUAS competition.
 
 [![Build Status](https://travis-ci.com/uas-at-ucla/suas_2018.svg?token=vswHzoLKgsSxcZysVnEN&branch=master)](https://travis-ci.com/uas-at-ucla/suas_2018)
 
+![FlightDeck Ground Interface](https://i.imgur.com/n9vinQs.jpg)
+
 ### Contents
  * Control code
     * Mission planning & surveying
