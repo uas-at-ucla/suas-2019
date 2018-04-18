@@ -190,7 +190,6 @@ class MissionPlanner extends Component {
   }
 
   onCommandClick(index, event) {
-    console.log(event.target.tagName);
     if (event.target.tagName === 'TD' || event.target.tagName === 'DIV'
         || event.target.tagName === 'B') {
       this.props.setHomeState({ focusedCommand: index });
@@ -281,7 +280,7 @@ class MissionPlanner extends Component {
   }
 
   commandTypeOptions(index, command) {
-    let items = Object.keys(this.props.commandTypes);
+    let items = this.props.commandTypes['Command'].map(el => el.type);
 
     return (
       <FormControl
