@@ -190,14 +190,62 @@ TEST(RRTAvoidance, RandomObstacle) {
     ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
               end.longitude + tolerance);
 
-    if (plot) {
-      ::matplotlibcpp::xkcd();
-      ::matplotlibcpp::plot(final_x, final_y);
-      ::matplotlibcpp::plot(obs_x, obs_y);
-      ::matplotlibcpp::show();
-    }
+//  if (plot) {
+//    ::matplotlibcpp::xkcd();
+//    ::matplotlibcpp::plot(final_x, final_y);
+//    ::matplotlibcpp::plot(obs_x, obs_y);
+//    ::matplotlibcpp::show();
+//  }
   }
 }
+
+TEST(RRTAvoidance, RealObstacles) {
+  RRTAvoidance rrt_avoidance;
+
+  Position3D start = {34.1747796812899 - 1e-3, -118.48062618357 - 1e-3, 0};
+  Position3D end = {34.1747796812899 + 1e-3, -118.48062618357 + 1e-3, 0};
+  ::lib::mission_manager::Obstacles obstacles;
+
+  ::lib::mission_manager::StaticObstacle *obstacle =
+      obstacles.add_static_obstacles();
+  ::lib::mission_manager::Position2D *obstacle_position =
+      obstacle->mutable_location();
+  obstacle_position->set_latitude(34.1747796812899);
+  obstacle_position->set_longitude(-118.48062618357);
+  obstacle->set_cylinder_radius(20);
+
+  ::std::vector<Position3D> avoidance_path =
+      rrt_avoidance.Process(start, end, obstacles);
+
+  ::std::vector<double> final_x, final_y;
+  double tolerance = 1e-3;
+  EXPECT_GT(avoidance_path.size(), 2);
+
+  // Check that we start at the right place.
+  ASSERT_GE(avoidance_path[0].latitude, start.latitude - 1e-3);
+  ASSERT_LE(avoidance_path[0].latitude, start.latitude + 1e-3);
+
+  // Check that we met the goal.
+  ASSERT_GE(avoidance_path[avoidance_path.size() - 1].longitude,
+            end.longitude - 1e-3);
+  ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
+            end.longitude + 1e-3);
+
+  for (size_t i = 0; i < avoidance_path.size(); i++) {
+    ::std::cout << avoidance_path[i].latitude << ", "
+                << avoidance_path[i].longitude << ::std::endl;
+
+    final_x.push_back(avoidance_path[i].latitude);
+    final_y.push_back(avoidance_path[i].longitude);
+  }
+
+  if (plot) {
+    ::matplotlibcpp::xkcd();
+    ::matplotlibcpp::plot(final_x, final_y);
+    ::matplotlibcpp::show();
+  }
+}
+
 
 }  // namespace testing
 }  // namespace rrt_avoidance

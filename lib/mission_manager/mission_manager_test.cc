@@ -100,6 +100,44 @@ TEST(MissionManagerTest, PreprocessorTest) {
 
   mission_manager.Preprocess({0, 0, 10});
   mission_manager.DumpMission();
+
+  for(int i = 0;i < 10;i++) {
+    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_nothingcommand());
+    mission_manager.PopCommand();
+  }
+
+  for(int i = 0;i < 3;i++) {
+    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_gotorawcommand());
+    mission_manager.PopCommand();
+  }
+
+  // Flush out the rest of the goto raw commands.
+  for(int i = 0;i < 100;i++) {
+    if(!mission_manager.GetCurrentCommand().has_gotorawcommand()) break;
+    mission_manager.PopCommand();
+  }
+
+  ASSERT_TRUE(mission_manager.GetCurrentCommand().has_sleepcommand());
+  mission_manager.PopCommand();
+
+  for(int i = 0;i < 3;i++) {
+    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_gotorawcommand());
+    mission_manager.PopCommand();
+  }
+
+  // Flush out the rest of the goto raw commands.
+  for(int i = 0;i < 100;i++) {
+    if(!mission_manager.GetCurrentCommand().has_gotorawcommand()) break;
+    mission_manager.PopCommand();
+  }
+
+  ASSERT_TRUE(mission_manager.GetCurrentCommand().has_sleepcommand());
+  mission_manager.PopCommand();
+
+  for(int i = 0;i < 1000;i++) {
+    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_nothingcommand());
+    mission_manager.PopCommand();
+  }
 }
 
 }  // namespace testing
