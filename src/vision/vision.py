@@ -260,9 +260,26 @@ def yolo_worker(args):
 # Target Localization ##########################################################
 class SnipperWorker(ClientWorker):
 
-    # task format: [img, yolo_results, out_dir]
+    # task format: [{'src_img_path': str, 'src_img_label': str, 'yolo_results': [], 'out_dir'}]
     def _do_work(self, task):
-        yolo_results = task[1]
+        src_img_path = task[0]['src_img_path']
+        src_img_label = task[0]['src_img_label']
+        yolo_results = task[0]['yolo_results']
+        out_dir = task[0]['out_dir']
+
+        src_img = cv2.imread(src_img_path)
+        cropped_imgs = []
+        for result in yolo_results:
+            xmin = result['topleft']['x']
+            xmax = result['bottomright']['x']
+            ymin = result['topleft']['y']
+            ymax = result['bottomright']['y']
+
+            cropped_img = src_img[ymin:ymax, xmin:xmax]
+            out_path = os.path.join(out_dir, src_img_label + '.jpg')
+            cv2.imwrite(out_path, cropped_img)
+            vision_client.emit('snipped', {'img_path': out_path})
+
 
     def get_event_name(self):
         return 'snipper'
