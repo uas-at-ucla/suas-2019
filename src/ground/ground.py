@@ -47,6 +47,7 @@ def signal_received(signal, frame):
 @ground_socketio_server.on('connect')
 def connect():
     print("Someone connected!")
+    flask_socketio.join_room('frontend')
     data = None
     if USE_INTEROP and interop_client is not None:
         data = object_to_dict({ \
@@ -77,28 +78,33 @@ def connect_to_interop(data):
                 'missions': missions, \
                 'stationary_obstacles': stationary_obstacles, \
                 'moving_obstacles': moving_obstacles
-            }), broadcast=True)
+            }), room='frontend')
         except:
             interop_client = None
-            flask_socketio.emit('interop_disconnected', broadcast=True)
+            flask_socketio.emit('interop_disconnected', room='frontend')
 
 
 @ground_socketio_server.on('interop_data')
 def broadcast_obstacles(data):
+    if 'frontend' in flask_socketio.rooms():
+        flask_socketio.leave_room('frontend')
+
     flask_socketio.emit('interop_data', data, \
-        broadcast=True, include_self=False)
+        room='frontend')
+
+    flask_socketio.emit('interop_data', room='drone') # TODO
 
 
 @ground_socketio_server.on('execute_commands')
 def send_commands(data):
     flask_socketio.emit('drone_execute_commands', data, \
-        broadcast=True, include_self=False)
+        room='drone')
 
 
 @ground_socketio_server.on('set_state')
 def send_commands(data):
     flask_socketio.emit('drone_set_state', data, \
-        broadcast=True, include_self=False)
+        room='drone')
 
     
 @ground_socketio_server.on('request_commands')
@@ -113,23 +119,31 @@ def commands_changed(data):
     global commands
     commands = data['commands']
     flask_socketio.emit('commands_changed', data, \
-        broadcast=True, include_self=False)
+        room='frontend', include_self=False)
 
 
 @ground_socketio_server.on('interop_disconnected')
 def interop_disconnected():
+    if 'frontend' in flask_socketio.rooms():
+        flask_socketio.leave_room('frontend')
+
     flask_socketio.emit('interop_disconnected', \
-        broadcast=True, include_self=False)
+        room='frontend')
 
 
 @ground_socketio_server.on('telemetry')
 def telemetry(*args):
+    if 'drone' not in flask_socketio.rooms():
+        flask_socketio.leave_room('frontend')
+        flask_socketio.join_room('drone')
+        flask_socketio.emit('interop_data', room='drone') # TODO
+
     global interop_client
 
     received_telemetry = args[0]
 
     flask_socketio.emit('on_telemetry', received_telemetry, \
-        broadcast=True, include_self=False)
+        room='frontend')
 
     if len(received_telemetry['sensors']) == 0:
         return
@@ -146,11 +160,7 @@ def telemetry(*args):
                 interop_client.post_telemetry(interop_telemetry)
             except:
                 interop_client = None
-                ground_socketio_server.emit('interop_disconnected')
-
-
-def on_image(*args):
-    ground_socketio_server.emit('image', args[0])
+                flask_socketio.emit('interop_disconnected', room='frontend')
 
 
 # Interop. #####################################################################
