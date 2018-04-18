@@ -25,6 +25,7 @@ public:
     bool transitionValid(const Eigen::Vector2d& from,
                          const Eigen::Vector2d& to) const;
 
+    using PlaneStateSpace<Eigen::Vector2d>::intermediateState;
     Eigen::Vector2d intermediateState(const Eigen::Vector2d& source,
                                       const Eigen::Vector2d& target,
                                       double minStepSize,
