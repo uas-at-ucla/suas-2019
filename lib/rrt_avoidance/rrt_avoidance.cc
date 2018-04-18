@@ -41,7 +41,7 @@ RRTAvoidance::RRTAvoidance()
   m(1, 2) = 0;
   for (int i = 2; i < rows; i++) {
     m(i, 0) = obstacles.static_obstacles(i - 2).location().latitude();
-    m(i, 1) = obstacles.static_obstacles(i - 2).location().latitude();
+    m(i, 1) = obstacles.static_obstacles(i - 2).location().longitude();
     m(i, 2) = obstacles.static_obstacles(i - 2).cylinder_radius() * 1.3;
   }
 
@@ -85,13 +85,14 @@ RRTAvoidance::RRTAvoidance()
 
   ::std::vector<double> obs_x, obs_y;
 
-  // Draw obstacles as circles on the obstacle grid.
+  // Reset obstacle grid.
   for (int y = 0; y < kDimension; y++) {
     for (int x = 0; x < kDimension; x++) {
       state_space_->obstacleGrid().obstacleAt(::Eigen::Vector2i(x, y)) = false;
     }
   }
 
+  // Draw obstacles as circles on the obstacle grid.
   for (int i = 2; i < rows; i++) {
     int obstacle_radius = m(i, 2);
     for (int offset_x = -obstacle_radius; offset_x <= obstacle_radius;
