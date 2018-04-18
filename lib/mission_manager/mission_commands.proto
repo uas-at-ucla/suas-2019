@@ -69,6 +69,11 @@ message Command {
   }
 }
 
+message Mission {
+  repeated Command commands = 1;
+  optional int32 current_command = 2 [default = 0];
+}
+
 message StaticObstacle {
   required Position2D location = 1;
   required double cylinder_radius = 2;
@@ -77,11 +82,6 @@ message StaticObstacle {
 message MovingObstacle {
   required Position3D point = 1;
   required double sphere_radius = 2;
-}
-
-message Mission {
-  repeated Command commands = 1;
-  optional int32 current_command = 2 [default = 0];
 }
 
 message Obstacles {
