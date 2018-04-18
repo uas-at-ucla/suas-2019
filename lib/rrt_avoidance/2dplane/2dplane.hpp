@@ -12,6 +12,7 @@ const int dimensions = 2;
 /**
  * Hash function for Eigen::Vector2d
  */
+static size_t hash(Eigen::Vector2d state) __attribute__((unused));
 static size_t hash(Eigen::Vector2d state) {
     size_t seed = 0;
     boost::hash_combine(seed, state.x());

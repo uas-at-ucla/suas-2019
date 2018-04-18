@@ -100,9 +100,9 @@ new_git_repository(
 
 new_git_repository(
   name = "matplotlibcpp",
-  commit = "b74e465baa1d448172406a8e5624010925117be2",
+  commit = "9523030a3dc11c05b6cc38743299e4453ec36458",
   build_file = "lib/third_party/matplotlibcpp.BUILD",
-  remote = "https://github.com/lava/matplotlib-cpp.git",
+  remote = "https://github.com/uas-at-ucla/matplotlib-cpp.git",
 )
 
 new_http_archive(
