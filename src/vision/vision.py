@@ -7,12 +7,16 @@ from flask import Flask, render_template
 import flask_socketio, socketIO_client
 
 # Yolo dependencies
-from darkflow.net.build import TFNet
-import cv2
+from darkflow.net.build import TFNet  # yolo neural net
+import cv2  # reading images
 
 # Multithreading
-import threading
-import queue
+import threading  # multithreading library
+import queue  # input/output queues
+
+# Snipper dependencies
+# cv2 imported above # cropping and saving images
+import ntpath  # finding the name of a file (windows compatible)
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
@@ -91,12 +95,19 @@ def call_yolo(json):
 @vision_socketio_server.on('yolo_done')
 def snip_img(json):
     print('Yolo finished -> running snipper')
-    vision_socketio_server.emit('')
+    vision_socketio_server.emit('snip', {
+        'src_img_path': json['img_processed'],
+        'yolo_results': json['results']
+    })
 
 
 # Step 4 - run shape classification on each target
+#      ... do letter classification and color recognition
+@vision_socketio_server.on('snipped')
+def classify(json):
+    pass
 
-# Step 5 ... do letter classification and color recognition
+
 
 # TODO handle autodownloading images as needed
 #@vision_socketio_server.on('download_complete')
@@ -260,15 +271,16 @@ def yolo_worker(args):
 # Target Localization ##########################################################
 class SnipperWorker(ClientWorker):
 
-    # task format: [{'src_img_path': str, 'src_img_label': str, 'yolo_results': [], 'out_dir'}]
+    # task format: [{'src_img_path': str, 'yolo_results': [], 'out_dir'}]
     def _do_work(self, task):
         src_img_path = task[0]['src_img_path']
-        src_img_label = task[0]['src_img_label']
+        src_img_label = ntpath.basename(src_img_path).split('.')[0]
         yolo_results = task[0]['yolo_results']
         out_dir = task[0]['out_dir']
 
         src_img = cv2.imread(src_img_path)
         cropped_imgs = []
+        i = 0
         for result in yolo_results:
             xmin = result['topleft']['x']
             xmax = result['bottomright']['x']
@@ -276,13 +288,13 @@ class SnipperWorker(ClientWorker):
             ymax = result['bottomright']['y']
 
             cropped_img = src_img[ymin:ymax, xmin:xmax]
-            out_path = os.path.join(out_dir, src_img_label + '.jpg')
+            out_path = os.path.join(out_dir, src_img_label + '-' + str(i) + '.jpg')
             cv2.imwrite(out_path, cropped_img)
             vision_client.emit('snipped', {'img_path': out_path})
-
+            i += 1
 
     def get_event_name(self):
-        return 'snipper'
+        return 'snip'
 
 
 # Parse command line arguments #################################################
