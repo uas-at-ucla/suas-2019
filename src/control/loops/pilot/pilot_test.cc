@@ -51,22 +51,39 @@ class PilotTest : public ::testing::Test {
   Pilot pilot_;
 };
 
-// TODO(comran): Fix this once mission manager is implemented.
 TEST_F(PilotTest, ReachesGoalTest) {
   PilotPlant plant({0, 0, 0}, 100);
-  Position3D goal = {0.0000002, 0.000003, 10};
+  Position3D goal = {0.0002, 0.0003, 10};
+
+  ::lib::mission_manager::Mission mission;
+  ::lib::mission_manager::GotoCommand *goto_cmd =
+      mission.add_commands()->mutable_gotocommand();
+
+  ::lib::mission_manager::Position3D *goto_goal =
+      new ::lib::mission_manager::Position3D();
+  goto_goal->set_latitude(goal.latitude);
+  goto_goal->set_longitude(goal.longitude);
+  goto_goal->set_altitude(goal.altitude);
+
+  goto_cmd->set_allocated_goal(goto_goal);
+
+  pilot_.SetMission(mission);
 
   double runtime_in_seconds = 10;
 
   for (int i = 0; i < runtime_in_seconds * plant.GetLoopFrequency() &&
                   !CheckMetGoal(plant.GetPosition(), goal);
        i++) {
-     pilot::PilotOutput flight_direction = pilot_.Calculate(plant.GetPosition());
+    usleep(1e3);
+    ::std::cout << "drone at (" << plant.GetPosition().latitude << ", "
+                << plant.GetPosition().longitude << ")\n";
+
+    pilot::PilotOutput flight_direction = pilot_.Calculate(plant.GetPosition());
 
     plant.MoveDrone(flight_direction.flight_velocities);
   }
 
-//MetGoal(plant.GetPosition(), goal);
+  MetGoal(plant.GetPosition(), goal);
 }
 
 }  // namespace testing
