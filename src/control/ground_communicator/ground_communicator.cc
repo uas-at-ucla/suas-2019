@@ -287,16 +287,19 @@ void MissionReceiver::OnConnect() {
             (void)isAck;
             (void)ack_resp;
 
-            ::lib::mission_manager::Mission mission;
+            ::lib::mission_manager::GroundData ground_data;
+            ::lib::mission_manager::Mission* mission =
+                new ::lib::mission_manager::Mission();
 
             ::std::string serialized_protobuf_mission = data->get_string();
 
             serialized_protobuf_mission =
                 base64_decode(serialized_protobuf_mission);
 
-            mission.ParseFromString(serialized_protobuf_mission);
+            mission->ParseFromString(serialized_protobuf_mission);
+            ground_data.set_allocated_mission(mission);
 
-            mission_message_queue_sender_.SendMission(mission);
+            mission_message_queue_sender_.SendData(ground_data);
 
             SetState("MISSION");
           }));
@@ -311,19 +314,18 @@ void MissionReceiver::OnConnect() {
             (void)isAck;
             (void)ack_resp;
 
-            ::lib::mission_manager::Obstacles obstacles;
+            ::lib::mission_manager::GroundData ground_data;
+            ::lib::mission_manager::Obstacles* obstacles =
+                new ::lib::mission_manager::Obstacles();
 
             ::std::string serialized_protobuf_obstacles = data->get_string();
 
             serialized_protobuf_obstacles =
                 base64_decode(serialized_protobuf_obstacles);
 
-            obstacles.ParseFromString(serialized_protobuf_obstacles);
-
-            std::cout << "Obstacles: " << obstacles.DebugString() << std::endl;
-            // TODO: Send obstacles to the right place.
-            // If either the static_obstacles or moving_obstacles list is emtpy,
-            // assume that thay haven't changed.
+            obstacles->ParseFromString(serialized_protobuf_obstacles);
+            ground_data.set_allocated_obstacles(obstacles);
+            mission_message_queue_sender_.SendData(ground_data);
           }));
 
   client_.socket()->on(
@@ -350,8 +352,7 @@ void MissionReceiver::SetState(::std::string new_state_string) {
   GoalState new_state;
 
   if (new_state_string == "MISSION") {
-    if ((*status)->state ==
-            ::src::control::loops::FlightLoop::State::LANDING &&
+    if ((*status)->state == ::src::control::loops::FlightLoop::State::LANDING &&
         (*sensors)->relative_altitude < 5.0) {
       ::std::cerr << "Cannot switch to mission: landing and at unsafe altitude."
                   << ::std::endl;
