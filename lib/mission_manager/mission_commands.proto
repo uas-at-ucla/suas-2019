@@ -82,6 +82,7 @@ message StaticObstacle {
 message MovingObstacle {
   required Position3D point = 1;
   required double sphere_radius = 2;
+  required double average_speed = 3;
 }
 
 message Obstacles {

@@ -15,6 +15,7 @@
 #include "lib/mission_message_queue/mission_message_queue.h"
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/physics_structs/physics_structs.h"
+#include "lib/semaphore/semaphore.h"
 
 namespace src {
 namespace control {
@@ -29,13 +30,26 @@ struct PilotOutput {
 class Pilot {
  public:
   Pilot();
+  ~Pilot();
 
   PilotOutput Calculate(Position3D drone_position);
+  void PreprocessorThread();
   int GetCurrentCommandIndex();
+  void SetMission(::lib::mission_manager::Mission mission);
+
+  void Quit() { run_ = false; }
 
  private:
   ::lib::mission_message_queue::MissionMessageQueueReceiver
       mission_message_queue_receiver_;
+
+  Position3D drone_position_;
+  bool drone_position_set_;
+  ::lib::Semaphore drone_position_semaphore_;
+
+  ::std::atomic<bool> run_{true};
+
+  ::std::thread thread_;
 };
 
 }  // namespace pilot
