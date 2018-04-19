@@ -287,18 +287,45 @@ void MissionReceiver::OnConnect() {
             (void)isAck;
             (void)ack_resp;
 
-            ::lib::mission_manager::Mission mission;
+            ::lib::mission_manager::GroundData ground_data;
+            ::lib::mission_manager::Mission* mission =
+                new ::lib::mission_manager::Mission();
 
             ::std::string serialized_protobuf_mission = data->get_string();
 
             serialized_protobuf_mission =
                 base64_decode(serialized_protobuf_mission);
 
-            mission.ParseFromString(serialized_protobuf_mission);
+            mission->ParseFromString(serialized_protobuf_mission);
+            ground_data.set_allocated_mission(mission);
 
-            mission_message_queue_sender_.SendMission(mission);
+            mission_message_queue_sender_.SendData(ground_data);
 
             SetState("MISSION");
+          }));
+
+  client_.socket()->on(
+      "interop_data",
+      sio::socket::event_listener_aux(
+          [&](std::string const& name, sio::message::ptr const& data,
+              bool isAck, sio::message::list& ack_resp) {
+
+            (void)name;
+            (void)isAck;
+            (void)ack_resp;
+
+            ::lib::mission_manager::GroundData ground_data;
+            ::lib::mission_manager::Obstacles* obstacles =
+                new ::lib::mission_manager::Obstacles();
+
+            ::std::string serialized_protobuf_obstacles = data->get_string();
+
+            serialized_protobuf_obstacles =
+                base64_decode(serialized_protobuf_obstacles);
+
+            obstacles->ParseFromString(serialized_protobuf_obstacles);
+            ground_data.set_allocated_obstacles(obstacles);
+            mission_message_queue_sender_.SendData(ground_data);
           }));
 
   client_.socket()->on(
@@ -325,8 +352,7 @@ void MissionReceiver::SetState(::std::string new_state_string) {
   GoalState new_state;
 
   if (new_state_string == "MISSION") {
-    if ((*status)->state ==
-            ::src::control::loops::FlightLoop::State::LANDING &&
+    if ((*status)->state == ::src::control::loops::FlightLoop::State::LANDING &&
         (*sensors)->relative_altitude < 5.0) {
       ::std::cerr << "Cannot switch to mission: landing and at unsafe altitude."
                   << ::std::endl;

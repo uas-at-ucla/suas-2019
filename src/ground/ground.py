@@ -14,6 +14,8 @@ sys.path.insert(0, '../../lib')
 import process_manager
 import interop
 
+sys.path.insert(0, './tools')
+
 # Configuration options. #######################################################
 USE_INTEROP = True
 LOCAL_INTEROP = False
@@ -34,6 +36,11 @@ moving_obstacles = None
 commands = []
 
 processes = process_manager.ProcessManager()
+processes.run_command("protoc -I. --proto_path=../../lib/mission_manager/ " \
+    + "--python_out=/tmp/ " \
+    + "../../lib/mission_manager/mission_commands.proto")
+sys.path.insert(0, '/tmp')
+import mission_commands_pb2 as proto
 
 
 def signal_received(signal, frame):
@@ -47,6 +54,7 @@ def signal_received(signal, frame):
 @ground_socketio_server.on('connect')
 def connect():
     print("Someone connected!")
+    flask_socketio.join_room('frontend')
     data = None
     if USE_INTEROP and interop_client is not None:
         data = object_to_dict({ \
@@ -77,30 +85,36 @@ def connect_to_interop(data):
                 'missions': missions, \
                 'stationary_obstacles': stationary_obstacles, \
                 'moving_obstacles': moving_obstacles
-            }), broadcast=True)
+            }), room='frontend')
         except:
             interop_client = None
-            flask_socketio.emit('interop_disconnected', broadcast=True)
+            flask_socketio.emit('interop_disconnected', room='frontend')
 
 
 @ground_socketio_server.on('interop_data')
 def broadcast_obstacles(data):
+    if 'frontend' in flask_socketio.rooms():
+        flask_socketio.leave_room('frontend')
+
     flask_socketio.emit('interop_data', data, \
-        broadcast=True, include_self=False)
+        room='frontend')
+
+    flask_socketio.emit('interop_data', \
+        interop_data_to_obstacles_proto(data), room='drone')
 
 
 @ground_socketio_server.on('execute_commands')
 def send_commands(data):
     flask_socketio.emit('drone_execute_commands', data, \
-        broadcast=True, include_self=False)
+        room='drone')
 
 
 @ground_socketio_server.on('set_state')
 def send_commands(data):
     flask_socketio.emit('drone_set_state', data, \
-        broadcast=True, include_self=False)
+        room='drone')
 
-    
+
 @ground_socketio_server.on('request_commands')
 def give_commands():
     flask_socketio.emit('commands_changed', {
@@ -108,28 +122,41 @@ def give_commands():
         'changedCommands': None
     })
 
+
 @ground_socketio_server.on('commands_changed')
 def commands_changed(data):
     global commands
     commands = data['commands']
     flask_socketio.emit('commands_changed', data, \
-        broadcast=True, include_self=False)
+        room='frontend', include_self=False)
 
 
 @ground_socketio_server.on('interop_disconnected')
 def interop_disconnected():
+    if 'frontend' in flask_socketio.rooms():
+        flask_socketio.leave_room('frontend')
+
     flask_socketio.emit('interop_disconnected', \
-        broadcast=True, include_self=False)
+        room='frontend')
 
 
 @ground_socketio_server.on('telemetry')
 def telemetry(*args):
+    if 'drone' not in flask_socketio.rooms():
+        flask_socketio.leave_room('frontend')
+        flask_socketio.join_room('drone')
+        data = object_to_dict({ \
+            'stationary_obstacles': stationary_obstacles, \
+            'moving_obstacles': moving_obstacles})
+        flask_socketio.emit('interop_data', \
+            interop_data_to_obstacles_proto(data), room='drone')
+
     global interop_client
 
     received_telemetry = args[0]
 
     flask_socketio.emit('on_telemetry', received_telemetry, \
-        broadcast=True, include_self=False)
+        room='frontend')
 
     if len(received_telemetry['sensors']) == 0:
         return
@@ -146,11 +173,7 @@ def telemetry(*args):
                 interop_client.post_telemetry(interop_telemetry)
             except:
                 interop_client = None
-                ground_socketio_server.emit('interop_disconnected')
-
-
-def on_image(*args):
-    ground_socketio_server.emit('image', args[0])
+                flask_socketio.emit('interop_disconnected', room='frontend')
 
 
 # Interop. #####################################################################
@@ -252,6 +275,25 @@ def refresh_interop_data():
 
                 interop_client = None
                 interface_client.emit('interop_disconnected')
+
+
+def interop_data_to_obstacles_proto(data):
+    obstacles = proto.Obstacles()
+#   if 'moving_obstacles' in data:
+#       for obstacle in data['moving_obstacles']:
+#           proto_obstacle = obstacles.moving_obstacles.add()
+#           proto_obstacle.sphere_radius = obstacle['sphere_radius']
+#           proto_obstacle.point.latitude = obstacle['latitude']
+#           proto_obstacle.point.longitude = obstacle['longitude']
+#           proto_obstacle.point.altitude = obstacle['altitude_msl']
+    for obstacle in object_to_dict(stationary_obstacles):
+        proto_obstacle = obstacles.static_obstacles.add()
+        proto_obstacle.cylinder_radius = obstacle['cylinder_radius']
+        proto_obstacle.location.latitude = obstacle['latitude']
+        proto_obstacle.location.longitude = obstacle['longitude']
+        print(obstacle['cylinder_radius'])
+
+    return obstacles.SerializeToString().encode('base64')
 
 
 if __name__ == '__main__':

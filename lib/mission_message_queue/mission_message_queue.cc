@@ -9,17 +9,16 @@ MissionMessageQueueSender::MissionMessageQueueSender()
   socket_.connect("ipc:///tmp/mission_command_stream.ipc");
 }
 
-void MissionMessageQueueSender::SendMission(
-    ::lib::mission_manager::Mission mission_protobuf) {
-  ::std::string serialized_mission_protobuf;
-  mission_protobuf.SerializeToString(&serialized_mission_protobuf);
+void MissionMessageQueueSender::SendData(
+    ::lib::mission_manager::GroundData ground_data) {
+  ::std::string serialized_ground_data;
+  ground_data.SerializeToString(&serialized_ground_data);
 
-  ::zmq::message_t mission_protobuf_zmq(serialized_mission_protobuf.size());
-  memcpy((void *)mission_protobuf_zmq.data(),
-         serialized_mission_protobuf.c_str(),
-         serialized_mission_protobuf.size());
+  ::zmq::message_t ground_data_protobuf_zmq(serialized_ground_data.size());
+  memcpy((void *)ground_data_protobuf_zmq.data(),
+         serialized_ground_data.c_str(), serialized_ground_data.size());
 
-  socket_.send(mission_protobuf_zmq);
+  socket_.send(ground_data_protobuf_zmq);
 }
 
 // Receiver ////////////////////////////////////////////////////////////////////
@@ -47,13 +46,17 @@ void MissionMessageQueueReceiver::ReceiveThread() {
       continue;
     }
 
-    ::std::string mission_message_string(
+    ::std::string ground_data_string(
         static_cast<char *>(mission_message.data()), mission_message.size());
 
-    ::lib::mission_manager::Mission mission_protobuf;
-    mission_protobuf.ParseFromString(mission_message_string);
+    ::lib::mission_manager::GroundData ground_data_protobuf;
+    ground_data_protobuf.ParseFromString(ground_data_string);
 
-    mission_manager_.SetCommands(mission_protobuf);
+    if (ground_data_protobuf.has_mission()) {
+      mission_manager_.SetCommands(ground_data_protobuf.mission());
+    } else if (ground_data_protobuf.has_obstacles()) {
+      mission_manager_.SetObstacles(ground_data_protobuf.obstacles());
+    }
   }
 }
 
