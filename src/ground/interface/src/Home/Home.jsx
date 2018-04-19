@@ -30,17 +30,21 @@ class Home extends Component {
         .nested;
 
       for (let proto_command in proto_commands) {
-        if (proto_command == 'Mission' || proto_command == 'Command') break;
+        if (proto_command == 'Mission') break;
 
         let fields = Array();
         for (let field in proto_commands[proto_command].fields) {
           let field_info = proto_commands[proto_command].fields[field];
-          field_info.name = field;
-          fields.push(field_info);
+          if (field_info.type !== 'Mission') {
+            field_info.name = field;
+            fields.push(field_info);
+          }
         }
 
         this.command_types[proto_command] = fields;
       }
+
+      console.log(this.command_types);
 
       this.protobuf_root = root;
 

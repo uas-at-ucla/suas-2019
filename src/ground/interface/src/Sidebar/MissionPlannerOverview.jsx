@@ -15,9 +15,9 @@ const SortableItem = SortableElement(({ command, changedCommands, myIndex, self 
       className="command_row"
       onClick={event => self.onCommandClick(myIndex, event)}
     >
-      <td>{myIndex + 1}</td>
-      <td>{command.name}</td>
-      <td>{type}</td>
+      <td><div>{myIndex + 1}</div></td>
+      <td><div>{command.name}</div></td>
+      <td><div>{type}</div></td>
       {fields.map((field, index) => {
         return self.commandField(command, field.name, index);
       })}
@@ -82,7 +82,7 @@ class MissionPlannerOverview extends Component {
   };
 
   onCommandClick(index, event) {
-    if (event.target.tagName === 'TD') {
+    if (event.target.tagName === 'TD' || event.target.tagName === 'DIV') {
       this.props.setHomeState({ focusedCommand: index });
     }
   }
@@ -105,12 +105,13 @@ class MissionPlannerOverview extends Component {
     }
 
     if (!isNaN(subcommand)) {
-      return <td key={id}>{parseFloat(subcommand).toFixed(3)}</td>;
+      return <td key={id}><div>{parseFloat(subcommand).toFixed(3)}</div></td>;
     } else {
       let fields = this.props.commandTypes[type];
       if (Array.isArray(subcommand)) {
         return (
           <td key={id}>
+            <div>
             <table>
               <tbody>
                 {subcommand.map((cmd, i) => 
@@ -122,11 +123,13 @@ class MissionPlannerOverview extends Component {
                 )}
               </tbody>
             </table>
+            </div>
           </td>
         );
       }
       return (
         <td key={id}>
+          <div>
           <table>
             <tbody>
               <tr>
@@ -136,6 +139,7 @@ class MissionPlannerOverview extends Component {
               </tr>
             </tbody>
           </table>
+          </div>
         </td>
       );
     }

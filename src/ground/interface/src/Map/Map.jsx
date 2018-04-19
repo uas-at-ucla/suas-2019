@@ -1037,8 +1037,7 @@ class Map extends Component {
 
   make_obstacle_map_object(obstacle) {
     let pos = { lat: obstacle.latitude, lng: obstacle.longitude };
-    let radius_feet = obstacle.cylinder_radius || obstacle.sphere_radius;
-    let radius = radius_feet * METERS_PER_FOOT;
+    let radius = obstacle.cylinder_radius || obstacle.sphere_radius;
 
     let circle = new google.maps.Circle({
       center: pos,
@@ -1071,8 +1070,7 @@ class Map extends Component {
   }
 
   make_obstacle_info(obstacle) {
-    let radius_feet = obstacle.cylinder_radius || obstacle.sphere_radius;
-    let radius = radius_feet * METERS_PER_FOOT;
+    let radius = obstacle.cylinder_radius || obstacle.sphere_radius;
 
     let info = (
       <div>
