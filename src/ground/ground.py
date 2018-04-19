@@ -14,6 +14,9 @@ sys.path.insert(0, '../../lib')
 import process_manager
 import interop
 
+sys.path.insert(0, './tools')
+import mission_commands_pb2 as proto
+
 # Configuration options. #######################################################
 USE_INTEROP = True
 LOCAL_INTEROP = False
@@ -92,7 +95,8 @@ def broadcast_obstacles(data):
     flask_socketio.emit('interop_data', data, \
         room='frontend')
 
-    flask_socketio.emit('interop_data', room='drone') # TODO
+    flask_socketio.emit('interop_data', \
+        interop_data_to_obstacles_proto(data), room='drone')
 
 
 @ground_socketio_server.on('execute_commands')
@@ -136,7 +140,11 @@ def telemetry(*args):
     if 'drone' not in flask_socketio.rooms():
         flask_socketio.leave_room('frontend')
         flask_socketio.join_room('drone')
-        flask_socketio.emit('interop_data', room='drone') # TODO
+        data = object_to_dict({ \
+            'stationary_obstacles': stationary_obstacles, \
+            'moving_obstacles': moving_obstacles})
+        flask_socketio.emit('interop_data', \
+            interop_data_to_obstacles_proto(data), room='drone')
 
     global interop_client
 
@@ -262,6 +270,24 @@ def refresh_interop_data():
 
                 interop_client = None
                 interface_client.emit('interop_disconnected')
+
+def interop_data_to_obstacles_proto(data):
+    obstacles = proto.Obstacles()
+    if 'moving_obstacles' in data:
+        for obstacle in data['moving_obstacles']:
+            proto_obstacle = obstacles.moving_obstacles.add()
+            proto_obstacle.sphere_radius = obstacle['sphere_radius']
+            proto_obstacle.point.latitude = obstacle['latitude']
+            proto_obstacle.point.longitude = obstacle['longitude']
+            proto_obstacle.point.altitude = obstacle['altitude_msl']
+    if 'stationary_obstacles' in data:
+        for obstacle in data['stationary_obstacles']:
+            proto_obstacle = obstacles.static_obstacles.add()
+            proto_obstacle.cylinder_radius = obstacle['cylinder_radius']
+            proto_obstacle.location.latitude = obstacle['latitude']
+            proto_obstacle.location.longitude = obstacle['longitude']
+
+    return obstacles.SerializeToString().encode('base64');
 
 
 if __name__ == '__main__':
