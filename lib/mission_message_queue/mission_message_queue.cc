@@ -26,8 +26,7 @@ void MissionMessageQueueSender::SendMission(
 MissionMessageQueueReceiver::MissionMessageQueueReceiver()
     : context_(1),
       socket_(context_, ZMQ_SUB),
-      thread_(&MissionMessageQueueReceiver::ReceiveThread, this) {
-}
+      thread_(&MissionMessageQueueReceiver::ReceiveThread, this) {}
 
 MissionMessageQueueReceiver::~MissionMessageQueueReceiver() {
   Quit();
@@ -43,7 +42,7 @@ void MissionMessageQueueReceiver::ReceiveThread() {
   ::zmq::message_t mission_message;
 
   while (run_) {
-    if(!socket_.recv(&mission_message, ZMQ_NOBLOCK)) {
+    if (!socket_.recv(&mission_message, ZMQ_NOBLOCK)) {
       usleep(1e6 / 1e1);
       continue;
     }
@@ -56,6 +55,20 @@ void MissionMessageQueueReceiver::ReceiveThread() {
 
     mission_manager_.SetCommands(mission_protobuf);
   }
+}
+
+void MissionMessageQueueReceiver::SetMission(
+    ::lib::mission_manager::Mission mission) {
+  mission_manager_.SetCommands(mission);
+}
+
+void MissionMessageQueueReceiver::SetObstacles(
+    ::lib::mission_manager::Obstacles obstacles) {
+  mission_manager_.SetObstacles(obstacles);
+}
+
+void MissionMessageQueueReceiver::RunPreprocessor(Position3D position) {
+  mission_manager_.Preprocess(position);
 }
 
 }  // mission_message_queue
