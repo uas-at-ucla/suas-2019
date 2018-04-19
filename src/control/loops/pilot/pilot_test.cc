@@ -10,7 +10,7 @@ namespace loops {
 namespace pilot {
 namespace testing {
 namespace {
-const double kMetPositionTolerance = 0.5;
+const double kMetPositionTolerance = 3;
 const double kMetersPerCoordinate = GetDistance2D({0, 0, 0}, {1, 0, 0});
 }  // namespace
 
