@@ -302,6 +302,31 @@ void MissionReceiver::OnConnect() {
           }));
 
   client_.socket()->on(
+      "interop_data",
+      sio::socket::event_listener_aux(
+          [&](std::string const& name, sio::message::ptr const& data,
+              bool isAck, sio::message::list& ack_resp) {
+
+            (void)name;
+            (void)isAck;
+            (void)ack_resp;
+
+            ::lib::mission_manager::Obstacles obstacles;
+
+            ::std::string serialized_protobuf_obstacles = data->get_string();
+
+            serialized_protobuf_obstacles =
+                base64_decode(serialized_protobuf_obstacles);
+
+            obstacles.ParseFromString(serialized_protobuf_obstacles);
+
+            std::cout << "Obstacles: " << obstacles.DebugString() << std::endl;
+            // TODO: Send obstacles to the right place.
+            // If either the static_obstacles or moving_obstacles list is emtpy,
+            // assume that thay haven't changed.
+          }));
+
+  client_.socket()->on(
       "drone_set_state",
       sio::socket::event_listener_aux(
           [&](std::string const& name, sio::message::ptr const& data,
