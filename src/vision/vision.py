@@ -6,6 +6,10 @@ from argparse import Namespace
 from flask import Flask, render_template
 import flask_socketio, socketIO_client
 
+# Server dependencies
+import time
+import uuid
+
 # Yolo dependencies
 from darkflow.net.build import TFNet  # yolo neural net
 import cv2  # reading images
@@ -34,9 +38,11 @@ DEFAULT_YOLO_CFG = 'localizer/cfg/yolo-auvsi.cfg'
 DEFAULT_YOLO_WEIGHTS = 'localizer/darkflow/bin/tiny-yolo-voc.weights'
 DEFAULT_YOLO_THRESH = 0.1
 DEFAULT_LOCAL_DATA_DIR = 'local_data'
+DEFAULT_AUCTION_TIMEOUT = 3
 
 processes = process_manager.ProcessManager()
 c_workers = []
+s_worker = None
 
 verbose = False
 
@@ -45,21 +51,115 @@ def signal_received(signal, frame):
     # Shutdown all the spawned processes and exit cleanly.
     processes.killall()
     # Ask the workers to join us in death
+    s_worker.join()
     for worker in c_workers:
         worker.join()
     sys.exit(0)
 
 
 # Server #######################################################################
+
 socketio_app = Flask(__name__)
 socketio_app.config['SECRET_KEY'] = SECRET_KEY
 vision_socketio_server = flask_socketio.SocketIO(socketio_app)
+server_task_queue = queue.Queue()
+connected_clients = {'rsync': [], 'yolo': [], 'snipper': []}
+active_auctions = {}
 img_count = 0
+
+
+class ServerWorker(threading.Thread):
+    def __init__(self, in_q):  # accept args anyway even if not used
+        super()
+        self.in_q = in_q  # input queue (queue.Queue)
+        self.stop_req = threading.Event()  # listen for a stop request
+
+    def run(self):
+        while not self.stop_req.isSet():  # Exit run if stop was requested
+            try:
+                # Try to get an item from the queue
+                # blocking: true; timeout: 0.05
+                task = self.in_q.get(True, 0.05)
+
+                # check on the progress of an auction
+                if task['type'] == 'timeout':
+                    if (time.time() -
+                            task['time_began']) >= DEFAULT_AUCTION_TIMEOUT:
+                        auction = active_auctions[task['auction_id']]
+
+                        # reset the timer if no bids have been made
+                        if len(auction['bids']) == 0:
+                            task['time_began'] = time.time()
+                            self.in_q.push(task)
+                        else:
+                            # choose the lowest bidder
+                            lowest_bid = auction['bids'][0]
+                            for bid in auction['bids']:
+                                if bid['workload'] < lowest_bid['workload']:
+                                    lowest_bid = bid
+
+                            # announce the winner of the auction
+                            vision_socketio_server.emit(
+                                auction['event_name'] + '_' +
+                                lowest_bid['client_id'], auction['args'])
+
+                            # remove the auction entry
+                            active_auctions.pop(task['auction_id'])
+                    else:
+                        # check again later since not enough time passed
+                        self.in_q.push(task)
+
+                # create a new auction
+                elif task['type'] == 'auction':
+                    # generate a random auction id
+                    auction_id = uuid.uuid4()
+
+                    # announce the auction to all clients
+                    vision_socketio_server.emit(task['event_name'],
+                                                {'auction_id': auction_id})
+
+                    # add a new auction listing
+                    active_auctions[auction_id] = {
+                        'bids': [],
+                        'event_name': task['event_name'],
+                        'args': task['args']
+                    }
+
+                    # check in on this auction at a later time
+                    self.in_q.push({
+                        'type': 'timeout',
+                        'time_began': time.time(),
+                        'auction_id': auction_id
+                    })
+            except queue.Queue.Empty:
+                continue
+
+    def join(self, timeout=None):
+        self.stop_req.set()
+        super().join(timeout)
 
 
 @vision_socketio_server.on('connect')
 def vision_socketio_server_connect():
     print("Someone connected to vision server")
+
+
+#@vision_socketio_server.on('depart')
+#def remove_client(json):
+#    if verbose:
+#        print('Removing ' + json['type'] + ' client: ' + json['id'])
+#    connected_clients[json['type']].remove(json['id'])
+#
+#@vision_socketio_server.on('announce')
+#def add_client(json):
+#    if verbose:
+#        print('Adding ' + json['type'] + ' client: ' + json['id'])
+#    connected_clients[json['type']].append(json['id'])
+
+
+@vision_socketio_server.on('bid')
+def receive_bid(json):
+    active_auctions[json['auction_id']]['bids'].append(json['bid'])
 
 
 # Step 1 - download the image
@@ -108,7 +208,6 @@ def classify(json):
     pass
 
 
-
 # TODO handle autodownloading images as needed
 #@vision_socketio_server.on('download_complete')
 #def do_next_task(json):
@@ -125,16 +224,32 @@ def classify(json):
 def server_worker(args):
     global img_count
     img_count = len(os.listdir(LOCAL_RAW_DIR))
+    global s_worker
+    s_worker = ServerWorker(server_task_queue)
+    s_worker.start()
     vision_socketio_server.run(socketio_app, '0.0.0.0', port=int(args.port))
 
 
 # Clients ######################################################################
 vision_client = None
+client_id = None
 work_queue = queue.Queue()
 
 
 def client_add_task(*args):
     work_queue.put(args)
+
+
+def client_bid_for_task(*args):
+    auction = args[0]
+    vision_client.emit(
+        'bid', {
+            'auction_id': auction['auction_id'],
+            'bid': {
+                'client_id': client_id,
+                'workload': work_queue.qsize()
+            }
+        })
 
 
 def client_worker(args, worker_class):
@@ -150,12 +265,16 @@ def client_worker(args, worker_class):
     print('Connected to server!')
 
     # initialize worker and listen for tasks
+    global client_id
+    client_id = uuid.uuid4()
     global work_queue
     for i in range(0, args.threads):
         c_worker = worker_class(work_queue, args)
         c_worker.start()
         c_workers.append(c_worker)
-    vision_client.on(c_workers[0].get_event_name(), client_add_task)
+    vision_client.on(c_workers[0].get_event_name(), client_bid_for_task)
+    vision_client.on(c_workers[0].get_event_name() + '_' + client_id,
+                     client_add_task)
     vision_client.wait()
 
 
@@ -288,7 +407,8 @@ class SnipperWorker(ClientWorker):
             ymax = result['bottomright']['y']
 
             cropped_img = src_img[ymin:ymax, xmin:xmax]
-            out_path = os.path.join(out_dir, src_img_label + '-' + str(i) + '.jpg')
+            out_path = os.path.join(out_dir,
+                                    src_img_label + '-' + str(i) + '.jpg')
             cv2.imwrite(out_path, cropped_img)
             vision_client.emit('snipped', {'img_path': out_path})
             i += 1
