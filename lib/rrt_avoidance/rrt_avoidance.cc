@@ -43,6 +43,16 @@ RRTAvoidance::RRTAvoidance()
     m(i, 0) = obstacles.static_obstacles(i - 2).location().latitude();
     m(i, 1) = obstacles.static_obstacles(i - 2).location().longitude();
     m(i, 2) = obstacles.static_obstacles(i - 2).cylinder_radius() * 1.3;
+
+    lat_diff = m(i,0) - m(0,0);
+    long_diff = m(i,1) - m(0,1);
+    dist_to_center = sqrt(lat_diff * lat_diff + long_diff * long_diff);
+    if (dist_to_center * coordinate_to_meter < 1.3 * m(i, 2))
+    {
+    	multiplication_factor = 1.3 * (1.3 * m(i, 2)) / (1.3 * m(i, 2) - dist_to_center * coordinate_to_meter);
+	m(0,0) = m(i,0) - lat_diff * multiplication_factor;	 
+        m(0,1) = m(i,1) - long_diff * multiplication_factor;
+    }
   }
 
   // Shift everything so that the drone position at the origin.
