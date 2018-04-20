@@ -183,7 +183,7 @@ void AutopilotOutputWriter::Write() {
 
   if (::src::control::loops::flight_loop_queue.output->velocity_control) {
     // TODO(comran): Check altitude is above normal (on restarts).
-    copter_io_->Offboard();
+//  copter_io_->Offboard();
   }
 
   if (::src::control::loops::flight_loop_queue.output->land) {
