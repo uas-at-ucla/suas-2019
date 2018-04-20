@@ -17,21 +17,6 @@ Pilot::~Pilot() {
 
 void Pilot::PreprocessorThread() {
   // Add test obstacle while developing.
-  // TODO(comran): Remove.
-//::lib::mission_manager::Obstacles obstacles;
-//::lib::mission_manager::StaticObstacle *obstacle =
-//    obstacles.add_static_obstacles();
-//::lib::mission_manager::Position2D *location =
-//    new ::lib::mission_manager::Position2D();
-
-//location->set_latitude(34.1747796812899);
-//location->set_longitude(-118.48062618357);
-//obstacle->set_allocated_location(location);
-
-//obstacle->set_cylinder_radius(80);
-
-//mission_message_queue_receiver_.SetObstacles(obstacles);
-
   while (run_) {
     if (drone_position_set_) {
       drone_position_semaphore_.Wait();
@@ -64,7 +49,7 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
   } else if (cmd.has_sleepcommand()) {
     // Sleep.
   } else if (cmd.has_gotorawcommand()) {
-    constexpr double kSpeed = 12.0;
+    constexpr double kSpeed = 1.0;
 
     Position3D goal = {cmd.gotorawcommand().goal().latitude(),
                        cmd.gotorawcommand().goal().longitude(),
