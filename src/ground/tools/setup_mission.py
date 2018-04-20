@@ -81,7 +81,7 @@ mission2 = {
     'home': { 'latitude': 34.17147967716717, 'longitude': -118.47792073806761 },
     'air_drop': { 'latitude': 34.17230771859926, 'longitude':  -118.47723628670343 },
     'stationary_obstacles': [
-        { 'latitude': 34.17481721751467, 'longitude': -118.4776847036743, 'radius': 100, 'height': 100 },
+        { 'latitude': 34.17481721751467, 'longitude': -118.4776847036743, 'radius': 30, 'height': 100 },
         { 'latitude': 34.1747796812899, 'longitude': -118.48062618357, 'radius': 80, 'height': 400 }
     ],
     'moving_obstacles': [

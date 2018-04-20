@@ -15,7 +15,6 @@ import process_manager
 import interop
 
 sys.path.insert(0, './tools')
-import mission_commands_pb2 as proto
 
 # Configuration options. #######################################################
 USE_INTEROP = True
@@ -37,6 +36,11 @@ moving_obstacles = None
 commands = []
 
 processes = process_manager.ProcessManager()
+processes.run_command("protoc -I. --proto_path=../../lib/mission_manager/ " \
+    + "--python_out=/tmp/ " \
+    + "../../lib/mission_manager/mission_commands.proto")
+sys.path.insert(0, '/tmp')
+import mission_commands_pb2 as proto
 
 
 def signal_received(signal, frame):
@@ -110,13 +114,14 @@ def send_commands(data):
     flask_socketio.emit('drone_set_state', data, \
         room='drone')
 
-    
+
 @ground_socketio_server.on('request_commands')
 def give_commands():
     flask_socketio.emit('commands_changed', {
         'commands': commands,
         'changedCommands': None
     })
+
 
 @ground_socketio_server.on('commands_changed')
 def commands_changed(data):
@@ -271,23 +276,24 @@ def refresh_interop_data():
                 interop_client = None
                 interface_client.emit('interop_disconnected')
 
+
 def interop_data_to_obstacles_proto(data):
     obstacles = proto.Obstacles()
-    if 'moving_obstacles' in data:
-        for obstacle in data['moving_obstacles']:
-            proto_obstacle = obstacles.moving_obstacles.add()
-            proto_obstacle.sphere_radius = obstacle['sphere_radius']
-            proto_obstacle.point.latitude = obstacle['latitude']
-            proto_obstacle.point.longitude = obstacle['longitude']
-            proto_obstacle.point.altitude = obstacle['altitude_msl']
-    if 'stationary_obstacles' in data:
-        for obstacle in data['stationary_obstacles']:
-            proto_obstacle = obstacles.static_obstacles.add()
-            proto_obstacle.cylinder_radius = obstacle['cylinder_radius']
-            proto_obstacle.location.latitude = obstacle['latitude']
-            proto_obstacle.location.longitude = obstacle['longitude']
+#   if 'moving_obstacles' in data:
+#       for obstacle in data['moving_obstacles']:
+#           proto_obstacle = obstacles.moving_obstacles.add()
+#           proto_obstacle.sphere_radius = obstacle['sphere_radius']
+#           proto_obstacle.point.latitude = obstacle['latitude']
+#           proto_obstacle.point.longitude = obstacle['longitude']
+#           proto_obstacle.point.altitude = obstacle['altitude_msl']
+    for obstacle in object_to_dict(stationary_obstacles):
+        proto_obstacle = obstacles.static_obstacles.add()
+        proto_obstacle.cylinder_radius = obstacle['cylinder_radius']
+        proto_obstacle.location.latitude = obstacle['latitude']
+        proto_obstacle.location.longitude = obstacle['longitude']
+        print(obstacle['cylinder_radius'])
 
-    return obstacles.SerializeToString().encode('base64');
+    return obstacles.SerializeToString().encode('base64')
 
 
 if __name__ == '__main__':

@@ -73,7 +73,7 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
     flight_direction = PointTowards(drone_position, goal);
     flight_direction *= kSpeed;
 
-    if (GetDistance2D(drone_position, goal) < kSpeed / 100) {
+    if (GetDistance2D(drone_position, goal) < kSpeed / 5) {
       mission_message_queue_receiver_.get_mission_manager()->PopCommand();
     }
   } else if (cmd.has_bombdropcommand()) {
