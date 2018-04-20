@@ -16,6 +16,8 @@ import interop
 
 sys.path.insert(0, './tools')
 
+METERS_PER_FOOT = 0.3048
+
 # Configuration options. #######################################################
 USE_INTEROP = True
 LOCAL_INTEROP = False
@@ -282,16 +284,17 @@ def interop_data_to_obstacles_proto(data):
 #   if 'moving_obstacles' in data:
 #       for obstacle in data['moving_obstacles']:
 #           proto_obstacle = obstacles.moving_obstacles.add()
-#           proto_obstacle.sphere_radius = obstacle['sphere_radius']
+#           proto_obstacle.sphere_radius = obstacle['sphere_radius'] \
+#               * METERS_PER_FOOT
 #           proto_obstacle.point.latitude = obstacle['latitude']
 #           proto_obstacle.point.longitude = obstacle['longitude']
 #           proto_obstacle.point.altitude = obstacle['altitude_msl']
     for obstacle in object_to_dict(stationary_obstacles):
         proto_obstacle = obstacles.static_obstacles.add()
-        proto_obstacle.cylinder_radius = obstacle['cylinder_radius']
+        proto_obstacle.cylinder_radius = obstacle['cylinder_radius'] \
+            * METERS_PER_FOOT
         proto_obstacle.location.latitude = obstacle['latitude']
         proto_obstacle.location.longitude = obstacle['longitude']
-        print(obstacle['cylinder_radius'])
 
     return obstacles.SerializeToString().encode('base64')
 
