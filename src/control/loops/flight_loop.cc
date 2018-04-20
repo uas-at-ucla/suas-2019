@@ -199,7 +199,7 @@ void FlightLoop::RunIteration() {
         break;
       }
 
-      output->arm = true;
+//    output->arm = true;
       break;
 
     case ARMED:
@@ -238,12 +238,12 @@ void FlightLoop::RunIteration() {
         takeoff_ticker_++;
       }
 
-      if (takeoff_ticker_ < 800) {
-        output->arm = true;
-        output->takeoff = true;
-      } else {
-        output->disarm = true;
-      }
+//    if (takeoff_ticker_ < 800) {
+//      output->arm = true;
+//      output->takeoff = true;
+//    } else {
+//      output->disarm = true;
+//    }
 
       if (::src::control::loops::flight_loop_queue.sensors->relative_altitude >
           2.2) {
@@ -299,7 +299,7 @@ void FlightLoop::RunIteration() {
         break;
       }
 
-      output->land = true;
+//    output->land = true;
       break;
 
     case FAILSAFE:
