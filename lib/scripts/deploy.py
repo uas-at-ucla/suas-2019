@@ -10,7 +10,7 @@ sys.path.insert(0, 'lib')
 import process_manager
 
 BIN_FOLDER = './bazel-out/raspi-fastbuild/bin/'
-DRONE_ADDR = 'pi@192.168.2.23'
+DRONE_ADDR = 'pi@192.168.2.21'
 
 processes = process_manager.ProcessManager()
 
