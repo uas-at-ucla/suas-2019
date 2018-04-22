@@ -140,6 +140,11 @@ class Map extends Component {
     );
     this.registerStateDepFunction(
       'homeState',
+      'droneCommands',
+      this.draw_drone_command_path
+    );
+    this.registerStateDepFunction(
+      'homeState',
       'focusedCommand',
       this.focus_on_command
     );
@@ -435,6 +440,60 @@ class Map extends Component {
         setTimeout(() => point.marker.setAnimation(null), 1400);
       }
     }
+  };
+
+  draw_drone_command_path = props => {
+    if (this.drone_command_path) {
+      this.drone_command_path.setMap(null);
+    }
+    if (this.drone_current_command_path) {
+      this.drone_current_command_path.setMap(null);
+    }
+
+    let points = [];
+    let current_command_points = [];
+    for (let i = 0; i < props.homeState.droneCommands.length; i++) {
+      let command = props.homeState.droneCommands[i];
+      if (command.subMission) {
+        if (i === props.homeState.droneCurrentCommand && points.length > 0) {
+          current_command_points.push(points[points.length-1]);
+        }
+        for (let subCommand of command.subMission.commands) {
+          if (subCommand.GotoRawCommand) {
+            let point = {
+              lat: subCommand.GotoRawCommand.goal.latitude,
+              lng: subCommand.GotoRawCommand.goal.longitude
+            };
+            points.push(point);
+            if (i === props.homeState.droneCurrentCommand) {
+              current_command_points.push(point);
+            }
+          }
+        }
+      }
+    }
+
+    let polyline = new google.maps.Polyline({
+      path: points,
+      geodesic: true,
+      strokeColor: '#FFD700',
+      strokeOpacity: 1,
+      strokeWeight: 2,
+      zIndex: 11
+    });
+    polyline.setMap(this.map);
+    this.drone_command_path = polyline;
+
+    polyline = new google.maps.Polyline({
+      path: current_command_points,
+      geodesic: true,
+      strokeColor: '#00FF00',
+      strokeOpacity: 1,
+      strokeWeight: 2,
+      zIndex: 12
+    });
+    polyline.setMap(this.map);
+    this.drone_current_command_path = polyline;
   };
 
   update_drone_position = props => {
