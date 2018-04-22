@@ -210,20 +210,13 @@ void AutopilotInterface::start() {
     usleep(1e6 / 10);
   } while (mavlink_serial_->status != 1);
 
-  printf("START READ THREAD \n");
-
   result = pthread_create(&read_tid_, NULL,
                           &start_autopilot_interface_read_thread, this);
   if (result) throw result;
 
-  // now we're reading messages
-  printf("\n");
-
   // Component ID
   if (not autopilot_id) {
     autopilot_id = current_messages.compid;
-    printf("GOT AUTOPILOT COMPONENT ID: %i\n", autopilot_id);
-    printf("\n");
   }
 
   // Wait for initial position ned
@@ -244,21 +237,12 @@ void AutopilotInterface::start() {
   initial_position.yaw = local_data.attitude.yaw;
   initial_position.yaw_rate = local_data.attitude.yawspeed;
 
-  printf("INITIAL POSITION XYZ = [ %.4f , %.4f , %.4f ] \n", initial_position.x,
-         initial_position.y, initial_position.z);
-  printf("INITIAL POSITION YAW = %.4f \n", initial_position.yaw);
-  printf("\n");
-
-  printf("START WRITE THREAD \n");
-
   result = pthread_create(&write_tid_, NULL,
                           &start_autopilot_interface_write_thread, this);
   if (result) throw result;
 
   // Wait for write thread to be started.
   while (not writing_status_) usleep(1e6 / 10);
-
-  printf("\n");
 
   return;
 }
@@ -427,8 +411,6 @@ void AutopilotInterface::stop() {
   pthread_join(read_tid_, NULL);
   pthread_join(write_tid_, NULL);
 
-  printf("\n");
-
   mavlink_serial_->stop();
 }
 
@@ -455,7 +437,6 @@ void AutopilotInterface::start_write_thread(void) {
 }
 
 void AutopilotInterface::handle_quit(int sig) {
-  ::std::cout << "QUIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
   try {
     stop();
   } catch (int error) {
