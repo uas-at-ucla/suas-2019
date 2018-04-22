@@ -75,6 +75,14 @@ size_t MissionManager::NumberOfCommands() { return mission_.commands_size(); }
   return GetCurrentCommand(mission);
 }
 
+::lib::mission_manager::Mission MissionManager::GetMission() {
+  semaphore_.Wait();
+  ::lib::mission_manager::Mission mission = mission_;
+  semaphore_.Notify();
+
+  return mission;
+}
+
 ::lib::mission_manager::Command MissionManager::GetCurrentCommand(
     ::lib::mission_manager::Mission &mission) {
   // If the mission is empty, return immediately.
