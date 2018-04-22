@@ -157,33 +157,40 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
     } else if (cmd->has_gotocommand()) {
       ::lib::mission_manager::GotoCommand *goto_cmd =
           cmd->mutable_gotocommand();
-      if (cmd->sub_mission().commands_size() == 0 &&
-          mission->current_command() == i) {
-        for (int i = 0; i < cmd->sub_mission().commands_size(); i++) {
-          sub_mission->mutable_commands(i)->mutable_nothingcommand();
-        }
+      if (cmd->sub_mission().commands_size() == 0) {
+        // Fly directly towards the goal.
+        ::lib::mission_manager::GotoRawCommand *goto_raw_cmd =
+            sub_mission->add_commands()->mutable_gotorawcommand();
 
-        Position3D end = {goto_cmd->goal().latitude(),
-                          goto_cmd->goal().longitude(),
-                          goto_cmd->goal().altitude()};
+        ::lib::mission_manager::Position3D *goto_raw_goal =
+            new ::lib::mission_manager::Position3D();
+        goto_raw_goal->set_latitude(goto_cmd->goal().latitude());
+        goto_raw_goal->set_longitude(goto_cmd->goal().longitude());
+        goto_raw_goal->set_altitude(goto_cmd->goal().altitude());
+        goto_raw_cmd->set_allocated_goal(goto_raw_goal);
 
-        ::std::vector<Position3D> avoidance_path =
-            rrt_avoidance_.Process(drone_position, end, obstacles_);
+        // Disable random tree stuff for tests.
+//      Position3D end = {goto_cmd->goal().latitude(),
+//                        goto_cmd->goal().longitude(),
+//                        goto_cmd->goal().altitude()};
+//
+//      ::std::vector<Position3D> avoidance_path =
+//          rrt_avoidance_.Process(drone_position, end, obstacles_);
 
-        // Add the path for avoiding obstacles as a list of raw goto commands,
-        // which will not undergo additional lower-level rrt calculations by the
-        // preprocessor.
-        for (Position3D goto_step : avoidance_path) {
-          ::lib::mission_manager::GotoRawCommand *goto_raw_cmd =
-              sub_mission->add_commands()->mutable_gotorawcommand();
+//      // Add the path for avoiding obstacles as a list of raw goto commands,
+//      // which will not undergo additional lower-level rrt calculations by the
+//      // preprocessor.
+//      for (Position3D goto_step : avoidance_path) {
+//        ::lib::mission_manager::GotoRawCommand *goto_raw_cmd =
+//            sub_mission->add_commands()->mutable_gotorawcommand();
 
-          ::lib::mission_manager::Position3D *goto_raw_goal =
-              new ::lib::mission_manager::Position3D();
-          goto_raw_goal->set_latitude(goto_step.latitude);
-          goto_raw_goal->set_longitude(goto_step.longitude);
-          goto_raw_goal->set_altitude(goto_cmd->goal().altitude());
-          goto_raw_cmd->set_allocated_goal(goto_raw_goal);
-        }
+//        ::lib::mission_manager::Position3D *goto_raw_goal =
+//            new ::lib::mission_manager::Position3D();
+//        goto_raw_goal->set_latitude(goto_step.latitude);
+//        goto_raw_goal->set_longitude(goto_step.longitude);
+//        goto_raw_goal->set_altitude(goto_cmd->goal().altitude());
+//        goto_raw_cmd->set_allocated_goal(goto_raw_goal);
+//      }
       }
     }
 
