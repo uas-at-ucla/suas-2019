@@ -20,6 +20,7 @@ class MissionMessageQueueSender {
   MissionMessageQueueSender();
 
   void SendData(::lib::mission_manager::GroundData ground_data);
+  ::lib::mission_manager::Mission GetMission();
 
  private:
   ::zmq::context_t context_;
