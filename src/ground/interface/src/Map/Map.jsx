@@ -140,6 +140,11 @@ class Map extends Component {
     );
     this.registerStateDepFunction(
       'homeState',
+      'droneCommands',
+      this.draw_drone_command_path
+    );
+    this.registerStateDepFunction(
+      'homeState',
       'focusedCommand',
       this.focus_on_command
     );
@@ -435,6 +440,60 @@ class Map extends Component {
         setTimeout(() => point.marker.setAnimation(null), 1400);
       }
     }
+  };
+
+  draw_drone_command_path = props => {
+    if (this.drone_command_path) {
+      this.drone_command_path.setMap(null);
+    }
+    if (this.drone_current_command_path) {
+      this.drone_current_command_path.setMap(null);
+    }
+
+    let points = [];
+    let current_command_points = [];
+    for (let i = 0; i < props.homeState.droneCommands.length; i++) {
+      let command = props.homeState.droneCommands[i];
+      if (command.subMission) {
+        if (i === props.homeState.droneCurrentCommand && points.length > 0) {
+          current_command_points.push(points[points.length-1]);
+        }
+        for (let subCommand of command.subMission.commands) {
+          if (subCommand.GotoRawCommand) {
+            let point = {
+              lat: subCommand.GotoRawCommand.goal.latitude,
+              lng: subCommand.GotoRawCommand.goal.longitude
+            };
+            points.push(point);
+            if (i === props.homeState.droneCurrentCommand) {
+              current_command_points.push(point);
+            }
+          }
+        }
+      }
+    }
+
+    let polyline = new google.maps.Polyline({
+      path: points,
+      geodesic: true,
+      strokeColor: '#FFD700',
+      strokeOpacity: 1,
+      strokeWeight: 2,
+      zIndex: 11
+    });
+    polyline.setMap(this.map);
+    this.drone_command_path = polyline;
+
+    polyline = new google.maps.Polyline({
+      path: current_command_points,
+      geodesic: true,
+      strokeColor: '#00FF00',
+      strokeOpacity: 1,
+      strokeWeight: 2,
+      zIndex: 12
+    });
+    polyline.setMap(this.map);
+    this.drone_current_command_path = polyline;
   };
 
   update_drone_position = props => {
@@ -874,6 +933,8 @@ class Map extends Component {
       id = id + '_' + pos.order;
     }
 
+    if (pos.altitude_msl) coords.alt = pos.altitude_msl * METERS_PER_FOOT;
+
     let info = (
       <div id={'mission_point_infowindow_' + id}>
         <h6 class="infowindow_title">
@@ -883,9 +944,9 @@ class Map extends Component {
         Lat: {coords.lat}
         <br />
         Lng: {coords.lng}
-        {pos.altitude_msl ? (
+        {coords.alt ? (
           <span>
-            <br />Alt: {pos.altitude_msl * METERS_PER_FOOT} m
+            <br />Alt: {coords.alt} m
           </span>
         ) : (
           <span />
@@ -931,7 +992,7 @@ class Map extends Component {
             if (this.add_goto_command(
               coords.lat,
               coords.lng,
-              coords.alt || 80,
+              coords.alt || 30,
               title,
               mission_point,
               id
@@ -1037,7 +1098,8 @@ class Map extends Component {
 
   make_obstacle_map_object(obstacle) {
     let pos = { lat: obstacle.latitude, lng: obstacle.longitude };
-    let radius = obstacle.cylinder_radius || obstacle.sphere_radius;
+    let radius_feet = obstacle.cylinder_radius || obstacle.sphere_radius;
+    let radius = radius_feet * METERS_PER_FOOT;
 
     let circle = new google.maps.Circle({
       center: pos,
@@ -1070,7 +1132,8 @@ class Map extends Component {
   }
 
   make_obstacle_info(obstacle) {
-    let radius = obstacle.cylinder_radius || obstacle.sphere_radius;
+    let radius_feet = obstacle.cylinder_radius || obstacle.sphere_radius;
+    let radius = radius_feet * METERS_PER_FOOT;
 
     let info = (
       <div>
