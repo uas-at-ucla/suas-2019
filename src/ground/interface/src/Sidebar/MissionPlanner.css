@@ -19,6 +19,10 @@
   font-size: 11px;
 }
 
+#missionPlanner table {
+  height: 1px;
+}
+
 .command_row {
   text-align: left;
 }
@@ -93,7 +97,7 @@
   color: white;
   white-space: nowrap;
   border: 1px solid dimgray;
-  height: 0px;
+  height: 100%;
 }
 
 .command_row > td {
@@ -110,7 +114,7 @@
   width: 100%;
   height: 100%;
   display: flex;
-  align-items: center; 
+  align-items: center;
 }
 
 .command_row > td:nth-child(-n+3) > div {

@@ -88,6 +88,7 @@ class App extends Component {
   componentDidMount() {
     this.socket.on("connect", () => {
       console.log("Connected to ground interface feeder!");
+      this.socket.emit("join_room", "frontend");
 
       this.setState({
         droneState: "Ground Online",
@@ -103,23 +104,30 @@ class App extends Component {
 
     this.socket.on("drone_connected", () => {
       this.setState({
-        droneState: "Starting Up Drone...",
+        droneState: "Drone Connected!",
       });
     });
 
     this.socket.on("drone_disconnected", () => {
       this.setState({
         droneState: "Drone Disconnected!",
+        telemetry: null,
+        drone_mission_base64: null
       });
     });
 
     this.socket.on("on_telemetry", telemetry => {
       let newState = {
-        telemetry: telemetry
+        telemetry: telemetry.telemetry
       }
+      if (telemetry.mission !== this.state.drone_mission_base64) {
+        newState.drone_mission_base64 = telemetry.mission;
+      }
+      telemetry = telemetry.telemetry;
       if (telemetry.status && telemetry.status.state) {
-        newState.droneState = this.convertToTitleText(telemetry.status.state)
+        newState.droneState = this.convertToTitleText(telemetry.status.state);
       }
+
       this.setState(newState);
     });
 
