@@ -60,6 +60,56 @@ std::string base64_decode(std::string const& encoded_string) {
   return ret;
 }
 
+//Base64 encoding from https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
+
+static const unsigned char base64_table[65] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+std::string base64_encode(const unsigned char *src, size_t len)
+{
+    unsigned char *out, *pos;
+    const unsigned char *end, *in;
+
+    size_t olen;
+
+    olen = 4*((len + 2) / 3); /* 3-byte blocks to 4-byte */
+
+    if (olen < len)
+        return std::string(); /* integer overflow */
+
+    std::string outStr;
+    outStr.resize(olen);
+    out = (unsigned char*)&outStr[0];
+
+    end = src + len;
+    in = src;
+    pos = out;
+    while (end - in >= 3) {
+        *pos++ = base64_table[in[0] >> 2];
+        *pos++ = base64_table[((in[0] & 0x03) << 4) | (in[1] >> 4)];
+        *pos++ = base64_table[((in[1] & 0x0f) << 2) | (in[2] >> 6)];
+        *pos++ = base64_table[in[2] & 0x3f];
+        in += 3;
+    }
+
+    if (end - in) {
+        *pos++ = base64_table[in[0] >> 2];
+        if (end - in == 1) {
+            *pos++ = base64_table[(in[0] & 0x03) << 4];
+            *pos++ = '=';
+        }
+        else {
+            *pos++ = base64_table[((in[0] & 0x03) << 4) |
+                (in[1] >> 4)];
+            *pos++ = base64_table[(in[1] & 0x0f) << 2];
+        }
+        *pos++ = '=';
+    }
+
+    return outStr;
+}
+
+
 MissionReceiver* socketio_ground_communicator;
 
 void on_connect() { socketio_ground_communicator->OnConnect(); }
@@ -90,6 +140,8 @@ void MissionReceiver::ConnectToGround() {
 }
 
 void MissionReceiver::SendTelemetry() {
+  sio::message::ptr all_data = sio::object_message::create();
+
   auto sensors = &::src::control::loops::flight_loop_queue.sensors;
   auto status = &::src::control::loops::flight_loop_queue.status;
   auto goal = &::src::control::loops::flight_loop_queue.goal;
@@ -222,7 +274,18 @@ void MissionReceiver::SendTelemetry() {
   telemetry->get_map()["goal"] = goal_object;
   telemetry->get_map()["output"] = output_object;
 
-  client_.socket()->emit("telemetry", telemetry);
+  all_data->get_map()["telemetry"] = telemetry;
+
+  ::lib::mission_manager::Mission mission = mission_message_queue_sender_.GetMission();
+  ::std::string serialized_mission;
+  mission.SerializeToString(&serialized_mission);
+  const unsigned char* serialized_mission_cstr = 
+      reinterpret_cast<const unsigned char*>(serialized_mission.c_str());
+  ::std::string mission_base64 = base64_encode(serialized_mission_cstr, 
+      serialized_mission.length());
+  all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
+
+  client_.socket()->emit("telemetry", all_data);
 }
 
 void MissionReceiver::SendTelemetryPeriodic() {
@@ -276,6 +339,7 @@ void MissionReceiver::RunIteration() {
 
 void MissionReceiver::OnConnect() {
   LOG_LINE("Someone connected to ground_communicator");
+  client_.socket()->emit("join_room", sio::string_message::create("drone"));
 
   client_.socket()->on(
       "drone_execute_commands",

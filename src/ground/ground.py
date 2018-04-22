@@ -4,7 +4,7 @@ import signal
 import time
 import json
 import threading
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import flask_socketio, socketIO_client
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -25,6 +25,8 @@ AUTO_CONNECT_TO_INTEROP = True
 INTEROP_IP = '138.68.250.14'
 if LOCAL_INTEROP:
     INTEROP_IP = '0.0.0.0'
+
+drone_sid = None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'flappy'
@@ -53,19 +55,39 @@ def signal_received(signal, frame):
 
 
 # SocketIO handlers. ###########################################################
-@ground_socketio_server.on('connect')
-def connect():
-    print("Someone connected!")
-    flask_socketio.join_room('frontend')
-    data = None
-    if USE_INTEROP and interop_client is not None:
+@ground_socketio_server.on('join_room')
+def connect(room):
+    flask_socketio.join_room(room)
+    print(room + " connected!")
+
+    if room == 'frontend':
+        data = None
+        if USE_INTEROP and interop_client is not None:
+            data = object_to_dict({ \
+                'missions': missions, \
+                'stationary_obstacles': stationary_obstacles, \
+                'moving_obstacles': moving_obstacles})
+        else:
+            data = {'interop_disconnected': True}
+        flask_socketio.emit('initial_data', data)
+
+    elif room == 'drone':
+        global drone_sid
+        drone_sid = request.sid;
+
         data = object_to_dict({ \
-            'missions': missions, \
             'stationary_obstacles': stationary_obstacles, \
             'moving_obstacles': moving_obstacles})
-    else:
-        data = {'interop_disconnected': True}
-    flask_socketio.emit('initial_data', data)
+        flask_socketio.emit('interop_data', \
+            interop_data_to_obstacles_proto(data), room='drone')
+        flask_socketio.emit('drone_connected', room='frontend')
+
+
+@ground_socketio_server.on('disconnect')
+def disconnect():
+    if request.sid == drone_sid:
+        flask_socketio.emit('drone_disconnected', room='frontend')
+        print("drone disconnected!")
 
 
 @ground_socketio_server.on('connect_to_interop')
@@ -95,9 +117,6 @@ def connect_to_interop(data):
 
 @ground_socketio_server.on('interop_data')
 def broadcast_obstacles(data):
-    if 'frontend' in flask_socketio.rooms():
-        flask_socketio.leave_room('frontend')
-
     flask_socketio.emit('interop_data', data, \
         room='frontend')
 
@@ -135,39 +154,28 @@ def commands_changed(data):
 
 @ground_socketio_server.on('interop_disconnected')
 def interop_disconnected():
-    if 'frontend' in flask_socketio.rooms():
-        flask_socketio.leave_room('frontend')
-
     flask_socketio.emit('interop_disconnected', \
         room='frontend')
 
 
 @ground_socketio_server.on('telemetry')
 def telemetry(*args):
-    if 'drone' not in flask_socketio.rooms():
-        flask_socketio.leave_room('frontend')
-        flask_socketio.join_room('drone')
-        data = object_to_dict({ \
-            'stationary_obstacles': stationary_obstacles, \
-            'moving_obstacles': moving_obstacles})
-        flask_socketio.emit('interop_data', \
-            interop_data_to_obstacles_proto(data), room='drone')
-
     global interop_client
 
     received_telemetry = args[0]
+    sensors = received_telemetry['telemetry']['sensors']
 
     flask_socketio.emit('on_telemetry', received_telemetry, \
         room='frontend')
 
-    if len(received_telemetry['sensors']) == 0:
+    if len(sensors) == 0:
         return
 
     if USE_INTEROP and interop_client is not None:
-        lat = received_telemetry['sensors']['latitude']
-        lng = received_telemetry['sensors']['longitude']
-        alt = received_telemetry['sensors']['altitude']
-        heading = received_telemetry['sensors']['heading']
+        lat = sensors['latitude']
+        lng = sensors['longitude']
+        alt = sensors['altitude']
+        heading = sensors['heading']
 
         if all(val is not None for val in [lat, lng, alt, heading]):
             try:
