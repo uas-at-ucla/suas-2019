@@ -25,6 +25,7 @@ class MissionManager {
   size_t NumberOfCommands();
 
   ::lib::mission_manager::Command GetCurrentCommand();
+  ::lib::mission_manager::Mission GetMission();
   void Preprocess(Position3D drone_position);
   void DumpMission();
 
