@@ -210,7 +210,7 @@ TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
   // Do takeoff and check if times out.
   ::std::cout << "sending mission...\n";
   for (int i = 0;
-       i < 3000 && (flight_loop_queue.sensors->relative_altitude < 2.2 ||
+       i < 5000 && (flight_loop_queue.sensors->relative_altitude < 2.2 ||
                     !flight_loop_queue.sensors->armed);
        i++) {
     flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
