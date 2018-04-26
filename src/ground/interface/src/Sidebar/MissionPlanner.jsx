@@ -232,7 +232,7 @@ class MissionPlanner extends Component {
                 );
               }}
               bsSize="small"
-              disabled={command.mission_point && (key === 'latitude' || key === 'longitude')}
+              disabled={command.interop_object && (key === 'latitude' || key === 'longitude')}
             />
           </InputGroup>
           </div>

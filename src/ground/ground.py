@@ -69,6 +69,10 @@ def connect(room):
                 'moving_obstacles': moving_obstacles})
         else:
             data = {'interop_disconnected': True}
+
+        if drone_sid:
+            data['drone_connected'] = True
+            
         flask_socketio.emit('initial_data', data)
 
     elif room == 'drone':
@@ -88,6 +92,7 @@ def disconnect():
     if request.sid == drone_sid:
         flask_socketio.emit('drone_disconnected', room='frontend')
         print("drone disconnected!")
+        drone_sid = None
 
 
 @ground_socketio_server.on('connect_to_interop')
