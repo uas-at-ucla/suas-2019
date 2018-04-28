@@ -119,9 +119,8 @@ void on_fail() { socketio_ground_communicator->OnFail(); }
 void connect() { socketio_ground_communicator->ConnectToGround(); }
 
 MissionReceiver::MissionReceiver()
-    : phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
-      running_(false),
-      count_(0) {
+    : phased_loop_(std::chrono::milliseconds(200), std::chrono::milliseconds(0)),
+      running_(false) {
   socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
@@ -139,7 +138,7 @@ void MissionReceiver::ConnectToGround() {
 #endif
 }
 
-void MissionReceiver::SendTelemetry() {
+void MissionReceiver::SendTelemetry(int index) {
   sio::message::ptr all_data = sio::object_message::create();
 
   auto sensors = &::src::control::loops::flight_loop_queue.sensors;
@@ -285,56 +284,34 @@ void MissionReceiver::SendTelemetry() {
       serialized_mission.length());
   all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
 
-  client_.socket()->emit("telemetry", all_data);
-}
+  all_data->get_map()["index"] = sio::int_message::create(index);
 
-void MissionReceiver::SendTelemetryPeriodic() {
-  if (count_++ % 10) return;
-  SendTelemetry();
+  client_.socket()->emit("telemetry", all_data);
 }
 
 void MissionReceiver::Run() {
   running_ = true;
 
+  int index = 0;
+
   while (running_) {
-    RunIteration();
+    // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    RunIteration(index);
 
     const int iterations = phased_loop_.SleepUntilNext();
-    if (iterations < 0) {
-      std::cout << "SKIPPED ITERATIONS\n";
+    if (iterations > 1) {
+      std::cout << "SKIPPED " << (iterations-1) << " TELEMETRY ITERATIONS\n";
     }
+    // std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
+    // std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
+
+    index += iterations;
   }
 }
 
-void MissionReceiver::RunIteration() {
-  SendTelemetryPeriodic();
-
-  auto flight_loop_goal_message =
-      ::src::control::loops::flight_loop_queue.goal.MakeMessage();
-
-  flight_loop_goal_message->run_mission = false;
-  flight_loop_goal_message->trigger_failsafe = false;
-  flight_loop_goal_message->trigger_throttle_cut = false;
-
-  switch (GetState()) {
-    case RUN_MISSION:
-      flight_loop_goal_message->run_mission = true;
-      break;
-
-    case LAND:
-      flight_loop_goal_message->run_mission = false;
-      break;
-
-    case FAILSAFE:
-      flight_loop_goal_message->trigger_failsafe = true;
-      break;
-
-    case THROTTLE_CUT:
-      flight_loop_goal_message->trigger_throttle_cut = true;
-      break;
-  }
-
-  flight_loop_goal_message.Send();
+void MissionReceiver::RunIteration(int index) {
+  SetFlightLoopGoal(GetState());
+  SendTelemetry(index);
 }
 
 void MissionReceiver::OnConnect() {
@@ -407,6 +384,35 @@ void MissionReceiver::OnConnect() {
 
 void MissionReceiver::OnFail() { ::std::cout << "socketio failed! :(\n"; }
 
+void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
+  auto flight_loop_goal_message =
+      ::src::control::loops::flight_loop_queue.goal.MakeMessage();
+
+  flight_loop_goal_message->run_mission = false;
+  flight_loop_goal_message->trigger_failsafe = false;
+  flight_loop_goal_message->trigger_throttle_cut = false;
+
+  switch (new_state) {
+    case RUN_MISSION:
+      flight_loop_goal_message->run_mission = true;
+      break;
+
+    case LAND:
+      flight_loop_goal_message->run_mission = false;
+      break;
+
+    case FAILSAFE:
+      flight_loop_goal_message->trigger_failsafe = true;
+      break;
+
+    case THROTTLE_CUT:
+      flight_loop_goal_message->trigger_throttle_cut = true;
+      break;
+  }
+
+  flight_loop_goal_message.Send();
+}
+
 void MissionReceiver::SetState(::std::string new_state_string) {
   auto sensors = &::src::control::loops::flight_loop_queue.sensors;
   auto status = &::src::control::loops::flight_loop_queue.status;
@@ -445,6 +451,8 @@ void MissionReceiver::SetState(::std::string new_state_string) {
   state_mutex_.lock();
   state_ = new_state;
   state_mutex_.unlock();
+
+  SetFlightLoopGoal(new_state);
 }
 
 MissionReceiver::GoalState MissionReceiver::GetState() {

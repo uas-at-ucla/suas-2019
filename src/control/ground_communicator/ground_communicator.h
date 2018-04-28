@@ -27,7 +27,7 @@ class MissionReceiver {
  public:
   MissionReceiver();
   void Run();
-  void RunIteration();
+  void RunIteration(int index);
 
   void OnConnect();
   void OnFail();
@@ -44,6 +44,7 @@ class MissionReceiver {
  private:
   void SetState(::std::string new_state);
   MissionReceiver::GoalState GetState();
+  void SetFlightLoopGoal(GoalState new_state);
 
   ::lib::mission_message_queue::MissionMessageQueueSender
       mission_message_queue_sender_;
@@ -56,10 +57,7 @@ class MissionReceiver {
 
   ::std::atomic<bool> running_;
 
-  int count_;
-
-  void SendTelemetryPeriodic();
-  void SendTelemetry();
+  void SendTelemetry(int index);
 };
 
 void on_connect();
