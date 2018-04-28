@@ -23,14 +23,14 @@ bool verbose = false;
 pid_t simulator_pid = 0, io_pid = 0, socat_pid = 0;
 
 void kill_and_wait(pid_t pid, bool should_kill) {
-  if(verbose) {
+  if (verbose) {
     ::std::cout << "trying to kill " << pid << ::std::endl;
   }
 
   kill(-1 * pid, should_kill ? SIGKILL : SIGINT);
   waitpid(-1 * pid, NULL, 0);
 
-  if(verbose) {
+  if (verbose) {
     ::std::cout << "KILLED " << pid << ::std::endl;
   }
 }
@@ -41,10 +41,10 @@ void create_procs() {
     setsid();
     const char *simulator_path = "../../../external/PX4_sitl/jmavsim";
 
-    if(!verbose) {
-//    int null_fd = open("/dev/null", O_WRONLY);
-//    dup2(null_fd, 1);  // redirect stdout
-//    dup2(null_fd, 2);  // redirect stderr
+    if (!verbose) {
+      //    int null_fd = open("/dev/null", O_WRONLY);
+      //    dup2(null_fd, 1);  // redirect stdout
+      //    dup2(null_fd, 2);  // redirect stderr
     }
 
     execl("/bin/sh", "sh", "-c", simulator_path, NULL);
@@ -65,7 +65,7 @@ void create_procs() {
     if (socat_pid) {
       pid_t killall_pid = fork();
       if (!killall_pid) {
-        if(!verbose) {
+        if (!verbose) {
           int null_fd = open("/dev/null", O_WRONLY);
           dup2(null_fd, 1);  // redirect stdout
           dup2(null_fd, 2);  // redirect stderr
@@ -82,7 +82,7 @@ void create_procs() {
     if (!socat_pid) {
       setsid();
 
-      if(!verbose) {
+      if (!verbose) {
         int null_fd = open("/dev/null", O_WRONLY);
         dup2(null_fd, 1);  // redirect stdout
         dup2(null_fd, 2);  // redirect stderr
@@ -102,7 +102,7 @@ void create_procs() {
   if (!io_pid) {
     setsid();
 
-    if(!verbose) {
+    if (!verbose) {
       int null_fd = open("/dev/null", O_WRONLY);
       dup2(null_fd, 1);  // redirect stdout
       dup2(null_fd, 2);  // redirect stderr
@@ -118,7 +118,7 @@ void create_procs() {
 
 void quit_procs() {
   kill_and_wait(io_pid, true);
-  kill_and_wait(simulator_pid, true);
+  kill_and_wait(simulator_pid, false);
   kill_and_wait(socat_pid, true);
 }
 
@@ -133,6 +133,7 @@ class FlightLoopTest : public ::testing::Test {
  protected:
   FlightLoopTest()
       : flight_loop_queue_(".src.control.loops.flight_loop_queue", 0x0,
+                           ".src.control.loops.flight_loop_queue.dummy",
                            ".src.control.loops.flight_loop_queue.sensors",
                            ".src.control.loops.flight_loop_queue.status",
                            ".src.control.loops.flight_loop_queue.goal",
@@ -164,20 +165,16 @@ class FlightLoopTest : public ::testing::Test {
     sensors_message.Send();
   }
 
-  void SetUp() {
-    create_procs();
-  }
+  void SetUp() { create_procs(); }
 
-  void TearDown() {
-    quit_procs();
-  }
+  void TearDown() { quit_procs(); }
 
   FlightLoopQueue flight_loop_queue_;
   FlightLoop flight_loop_;
 };
 
 TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
-  for (int i = 0; i < 100; i++) {
+  for (int i = 0; i < 1000; i++) {
     flight_loop_queue_.goal.MakeWithBuilder()
         .run_mission(false)
         .trigger_failsafe(false)
@@ -213,7 +210,9 @@ TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
   // Do takeoff and check if times out.
   ::std::cout << "sending mission...\n";
   for (int i = 0;
-       i < 3000 && flight_loop_queue.sensors->relative_altitude < 2.2; i++) {
+       i < 5000 && (flight_loop_queue.sensors->relative_altitude < 2.2 ||
+                    !flight_loop_queue.sensors->armed);
+       i++) {
     flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
 
     StepLoop();
@@ -244,7 +243,7 @@ TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
   }
   ASSERT_FALSE(flight_loop_queue.sensors->armed);
 
-  if(verbose) {
+  if (verbose) {
     ::std::cout << "FINAL STATE:\n";
     flight_loop_.DumpSensors();
   }
@@ -256,7 +255,8 @@ TEST_F(FlightLoopTest, FailsafeCheck) {
 
   ::std::cout << "taking off" << ::std::endl;
   for (int i = 0;
-       (i < 10000) && (flight_loop_queue_.sensors->relative_altitude < 2.0);
+       (i < 10000) && (flight_loop_queue_.sensors->relative_altitude < 2.0 ||
+                       !flight_loop_queue_.sensors->armed);
        i++) {
     flight_loop_queue_.goal.MakeWithBuilder()
         .run_mission(true)
@@ -272,7 +272,7 @@ TEST_F(FlightLoopTest, FailsafeCheck) {
   }
 
   ASSERT_TRUE(flight_loop_queue_.sensors->armed);
-  ASSERT_TRUE(flight_loop_queue_.sensors->relative_altitude >= 2);
+  ASSERT_GE(flight_loop_queue_.sensors->relative_altitude, 2);
 
   ::std::cout << "triggering failsafe" << ::std::endl;
   for (int i = 0; i < 10000 && flight_loop_queue.sensors->armed; i++) {
@@ -289,7 +289,7 @@ TEST_F(FlightLoopTest, FailsafeCheck) {
   ASSERT_FALSE(flight_loop_queue.sensors->armed);
   ::std::cout << "landed" << ::std::endl;
 
-  if(verbose) {
+  if (verbose) {
     ::std::cout << "FINAL STATE:\n";
     flight_loop_.DumpSensors();
   }
@@ -309,14 +309,14 @@ TEST_F(FlightLoopTest, ThrottleCutCheck) {
     StepLoop();
 
     ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
-  } while(++timeout < 10000 && flight_loop_.state() != FlightLoop::IN_AIR);
+  } while (++timeout < 10000 && flight_loop_.state() != FlightLoop::IN_AIR);
 
   ASSERT_TRUE(flight_loop_queue_.sensors.FetchLatest());
   ASSERT_TRUE(flight_loop_queue_.sensors->armed);
   ASSERT_GE(flight_loop_queue_.sensors->relative_altitude, 2.1);
 
   ::std::cout << "throttle cut" << ::std::endl;
-  for (int i = 0; i < 50 && flight_loop_queue.sensors->relative_altitude > 0.1;
+  for (int i = 0; i < 200 && flight_loop_queue.sensors->relative_altitude > 0.1;
        i++) {
     flight_loop_queue_.goal.MakeWithBuilder()
         .run_mission(true)
@@ -328,10 +328,10 @@ TEST_F(FlightLoopTest, ThrottleCutCheck) {
     ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
   }
 
-  ASSERT_TRUE(flight_loop_queue.sensors->relative_altitude < 0.1);
+  ASSERT_LT(flight_loop_queue.sensors->relative_altitude, 0.1);
   ::std::cout << "CRASH!" << ::std::endl;
 
-  if(verbose) {
+  if (verbose) {
     ::std::cout << "FINAL STATE:\n";
     flight_loop_.DumpSensors();
   }

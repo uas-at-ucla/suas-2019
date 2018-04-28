@@ -10,7 +10,11 @@ cc_library(
     'pilot.h'
   ],
   deps = [
-    '//lib/physics_structs:physics_structs'
+    '//src/control/loops:flight_loop_queue',
+    '//lib/physics_structs:physics_structs',
+    '//lib/mission_message_queue:mission_message_queue',
+    '//aos/linux_code:init',
+    "@cppzmq//:cppzmq",
   ],
 )
 

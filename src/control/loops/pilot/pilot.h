@@ -1,27 +1,55 @@
-#ifndef SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_
-#define SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_
+#ifndef SRC_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_
+#define SRC_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_
 
-#include <vector>
+#include <atomic>
+#include <condition_variable>
+#include <iostream>
 #include <map>
+#include <memory>
 #include <string>
+#include <thread>
+#include <vector>
 
+#include "zmq.hpp"
+
+#include "lib/mission_message_queue/mission_message_queue.h"
+#include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/physics_structs/physics_structs.h"
+#include "lib/semaphore/semaphore.h"
 
 namespace src {
 namespace control {
 namespace loops {
 namespace pilot {
 
+struct PilotOutput {
+  Vector3D flight_velocities;
+  bool bomb_drop;
+};
+
 class Pilot {
  public:
   Pilot();
+  ~Pilot();
 
-  Vector3D Calculate(Position3D drone_position, Position3D goal);
+  PilotOutput Calculate(Position3D drone_position);
+  void PreprocessorThread();
+  int GetCurrentCommandIndex();
+  void SetMission(::lib::mission_manager::Mission mission);
+
+  void Quit() { run_ = false; }
 
  private:
-//::std::map<::std::string, int> commands_;
-//::std::vector<::std::string> command_order_;
-//int command_pointer_;
+  ::lib::mission_message_queue::MissionMessageQueueReceiver
+      mission_message_queue_receiver_;
+
+  Position3D drone_position_;
+  bool drone_position_set_;
+  ::lib::Semaphore drone_position_semaphore_;
+
+  ::std::atomic<bool> run_{true};
+
+  ::std::thread thread_;
 };
 
 }  // namespace pilot
@@ -29,4 +57,4 @@ class Pilot {
 }  // namespace control
 }  // namespace src
 
-#endif  // SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_
+#endif  // SRC_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_

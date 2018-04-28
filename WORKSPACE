@@ -100,9 +100,9 @@ new_git_repository(
 
 new_git_repository(
   name = "matplotlibcpp",
-  commit = "b74e465baa1d448172406a8e5624010925117be2",
+  commit = "9523030a3dc11c05b6cc38743299e4453ec36458",
   build_file = "lib/third_party/matplotlibcpp.BUILD",
-  remote = "https://github.com/lava/matplotlib-cpp.git",
+  remote = "https://github.com/uas-at-ucla/matplotlib-cpp.git",
 )
 
 new_http_archive(
@@ -130,6 +130,20 @@ new_git_repository(
   commit = "07f023188e929019f506e9b390dde70539ea857f",
   remote = "https://github.com/google/protobuf.git",
   build_file = "lib/third_party/protobuf.BUILD",
+)
+
+new_git_repository(
+  name = "WiringPi",
+  commit = "0f7d03d9f04c226192c299dafe03e1d56ec219c9",
+  remote = "https://github.com/WiringPi/WiringPi.git",
+  build_file = "lib/third_party/WiringPi.BUILD",
+)
+
+new_git_repository(
+  name = "spdlog",
+  commit = "93d41b2c0ecd0db7075e2386596ce39cb20546c9",
+  remote = "https://github.com/gabime/spdlog.git",
+  build_file = "lib/third_party/spdlog.BUILD",
 )
 
 new_local_repository(

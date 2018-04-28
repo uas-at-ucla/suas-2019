@@ -1,6 +1,9 @@
 #include "io.h"
 
 #include <iostream>
+#include <limits>
+
+#include "lib/logger/log_sender.h"
 
 namespace src {
 namespace control {
@@ -9,8 +12,6 @@ namespace io {
 autopilot_interface::AutopilotInterface *copter_io_quit;
 IO *io_quit;
 void quit_handler(int sig) {
-  printf("\n\nTERMINATING AT USER REQUEST\n\n");
-
   io_quit->Quit();
 
   try {
@@ -61,7 +62,8 @@ void IO::Quit() {
 
 AutopilotSensorReader::AutopilotSensorReader(
     autopilot_interface::AutopilotInterface *copter_io)
-    : copter_io_(copter_io) {
+    : copter_io_(copter_io),
+      last_gps_(-::std::numeric_limits<double>::infinity()) {
   last_timestamps_.reset_timestamps();
 }
 
@@ -70,9 +72,12 @@ void AutopilotSensorReader::RunIteration() {
   autopilot_interface::TimeStamps current_timestamps =
       copter_io_->current_messages.time_stamps;
 
-  if (!(current_timestamps.global_position_int -
-        last_timestamps_.global_position_int)) {
-    return;
+  if (current_timestamps.global_position_int -
+      last_timestamps_.global_position_int) {
+    last_gps_ = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+                    ::std::chrono::system_clock::now().time_since_epoch())
+                    .count() *
+                1e-9;
   }
 
   last_timestamps_ = current_timestamps;
@@ -87,7 +92,9 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->latitude = static_cast<double>(gps.lat) / 1e7;
   flight_loop_sensors_message->longitude = static_cast<double>(gps.lon) / 1e7;
   flight_loop_sensors_message->altitude = static_cast<float>(gps.alt) / 1e3;
-  flight_loop_sensors_message->heading = static_cast<float>(gps.hdg) / 1e2;
+
+  flight_loop_sensors_message->heading =
+      static_cast<float>(copter_io_->current_messages.vfr_hud.heading);
 
   flight_loop_sensors_message->relative_altitude =
       static_cast<float>(gps.relative_alt) / 1e3;
@@ -120,6 +127,7 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->relative_pressure = imu.diff_pressure;
   flight_loop_sensors_message->pressure_altitude = imu.pressure_alt;
   flight_loop_sensors_message->temperature = imu.temperature;
+  flight_loop_sensors_message->last_gps = last_gps_;
 
   // Battery data.
   mavlink_sys_status_t sys_status = copter_io_->current_messages.sys_status;
@@ -137,7 +145,12 @@ void AutopilotSensorReader::RunIteration() {
 
 AutopilotOutputWriter::AutopilotOutputWriter(
     autopilot_interface::AutopilotInterface *copter_io)
-    : copter_io_(copter_io) {}
+    : copter_io_(copter_io) {
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+  wiringPiSetup();
+  pinMode(kAlarmGPIOPin, OUTPUT);
+#endif
+}
 
 void AutopilotOutputWriter::Read() {
   ::src::control::loops::flight_loop_queue.output.FetchAnother();
@@ -180,11 +193,22 @@ void AutopilotOutputWriter::Write() {
   if (::src::control::loops::flight_loop_queue.output->throttle_cut) {
     copter_io_->FlightTermination();
   }
+
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+  digitalWrite(
+      kAlarmGPIOPin,
+      ::src::control::loops::flight_loop_queue.output->alarm ? HIGH : LOW);
+#endif
 }
 
 void AutopilotOutputWriter::Stop() {
   // No recent output queue messages received, so land drone.
   copter_io_->Land();
+
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+  // Don't leave the alarm on after quitting code.
+  digitalWrite(kAlarmGPIOPin, LOW);
+#endif
 }
 
 }  // namespace io

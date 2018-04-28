@@ -1,19 +1,21 @@
 import React, { Component } from "react";
 import "./Sidebar.css";
 import Panel from "./Panel";
-import MissionPlanner from "./MissionPlanner";
 
 class Sidebar extends Component {
   render() {
     return (
       <div className="Sidebar">
         <div id="sidebar_content">
-          <Panel id="missionPlanner">
-            <MissionPlanner
-              homeState={this.props.homeState}
-              setHomeState={this.props.setHomeState}
-            />
-          </Panel>
+          <Panel
+            id="missionPlanner"
+            title="Mission Plan"
+            homeState={this.props.homeState}
+            setHomeState={this.props.setHomeState}
+            makeCommand={this.props.makeCommand}
+            commandTypes={this.props.commandTypes}
+            getCommandPosKey={this.props.getCommandPosKey}
+          />
         </div>
       </div>
     );
