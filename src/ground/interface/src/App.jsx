@@ -42,7 +42,7 @@ class App extends Component {
       case "Control":
       default:
         return <Home appState={this.state} socketEmit={this.socketEmit}
-                     setAppState={this.setAppState}/>;
+                     setAppState={this.setAppState} socketOn={this.socketOn} />;
     }
   }
 
@@ -76,16 +76,19 @@ class App extends Component {
     }
   }
 
-  componentDidMount() {
+  componentWillMount() {
     const SOCKET_DOMAIN = document.domain; // Gets domain from browser
     const SOCKET_PORT = 8081;
 
     const SOCKET_ADDRESS = "http://" + SOCKET_DOMAIN + ":" + SOCKET_PORT;
 
     this.socket = io.connect(SOCKET_ADDRESS);
+  }
 
+  componentDidMount() {
     this.socket.on("connect", () => {
       console.log("Connected to ground interface feeder!");
+      this.socket.emit("join_room", "frontend");
 
       this.setState({
         droneState: "Ground Online",
@@ -101,23 +104,30 @@ class App extends Component {
 
     this.socket.on("drone_connected", () => {
       this.setState({
-        droneState: "Starting Up Drone...",
+        droneState: "Drone Connected!",
       });
     });
 
     this.socket.on("drone_disconnected", () => {
       this.setState({
         droneState: "Drone Disconnected!",
+        telemetry: null,
+        drone_mission_base64: null
       });
     });
 
     this.socket.on("on_telemetry", telemetry => {
       let newState = {
-        telemetry: telemetry
+        telemetry: telemetry.telemetry
       }
+      if (telemetry.mission !== this.state.drone_mission_base64) {
+        newState.drone_mission_base64 = telemetry.mission;
+      }
+      telemetry = telemetry.telemetry;
       if (telemetry.status && telemetry.status.state) {
-        newState.droneState = this.convertToTitleText(telemetry.status.state)
+        newState.droneState = this.convertToTitleText(telemetry.status.state);
       }
+
       this.setState(newState);
     });
 
@@ -139,7 +149,6 @@ class App extends Component {
         this.receivedInteropStatus(true);
 
         console.log("MISSION DATA!!!");
-        console.log(data.missions[0]);
       }
     });
 
@@ -161,6 +170,10 @@ class App extends Component {
     }
   };
 
+  socketOn = (message, func) => {
+    this.socket.on(message, func);
+  };
+
   receivedInteropStatus(is_interop_connected) {
     if (is_interop_connected) {
       let new_state = {
@@ -176,7 +189,10 @@ class App extends Component {
     } else {
       this.setState({
         interopBtnText: "Cannot Connect to Interop Server!",
-        interopBtnEnabled: true
+        interopBtnEnabled: true,
+        stationary_obstacles: [],
+        moving_obstacles: [],
+        missions: []
       });
       setTimeout(
         () =>

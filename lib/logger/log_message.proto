@@ -1,0 +1,18 @@
+syntax = "proto2";
+
+package lib.logger;
+
+message LogLine {
+  required string line = 1;
+}
+
+message LogMessage {
+  required string file = 1;
+  required string function = 2;
+  required int32 line_number = 3;
+  required double time = 4;
+
+  oneof log_message {
+    LogLine log_line = 5;
+  }
+}

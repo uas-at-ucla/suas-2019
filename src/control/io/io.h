@@ -8,12 +8,19 @@
 
 #include <atomic>
 
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+#include <wiringPi.h>
+#endif
+
 #include "src/control/loops/flight_loop.q.h"
 #include "aos/common/util/phased_loop.h"
 
 namespace src {
 namespace control {
 namespace io {
+namespace {
+const int kAlarmGPIOPin = 2;
+}  // namespace
 
 void quit_handler(int sig);
 
@@ -25,6 +32,8 @@ class AutopilotSensorReader : public LoopInputHandler {
   void RunIteration();
   autopilot_interface::AutopilotInterface *copter_io_;
   autopilot_interface::TimeStamps last_timestamps_;
+
+  double last_gps_;
 };
 
 class AutopilotOutputWriter : public LoopOutputHandler {
