@@ -43,9 +43,9 @@ class Graph extends Component {
         ];
 
         // Delete old points.
-        let history = 1000
+        let history = 400;
         if(data.length > history) {
-          data.splice(0, history - 100);
+          data.shift();
         }
 
         return {

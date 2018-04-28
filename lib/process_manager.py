@@ -31,6 +31,16 @@ class ProcessManager:
         if track:
             self.procs.append(proc)
 
+    def spawn_process_wait_for_code(self, command):
+        proc = subprocess.Popen(command,
+                shell=True, \
+                preexec_fn=os.setsid)
+        self.procs.append(proc)
+
+        proc.communicate()
+        out = proc.returncode
+        return out
+
     def wait_for_complete(self):
         for proc in self.procs:
             while True:

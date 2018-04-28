@@ -4,7 +4,7 @@ import signal
 import time
 import json
 import threading
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 import flask_socketio, socketIO_client
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -14,6 +14,10 @@ sys.path.insert(0, '../../lib')
 import process_manager
 import interop
 
+sys.path.insert(0, './tools')
+
+METERS_PER_FOOT = 0.3048
+
 # Configuration options. #######################################################
 USE_INTEROP = True
 LOCAL_INTEROP = False
@@ -21,6 +25,8 @@ AUTO_CONNECT_TO_INTEROP = True
 INTEROP_IP = '138.68.250.14'
 if LOCAL_INTEROP:
     INTEROP_IP = '0.0.0.0'
+
+drone_sid = None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'flappy'
@@ -30,7 +36,15 @@ interop_client = None
 missions = None
 stationary_obstacles = None
 moving_obstacles = None
+
+commands = []
+
 processes = process_manager.ProcessManager()
+processes.run_command("protoc -I. --proto_path=../../lib/mission_manager/ " \
+    + "--python_out=/tmp/ " \
+    + "../../lib/mission_manager/mission_commands.proto")
+sys.path.insert(0, '/tmp')
+import mission_commands_pb2 as proto
 
 
 def signal_received(signal, frame):
@@ -41,21 +55,45 @@ def signal_received(signal, frame):
 
 
 # SocketIO handlers. ###########################################################
-@ground_socketio_server.on('connect')
-def connect():
-    print("Someone connected!")
-    if USE_INTEROP and interop_client is not None:
+@ground_socketio_server.on('join_room')
+def connect(room):
+    flask_socketio.join_room(room)
+    print(room + " connected!")
+
+    if room == 'frontend':
+        data = None
+        if USE_INTEROP and interop_client is not None:
+            data = object_to_dict({ \
+                'missions': missions, \
+                'stationary_obstacles': stationary_obstacles, \
+                'moving_obstacles': moving_obstacles})
+        else:
+            data = {'interop_disconnected': True}
+        flask_socketio.emit('initial_data', data)
+
+    elif room == 'drone':
+        global drone_sid
+        drone_sid = request.sid;
+
         data = object_to_dict({ \
-            'missions': missions, \
             'stationary_obstacles': stationary_obstacles, \
             'moving_obstacles': moving_obstacles})
-        flask_socketio.emit('initial_data', data)
-    else:
-        flask_socketio.emit('initial_data', {'interop_disconnected': True})
+        flask_socketio.emit('interop_data', \
+            interop_data_to_obstacles_proto(data), room='drone')
+        flask_socketio.emit('drone_connected', room='frontend')
+
+
+@ground_socketio_server.on('disconnect')
+def disconnect():
+    if request.sid == drone_sid:
+        flask_socketio.emit('drone_disconnected', room='frontend')
+        print("drone disconnected!")
 
 
 @ground_socketio_server.on('connect_to_interop')
 def connect_to_interop(data):
+    global interop_client
+
     if USE_INTEROP:
         try:
             interop_username = 'testuser'
@@ -71,34 +109,53 @@ def connect_to_interop(data):
                 'missions': missions, \
                 'stationary_obstacles': stationary_obstacles, \
                 'moving_obstacles': moving_obstacles
-            }))
+            }), room='frontend')
         except:
             interop_client = None
-            flask_socketio.emit('interop_disconnected')
+            flask_socketio.emit('interop_disconnected', room='frontend')
 
 
 @ground_socketio_server.on('interop_data')
 def broadcast_obstacles(data):
     flask_socketio.emit('interop_data', data, \
-        broadcast=True, include_self=False)
+        room='frontend')
+
+    flask_socketio.emit('interop_data', \
+        interop_data_to_obstacles_proto(data), room='drone')
 
 
 @ground_socketio_server.on('execute_commands')
 def send_commands(data):
     flask_socketio.emit('drone_execute_commands', data, \
-        broadcast=True, include_self=False)
+        room='drone')
 
 
 @ground_socketio_server.on('set_state')
 def send_commands(data):
     flask_socketio.emit('drone_set_state', data, \
-        broadcast=True, include_self=False)
+        room='drone')
+
+
+@ground_socketio_server.on('request_commands')
+def give_commands():
+    flask_socketio.emit('commands_changed', {
+        'commands': commands,
+        'changedCommands': None
+    })
+
+
+@ground_socketio_server.on('commands_changed')
+def commands_changed(data):
+    global commands
+    commands = data['commands']
+    flask_socketio.emit('commands_changed', data, \
+        room='frontend', include_self=False)
 
 
 @ground_socketio_server.on('interop_disconnected')
 def interop_disconnected():
     flask_socketio.emit('interop_disconnected', \
-        broadcast=True, include_self=False)
+        room='frontend')
 
 
 @ground_socketio_server.on('telemetry')
@@ -106,16 +163,19 @@ def telemetry(*args):
     global interop_client
 
     received_telemetry = args[0]
+    sensors = received_telemetry['telemetry']['sensors']
 
     flask_socketio.emit('on_telemetry', received_telemetry, \
-        broadcast=True, include_self=False)
-    print(received_telemetry)
+        room='frontend')
+
+    if len(sensors) == 0:
+        return
 
     if USE_INTEROP and interop_client is not None:
-        lat = received_telemetry['sensors']['latitude']
-        lng = received_telemetry['sensors']['longitude']
-        alt = received_telemetry['sensors']['altitude']
-        heading = received_telemetry['sensors']['heading']
+        lat = sensors['latitude']
+        lng = sensors['longitude']
+        alt = sensors['altitude']
+        heading = sensors['heading']
 
         if all(val is not None for val in [lat, lng, alt, heading]):
             try:
@@ -123,28 +183,7 @@ def telemetry(*args):
                 interop_client.post_telemetry(interop_telemetry)
             except:
                 interop_client = None
-                ground_socketio_server.emit('interop_disconnected')
-
-
-def on_image(*args):
-    ground_socketio_server.emit('image', args[0])
-
-
-def drone_connected():
-    print "connected to drone"
-    ground_socketio_server.emit('drone_connected')
-    communications.emit('interop_data', object_to_dict({ \
-        'missions': missions, \
-        'stationary_obstacles': stationary_obstacles, \
-        'moving_obstacles': moving_obstacles \
-    }))
-
-
-def drone_disconnected():
-    print "disconnected from drone!"
-    communications.disconnect()
-    ground_socketio_server.emit('drone_disconnected')
-    listen_for_communications()
+                flask_socketio.emit('interop_disconnected', room='frontend')
 
 
 # Interop. #####################################################################
@@ -190,7 +229,7 @@ def auto_connect_to_interop():
 
 def refresh_interop_data():
     # This is necessary to talk to the socket from a separate thread
-    interface_client = socketIO_client.SocketIO('0.0.0.0', 8084)
+    interface_client = socketIO_client.SocketIO('0.0.0.0', 8081)
 
     global interop_client
     global missions
@@ -209,28 +248,32 @@ def refresh_interop_data():
 
                 new_missions = object_to_dict(missions)
                 send_missions = False
-                if len(new_missions) == len(old_missions):
-                    for i in range(len(new_missions)):
-                        if (json.dumps(new_missions[i]) != json.dumps(
-                                old_missions[i])):
-                            send_missions = True
-                            break
-                else:
-                    send_missions = True
+                if new_missions:
+                    if len(new_missions) == len(old_missions):
+                        for i in range(len(new_missions)):
+                            if (json.dumps(new_missions[i]) != json.dumps(
+                                    old_missions[i])):
+                                send_missions = True
+                                break
+                    else:
+                        send_missions = True
 
                 new_stationary_obstacles = object_to_dict(stationary_obstacles)
                 send_stationary_obstacles = False
-                if len(new_stationary_obstacles) == len(
-                        old_stationary_obstacles):
-                    for i in range(len(new_stationary_obstacles)):
-                        if (json.dumps(new_stationary_obstacles[i]) !=
-                                json.dumps(old_stationary_obstacles[i])):
-                            send_stationary_obstacles = True
-                            break
-                else:
-                    send_stationary_obstacles = True
+                if new_stationary_obstacles:
+                    if len(new_stationary_obstacles) == len(
+                            old_stationary_obstacles):
+                        for i in range(len(new_stationary_obstacles)):
+                            if (json.dumps(new_stationary_obstacles[i]) !=
+                                    json.dumps(old_stationary_obstacles[i])):
+                                send_stationary_obstacles = True
+                                break
+                    else:
+                        send_stationary_obstacles = True
 
-                data = {'moving_obstacles': moving_obstacles}
+                data = {}
+                if moving_obstacles:
+                    data['moving_obstacles'] = moving_obstacles
                 if send_stationary_obstacles:
                     data['stationary_obstacles'] = stationary_obstacles
                 if send_missions:
@@ -242,6 +285,26 @@ def refresh_interop_data():
 
                 interop_client = None
                 interface_client.emit('interop_disconnected')
+
+
+def interop_data_to_obstacles_proto(data):
+    obstacles = proto.Obstacles()
+#   if 'moving_obstacles' in data:
+#       for obstacle in data['moving_obstacles']:
+#           proto_obstacle = obstacles.moving_obstacles.add()
+#           proto_obstacle.sphere_radius = obstacle['sphere_radius'] \
+#               * METERS_PER_FOOT
+#           proto_obstacle.point.latitude = obstacle['latitude']
+#           proto_obstacle.point.longitude = obstacle['longitude']
+#           proto_obstacle.point.altitude = obstacle['altitude_msl']
+    for obstacle in object_to_dict(stationary_obstacles):
+        proto_obstacle = obstacles.static_obstacles.add()
+        proto_obstacle.cylinder_radius = obstacle['cylinder_radius'] \
+            * METERS_PER_FOOT
+        proto_obstacle.location.latitude = obstacle['latitude']
+        proto_obstacle.location.longitude = obstacle['longitude']
+
+    return obstacles.SerializeToString().encode('base64')
 
 
 if __name__ == '__main__':

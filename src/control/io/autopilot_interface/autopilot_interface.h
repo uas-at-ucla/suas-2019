@@ -50,6 +50,7 @@ struct TimeStamps {
   uint64_t position_target_global_int;
   uint64_t highres_imu;
   uint64_t attitude;
+  uint64_t vfr_hud;
 
   void reset_timestamps() {
     heartbeat = 0;
@@ -63,6 +64,7 @@ struct TimeStamps {
     position_target_global_int = 0;
     highres_imu = 0;
     attitude = 0;
+    vfr_hud = 0;
   }
 };
 
@@ -81,6 +83,7 @@ struct Mavlink_Messages {
   mavlink_position_target_global_int_t position_target_global_int;
   mavlink_highres_imu_t highres_imu;
   mavlink_attitude_t attitude;
+  mavlink_vfr_hud_t vfr_hud;
 
   TimeStamps time_stamps;
 
