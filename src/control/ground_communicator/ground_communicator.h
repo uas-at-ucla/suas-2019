@@ -27,7 +27,7 @@ class MissionReceiver {
  public:
   MissionReceiver();
   void Run();
-  void RunIteration(int index);
+  void RunIteration(int loop_index, int message_index);
 
   void OnConnect();
   void OnFail();
@@ -57,7 +57,7 @@ class MissionReceiver {
 
   ::std::atomic<bool> running_;
 
-  void SendTelemetry(int index);
+  void SendTelemetry(int loop_index, int message_index);
 };
 
 void on_connect();
