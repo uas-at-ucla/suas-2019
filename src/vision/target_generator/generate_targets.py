@@ -22,6 +22,8 @@ def main(visualize):
     img_names = [
         os.path.splitext(os.path.split(path)[1])[0] for path in imgs_paths
     ]
+    if len(imgs_paths) == 0:
+        raise ValueError("ERROR: No background tiles loaded (gmap_tiles)")
 
     data_paths = [
         os.path.join(gs.DATA_PATH, 'flight_data', 'data.json')
@@ -98,10 +100,10 @@ def main(visualize):
 "\t\t<truncated>0</truncated>\n" \
 "\t\t<difficult>0</difficult>\n" \
 "\t\t<bndbox>\n" \
-"\t\t\t<xmin>" + str(coords[0]) + "</xmin>\n" \
-"\t\t\t<ymin>" + str(coords[1]) + "</ymin>\n" \
-"\t\t\t<xmax>" + str(coords[2]) + "</xmax>\n" \
-"\t\t\t<ymax>" + str(coords[3]) + "</ymax>\n" \
+"\t\t\t<xmin>" + str(coords[0] * 2) + "</xmin>\n" \
+"\t\t\t<ymin>" + str(coords[1] * 2) + "</ymin>\n" \
+"\t\t\t<xmax>" + str(coords[2] * 2) + "</xmax>\n" \
+"\t\t\t<ymax>" + str(coords[3] * 2) + "</ymax>\n" \
 "\t\t</bndbox>\n" \
 "\t</object>\n" \
 "</annotation>"

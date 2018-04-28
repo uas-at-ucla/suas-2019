@@ -1,10 +1,114 @@
+#include <bitset>
 #include "ground_communicator.h"
-
-#include <iomanip>
 
 namespace src {
 namespace control {
 namespace ground_communicator {
+
+// Taken from here:
+// https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
+static const std::string base64_chars =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789+/";
+
+static inline bool is_base64(unsigned char c) {
+  return (isalnum(c) || (c == '+') || (c == '/'));
+}
+
+std::string base64_decode(std::string const& encoded_string) {
+  int in_len = encoded_string.size();
+  int i = 0;
+  int j = 0;
+  int in_ = 0;
+  unsigned char char_array_4[4], char_array_3[3];
+  std::string ret;
+
+  while (in_len-- && (encoded_string[in_] != '=') &&
+         is_base64(encoded_string[in_])) {
+    char_array_4[i++] = encoded_string[in_];
+    in_++;
+    if (i == 4) {
+      for (i = 0; i < 4; i++)
+        char_array_4[i] = base64_chars.find(char_array_4[i]);
+
+      char_array_3[0] =
+          (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+      char_array_3[1] =
+          ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+      char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+      for (i = 0; (i < 3); i++) ret += char_array_3[i];
+      i = 0;
+    }
+  }
+
+  if (i) {
+    for (j = i; j < 4; j++) char_array_4[j] = 0;
+
+    for (j = 0; j < 4; j++)
+      char_array_4[j] = base64_chars.find(char_array_4[j]);
+
+    char_array_3[0] = (char_array_4[0] << 2) + ((char_array_4[1] & 0x30) >> 4);
+    char_array_3[1] =
+        ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
+    char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
+
+    for (j = 0; (j < i - 1); j++) ret += char_array_3[j];
+  }
+
+  return ret;
+}
+
+//Base64 encoding from https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
+
+static const unsigned char base64_table[65] =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+std::string base64_encode(const unsigned char *src, size_t len)
+{
+    unsigned char *out, *pos;
+    const unsigned char *end, *in;
+
+    size_t olen;
+
+    olen = 4*((len + 2) / 3); /* 3-byte blocks to 4-byte */
+
+    if (olen < len)
+        return std::string(); /* integer overflow */
+
+    std::string outStr;
+    outStr.resize(olen);
+    out = (unsigned char*)&outStr[0];
+
+    end = src + len;
+    in = src;
+    pos = out;
+    while (end - in >= 3) {
+        *pos++ = base64_table[in[0] >> 2];
+        *pos++ = base64_table[((in[0] & 0x03) << 4) | (in[1] >> 4)];
+        *pos++ = base64_table[((in[1] & 0x0f) << 2) | (in[2] >> 6)];
+        *pos++ = base64_table[in[2] & 0x3f];
+        in += 3;
+    }
+
+    if (end - in) {
+        *pos++ = base64_table[in[0] >> 2];
+        if (end - in == 1) {
+            *pos++ = base64_table[(in[0] & 0x03) << 4];
+            *pos++ = '=';
+        }
+        else {
+            *pos++ = base64_table[((in[0] & 0x03) << 4) |
+                (in[1] >> 4)];
+            *pos++ = base64_table[(in[1] & 0x0f) << 2];
+        }
+        *pos++ = '=';
+    }
+
+    return outStr;
+}
+
 
 MissionReceiver* socketio_ground_communicator;
 
@@ -15,16 +119,13 @@ void on_fail() { socketio_ground_communicator->OnFail(); }
 void connect() { socketio_ground_communicator->ConnectToGround(); }
 
 MissionReceiver::MissionReceiver()
-    : context_(1),
-      mission_command_stream_(context_, ZMQ_REP),
-      phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
+    : phased_loop_(std::chrono::milliseconds(10), std::chrono::milliseconds(0)),
       running_(false),
       count_(0) {
-  mission_command_stream_.bind("ipc:///tmp/mission_command_stream.ipc");
-
   socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
+  LOG_LINE("ground_communicator started.");
 
   ::std::thread ground_socket_thread(connect);
   ground_socket_thread.join();
@@ -39,7 +140,7 @@ void MissionReceiver::ConnectToGround() {
 }
 
 void MissionReceiver::SendTelemetry() {
-  ::std::cout << "Sending:" << ::std::endl;
+  sio::message::ptr all_data = sio::object_message::create();
 
   auto sensors = &::src::control::loops::flight_loop_queue.sensors;
   auto status = &::src::control::loops::flight_loop_queue.status;
@@ -66,8 +167,13 @@ void MissionReceiver::SendTelemetry() {
   std::map<std::string, sio::message::ptr>* output_map =
       &output_object->get_map();
 
+  bool send_sensors;
+  bool send_status;
+  bool send_goal;
+  bool send_output;
   if (sensors->get()) {
-    ::std::cout << "Sensors" << ::std::endl;
+    send_sensors = true;
+
     (*sensors_map)["latitude"] =
         sio::double_message::create((*sensors)->latitude);
     (*sensors_map)["longitude"] =
@@ -119,17 +225,19 @@ void MissionReceiver::SendTelemetry() {
   }
 
   if (status->get()) {
-    ::std::cout << "Status" << ::std::endl;
+    send_status = true;
+
     std::string state = ::src::control::loops::state_string.at(
         static_cast<::src::control::loops::FlightLoop::State>(
             (*status)->state));
     (*status_map)["state"] = sio::string_message::create(state);
-    (*status_map)["flight_time"] = 
+    (*status_map)["flight_time"] =
         sio::int_message::create((*status)->flight_time);
   }
 
   if (goal->get()) {
-    ::std::cout << "Goal" << ::std::endl;
+    send_goal = true;
+
     (*goal_map)["run_mission"] =
         sio::bool_message::create((*goal)->run_mission);
     (*goal_map)["trigger_failsafe"] =
@@ -139,7 +247,8 @@ void MissionReceiver::SendTelemetry() {
   }
 
   if (output->get()) {
-    ::std::cout << "Output" << ::std::endl;
+    send_output = true;
+
     (*output_map)["velocity_x"] =
         sio::double_message::create((*output)->velocity_x);
     (*output_map)["velocity_y"] =
@@ -156,14 +265,27 @@ void MissionReceiver::SendTelemetry() {
         sio::bool_message::create((*output)->throttle_cut);
   }
 
-  ::std::cout << ::std::endl;
+  LOG_LINE("sending telemetry: "
+           << (send_sensors ? "sensors " : "") << (send_status ? "status " : "")
+           << (send_goal ? "goal " : "") << (send_output ? "output " : ""));
 
   telemetry->get_map()["sensors"] = sensors_object;
   telemetry->get_map()["status"] = status_object;
   telemetry->get_map()["goal"] = goal_object;
   telemetry->get_map()["output"] = output_object;
 
-  client_.socket()->emit("telemetry", telemetry);
+  all_data->get_map()["telemetry"] = telemetry;
+
+  ::lib::mission_manager::Mission mission = mission_message_queue_sender_.GetMission();
+  ::std::string serialized_mission;
+  mission.SerializeToString(&serialized_mission);
+  const unsigned char* serialized_mission_cstr = 
+      reinterpret_cast<const unsigned char*>(serialized_mission.c_str());
+  ::std::string mission_base64 = base64_encode(serialized_mission_cstr, 
+      serialized_mission.length());
+  all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
+
+  client_.socket()->emit("telemetry", all_data);
 }
 
 void MissionReceiver::SendTelemetryPeriodic() {
@@ -216,68 +338,90 @@ void MissionReceiver::RunIteration() {
 }
 
 void MissionReceiver::OnConnect() {
-  ::std::cout << "========================got on_connect\n";
+  LOG_LINE("Someone connected to ground_communicator");
+  client_.socket()->emit("join_room", sio::string_message::create("drone"));
 
   client_.socket()->on(
       "drone_execute_commands",
-      sio::socket::event_listener_aux([&](
-          std::string const& name, sio::message::ptr const& data, bool isAck,
-          sio::message::list& ack_resp) {
+      sio::socket::event_listener_aux(
+          [&](std::string const& name, sio::message::ptr const& data,
+              bool isAck, sio::message::list& ack_resp) {
 
-        (void)name;
-        (void)isAck;
-        (void)ack_resp;
+            (void)name;
+            (void)isAck;
+            (void)ack_resp;
 
-        ::src::controls::ground_communicator::Mission mission;
+            ::lib::mission_manager::GroundData ground_data;
+            ::lib::mission_manager::Mission* mission =
+                new ::lib::mission_manager::Mission();
 
-        for (size_t i = 0; i < data->get_vector().size(); i++) {
-          ::src::controls::ground_communicator::Command* cmd =
-              mission.add_commands();
+            ::std::string serialized_protobuf_mission = data->get_string();
 
-          cmd->set_type(
-              data->get_vector()[i]->get_map()["command_type"]->get_string());
-          cmd->set_latitude(
-              data->get_vector()[i]->get_map()["lat"]->get_double());
-          cmd->set_longitude(
-              data->get_vector()[i]->get_map()["lng"]->get_double());
-          cmd->set_altitude(
-              data->get_vector()[i]->get_map()["alt"]->get_double());
-        }
+            serialized_protobuf_mission =
+                base64_decode(serialized_protobuf_mission);
 
-        ::std::string output;
-        mission.SerializeToString(&output);
+            mission->ParseFromString(serialized_protobuf_mission);
+            ground_data.set_allocated_mission(mission);
 
-        zmq::message_t reply(output.size());
-        memcpy((void*)reply.data(), output.c_str(), output.size());
+            mission_message_queue_sender_.SendData(ground_data);
 
-        try {
-          mission_command_stream_.send(reply);
-        } catch (...) {
-          ::std::cerr
-              << "Could not send mission to loop. Is the loop running?\n";
-        }
-
-        SetState("MISSION");
-      }));
+            SetState("MISSION");
+          }));
 
   client_.socket()->on(
-      "drone_set_state", sio::socket::event_listener_aux([&](
-                       std::string const& name, sio::message::ptr const& data,
-                       bool isAck, sio::message::list& ack_resp) {
-        (void)name;
-        (void)isAck;
-        (void)ack_resp;
+      "interop_data",
+      sio::socket::event_listener_aux(
+          [&](std::string const& name, sio::message::ptr const& data,
+              bool isAck, sio::message::list& ack_resp) {
 
-        SetState(data->get_map()["state"]->get_string());
-      }));
+            (void)name;
+            (void)isAck;
+            (void)ack_resp;
+
+            ::lib::mission_manager::GroundData ground_data;
+            ::lib::mission_manager::Obstacles* obstacles =
+                new ::lib::mission_manager::Obstacles();
+
+            ::std::string serialized_protobuf_obstacles = data->get_string();
+
+            serialized_protobuf_obstacles =
+                base64_decode(serialized_protobuf_obstacles);
+
+            obstacles->ParseFromString(serialized_protobuf_obstacles);
+            ground_data.set_allocated_obstacles(obstacles);
+            mission_message_queue_sender_.SendData(ground_data);
+          }));
+
+  client_.socket()->on(
+      "drone_set_state",
+      sio::socket::event_listener_aux(
+          [&](std::string const& name, sio::message::ptr const& data,
+              bool isAck, sio::message::list& ack_resp) {
+            (void)name;
+            (void)isAck;
+            (void)ack_resp;
+
+            SetState(data->get_map()["state"]->get_string());
+          }));
 }
 
 void MissionReceiver::OnFail() { ::std::cout << "socketio failed! :(\n"; }
 
 void MissionReceiver::SetState(::std::string new_state_string) {
+  auto sensors = &::src::control::loops::flight_loop_queue.sensors;
+  auto status = &::src::control::loops::flight_loop_queue.status;
+  sensors->FetchLatest();
+  status->FetchLatest();
+
   GoalState new_state;
 
   if (new_state_string == "MISSION") {
+    if ((*status)->state == ::src::control::loops::FlightLoop::State::LANDING &&
+        (*sensors)->relative_altitude < 5.0) {
+      ::std::cerr << "Cannot switch to mission: landing and at unsafe altitude."
+                  << ::std::endl;
+      return;
+    }
     new_state = RUN_MISSION;
   } else if (new_state_string == "LAND") {
     new_state = LAND;

@@ -189,8 +189,6 @@ toolchain {
   compiler_flag: "-U_FORTIFY_SOURCE"
   compiler_flag: "-D_FORTIFY_SOURCE=1"
   compiler_flag: "-fstack-protector"
-  compiler_flag: "-fPIE"
-  linker_flag: "-pie"
   linker_flag: "-Wl,-z,relro,-z,now"
 
   # Pretty much everything needs this, including parts of the glibc STL...
@@ -428,7 +426,6 @@ toolchain {
   # it enabled by default.
   compiler_flag: "-U_FORTIFY_SOURCE"
   compiler_flag: "-fstack-protector"
-  linker_flag: "-pie"
   linker_flag: "-Wl,-z,relro,-z,now"
 
   # Pretty much everything needs this, including parts of the glibc STL...

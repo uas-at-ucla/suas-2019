@@ -23,10 +23,12 @@ cc_library(
     ':loop_input_handler',
     '//src/control/io/autopilot_interface:autopilot_interface',
     '//src/control/loops:flight_loop_queue',
+    '//lib/logger:log_sender',
     '//aos/linux_code:init',
     '//aos/common:scoped_fd',
     '//aos/common:time',
     '//aos/common/util:phased_loop',
+    "@WiringPi//:WiringPi",
   ],
 )
 
