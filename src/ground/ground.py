@@ -40,6 +40,7 @@ moving_obstacles = None
 commands = []
 
 telemetry_num = 0;
+drone_loop_num = 0;
 
 processes = process_manager.ProcessManager()
 processes.run_command("protoc -I. --proto_path=../../lib/mission_manager/ " \
@@ -170,9 +171,19 @@ def interop_disconnected():
 @ground_socketio_server.on('telemetry')
 def telemetry(received_telemetry):
     global telemetry_num
-    if received_telemetry['index'] - telemetry_num > 1:
-        print "Lost " + str(received_telemetry['index'] - telemetry_num - 1) + " telemetry messages!"
-    telemetry_num = received_telemetry['index']
+    global drone_loop_num
+    passed_messages = received_telemetry['message_index'] - telemetry_num;
+    passed_loops = received_telemetry['loop_index'] - drone_loop_num;
+
+    if passed_messages > 1:
+        print "Lost " + str(passed_messages - 1) + " telemetry messages!"
+
+    if passed_loops - passed_messages > 0:
+        print "Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!"
+
+    
+    telemetry_num = received_telemetry['message_index']
+    drone_loop_num = received_telemetry['loop_index']
     
     global interop_client
 

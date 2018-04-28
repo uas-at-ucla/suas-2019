@@ -138,7 +138,7 @@ void MissionReceiver::ConnectToGround() {
 #endif
 }
 
-void MissionReceiver::SendTelemetry(int index) {
+void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
   sio::message::ptr all_data = sio::object_message::create();
 
   auto sensors = &::src::control::loops::flight_loop_queue.sensors;
@@ -284,7 +284,8 @@ void MissionReceiver::SendTelemetry(int index) {
       serialized_mission.length());
   all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
 
-  all_data->get_map()["index"] = sio::int_message::create(index);
+  all_data->get_map()["loop_index"] = sio::int_message::create(loop_index);
+  all_data->get_map()["message_index"] = sio::int_message::create(message_index);
 
   client_.socket()->emit("telemetry", all_data);
 }
@@ -292,11 +293,12 @@ void MissionReceiver::SendTelemetry(int index) {
 void MissionReceiver::Run() {
   running_ = true;
 
-  int index = 0;
+  int loop_index = 0;
+  int message_index = 0;
 
   while (running_) {
     // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
-    RunIteration(index);
+    RunIteration(loop_index, message_index);
 
     const int iterations = phased_loop_.SleepUntilNext();
     if (iterations > 1) {
@@ -304,14 +306,14 @@ void MissionReceiver::Run() {
     }
     // std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
     // std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
-
-    index += iterations;
+    message_index++;
+    loop_index += iterations;
   }
 }
 
-void MissionReceiver::RunIteration(int index) {
+void MissionReceiver::RunIteration(int loop_index, int message_index) {
   SetFlightLoopGoal(GetState());
-  SendTelemetry(index);
+  SendTelemetry(loop_index, message_index);
 }
 
 void MissionReceiver::OnConnect() {
