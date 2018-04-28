@@ -29,15 +29,11 @@ void MissionMessageQueueSender::SendData(
   ::zmq::message_t mission_message;
   ::lib::mission_manager::Mission mission_protobuf;
 
-  int i;
-  for (i = 0; i <3; i++) {
-    if (socket_.recv(&mission_message, ZMQ_NOBLOCK)) {
-      break;
+  if (!socket_.recv(&mission_message, ZMQ_NOBLOCK)) {
+    usleep(1e6 / 1e2);
+    if (!socket_.recv(&mission_message, ZMQ_NOBLOCK)) {
+      return mission_protobuf;
     }
-    usleep(1e6 / 1e1);
-  }
-  if (i == 3) {
-    return mission_protobuf;
   }
 
   ::std::string mission_string(
