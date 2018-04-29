@@ -20,7 +20,7 @@ RRTAvoidance::RRTAvoidance()
 ::std::vector<Position3D> RRTAvoidance::Process(
     Position3D start, Position3D end,
     ::lib::mission_manager::Obstacles obstacles) {
-  if(start.latitude == end.latitude && start.longitude == end.longitude) {
+  if (start.latitude == end.latitude && start.longitude == end.longitude) {
     return ::std::vector<Position3D>();
   }
 
@@ -44,16 +44,17 @@ RRTAvoidance::RRTAvoidance()
     m(i, 1) = obstacles.static_obstacles(i - 2).location().longitude();
     m(i, 2) = obstacles.static_obstacles(i - 2).cylinder_radius() * 1.3;
 
-    double lat_diff = m(i,0) - m(0,0);
-    double long_diff = m(i,1) - m(0,1);
+    double lat_diff = m(i, 0) - m(0, 0);
+    double long_diff = m(i, 1) - m(0, 1);
     double dist_to_center = sqrt(lat_diff * lat_diff + long_diff * long_diff);
     double coordinate_to_meter = GetDistance2D({0, 0, 0}, {1, 0, 0});
-    
-    if (dist_to_center * coordinate_to_meter < 1.2 * m(i, 2))
-    {
-    	double multiplication_factor = 1.2 * (1.2 * m(i, 2)) / (1.2 * m(i, 2) - dist_to_center * coordinate_to_meter);
-	m(0,0) = m(i,0) - lat_diff * multiplication_factor;	 
-        m(0,1) = m(i,1) - long_diff * multiplication_factor;
+
+    if (dist_to_center * coordinate_to_meter < 1.2 * m(i, 2)) {
+      double multiplication_factor =
+          1.2 * (1.2 * m(i, 2)) /
+          (1.2 * m(i, 2) - dist_to_center * coordinate_to_meter);
+      m(0, 0) = m(i, 0) - lat_diff * multiplication_factor;
+      m(0, 1) = m(i, 1) - long_diff * multiplication_factor;
     }
   }
 
