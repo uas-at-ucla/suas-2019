@@ -1,11 +1,12 @@
 #ifndef AUTOPILOT_INTERFACE_H_
 #define AUTOPILOT_INTERFACE_H_
 
-#include "lib/mavlink_serial/mavlink_serial.h"
+#include "lib/mavlink_udp/mavlink_udp.h"
 
 #include <signal.h>
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <common/mavlink.h>
 
@@ -13,8 +14,6 @@ namespace src {
 namespace control {
 namespace io {
 namespace autopilot_interface {
-
-using namespace lib::mavlink_serial;
 
  // Bitmasks to indicate what type of message is being sent to the vehicle.
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_POSITION 0b0000110111111000
@@ -124,7 +123,7 @@ class AutopilotInterface {
   void handle_quit(int sig);
 
  private:
-  MavlinkSerial *mavlink_serial_;
+  lib::mavlink_udp::MavlinkUDP *mavlink_udp_;
 
   mavlink_set_position_target_local_ned_t current_setpoint;
 
