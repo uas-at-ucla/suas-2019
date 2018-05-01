@@ -12,6 +12,7 @@ cc_library(
   ],
   deps = [
     "@cppzmq//:cppzmq",
-    '@mavlink_v1//:mavlink_v1'
+    "@mavlink_v1//:mavlink_v1",
+    "@boost//:asio",
   ],
 )

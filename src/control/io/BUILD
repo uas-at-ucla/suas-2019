@@ -7,6 +7,9 @@ cc_binary(
   deps = [
     ":io_lib"
   ],
+  copts = [
+    "-g",
+  ],
 )
 
 cc_library(
