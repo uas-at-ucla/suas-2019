@@ -1,7 +1,7 @@
 #ifndef AUTOPILOT_INTERFACE_H_
 #define AUTOPILOT_INTERFACE_H_
 
-#include "lib/mavlink_udp/mavlink_udp.h"
+#include "lib/mavconn_udp/interface.h"
 
 #include <signal.h>
 #include <sys/time.h>
@@ -32,7 +32,6 @@ void set_velocity(float vx, float vy, float vz,
 void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp);
 void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp);
 
-void *start_autopilot_interface_read_thread(void *args);
 void *start_autopilot_interface_write_thread(void *args);
 
 struct TimeStamps {
@@ -112,27 +111,24 @@ class AutopilotInterface {
 
   void update_setpoint(mavlink_set_position_target_local_ned_t setpoint);
   void read_messages();
-  int write_message(mavlink_message_t message);
+  void write_message(mavlink_message_t message);
 
   void start();
   void stop();
 
-  void start_read_thread();
   void start_write_thread(void);
 
   void handle_quit(int sig);
 
  private:
-  lib::mavlink_udp::MavlinkUDP *mavlink_udp_;
+  ::mavconn::MAVConnInterface::Ptr pixhawk_;
 
   mavlink_set_position_target_local_ned_t current_setpoint;
 
-  void read_thread();
   void write_thread(void);
 
   void write_setpoint();
 
-  pthread_t read_tid_;
   pthread_t write_tid_;
 
   char reading_status_;
