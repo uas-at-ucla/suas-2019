@@ -70,7 +70,7 @@ def run_travis(args):
     run_and_die_if_error("bazel build --cpu=raspi //src/...")
     run_and_die_if_error("bazel build @PX4_sitl//:jmavsim")
     run_and_die_if_error("bazel test //src/...")
-##  run_and_die_if_error("bazel test //lib/...")
+    run_and_die_if_error("bazel test //lib/...")
     run_and_die_if_error(
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
 
