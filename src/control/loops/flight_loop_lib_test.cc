@@ -42,9 +42,9 @@ void create_procs() {
     const char *simulator_path = "../../../external/PX4_sitl/jmavsim";
 
     if (!verbose) {
-      //    int null_fd = open("/dev/null", O_WRONLY);
-      //    dup2(null_fd, 1);  // redirect stdout
-      //    dup2(null_fd, 2);  // redirect stderr
+      int null_fd = open("/dev/null", O_WRONLY);
+      dup2(null_fd, 1);  // redirect stdout
+      dup2(null_fd, 2);  // redirect stderr
     }
 
     execl("/bin/sh", "sh", "-c", simulator_path, NULL);
@@ -211,7 +211,7 @@ TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
 
   ::std::cout << "end mission...\n";
   // Do land and check if times out.
-  for (int i = 0; i < 1000 && flight_loop_queue.sensors->armed; i++) {
+  for (int i = 0; i < 5000 && flight_loop_queue.sensors->armed; i++) {
     flight_loop_queue_.goal.MakeWithBuilder().run_mission(false).Send();
 
     StepLoop();
