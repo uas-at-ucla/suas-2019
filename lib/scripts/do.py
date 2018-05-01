@@ -86,8 +86,8 @@ def run_build(args):
 def run_simulate(args):
     processes.spawn_process("bazel build //src/...")
     processes.wait_for_complete()
-    processes.spawn_process("bazel build @PX4_sitl//:jmavsim")
-    processes.wait_for_complete()
+#   processes.spawn_process("bazel build @PX4_sitl//:jmavsim")
+#   processes.wait_for_complete()
 
     # Initialize shared memory for queues.
     processes.spawn_process("ipcrm --all", None, True, args.verbose)
@@ -99,12 +99,12 @@ def run_simulate(args):
     # Give aos core some time to run.
     time.sleep(0.5)
 
-    # Simulator and port forwarder.
-    processes.spawn_process(
-        "socat pty,link=/tmp/virtualcom0,raw udp4-listen:14540", None, True,
-        args.verbose)
-    processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
-                            None, True, args.verbose)
+#   # Simulator and port forwarder.
+#   processes.spawn_process(
+#       "socat pty,link=/tmp/virtualcom0,raw udp4-listen:14540", None, True,
+#       args.verbose)
+#   processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
+#                           None, True, args.verbose)
 
     # Log writer.
     processes.spawn_process("./bazel-out/k8-fastbuild/bin/lib/logger/" \

@@ -8,7 +8,7 @@ cc_library(
     'autopilot_interface.h',
   ],
   deps = [
-    '//lib/mavlink_serial:mavlink_serial'
+    '//lib/mavlink_udp:mavlink_udp'
   ],
   copts = [
     '-Wno-unused-parameter',

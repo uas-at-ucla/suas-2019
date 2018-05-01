@@ -61,7 +61,7 @@ AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
   current_messages.sysid = system_id;
   current_messages.compid = autopilot_id;
 
-  mavlink_serial_ = new MavlinkSerial(serial_port, baud);
+  mavlink_udp_ = new ::lib::mavlink_udp::MavlinkUDP(8083);
 }
 
 AutopilotInterface::~AutopilotInterface() {}
@@ -75,9 +75,9 @@ void AutopilotInterface::read_messages() {
   TimeStamps this_timestamps;
 
   // Blocking wait for new data
-  while (!time_to_exit_ && mavlink_serial_->status > 0) {
+  while (!time_to_exit_) {
     ::std::vector<mavlink_message_t> messages;
-    mavlink_serial_->read_messages(messages);
+    mavlink_udp_->read_messages(messages);
 
     for (std::vector<mavlink_message_t>::iterator it = messages.begin();
          it != messages.end(); it++) {
@@ -176,7 +176,7 @@ void AutopilotInterface::read_messages() {
 }
 
 int AutopilotInterface::write_message(mavlink_message_t message) {
-  int len = mavlink_serial_->write_message(message);
+  int len = mavlink_udp_->write_message(message);
   write_count_++;
 
   return len;
@@ -205,10 +205,10 @@ void AutopilotInterface::write_setpoint() {
 void AutopilotInterface::start() {
   int result;
 
-  do {
-    mavlink_serial_->start();
-    usleep(1e6 / 10);
-  } while (mavlink_serial_->status != 1);
+//do {
+//  mavlink_serial_->start();
+//  usleep(1e6 / 10);
+//} while (mavlink_serial_->status != 1);
 
   printf("START READ THREAD \n");
 
@@ -429,7 +429,7 @@ void AutopilotInterface::stop() {
 
   printf("\n");
 
-  mavlink_serial_->stop();
+//mavlink_serial_->stop();
 }
 
 void AutopilotInterface::start_read_thread() {
@@ -462,7 +462,7 @@ void AutopilotInterface::handle_quit(int sig) {
     fprintf(stderr, "Warning, could not stop autopilot interface\n");
   }
 
-  mavlink_serial_->handle_quit(sig);
+//mavlink_serial_->handle_quit(sig);
 }
 
 void AutopilotInterface::read_thread() {
@@ -498,7 +498,7 @@ void AutopilotInterface::write_thread(void) {
 
   set_message_period();
 
-  while (!time_to_exit_ && mavlink_serial_->status > 0) {
+  while (!time_to_exit_) {
     // Pixhawk needs to see off-board commands at minimum 2Hz,
     // otherwise it will go into fail safe.
 
