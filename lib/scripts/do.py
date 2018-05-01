@@ -70,7 +70,7 @@ def run_travis(args):
     run_and_die_if_error("bazel build --cpu=raspi //src/...")
     run_and_die_if_error("bazel build @PX4_sitl//:jmavsim")
     run_and_die_if_error("bazel test //src/...")
-    run_and_die_if_error("bazel test //lib/...")
+##  run_and_die_if_error("bazel test //lib/...")
     run_and_die_if_error(
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
 
@@ -86,8 +86,8 @@ def run_build(args):
 def run_simulate(args):
     processes.spawn_process("bazel build //src/...")
     processes.wait_for_complete()
-#   processes.spawn_process("bazel build @PX4_sitl//:jmavsim")
-#   processes.wait_for_complete()
+    processes.spawn_process("bazel build @PX4_sitl//:jmavsim")
+    processes.wait_for_complete()
 
     # Initialize shared memory for queues.
     processes.spawn_process("ipcrm --all", None, True, args.verbose)
@@ -100,11 +100,14 @@ def run_simulate(args):
     time.sleep(0.5)
 
 #   # Simulator and port forwarder.
-#   processes.spawn_process(
-#       "socat pty,link=/tmp/virtualcom0,raw udp4-listen:14540", None, True,
-#       args.verbose)
-#   processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
-#                           None, True, args.verbose)
+    processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
+                            None, True, args.verbose)
+    processes.spawn_process("mavproxy.py " \
+            "--mav20 " \
+            "--master=0.0.0.0:14550 " \
+            "--out=udp:0.0.0.0:8083 " \
+            "--out=udp:0.0.0.0:8085 ", \
+            None, True, args.verbose)
 
     # Log writer.
     processes.spawn_process("./bazel-out/k8-fastbuild/bin/lib/logger/" \
