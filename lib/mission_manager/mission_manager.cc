@@ -217,7 +217,7 @@ void MissionManager::Preprocess(Position3D drone_position) {
   mission_.CopyFrom(mission);
   semaphore_.Notify();
   // TODO(comran): Remove.
-  DumpMission();
+//DumpMission();
 }
 
 void MissionManager::DumpMission() { DumpMission(mission_, 0); }
