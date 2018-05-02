@@ -56,11 +56,9 @@ void create_procs() {
   if (!mavproxy_pid) {
     setsid();
 
-    if (!verbose) {
-      int null_fd = open("/dev/null", O_WRONLY);
-      dup2(null_fd, 1);  // redirect stdout
-      dup2(null_fd, 2);  // redirect stderr
-    }
+    int null_fd = open("/dev/null", O_WRONLY);
+    dup2(null_fd, 1);  // redirect stdout
+    dup2(null_fd, 2);  // redirect stderr
 
     execl("/usr/local/bin/mavproxy.py",
             "--mav20 ",
