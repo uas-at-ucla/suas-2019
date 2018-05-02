@@ -10,7 +10,7 @@ namespace loops {
 namespace pilot {
 namespace testing {
 namespace {
-const double kMetPositionTolerance = 7;
+const double kMetPositionTolerance = 12;
 const double kMetersPerCoordinate = GetDistance2D({0, 0, 0}, {1, 0, 0});
 }  // namespace
 
@@ -53,7 +53,7 @@ class PilotTest : public ::testing::Test {
 
 TEST_F(PilotTest, ReachesGoalTest) {
   PilotPlant plant({0, 0, 0}, 100);
-  Position3D goal = {0.0002, 0.0003, 10};
+  Position3D goal = {0.0005, 0.0003, 10};
 
   ::lib::mission_manager::Mission mission;
   ::lib::mission_manager::GotoCommand *goto_cmd =
