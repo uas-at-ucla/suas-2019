@@ -2,6 +2,9 @@
 *.pyc
 *.swp
 *.pickle
+mav.parm
+mav.tlog
+mav.tlog.raw
 /bazel-*
 /tools/build/bazel-*
 package-lock.json
