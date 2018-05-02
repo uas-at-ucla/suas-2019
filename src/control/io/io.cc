@@ -92,6 +92,7 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->latitude = static_cast<double>(gps.lat) / 1e7;
   flight_loop_sensors_message->longitude = static_cast<double>(gps.lon) / 1e7;
   flight_loop_sensors_message->altitude = static_cast<float>(gps.alt) / 1e3;
+  ::std::cout << flight_loop_sensors_message->latitude << ::std::endl;
 
   flight_loop_sensors_message->heading =
       static_cast<float>(copter_io_->current_messages.vfr_hud.heading);
