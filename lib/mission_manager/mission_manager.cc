@@ -175,23 +175,32 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
                           goto_cmd->goal().longitude(),
                           goto_cmd->goal().altitude()};
 
-        ::std::vector<Position3D> avoidance_path =
-            rrt_avoidance_.Process(drone_position, end, obstacles_);
+        ::lib::mission_manager::GotoRawCommand *goto_raw_cmd =
+            sub_mission->add_commands()->mutable_gotorawcommand();
+        ::lib::mission_manager::Position3D *goto_raw_goal =
+            new ::lib::mission_manager::Position3D();
+        goto_raw_goal->set_latitude(end.latitude);
+        goto_raw_goal->set_longitude(end.longitude);
+        goto_raw_goal->set_altitude(end.altitude);
+        goto_raw_cmd->set_allocated_goal(goto_raw_goal);
 
-        // Add the path for avoiding obstacles as a list of raw goto commands,
-        // which will not undergo additional lower-level rrt calculations by the
-        // preprocessor.
-        for (Position3D goto_step : avoidance_path) {
-          ::lib::mission_manager::GotoRawCommand *goto_raw_cmd =
-              sub_mission->add_commands()->mutable_gotorawcommand();
+//      ::std::vector<Position3D> avoidance_path =
+//          rrt_avoidance_.Process(drone_position, end, obstacles_);
 
-          ::lib::mission_manager::Position3D *goto_raw_goal =
-              new ::lib::mission_manager::Position3D();
-          goto_raw_goal->set_latitude(goto_step.latitude);
-          goto_raw_goal->set_longitude(goto_step.longitude);
-          goto_raw_goal->set_altitude(goto_cmd->goal().altitude());
-          goto_raw_cmd->set_allocated_goal(goto_raw_goal);
-        }
+//      // Add the path for avoiding obstacles as a list of raw goto commands,
+//      // which will not undergo additional lower-level rrt calculations by the
+//      // preprocessor.
+//      for (Position3D goto_step : avoidance_path) {
+//        ::lib::mission_manager::GotoRawCommand *goto_raw_cmd =
+//            sub_mission->add_commands()->mutable_gotorawcommand();
+
+//        ::lib::mission_manager::Position3D *goto_raw_goal =
+//            new ::lib::mission_manager::Position3D();
+//        goto_raw_goal->set_latitude(goto_step.latitude);
+//        goto_raw_goal->set_longitude(goto_step.longitude);
+//        goto_raw_goal->set_altitude(goto_cmd->goal().altitude());
+//        goto_raw_cmd->set_allocated_goal(goto_raw_goal);
+//      }
       }
     }
 
