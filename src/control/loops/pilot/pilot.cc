@@ -127,7 +127,7 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
                                       (goal.longitude - last_goal.longitude),
                                   GetDistance2D({0, 0, 0}, {1, 0, 0}) *
                                       (goal.latitude - last_goal.latitude),
-                                  goal.altitude - last_goal.altitude);
+                                  last_goal.altitude - goal.altitude);
 
     ::Eigen::Vector3d path_projection = path_vector *
                                         path_vector.dot(distance_vector) /
@@ -138,12 +138,13 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
     ::Eigen::Vector3d adjustment = error / 15;
     double mix = ::std::min(1.0, ::std::pow(adjustment.norm(), 2));
     double angle = path_vector.dot(distance_vector);
+//  ::std::cout << "MIX: " << mix << ::std::endl;
+//  ::std::cout << "ANGLE: " << angle << ::std::endl;
 //  ::std::cout << "DISTANCE VECTOR\n" << distance_vector << ::std::endl;
 //  ::std::cout << "PATH VECTOR\n" << path_vector << ::std::endl;
 //  ::std::cout << "PATH PROJECTION\n" << path_projection << ::std::endl;
 //  ::std::cout << "ERROR VECTOR\n" << error << ::std::endl;
 //  ::std::cout << "ADJUSTMENT VECTOR\n" << adjustment << ::std::endl;
-//  ::std::cout << "angle\n" << angle << ::std::endl;
 
     ::Eigen::Vector3d flight_direction_vector =
         (path_vector / ::std::max(1.0, path_vector.norm())) * (1 - mix) +
