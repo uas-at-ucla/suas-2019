@@ -366,5 +366,5 @@ int MavlinkSerial::_write_port(char *buf, unsigned len) {
   return bytesWritten;
 }
 
-}  // namespace serial
+}  // namespace mavlink_serial
 }  // namespace lib
