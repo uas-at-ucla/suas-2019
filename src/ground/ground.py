@@ -147,10 +147,11 @@ def set_state(data):
 
 
 @ground_socketio_server.on('request_commands')
-def give_commands():
+def give_commands(options):
     flask_socketio.emit('commands_changed', {
         'commands': commands,
-        'changedCommands': None
+        'changedCommands': None,
+        'restoreCommands': options['restoreCommands']
     })
 
 

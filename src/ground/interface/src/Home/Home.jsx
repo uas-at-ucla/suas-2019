@@ -79,7 +79,7 @@ class Home extends Component {
         this.setState(newState);
       });
 
-      this.props.socketEmit('request_commands');
+      this.props.socketEmit('request_commands', {restoreCommands: false});
     });
   }
 

@@ -120,12 +120,28 @@ class MissionPlanner extends Component {
           distance={2}
         />
         <div className="add_command_button_wrapper">
+          {this.props.homeState.invalidCommands ? 
+            <Button
+              color="success"
+              className="mission_button"
+              onClick={this.restoreCommands}
+            >
+              Restore Commands
+            </Button> : 
+            <Button
+              color="primary"
+              className="mission_button"
+              onClick={this.addCommand}
+            >
+              Add Command
+            </Button>
+          }
           <Button
-            color="primary"
-            className="mission_button"
-            onClick={this.addCommand}
-          >
-            Add Command
+              color="danger"
+              className="mission_button"
+              onClick={this.clearCommands}
+            >
+              Clear Commands
           </Button>
         </div>
         {this.deleteBtn()}
@@ -350,6 +366,18 @@ class MissionPlanner extends Component {
         changedCommands: {startIndex: command, endIndex: command}
       });
     }
+  }
+
+  restoreCommands = () => {
+    this.props.socketEmit('request_commands', {restoreCommands: true});
+  }
+
+  clearCommands = () => {
+    this.props.setHomeState({
+      commands: [],
+      changedCommands: null,
+      invalidCommands: false
+    });
   }
 }
 
