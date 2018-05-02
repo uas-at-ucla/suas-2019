@@ -81,12 +81,14 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
     // Funneling algorithm for keeping the drone on a defined path on its way to
     // the goal.
 
+    /*
     //       drone
     //         \\
     //          \\
     //           \\______________
     //                           \_______
     // origin                            \--------------------------------- goal
+    */
 
     Position3D goal = {cmd_.gotorawcommand().goal().latitude(),
                        cmd_.gotorawcommand().goal().longitude(),
@@ -95,6 +97,7 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
                             last_cmd_.gotorawcommand().goal().longitude(),
                             last_cmd_.gotorawcommand().goal().altitude()};
 
+    /*
     //                  drone
     //                    |\
     //                    | \
@@ -113,6 +116,8 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
     //                    |              \
     // origin  ...path... |-- projected --\ goal
     //                        distance
+    */
+
     ::Eigen::Vector3d distance_vector(
         GetDistance2D({0, 0, 0}, {0, 1, 0}) *
             (goal.longitude - drone_position.longitude),
