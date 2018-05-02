@@ -45,100 +45,102 @@ TEST(MissionManagerTest, MissionManagerTest) {
   }
 }
 
-TEST(MissionManagerTest, PreprocessorTest) {
-  ::lib::mission_manager::Mission mission;
+//TODO(comran): Re-enable when we add back in the goto raw avoidance stuff.
 
-  for (int i = 0; i < 10; i++) {
-    ::lib::mission_manager::Command *cmd = mission.add_commands();
-    mission_manager::NothingCommand *nothing_cmd =
-        cmd->mutable_nothingcommand();
-    (void)nothing_cmd;
-  }
+//TEST(MissionManagerTest, PreprocessorTest) {
+//  ::lib::mission_manager::Mission mission;
 
-  {
-    mission_manager::WaypointCommand *waypoint_cmd =
-        mission.add_commands()->mutable_waypointcommand();
+//  for (int i = 0; i < 10; i++) {
+//    ::lib::mission_manager::Command *cmd = mission.add_commands();
+//    mission_manager::NothingCommand *nothing_cmd =
+//        cmd->mutable_nothingcommand();
+//    (void)nothing_cmd;
+//  }
 
-    ::lib::mission_manager::Position3D *goal =
-        new ::lib::mission_manager::Position3D();
+//  {
+//    mission_manager::WaypointCommand *waypoint_cmd =
+//        mission.add_commands()->mutable_waypointcommand();
 
-    goal->set_latitude(0.01);
-    goal->set_longitude(0.01);
-    goal->set_altitude(10);
+//    ::lib::mission_manager::Position3D *goal =
+//        new ::lib::mission_manager::Position3D();
 
-    waypoint_cmd->set_allocated_goal(goal);
-  }
+//    goal->set_latitude(0.01);
+//    goal->set_longitude(0.01);
+//    goal->set_altitude(10);
 
-  {
-    mission_manager::BombDropCommand *bomb_cmd =
-        mission.add_commands()->mutable_bombdropcommand();
+//    waypoint_cmd->set_allocated_goal(goal);
+//  }
 
-    ::lib::mission_manager::Position2D *drop_zone =
-        new ::lib::mission_manager::Position2D();
+//  {
+//    mission_manager::BombDropCommand *bomb_cmd =
+//        mission.add_commands()->mutable_bombdropcommand();
 
-    drop_zone->set_latitude(0.01);
-    drop_zone->set_longitude(0.01);
+//    ::lib::mission_manager::Position2D *drop_zone =
+//        new ::lib::mission_manager::Position2D();
 
-    bomb_cmd->set_allocated_drop_zone(drop_zone);
-  }
+//    drop_zone->set_latitude(0.01);
+//    drop_zone->set_longitude(0.01);
 
-  ::lib::mission_manager::Obstacles obstacles;
-  ::lib::mission_manager::StaticObstacle *obstacle =
-      obstacles.add_static_obstacles();
-  ::lib::mission_manager::Position2D *location =
-      new ::lib::mission_manager::Position2D();
+//    bomb_cmd->set_allocated_drop_zone(drop_zone);
+//  }
 
-  location->set_latitude(0.005);
-  location->set_longitude(0.005);
-  obstacle->set_allocated_location(location);
+//  ::lib::mission_manager::Obstacles obstacles;
+//  ::lib::mission_manager::StaticObstacle *obstacle =
+//      obstacles.add_static_obstacles();
+//  ::lib::mission_manager::Position2D *location =
+//      new ::lib::mission_manager::Position2D();
 
-  obstacle->set_cylinder_radius(100);
+//  location->set_latitude(0.005);
+//  location->set_longitude(0.005);
+//  obstacle->set_allocated_location(location);
 
-  MissionManager mission_manager;
-  mission_manager.SetCommands(mission);
-  mission_manager.SetObstacles(obstacles);
+//  obstacle->set_cylinder_radius(100);
 
-  mission_manager.Preprocess({0, 0, 10});
-  mission_manager.DumpMission();
+//  MissionManager mission_manager;
+//  mission_manager.SetCommands(mission);
+//  mission_manager.SetObstacles(obstacles);
 
-  for(int i = 0;i < 10;i++) {
-    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_nothingcommand());
-    mission_manager.PopCommand();
-  }
+//  mission_manager.Preprocess({0, 0, 10});
+//  mission_manager.DumpMission();
 
-  for(int i = 0;i < 3;i++) {
-    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_gotorawcommand());
-    mission_manager.PopCommand();
-  }
+//  for(int i = 0;i < 10;i++) {
+//    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_nothingcommand());
+//    mission_manager.PopCommand();
+//  }
 
-  // Flush out the rest of the goto raw commands.
-  for(int i = 0;i < 100;i++) {
-    if(!mission_manager.GetCurrentCommand().has_gotorawcommand()) break;
-    mission_manager.PopCommand();
-  }
+//  for(int i = 0;i < 3;i++) {
+//    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_gotorawcommand());
+//    mission_manager.PopCommand();
+//  }
 
-  ASSERT_TRUE(mission_manager.GetCurrentCommand().has_sleepcommand());
-  mission_manager.PopCommand();
+//  // Flush out the rest of the goto raw commands.
+//  for(int i = 0;i < 100;i++) {
+//    if(!mission_manager.GetCurrentCommand().has_gotorawcommand()) break;
+//    mission_manager.PopCommand();
+//  }
 
-  for(int i = 0;i < 3;i++) {
-    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_gotorawcommand());
-    mission_manager.PopCommand();
-  }
+//  ASSERT_TRUE(mission_manager.GetCurrentCommand().has_sleepcommand());
+//  mission_manager.PopCommand();
 
-  // Flush out the rest of the goto raw commands.
-  for(int i = 0;i < 100;i++) {
-    if(!mission_manager.GetCurrentCommand().has_gotorawcommand()) break;
-    mission_manager.PopCommand();
-  }
+//  for(int i = 0;i < 3;i++) {
+//    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_gotorawcommand());
+//    mission_manager.PopCommand();
+//  }
 
-  ASSERT_TRUE(mission_manager.GetCurrentCommand().has_sleepcommand());
-  mission_manager.PopCommand();
+//  // Flush out the rest of the goto raw commands.
+//  for(int i = 0;i < 100;i++) {
+//    if(!mission_manager.GetCurrentCommand().has_gotorawcommand()) break;
+//    mission_manager.PopCommand();
+//  }
 
-  for(int i = 0;i < 1000;i++) {
-    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_nothingcommand());
-    mission_manager.PopCommand();
-  }
-}
+//  ASSERT_TRUE(mission_manager.GetCurrentCommand().has_sleepcommand());
+//  mission_manager.PopCommand();
+
+//  for(int i = 0;i < 1000;i++) {
+//    ASSERT_TRUE(mission_manager.GetCurrentCommand().has_nothingcommand());
+//    mission_manager.PopCommand();
+//  }
+//}
 
 }  // namespace testing
 }  // namespace lib
