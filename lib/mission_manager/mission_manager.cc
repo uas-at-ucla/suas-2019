@@ -165,8 +165,7 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
     } else if (cmd->has_gotocommand()) {
       ::lib::mission_manager::GotoCommand *goto_cmd =
           cmd->mutable_gotocommand();
-      if (cmd->sub_mission().commands_size() == 0 &&
-          mission->current_command() == i) {
+      if (cmd->sub_mission().commands_size() == 0) {
         for (int i = 0; i < cmd->sub_mission().commands_size(); i++) {
           sub_mission->mutable_commands(i)->mutable_nothingcommand();
         }
