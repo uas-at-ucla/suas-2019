@@ -44,11 +44,9 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
   // Keep track of the current and previous commands for the current mission.
   if (cmd_set_) {
     if (!google::protobuf::util::MessageDifferencer::Equals(cmd, cmd_)) {
-      ::std::cout << "DIFFERENCE------------------------------------------\n";
       last_cmd_ = cmd_;
     }
   } else {
-    ::std::cout << "NOTHING------------------------\n";
     last_cmd_.mutable_nothingcommand();
     cmd_set_ = true;
   }
@@ -130,45 +128,32 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
                                   GetDistance2D({0, 0, 0}, {1, 0, 0}) *
                                       (goal.latitude - last_goal.latitude),
                                   goal.altitude - last_goal.altitude);
-    ::std::cout << "PATH VECTOR: " << path_vector << ::std::endl;
-
-    double distance = distance_vector.norm();
 
     ::Eigen::Vector3d path_projection = path_vector *
                                         path_vector.dot(distance_vector) /
                                         path_vector.dot(path_vector);
 
     ::Eigen::Vector3d error = distance_vector - path_projection;
-    ::std::cout << error << ::std::endl;
 
     ::Eigen::Vector3d adjustment = error / 15;
     double mix = ::std::min(1.0, ::std::pow(adjustment.norm(), 1.5));
+    ::std::cout << "DISTANCE VECTOR\n" << distance_vector << ::std::endl;
+    ::std::cout << "PATH VECTOR\n" << path_vector << ::std::endl;
+    ::std::cout << "ERROR VECTOR\n" << error << ::std::endl;
+    ::std::cout << "ADJUSTMENT VECTOR\n" << adjustment << ::std::endl;
 
     ::Eigen::Vector3d flight_direction_vector =
-        (path_vector / path_vector.norm()) * (1 - mix) +
-        (adjustment / adjustment.norm()) * (mix);
-
-    double projected_distance = path_projection.norm();
-
-    ::std::cout << "distance: " << distance << ::std::endl;
-    ::std::cout << "projected: " << projected_distance << ::std::endl;
-    ::std::cout << "mix: " << mix << ::std::endl;
-    ::std::cout << "adjustment: " << adjustment.norm() << ::std::endl;
-
-    // 0 is aim at goal, 1 is move drone towards path.
-    ::std::cout << flight_direction_vector << ::std::endl;
+        (path_vector / ::std::max(1.0, path_vector.norm())) * (1 - mix) +
+        (adjustment / ::std::max(1.0, adjustment.norm())) * (mix);
 
     flight_direction = {flight_direction_vector.y(),
                         flight_direction_vector.x(),
                         flight_direction_vector.z()};
     flight_direction *= kSpeed;
 
-    if (GetDistance2D(drone_position, goal) < kSpeed) {
+    if (GetDistance2D(drone_position, goal) < 5) {
       mission_message_queue_receiver_.get_mission_manager()->PopCommand();
     }
-  } else if (cmd.has_bombdropcommand()) {
-    flight_direction = {0, 0, 0};
-    bomb_drop = true;
   } else {
     ::std::cout << "ERROR: Unknown command.\n";
   }
