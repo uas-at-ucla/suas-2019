@@ -71,7 +71,7 @@ class MavlinkSerial {
   int _write_port(char *buf, unsigned len);
 };
 
-}  // namespace serial
+}  // namespace mavlink_serial
 }  // namespace lib
 
 #endif  // LIB_SERIAL_SERIAL_PORT_H_
