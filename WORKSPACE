@@ -43,6 +43,13 @@ new_git_repository(
 )
 
 new_git_repository(
+  name = 'mavlink_v2',
+  remote = 'https://github.com/mavlink/c_library_v2.git',
+  build_file = 'lib/third_party/mavlink_v2.BUILD',
+  commit = '748192f661d0df3763501cfc432861d981952921',
+)
+
+new_git_repository(
   name = 'libmavconn',
   remote = 'https://github.com/mavlink/mavros.git',
   build_file = 'lib/third_party/libmavconn.BUILD',

@@ -12,7 +12,7 @@ DATA_PATH = os.path.join(pkg_resources.resource_filename(
 #
 # Target size ranges in meters.
 #
-NORMAL_TARGET_SIZE_RANGE = (0.6, 2.4)
+NORMAL_TARGET_SIZE_RANGE = (1.6, 2.4)
 QR_TARGET_SIZE_RANGE = (0.9, 1.2)
 
 #
@@ -43,7 +43,7 @@ USE_CV2_KMEANS = True
 # Letter parameters.
 #
 FONTS = None
-FONTS = glob.glob("/usr/share/fonts/truetype/dejavu/*.ttf")
+FONTS = glob.glob("./TargetGenerator/fonts/*.ttf")
 
 #
 # Letter classes. The simple set includes only upper case letters.
@@ -79,6 +79,7 @@ SHAPE_LABELS = (
     'Star',
     'QRcode',
     'no target'
+    'Blank Target'
 )
 LETTER_LABELS = list(LETTERS) + ['no target', 'rotated letter']
 
