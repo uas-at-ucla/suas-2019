@@ -40,6 +40,7 @@ message SleepCommand {
 
 message GotoCommand {
   required Position3D goal = 1;
+  required bool come_to_stop = 2;
 }
 
 message GotoRawCommand {
