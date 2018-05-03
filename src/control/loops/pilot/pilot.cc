@@ -4,6 +4,20 @@ namespace src {
 namespace control {
 namespace loops {
 namespace pilot {
+namespace {
+
+// Constant for how tight we want the ramp to be for re-centering the drone
+// on the straight-line path between start and end.
+constexpr double kGotoRawReCenterRamp = 15;
+
+// Required tolerance distance, in meters, for halting goto_raw waypoints to
+// trigger a continuation to the next command.
+constexpr double kGotoRawWaypointTolerance = 3;
+
+// Gains for slowing down the drone when it needs to come to a halt at a
+// position.
+constexpr double kGotoRawWaypointPIDProportionalityGain = 0.4;
+}  // namespace
 
 Pilot::Pilot()
     : cmd_set_(false),
@@ -63,7 +77,7 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
     // Sleep.
   } else if (cmd.has_gotorawcommand()) {
     // Go directly to a location on a field.
-    constexpr double kSpeed = 12.0;
+    constexpr double kSpeed = 25.0;
 
     if (!last_cmd_.has_gotorawcommand()) {
       // Create a mock goto_raw location at the drone's current position to make
@@ -88,12 +102,12 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
     // origin                            \--------------------------------- goal
     */
 
-    Position3D goal = {cmd_.gotorawcommand().goal().latitude(),
-                       cmd_.gotorawcommand().goal().longitude(),
-                       cmd_.gotorawcommand().goal().altitude()};
-    Position3D last_goal = {last_cmd_.gotorawcommand().goal().latitude(),
-                            last_cmd_.gotorawcommand().goal().longitude(),
-                            last_cmd_.gotorawcommand().goal().altitude()};
+    Position3D start = {last_cmd_.gotorawcommand().goal().latitude(),
+                        last_cmd_.gotorawcommand().goal().longitude(),
+                        last_cmd_.gotorawcommand().goal().altitude()};
+    Position3D end = {cmd_.gotorawcommand().goal().latitude(),
+                      cmd_.gotorawcommand().goal().longitude(),
+                      cmd_.gotorawcommand().goal().altitude()};
 
     /*
     //                  drone
@@ -102,60 +116,80 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
     //                    |  \
     //                    |   \
     //                    |    \
-    //                    |   distance
-    //                    |      \
-    //                    |       \
-    //                 deviation   \
-    //                    |         \
+    //                 e  |     \
+    //                 r  |      \
+    //                 r  |       \
+    //                 o  |        \
+    //                 r  |         \
     //                    |          \
     //                    |           \
     //                    |            \
-    //                    |             \
-    //                    |              \
-    // origin  ...path... |-- projected --\ goal
-    //                        distance
+    //                    |  projected  \
+    // start *************---------------- end
+    //
     */
 
-    ::Eigen::Vector3d distance_vector(
-        GetDistance2D({0, 0, 0}, {0, 1, 0}) *
-            (goal.longitude - drone_position.longitude),
+    // Vectors are in NED coordinates, which means altitude components are
+    // flipped...
+    ::Eigen::Vector3d drone_to_end_vector(
         GetDistance2D({0, 0, 0}, {1, 0, 0}) *
-            (goal.latitude - drone_position.latitude),
-        drone_position.altitude - goal.altitude);
+            (end.latitude - drone_position.latitude),
+        GetDistance2D({0, 0, 0}, {0, 1, 0}) *
+            (end.longitude - drone_position.longitude),
+        drone_position.altitude - end.altitude);
 
-    ::Eigen::Vector3d path_vector(GetDistance2D({0, 0, 0}, {0, 1, 0}) *
-                                      (goal.longitude - last_goal.longitude),
-                                  GetDistance2D({0, 0, 0}, {1, 0, 0}) *
-                                      (goal.latitude - last_goal.latitude),
-                                  last_goal.altitude - goal.altitude);
+    ::Eigen::Vector3d start_to_end_vector(
+        GetDistance2D({0, 0, 0}, {1, 0, 0}) * (end.latitude - start.latitude),
+        GetDistance2D({0, 0, 0}, {0, 1, 0}) * (end.longitude - start.longitude),
+        start.altitude - end.altitude);
 
-    ::Eigen::Vector3d path_projection = path_vector *
-                                        path_vector.dot(distance_vector) /
-                                        path_vector.dot(path_vector);
+    ::Eigen::Vector3d drone_projection_on_path_vector =
+        start_to_end_vector * start_to_end_vector.dot(drone_to_end_vector) /
+        start_to_end_vector.dot(start_to_end_vector);
 
-    ::Eigen::Vector3d error = distance_vector - path_projection;
+    ::Eigen::Vector3d error_vector =
+        (drone_to_end_vector - drone_projection_on_path_vector) /
+        kGotoRawReCenterRamp;
 
-    ::Eigen::Vector3d adjustment = error / 15;
-    double mix = ::std::min(1.0, ::std::pow(adjustment.norm(), 2));
-    double angle = path_vector.dot(distance_vector);
-//  ::std::cout << "MIX: " << mix << ::std::endl;
-//  ::std::cout << "ANGLE: " << angle << ::std::endl;
-//  ::std::cout << "DISTANCE VECTOR\n" << distance_vector << ::std::endl;
-//  ::std::cout << "PATH VECTOR\n" << path_vector << ::std::endl;
-//  ::std::cout << "PATH PROJECTION\n" << path_projection << ::std::endl;
-//  ::std::cout << "ERROR VECTOR\n" << error << ::std::endl;
-//  ::std::cout << "ADJUSTMENT VECTOR\n" << adjustment << ::std::endl;
+    // A value, between 0 and 1, which determines whether the output vector
+    // should point straight at the goal relative to the start-end path (mix =
+    // 0) or if the output vector should point perpendicular to the path to
+    // re-align the drone with the route.
+    double mix = ::std::min(1.0, ::std::pow(error_vector.norm(), 2));
 
     ::Eigen::Vector3d flight_direction_vector =
-        (path_vector / ::std::max(1.0, path_vector.norm())) * (1 - mix) +
-        (adjustment / ::std::max(1.0, adjustment.norm())) * (mix);
+        (drone_projection_on_path_vector /
+         ::std::max(1.0, drone_projection_on_path_vector.norm())) *
+            (1 - mix) +
+        (error_vector / ::std::max(1.0, error_vector.norm())) * mix;
 
-    flight_direction = {flight_direction_vector.y(),
-                        flight_direction_vector.x(),
+    // Convert from Eigen vectors to our code's internal Vector3D structure.
+    flight_direction = {flight_direction_vector.x(),
+                        flight_direction_vector.y(),
                         flight_direction_vector.z()};
-    flight_direction *= kSpeed;
 
-    if (angle < 0 || distance_vector.norm() < kSpeed) {
+    if (cmd.gotorawcommand().come_to_stop()) {
+      flight_direction *=
+          ::std::min(kSpeed,
+                     drone_projection_on_path_vector.norm() *
+                         kGotoRawWaypointPIDProportionalityGain);
+    } else {
+      flight_direction *= kSpeed;
+    }
+
+    // Stores whether the drone is now on the other side of the endpoint after
+    // having started on the other side.
+    bool passed_endpoint = start_to_end_vector.dot(drone_to_end_vector) < 0;
+
+    // Stores whether the drone will meet the goal very soon at its current
+    // speed.
+    bool will_meet_goal_in_near_future = drone_to_end_vector.norm() < kSpeed;
+
+    // Decide whether or not to move to the next command.
+    if ((cmd.gotorawcommand().come_to_stop() &&
+         drone_projection_on_path_vector.norm() < kGotoRawWaypointTolerance) ||
+        (!cmd.gotorawcommand().come_to_stop() &&
+         (passed_endpoint || will_meet_goal_in_near_future))) {
       mission_message_queue_receiver_.get_mission_manager()->PopCommand();
     }
   } else {
