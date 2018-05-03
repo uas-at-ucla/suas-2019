@@ -141,7 +141,7 @@ class MissionPlanner extends Component {
               className="mission_button"
               onClick={this.clearCommands}
             >
-              Clear Commands
+              {this.state.willClear ? "Confirm" : "Clear Commands"}
           </Button>
         </div>
         {this.deleteBtn()}
@@ -152,6 +152,7 @@ class MissionPlanner extends Component {
   addCommand = () => {
     let command = this.props.makeCommand('NothingCommand', null);
     let commands = this.props.homeState.commands;
+    console.log(commands)
     this.props.setHomeState({
       commands: commands.concat(command),
       changedCommands: {startIndex: commands.length, endIndex: commands.length}
@@ -228,7 +229,33 @@ class MissionPlanner extends Component {
         return null;
       }
     }
-    if (!isNaN(subcommand)) {
+    if (typeof subcommand !== 'object') {
+      if (type === 'bool') {
+        return (
+          <td key={id} className="input_td">
+            <div>
+              <div className="form-check">
+                <input
+                  className="form-check-input"
+                  type="checkbox"
+                  checked={subcommand}
+                  onChange={new_value => {
+                    this.changed_bool_field(
+                      new_value.target.checked,
+                      index,
+                      field
+                    );
+                  }}
+                  id={index+field}
+                />
+                <label className="form-check-label" for={index+field}>
+                  {key}
+                </label>
+              </div>
+            </div>
+          </td>
+        );
+      }
       return (
         <td key={id} className="input_td">
           <div>
@@ -241,7 +268,7 @@ class MissionPlanner extends Component {
               value={subcommand}
               className="command_input"
               onChange={new_value => {
-                this.changed_command_field(
+                this.changed_number_field(
                   new_value.target.value,
                   index,
                   field
@@ -306,7 +333,7 @@ class MissionPlanner extends Component {
         onChange={event => this.onCommandTypeChange(index, event)}
         key={index}
       >
-        {items.map((item, index) => <option key={index}>{item}</option>)};
+        {items.map((item, index) => <option key={index} value={item}>{item.replace('Command', '')}</option>)};
       </FormControl>
     );
   }
@@ -337,35 +364,43 @@ class MissionPlanner extends Component {
     }
   }
 
-  changed_command_field(value, command, field) {
+  changed_number_field(value, command, field) {
     if (value === '') value = 0;
     let newValue = parseFloat(value);
     if (!isNaN(newValue)) {
-      let commands = this.props.homeState.commands.slice();
-      let type = commands[command].type;
-
-      let keys = field.split('.');
-      field = keys.pop();
-      let subcommand = commands[command][type];
-      for (let key of keys) {
-        if (Array.isArray(subcommand)) {
-          subcommand = subcommand[parseInt(key)];
-        } else {
-          subcommand = subcommand[key];
-        }
-      }
-
-      if (Array.isArray(subcommand)) {
-        subcommand[parseInt(field)] = newValue;
-      } else {
-        subcommand[field] = newValue;
-      }
-
-      this.props.setHomeState({
-        commands: commands,
-        changedCommands: {startIndex: command, endIndex: command}
-      });
+      this.changed_command_field(newValue, command, field);
     }
+  }
+
+  changed_bool_field(value, command, field) {
+    this.changed_command_field(value, command, field);
+  }
+
+  changed_command_field(value, command, field) {
+    let commands = this.props.homeState.commands.slice();
+    let type = commands[command].type;
+
+    let keys = field.split('.');
+    field = keys.pop();
+    let subcommand = commands[command][type];
+    for (let key of keys) {
+      if (Array.isArray(subcommand)) {
+        subcommand = subcommand[parseInt(key)];
+      } else {
+        subcommand = subcommand[key];
+      }
+    }
+
+    if (Array.isArray(subcommand)) {
+      subcommand[parseInt(field)] = value;
+    } else {
+      subcommand[field] = value;
+    }
+
+    this.props.setHomeState({
+      commands: commands,
+      changedCommands: {startIndex: command, endIndex: command}
+    });
   }
 
   restoreCommands = () => {
@@ -373,11 +408,17 @@ class MissionPlanner extends Component {
   }
 
   clearCommands = () => {
-    this.props.setHomeState({
-      commands: [],
-      changedCommands: null,
-      invalidCommands: false
-    });
+    if (this.state.willClear) {
+      this.props.setHomeState({
+        commands: [],
+        changedCommands: null,
+        invalidCommands: false
+      });
+      this.setState({willClear: false});
+    } else {
+      this.setState({willClear: true});
+      setTimeout(() => this.setState({willClear: false}), 2000);
+    }
   }
 }
 

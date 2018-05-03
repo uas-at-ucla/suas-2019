@@ -322,6 +322,9 @@ class Home extends Component {
       }
       return this.make_inner_command(field.type, null);
     }
+    if (field.type === 'bool') {
+      return false;
+    }
     return 0;
   }
 
