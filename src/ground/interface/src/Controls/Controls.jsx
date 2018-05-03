@@ -1,40 +1,45 @@
 import React, { Component } from 'react';
 import './Controls.css';
+import PromptButton from '../PromptButton/PromptButton';
 
 class Controls extends Component {
   render() {
     return (
       <div id="controls" className="text-white">
         <div id="normalControls" className="card">
-          <button
+          <PromptButton
             className="btn btn-outline-success"
             onClick={this.sendRunMissionCommand}
+            id="run_mission_btn"
           >
             Run Mission
-          </button>
+          </PromptButton>
 
-          <button
+          <PromptButton
             className="btn btn-outline-secondary"
             onClick={this.sendLandCommand}
+            id="land_btn"
           >
             Land
-          </button>
+          </PromptButton>
         </div>
 
         <div id="emergencyControls" className="card">
-          <button
+          <PromptButton
             className="btn btn-outline-warning"
             onClick={this.sendFailsafeCommand}
+            id="failsafe_btn"
           >
             Failsafe Land
-          </button>
+          </PromptButton>
 
-          <button
+          <PromptButton
             className="btn btn-outline-danger"
             onClick={this.sendThrottleCutCommand}
+            id="throttle_cut_btn"
           >
             Throttle Cut
-          </button>
+          </PromptButton>
         </div>
       </div>
     );
