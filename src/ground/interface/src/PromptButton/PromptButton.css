@@ -1,0 +1,27 @@
+.PromptButton {
+  display: inline-block;
+}
+
+.PromptButton .modal-body button {
+  width: 100%;
+}
+
+.PromptButton .modal-content {
+  background-color: rgba(35, 35, 35, 0.9) !important;
+  border-color: #333 !important;
+  color: white;
+}
+
+.PromptButton .modal-header {
+  border-color: #333 !important;
+}
+
+.PromptButton .close {
+  color: white !important;
+  text-shadow: none !important;
+}
+
+.PromptButton input { 
+  text-align: center;
+  margin-bottom: 10px;
+}
