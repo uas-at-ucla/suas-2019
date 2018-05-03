@@ -181,6 +181,7 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
         goto_raw_goal->set_latitude(end.latitude);
         goto_raw_goal->set_longitude(end.longitude);
         goto_raw_goal->set_altitude(end.altitude);
+        goto_raw_cmd->set_come_to_stop(false);
         goto_raw_cmd->set_allocated_goal(goto_raw_goal);
 
 //      ::std::vector<Position3D> avoidance_path =
