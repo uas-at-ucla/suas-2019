@@ -20,7 +20,7 @@ namespace testing {
 
 bool verbose = false;
 
-pid_t simulator_pid = 0, io_pid = 0, socat_pid = 0;
+pid_t simulator_pid = 0, io_pid = 0, mavproxy_pid = 0;
 
 void kill_and_wait(pid_t pid, bool should_kill) {
   if (verbose) {
@@ -42,9 +42,9 @@ void create_procs() {
     const char *simulator_path = "../../../external/PX4_sitl/jmavsim";
 
     if (!verbose) {
-      //    int null_fd = open("/dev/null", O_WRONLY);
-      //    dup2(null_fd, 1);  // redirect stdout
-      //    dup2(null_fd, 2);  // redirect stderr
+      int null_fd = open("/dev/null", O_WRONLY);
+      dup2(null_fd, 1);  // redirect stdout
+      dup2(null_fd, 2);  // redirect stderr
     }
 
     execl("/bin/sh", "sh", "-c", simulator_path, NULL);
@@ -52,51 +52,26 @@ void create_procs() {
   }
   ASSERT_TRUE(0 == kill(simulator_pid, 0));
 
-  struct stat buffer;
+  mavproxy_pid = fork();
+  if (!mavproxy_pid) {
+    setsid();
 
-  pid_t socat_rm_pid = fork();
-  if (!socat_rm_pid) {
-    execl("/bin/rm", "rm", "/tmp/virtualcom0", NULL);
+    int null_fd = open("/dev/null", O_WRONLY);
+    dup2(null_fd, 1);  // redirect stdout
+    dup2(null_fd, 2);  // redirect stderr
+
+    execl("/usr/local/bin/mavproxy.py",
+            "--mav20 ",
+            "--state-basedir=/tmp/ ",
+            "--master=0.0.0.0:14550 ",
+            "--out=udp:0.0.0.0:8083 ",
+            "--out=udp:0.0.0.0:8085 ", NULL);
     exit(0);
   }
-  waitpid(socat_rm_pid, NULL, 0);
 
-  while (stat("/tmp/virtualcom0", &buffer)) {
-    if (socat_pid) {
-      pid_t killall_pid = fork();
-      if (!killall_pid) {
-        if (!verbose) {
-          int null_fd = open("/dev/null", O_WRONLY);
-          dup2(null_fd, 1);  // redirect stdout
-          dup2(null_fd, 2);  // redirect stderr
-        }
+  ASSERT_TRUE(0 == kill(mavproxy_pid, 0));
 
-        execl("/usr/bin/killall", "killall", "socat", NULL);
-        exit(0);
-      }
-
-      waitpid(killall_pid, NULL, 0);
-    }
-
-    socat_pid = fork();
-    if (!socat_pid) {
-      setsid();
-
-      if (!verbose) {
-        int null_fd = open("/dev/null", O_WRONLY);
-        dup2(null_fd, 1);  // redirect stdout
-        dup2(null_fd, 2);  // redirect stderr
-      }
-
-      execl("/usr/bin/socat", "socat", "pty,link=/tmp/virtualcom0,raw",
-            "udp4-listen:14540", NULL);
-      exit(0);
-    }
-
-    ASSERT_TRUE(0 == kill(socat_pid, 0));
-
-    usleep(1e6 / 2);
-  }
+  usleep(1e6 / 2);
 
   io_pid = fork();
   if (!io_pid) {
@@ -119,7 +94,7 @@ void create_procs() {
 void quit_procs() {
   kill_and_wait(io_pid, true);
   kill_and_wait(simulator_pid, false);
-  kill_and_wait(socat_pid, true);
+  kill_and_wait(mavproxy_pid, true);
 }
 
 void quit_handler(int sig) {
@@ -235,7 +210,7 @@ TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
 
   ::std::cout << "end mission...\n";
   // Do land and check if times out.
-  for (int i = 0; i < 1000 && flight_loop_queue.sensors->armed; i++) {
+  for (int i = 0; i < 5000 && flight_loop_queue.sensors->armed; i++) {
     flight_loop_queue_.goal.MakeWithBuilder().run_mission(false).Send();
 
     StepLoop();
@@ -316,7 +291,7 @@ TEST_F(FlightLoopTest, ThrottleCutCheck) {
   ASSERT_GE(flight_loop_queue_.sensors->relative_altitude, 2.1);
 
   ::std::cout << "throttle cut" << ::std::endl;
-  for (int i = 0; i < 200 && flight_loop_queue.sensors->relative_altitude > 0.1;
+  for (int i = 0; i < 5000 && flight_loop_queue.sensors->relative_altitude > 0.1;
        i++) {
     flight_loop_queue_.goal.MakeWithBuilder()
         .run_mission(true)
