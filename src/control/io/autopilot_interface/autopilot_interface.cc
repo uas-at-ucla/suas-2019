@@ -162,8 +162,6 @@ void AutopilotInterface::start() {
   // Component ID
   if (not autopilot_id) {
     autopilot_id = current_messages.compid;
-    printf("GOT AUTOPILOT COMPONENT ID: %i\n", autopilot_id);
-    printf("\n");
   }
 
   // Wait for initial position ned
@@ -218,6 +216,37 @@ void AutopilotInterface::Disarm() {
 
   mavlink_message_t message;
   mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
+}
+
+void AutopilotInterface::DoGimbal() {
+  static float position = 0;
+  static bool flip = false;
+  if(position > 0.9) {
+    flip = true;
+  } else if (position < -0.9) {
+    flip = false;
+  }
+
+  if(flip) {
+    position -= 0.05;
+  } else {
+    position += 0.05;
+  }
+  ::std::cout << "SENDING " << position << ::std::endl;
+
+  mavlink_set_actuator_control_target_t com;
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.group_mlx = 2;
+  com.controls[0] = position;
+  com.controls[1] = position;
+  com.controls[2] = position;
+  com.controls[3] = position;
+
+  mavlink_message_t message;
+  mavlink_msg_set_actuator_control_target_encode(system_id, companion_id, &message, &com);
 
   write_message(message);
 }
