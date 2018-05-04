@@ -3,6 +3,33 @@ import './Controls.css';
 import PromptButton from '../PromptButton/PromptButton';
 
 class Controls extends Component {
+
+  keymap = {
+    'KeyZ': 'run_mission_btn',
+    'KeyX': 'pause_mission_btn',
+    'KeyC': 'take_off_btn',
+    'KeyV': 'hold_btn',
+    'KeyB': 'offboard_btn',
+    'KeyN': 'rtl_btn',
+    'KeyM': 'land_btn',
+    'Comma': 'alarm_btn',
+    'Period': 'failsafe_btn',
+    'Slash': 'throttle_cut_btn'
+  }
+
+  componentDidMount() {
+    document.addEventListener("keypress", (e) => {
+      if (e.ctrlKey && e.shiftKey && this.keymap[e.code]) {
+        let button = this.refs[this.keymap[e.code]];
+        button.click();
+        if (button.tagName === 'BUTTON') {
+          this.refs[this.keymap[e.code]].focus();
+          console.log("click")
+        }
+      }
+    });
+  }
+
   render() {
     return (
       <div id="controls" className="text-white">
@@ -11,16 +38,18 @@ class Controls extends Component {
             className="btn btn-outline-success"
             onClick={this.sendRunMissionCommand}
             id="run_mission_btn"
+            ref="run_mission_btn"
           >
-            Run Mission
+            Run Mission (Z)
           </button>
 
           <button
             className="btn btn-outline-secondary"
             onClick={() => this.setDroneState('PAUSE')}
             id="pause_mission_btn"
+            ref="pause_mission_btn"
           >
-            Pause
+            Pause (X)
           </button>
         </div>
 
@@ -29,16 +58,18 @@ class Controls extends Component {
             className="btn btn-outline-success"
             onClick={() => this.setDroneState('TAKEOFF')}
             id="take_off_btn"
+            ref="take_off_btn"
           >
-            Take Off
+            Take Off (C)
           </button>
 
           <button
             className="btn btn-outline-secondary"
             onClick={() => this.setDroneState('HOLD')}
             id="hold_btn"
+            ref="hold_btn"
           >
-            Hold
+            Hold (V)
           </button>
 
 
@@ -46,48 +77,54 @@ class Controls extends Component {
             className="btn btn-outline-primary"
             onClick={() => this.setDroneState('OFFBOARD')}
             id="offboard_btn"
+            ref="offboard_btn"
           >
-            Offboard
+            Offboard (B)
           </button>
 
           <PromptButton
             className="btn btn-outline-warning"
             onClick={() => this.setDroneState('RTL')}
             id="rtl_btn"
+            ref="rtl_btn"
           >
-            RTL
+            RTL (N)
           </PromptButton>
 
           <PromptButton
             className="btn btn-outline-success"
             onClick={() => this.setDroneState('LAND')}
             id="land_btn"
+            ref="land_btn"
           >
-            Land
+            Land (M)
           </PromptButton>
 
           <button
             className="btn btn-outline-danger"
             onClick={() => this.setDroneState('ALARM')}
             id="alarm_btn"
+            ref="alarm_btn"
           >
-            Alarm
+            Alarm (&lt;)
           </button>
 
           <PromptButton
             className="btn btn-outline-warning"
             onClick={() => this.setDroneState('FAILSAFE')}
             id="failsafe_btn"
+            ref="failsafe_btn"
           >
-            Failsafe Land
+            Failsafe Land (&gt;)
           </PromptButton>
 
           <PromptButton
             className="btn btn-outline-danger"
             onClick={() => this.setDroneState('THROTTLE CUT')}
             id="throttle_cut_btn"
+            ref="throttle_cut_btn"
           >
-            Throttle Cut
+            Throttle Cut (?)
           </PromptButton>
         </div>
       </div>
