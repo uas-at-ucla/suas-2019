@@ -1,0 +1,11 @@
+1: blue
+2: red
+3: green
+4: black
+5: gray
+6: white
+7: yellow
+8: purple
+9: brown
+10: orange
+

@@ -1,0 +1,24 @@
+<annotation>
+	<filename>0000503.jpg</filename>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>512</width>
+		<height>512</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>cross</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>136</xmin>
+			<ymin>296</ymin>
+			<xmax>196</xmax>
+			<ymax>356</ymax>
+		</bndbox>
+	</object>
+</annotation>

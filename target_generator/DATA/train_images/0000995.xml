@@ -1,0 +1,24 @@
+<annotation>
+	<filename>0000995.jpg</filename>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>512</width>
+		<height>512</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>hexagon</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>264</xmin>
+			<ymin>368</ymin>
+			<xmax>340</xmax>
+			<ymax>444</ymax>
+		</bndbox>
+	</object>
+</annotation>
