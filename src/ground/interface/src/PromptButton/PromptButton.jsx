@@ -42,7 +42,7 @@ class PromptButton extends Component {
                 <button
                   ref = "btn"
                   data-dismiss="modal"
-                  className={`${this.props.className} btn-lg`}
+                  className={`${this.props.className.replace('-outline', '')} btn-lg`}
                   onClick={this.props.onClick}
                   disabled={this.state.input !== SUPER_SECRET_CODE}
                 >
