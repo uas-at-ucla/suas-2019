@@ -7,13 +7,25 @@
   margin-left: 5px;
 }
 
+#controls .PromptButton+button {
+  margin-left: 5px;
+}
+
+#controls button+.PromptButton {
+  margin-left: 5px;
+}
+
+#controls button+button {
+  margin-left: 5px;
+}
+
 #normalControls {
   float: left;
   padding: 5px;
   display: inline;
 }
 
-#emergencyControls {
+#stateControls {
   float: right;
   display: inline;
   padding: 5px;

@@ -7,27 +7,76 @@ class Controls extends Component {
     return (
       <div id="controls" className="text-white">
         <div id="normalControls" className="card">
-          <PromptButton
+          <button
             className="btn btn-outline-success"
             onClick={this.sendRunMissionCommand}
             id="run_mission_btn"
           >
             Run Mission
+          </button>
+
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => this.setDroneState('PAUSE')}
+            id="pause_mission_btn"
+          >
+            Pause
+          </button>
+        </div>
+
+        <div id="stateControls" className="card">
+          <button
+            className="btn btn-outline-success"
+            onClick={() => this.setDroneState('TAKEOFF')}
+            id="take_off_btn"
+          >
+            Take Off
+          </button>
+
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => this.setDroneState('HOLD')}
+            id="hold_btn"
+          >
+            Hold
+          </button>
+
+
+          <button
+            className="btn btn-outline-primary"
+            onClick={() => this.setDroneState('OFFBOARD')}
+            id="offboard_btn"
+          >
+            Offboard
+          </button>
+
+          <PromptButton
+            className="btn btn-outline-warning"
+            onClick={() => this.setDroneState('RTL')}
+            id="rtl_btn"
+          >
+            RTL
           </PromptButton>
 
           <PromptButton
-            className="btn btn-outline-secondary"
-            onClick={this.sendLandCommand}
+            className="btn btn-outline-success"
+            onClick={() => this.setDroneState('LAND')}
             id="land_btn"
           >
             Land
           </PromptButton>
-        </div>
 
-        <div id="emergencyControls" className="card">
+          <button
+            className="btn btn-outline-danger"
+            onClick={() => this.setDroneState('ALARM')}
+            id="alarm_btn"
+          >
+            Alarm
+          </button>
+
           <PromptButton
             className="btn btn-outline-warning"
-            onClick={this.sendFailsafeCommand}
+            onClick={() => this.setDroneState('FAILSAFE')}
             id="failsafe_btn"
           >
             Failsafe Land
@@ -35,7 +84,7 @@ class Controls extends Component {
 
           <PromptButton
             className="btn btn-outline-danger"
-            onClick={this.sendThrottleCutCommand}
+            onClick={() => this.setDroneState('THROTTLE CUT')}
             id="throttle_cut_btn"
           >
             Throttle Cut
@@ -45,6 +94,14 @@ class Controls extends Component {
     );
   }
 
+  setDroneState(state) {
+    const command = {
+      state: state
+    };
+
+    this.props.socketEmit('set_state', command);
+  }
+
   sendRunMissionCommand = () => {
     const serialized_mission = this.props.getMission();
 
@@ -52,30 +109,6 @@ class Controls extends Component {
       'execute_commands',
       this.bin2string(serialized_mission)
     );
-  };
-
-  sendLandCommand = () => {
-    const command = {
-      state: 'LAND'
-    };
-
-    this.props.socketEmit('set_state', command);
-  };
-
-  sendFailsafeCommand = () => {
-    const command = {
-      state: 'FAILSAFE'
-    };
-
-    this.props.socketEmit('set_state', command);
-  };
-
-  sendThrottleCutCommand = () => {
-    const command = {
-      state: 'THROTTLE CUT'
-    };
-
-    this.props.socketEmit('set_state', command);
   };
 
   bin2string(arrayBuffer) {

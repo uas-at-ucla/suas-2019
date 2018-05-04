@@ -517,11 +517,22 @@ class Map extends Component {
     if (props.homeState.focusedCommand !== null) {
       this.props.setAppState({ followDrone: false });
       this.props.setHomeState({ focusedCommand: null });
+      let command = props.homeState.commands[props.homeState.focusedCommand];
       let point =
         this.commands[props.homeState.focusedCommand] ||
-        props.homeState.commands[props.homeState.focusedCommand].mission_point;
+        command.mission_point;
+      let pos = null;
+      let marker = null;
       if (point && point.marker) {
-        this.map.panTo(point.marker.getPosition());
+        marker = point.marker;
+        pos = marker.getPosition();
+      } else if (command.type === 'SurveyCommand') {
+        pos = this.get_midpoint(command.SurveyCommand.surveyPolygon);
+      }
+      if (pos) {
+        this.map.panTo(pos);
+      }
+      if (marker) {
         point.marker.setAnimation(google.maps.Animation.BOUNCE);
         setTimeout(() => point.marker.setAnimation(null), 1400);
       }
