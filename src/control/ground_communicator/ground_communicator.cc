@@ -312,7 +312,7 @@ void MissionReceiver::Run() {
 }
 
 void MissionReceiver::RunIteration(int loop_index, int message_index) {
-  SetFlightLoopGoal(GetState());
+  // SetFlightLoopGoal(GetState());
   SendTelemetry(loop_index, message_index);
 }
 
