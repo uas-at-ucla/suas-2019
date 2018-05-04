@@ -17,10 +17,15 @@ class PromptButton extends Component {
     });
   }
 
+  click() {
+    this.refs.modal_btn.click();
+  }
+
   render() {
     return (
       <div className="PromptButton" id={this.props.id}>
         <button
+          ref="modal_btn"
           className={this.props.className}
           data-toggle="modal"
           data-target={`#${this.props.id}-modal`}
@@ -46,7 +51,7 @@ class PromptButton extends Component {
                   onClick={this.props.onClick}
                   disabled={this.state.input !== SUPER_SECRET_CODE}
                 >
-                  {this.props.children}
+                  {this.props.children.replace(/ *\([^)]*\) */g, "").trim()}
                 </button>
               </div>
             </div>
