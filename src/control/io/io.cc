@@ -72,6 +72,8 @@ void AutopilotSensorReader::RunIteration() {
   autopilot_interface::TimeStamps current_timestamps =
       copter_io_->current_messages.time_stamps;
 
+  copter_io_->DoGimbal();
+
   if (current_timestamps.global_position_int -
       last_timestamps_.global_position_int) {
     last_gps_ = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
@@ -183,7 +185,7 @@ void AutopilotOutputWriter::Write() {
 
   if (::src::control::loops::flight_loop_queue.output->velocity_control) {
     // TODO(comran): Check altitude is above normal (on restarts).
-    copter_io_->Offboard();
+//  copter_io_->Offboard();
   }
 
   if (::src::control::loops::flight_loop_queue.output->land) {
