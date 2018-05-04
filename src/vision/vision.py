@@ -9,6 +9,7 @@ import flask_socketio, socketIO_client
 # Server dependencies
 import time
 import uuid
+import json
 
 # Yolo dependencies
 from darkflow.net.build import TFNet  # yolo neural net
@@ -22,23 +23,42 @@ import queue  # input/output queues
 # cv2 imported above # cropping and saving images
 import ntpath  # finding the name of a file (windows compatible)
 
+# Client dependency
+from img_manager import ImgManager
+
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
 sys.path.insert(0, '../../lib')
 import process_manager
 
 # Defaults #####################################################################
+
+# General Defaults
+DEFAULT_LOCAL_DATA_DIR = 'local_data'
+
+# Server defaults
 SECRET_KEY = 'flappy'
 DEFAULT_SRV_IP = '0.0.0.0'
 DEFAULT_SRV_PORT = 8099
 DEFAULT_VSN_SRV = DEFAULT_SRV_IP + ':' + str(DEFAULT_SRV_PORT)
+DEFAULT_RAW_DIR = os.join(os.abspath('.'), DEFAULT_LOCAL_DATA_DIR, 'raw')
+# TODO configure drone ip addr
+DRONE_IP = '0.0.0.0'
+YOLO_IP = '0.0.0.0'
+RSYNC_IP = '0.0.0.0'
+SNIPPER_IP = '0.0.0.0'
+CLASSIFIER_IP = '0.0.0.0'
+SNIPPER_USER = 'username'
+
+# Client Defaults
 DEFAULT_THREADS = 1
+DEFAULT_AUCTION_TIMEOUT = 3
 MAX_THREADS = 20
+
+# Yolo Defaults
 DEFAULT_YOLO_CFG = 'localizer/cfg/yolo-auvsi.cfg'
 DEFAULT_YOLO_WEIGHTS = 'localizer/darkflow/bin/tiny-yolo-voc.weights'
 DEFAULT_YOLO_THRESH = 0.1
-DEFAULT_LOCAL_DATA_DIR = 'local_data'
-DEFAULT_AUCTION_TIMEOUT = 3
 
 processes = process_manager.ProcessManager()
 c_workers = []
@@ -65,7 +85,13 @@ vision_socketio_server = flask_socketio.SocketIO(socketio_app)
 server_task_queue = queue.Queue()
 connected_clients = {'rsync': [], 'yolo': [], 'snipper': []}
 active_auctions = {}
+taken_auctions = {}
 img_count = 0
+hasher = hashlib.blake2b()
+
+
+def gen_id():
+    return base64.urlsafe_b64encode(uuid.uuid4().bytes).decode('utf-8')[:-2]
 
 
 class ServerWorker(threading.Thread):
@@ -104,7 +130,10 @@ class ServerWorker(threading.Thread):
                                 lowest_bid['client_id'], auction['args'])
 
                             # remove the auction entry
-                            active_auctions.pop(task['auction_id'])
+                            taken_auctions[task[
+                                'auction_id']] = active_auctions.pop(
+                                    task['auction_id'])
+                            # check on the progress of the task TODO
                     else:
                         # check again later since not enough time passed
                         self.in_q.push(task)
@@ -144,6 +173,7 @@ def vision_socketio_server_connect():
     print("Someone connected to vision server")
 
 
+# Record Clients # not needed
 #@vision_socketio_server.on('depart')
 #def remove_client(json):
 #    if verbose:
@@ -164,39 +194,68 @@ def receive_bid(json):
 
 # Step 1 - download the image
 @vision_socketio_server.on('process_image')
-def process_image(json):
+def process_image(json, attempts=1):
+    # Create a new image info file
+    img_info = {
+        'id': gen_id(),
+        'time_gen': time.time(),
+    }
+    img_inc_path = os.path.join(DEFAULT_RAW_DIR, img_info['id'])
+
+    try:
+        with open(img_inc_path + '.json', 'x') as f:
+            json.dump(img_info, f)
+    except FileExistsError as err:
+        if attempts <= 0:
+            raise err  # what are the chances of two collisions in a row?
+        # try again with a random image
+        process_image(json, attempts - 1)
+        return
+    except OSError:
+        # TODO handle OSError
+        pass
+
+    # TODO keep track of how many times rsync failed
     print("Telling rsync client to download image")
-    # TODO configure drone ip addr
-    # yapf: disable
     vision_socketio_server.emit(
         'rsync', {
-            'prev': None,
-            'next': None,
+            'prev': {
+                'event_name': 'process_image',
+                'json': json
+            },
+            'next': {
+                'event_name': 'yolo',
+                'json': {
+                    'img_id': img_info['id']
+                }
+            },
             'user': 'pi',
-            'addr': 'INSERT_DRONE_IP',
+            'addr': DRONE_IP,
             'img_remote_src': json['file_path'],
-            'img_local_dest':
-            os.path.join(
-                os.path.abspath('.'), DEFAULT_LOCAL_DATA_DIR, 'raw',
-                str(img_count) + '.jpg')
+            'img_local_dest': img_inc_path + '.jpg'
         })
-    # yapf: enable
     img_count += 1
 
 
-# Step 2 - find the targets in the image (yolo)
+# Intermediate step
 @vision_socketio_server.on('download_complete')
-def call_yolo(json):
-    print("Telling yolo to run on img")
-    vision_socketio_server.emit('yolo', {'file_path': json['saved_path']})
+def call_next(json):
+    next_task = json['next']
+    if verbose:
+        print("Download Complete; Next Up: " + next_task['event_name'])
+    vision_socketio_server.emit(next_task['event_name'], next_task['json'])
+
+
+# Step 2 - find the targets in the image (yolo)
 
 
 # Step 3 - cut out those targets
 @vision_socketio_server.on('yolo_done')
 def snip_img(json):
-    print('Yolo finished -> running snipper')
+    if verbose:
+        print('Yolo finished; running snipper')
     vision_socketio_server.emit('snip', {
-        'src_img_path': json['img_processed'],
+        'img_id': json['img_id'],
         'yolo_results': json['results']
     })
 
@@ -204,9 +263,33 @@ def snip_img(json):
 # Step 4 - run shape classification on each target
 #      ... do letter classification and color recognition
 @vision_socketio_server.on('snipped')
+def download_snipped(json):
+    img_id = json['img_id']
+    download_dir = json['download_dir']
+    print("Telling rsync client to download snipped image")
+    for ext in ('.jpg', '.json'):
+        vision_socketio_server.emit(
+            'rsync', {
+                'prev': {
+                    'event_name': 'snipped',
+                    'json': json
+                },
+                'next': {
+                    'event_name': 'classify',
+                    'json': {
+                        'img_id': json['img_id']
+                    }
+                },
+                'user': SNIPPER_USER,
+                'addr': SNIPPER_IP,
+                'img_remote_src': os.path.join(download_dir, img_id + ext),
+                'img_local_dest': os.path.join(DEFAULT_RAW_DIR, img_id + ext)
+            })
+
+
+@vision_socketio_server.on('classify')
 def classify(json):
     pass
-
 
 # TODO handle autodownloading images as needed
 #@vision_socketio_server.on('download_complete')
@@ -223,7 +306,7 @@ def classify(json):
 
 def server_worker(args):
     global img_count
-    img_count = len(os.listdir(LOCAL_RAW_DIR))
+    img_count = len(os.listdir(args.raw_dir))
     global s_worker
     s_worker = ServerWorker(server_task_queue)
     s_worker.start()
@@ -283,6 +366,17 @@ class ClientWorker(threading.Thread):
         super()
         self.in_q = in_q  # input queue (queue.Queue)
         self.stop_req = threading.Event()  # listen for a stop request
+        self.vsn_user = args.vsn_user
+        self.vsn_addr = args.vsn_addr
+        self.working_dir = args.working_dir
+
+        self.manager = ImgManager(
+            args.working_dir, {
+                'user': args.vsn_user,
+                'addr': args.vsn_addr,
+                'remote_dir': args.remote_dir,
+                os_type: os.name
+            })
 
     def _do_work(self, task):
         raise NotImplementedError("Client Worker doesn't know what to do.")
@@ -296,7 +390,12 @@ class ClientWorker(threading.Thread):
                 # Try to get an item from the queue
                 # blocking: true; timeout: 0.05
                 task = self.in_q.get(True, 0.05)
-                self._do_work(task)
+                if task['type'] == 'download':
+                    processes.spawn_process_wait_for_code(
+                        'rsync -vz --progress -e "ssh -p 22" "' + self.vsn_user
+                        + '@' + self.vsn_addr + ':' + task['remote_dir'] + '')
+                else:
+                    self._do_work(task)
             except queue.Queue.Empty:
                 continue
 
@@ -322,13 +421,13 @@ class RsyncWorker(ClientWorker):
             vision_client.emit(
                 'download_complete', {
                     'saved_path': task_args['img_local_dest'],
-                    'next_task': task_args['next']
+                    'next': task_args['next']
                 })
         else:
             vision_client.emit(
                 'download_failed', {
                     'attempted_path': task_args['img_local_dest'],
-                    'prev_task': task_args['prev']
+                    'prev': task_args['prev']
                 })
 
     def get_event_name(self):
@@ -354,25 +453,18 @@ class YoloWorker(ClientWorker):
 
     # task format: [{'file_path': str}]
     def _do_work(self, task):
-        file_path = task[0]['file_path']
+        img_id = task[0]['img_id']
         if verbose:
             print(
                 'Called yolo with args: <' + '> <'.join(map(str, task)) + '>')
 
-        # TODO check if file is not local, and download (rsync) if necessary
-        while not os.path.isfile(file_path):
-            vision_client.emit('rsync', {'next_task': 'echo'})
-
-        img = cv2.imread(file_path)
+        img = self.manager.get_img(img_id)
         results = self.tfnet.return_predict(img)
 
         # TODO Calculate the coordinates
         #        for result in results:
         #            result
-        vision_client.emit('yolo_done', {
-            'img_processed': file_path,
-            'results': results
-        })
+        vision_client.emit('yolo_done', {'img_id': img_id, 'results': results})
 
         # Result format: [{'label': str, 'confidence': int,
         #                  'topleft': {'x': int, 'y': int},
@@ -390,28 +482,46 @@ def yolo_worker(args):
 # Target Localization ##########################################################
 class SnipperWorker(ClientWorker):
 
-    # task format: [{'src_img_path': str, 'yolo_results': [], 'out_dir'}]
+    # task format:
+    #   [{
+    #       'src_img_path': str,
+    #       'loc_info': {
+    #           'lat': float,
+    #           'lng': float,
+    #           'alt': float
+    #       },
+    #       'yolo_results': [],
+    #       'out_dir': str
+    #   }]
     def _do_work(self, task):
-        src_img_path = task[0]['src_img_path']
-        src_img_label = ntpath.basename(src_img_path).split('.')[0]
+        src_img_id = task[0]['img_id']
         yolo_results = task[0]['yolo_results']
-        out_dir = task[0]['out_dir']
 
-        src_img = cv2.imread(src_img_path)
-        cropped_imgs = []
-        i = 0
+        src_img = self.manager.get_img(src_img_id)
+
         for result in yolo_results:
             xmin = result['topleft']['x']
             xmax = result['bottomright']['x']
             ymin = result['topleft']['y']
             ymax = result['bottomright']['y']
 
+            # Crop the image
+            # TODO calculate location
             cropped_img = src_img[ymin:ymax, xmin:xmax]
-            out_path = os.path.join(out_dir,
-                                    src_img_label + '-' + str(i) + '.jpg')
-            cv2.imwrite(out_path, cropped_img)
-            vision_client.emit('snipped', {'img_path': out_path})
-            i += 1
+            img_id = self.manager.create_new_img(
+                cropped_img,
+                other={
+                    'parent_img_id': src_img_id,
+                    'location': {
+                        'lat': None,
+                        'lng': None
+                    }
+                })
+
+            vision_client.emit('snipped', {
+                'img_id': img_id,
+                'download_dir': self.working_dir
+            })
 
     def get_event_name(self):
         return 'snip'
@@ -423,6 +533,11 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--verbose", action='store_true')
+    parser.add_argument(
+        '--data-dir',
+        action='store',
+        dest='data_dir',
+        default=DEFAULT_DATA_DIR)
 
     subparsers = parser.add_subparsers(help='sub-command help')
 
@@ -431,6 +546,8 @@ if __name__ == '__main__':
     server_parser = subparsers.add_parser('server', help='server help')
     server_parser.add_argument(
         "--port", action='store', dest='port', default=DEFAULT_SRV_PORT)
+    server_parser.add_argument(
+        '--raw-dir', action='store', dest='raw_dir', default=DEFAULT_RAW_DIR)
     server_parser.set_defaults(func=server_worker)
 
     # Client Parsers ###################################################
