@@ -30,7 +30,8 @@ FlightLoop::FlightLoop()
       current_flight_start_time_(0),
       alarm_(kFlightLoopFrequency),
       got_sensors_(false),
-      last_loop_(0) {
+      last_loop_(0),
+      did_alarm_(false) {
   ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
   ::src::control::loops::flight_loop_queue.output.FetchLatest();
@@ -109,7 +110,9 @@ void FlightLoop::RunIteration() {
   if (!got_sensors_) {
     // Send out an alarm chirp to signal that the drone loop is running
     // successfully.
-    alarm_.AddAlert({0.02, 0.50});
+    alarm_.AddAlert({0.03, 0.15});
+    alarm_.AddAlert({0.03, 0.15});
+    alarm_.AddAlert({0.03, 0.15});
   }
 
   got_sensors_ = true;
@@ -153,6 +156,17 @@ void FlightLoop::RunIteration() {
     next_state = FLIGHT_TERMINATION;
   }
 
+  if (::src::control::loops::flight_loop_queue.goal->trigger_alarm + 0.05 >
+      current_time) {
+    if (!did_alarm_) {
+      did_alarm_ = true;
+      alarm_.AddAlert({0.30, 0.30});
+      LOG_LINE("Alarm was manually triggered");
+    }
+  } else {
+    did_alarm_ = false;
+  }
+
   // Set defaults for all outputs.
   output->velocity_x = 0;
   output->velocity_y = 0;
@@ -172,8 +186,8 @@ void FlightLoop::RunIteration() {
     case STANDBY:
       if (run_mission) {
         next_state = ARMING;
-        alarm_.AddAlert({0.10, 0.50});
-        alarm_.AddAlert({0.10, 0.50});
+        alarm_.AddAlert({0.03, 0.15});
+        alarm_.AddAlert({0.20, 0.15});
       }
       break;
 
@@ -199,7 +213,7 @@ void FlightLoop::RunIteration() {
         break;
       }
 
-//    output->arm = true;
+      //    output->arm = true;
       break;
 
     case ARMED:
@@ -238,12 +252,12 @@ void FlightLoop::RunIteration() {
         takeoff_ticker_++;
       }
 
-//    if (takeoff_ticker_ < 800) {
-//      output->arm = true;
-//      output->takeoff = true;
-//    } else {
-//      output->disarm = true;
-//    }
+      //    if (takeoff_ticker_ < 800) {
+      //      output->arm = true;
+      //      output->takeoff = true;
+      //    } else {
+      //      output->disarm = true;
+      //    }
 
       if (::src::control::loops::flight_loop_queue.sensors->relative_altitude >
           2.2) {
@@ -299,7 +313,7 @@ void FlightLoop::RunIteration() {
         break;
       }
 
-//    output->land = true;
+      //    output->land = true;
       break;
 
     case FAILSAFE:
