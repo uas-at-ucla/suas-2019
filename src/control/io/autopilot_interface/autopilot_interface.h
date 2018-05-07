@@ -82,6 +82,7 @@ struct Mavlink_Messages {
   mavlink_highres_imu_t highres_imu;
   mavlink_attitude_t attitude;
   mavlink_vfr_hud_t vfr_hud;
+  mavlink_actuator_control_target_t control_target;
 
   TimeStamps time_stamps;
 

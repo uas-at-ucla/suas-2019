@@ -35,10 +35,12 @@ class MissionReceiver {
   void ConnectToGround();
 
   enum GoalState {
+    STANDBY,
     RUN_MISSION,
     LAND,
     FAILSAFE,
-    THROTTLE_CUT
+    THROTTLE_CUT,
+    ALARM
   };
 
  private:

@@ -177,6 +177,8 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
         goto_raw_goal->set_altitude(goto_cmd->goal().altitude());
         goto_raw_cmd->set_allocated_goal(goto_raw_goal);
 
+        goto_raw_cmd->set_come_to_stop(goto_cmd->come_to_stop());
+
         // Disable random tree stuff for tests.
 //      Position3D end = {goto_cmd->goal().latitude(),
 //                        goto_cmd->goal().longitude(),

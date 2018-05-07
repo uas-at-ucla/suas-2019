@@ -55,6 +55,8 @@ queue_group FlightLoopQueue {
 
     bool trigger_failsafe;
     bool trigger_throttle_cut;
+
+    double trigger_alarm;
   };
 
   message Output {
