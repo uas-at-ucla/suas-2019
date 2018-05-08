@@ -1,6 +1,9 @@
 import os
 import cv2
 import sys
+import uuid
+import base64
+import json
 from pathlib import PurePosixPath, PureWindowsPath
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -105,7 +108,7 @@ class ImgManager:
         except OSError:
             # TODO handle OSError
             pass
-    def create_new_img(self, img, img_id=None, time_gen=None, hash_type=None, other={})
+    def create_new_img(self, img, img_id=None, time_gen=None, hash_type=None, other={}):
         if img_id is None:
             img_id = self.gen_id()
 
