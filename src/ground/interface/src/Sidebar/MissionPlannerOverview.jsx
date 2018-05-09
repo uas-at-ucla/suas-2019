@@ -6,6 +6,7 @@ import {
 } from 'react-sortable-hoc';
 import './MissionPlanner.css';
 
+const METERS_PER_FOOT = 0.3048;
 const oppositeOf = {'comeToStop': 'flyThrough'}
 
 const SortableItem = SortableElement(({ command, changedCommands, myIndex, self }) => {
@@ -110,7 +111,14 @@ class MissionPlannerOverview extends Component {
       if (type === 'bool') {
         return <td key={id}><div>{subcommand ? field : oppositeOf[field]}</div></td>;
       } else {
-        return <td key={id}><div>{parseFloat(subcommand).toFixed(3)}</div></td>;
+        return <td key={id}>
+          {this.possibleUnits(key).map(units =>
+            <div className={units}>
+              {parseFloat(this.convertToUnitsIfDistance(units, subcommand)).toFixed(3)}
+              {units !== "none" ? (units==="metric" ? "m" : "ft") : null}
+            </div>
+          )}
+        </td>
       }
     } else {
       let fields = this.props.commandTypes[type];
@@ -149,6 +157,20 @@ class MissionPlannerOverview extends Component {
         </td>
       );
     }
+  }
+
+  possibleUnits(value_type) {
+    if (value_type === "altitude") {
+      return ["metric", "imperial"];
+    }
+    return ["none"];
+  }
+
+  convertToUnitsIfDistance(toUnits, value) {
+    if (toUnits === "imperial") {
+      return value / METERS_PER_FOOT;
+    }
+    return value;
   }
 }
 

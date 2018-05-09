@@ -698,7 +698,9 @@ class Map extends Component {
       fields.longitude +
       '<br>';
     if (fields.altitude != undefined) {
-      info += 'Alt: ' + fields.altitude + ' m<br>';
+      info += '<span class="metric">Alt: ' + this.round(fields.altitude, 1) + ' m</span>';
+      info += '<span class="imperial">Alt: ' + this.round(fields.altitude/METERS_PER_FOOT, 1) + ' ft</span>';
+      info += '<br>'
     }
     info +=
       '<button class="remove_command btn btn-sm btn-outline-danger">' +
@@ -909,6 +911,8 @@ class Map extends Component {
     div.innerHTML = command[geometry].infowindow.getContent();
     let command_info_el = div.getElementsByClassName('command_info')[0];
     let command_alt_el = div.getElementsByClassName('command_alt')[0];
+    let command_alt_metric = command_alt_el.getElementsByClassName('metric')[0];
+    let command_alt_imperial = command_alt_el.getElementsByClassName('imperial')[0];
     let add_btn = div.getElementsByClassName('add_point_to_plan')[0];
     let remove_btn = div.getElementsByClassName('remove_point_from_plan')[0];
     if (in_mission) {
@@ -916,14 +920,16 @@ class Map extends Component {
       let fields = command[type];
       let pos = this.get_command_pos(fields, type);
       if (pos && pos.altitude != null) {
-        command_alt_el.textContent = 'Commanded Alt: ' + pos.altitude + ' m';
+        command_alt_metric.textContent = 'Commanded Alt: ' + this.round(pos.altitude, 1) + ' m';
+        command_alt_imperial.textContent = 'Commanded Alt: ' + this.round(pos.altitude/METERS_PER_FOOT, 1) + ' ft';
       }
       let command_info = index + 1 + ') ' + command.type + ': ';
       command_info_el.textContent = command_info;
       add_btn.setAttribute('hidden', 'hidden');
       remove_btn.removeAttribute('hidden');
     } else {
-      command_alt_el.textContent = '';
+      command_alt_metric.textContent = '';
+      command_alt_imperial.textContent = '';
       command_info_el.textContent = '';
       remove_btn.setAttribute('hidden', 'hidden');
       add_btn.removeAttribute('hidden');
@@ -982,7 +988,10 @@ class Map extends Component {
           <span class="command_info" />
           Search Area
         </h6>
-        <span class="command_alt" />
+        <span class="command_alt">
+          <span class="metric"></span>
+          <span class="imperial"></span>
+        </span>
         <button class="add_point_to_plan btn btn-sm btn-outline-success">
           Add to Plan
         </button>
@@ -1095,13 +1104,22 @@ class Map extends Component {
         Lng: {coords.lng}
         {coords.alt ? (
           <span>
-            <br />Alt: {coords.alt} m
+            <br />
+            <span class="metric">
+              Alt: {this.round(coords.alt, 1)} m
+            </span>
+            <span class="imperial">
+              Alt: {pos.altitude_msl} ft
+            </span>
           </span>
         ) : (
           <span />
         )}
         <br />
-        <span class="command_alt" />
+        <span class="command_alt">
+          <span class="metric"></span>
+          <span class="imperial"></span>
+        </span>
         {mission_point_key !== 'off_axis_object' ? (
           <span>
             <br />
@@ -1283,17 +1301,22 @@ class Map extends Component {
         <br />
         Lng: {obstacle.longitude}
         <br />
-        Radius: {radius}m
+        <span class="metric">Radius: {this.round(radius, 1)} m</span>
+        <span class="imperial">Radius: {radius_feet} ft</span>
         {obstacle.cylinder_height ? (
           <span>
-            <br />Height: {obstacle.cylinder_height * METERS_PER_FOOT} m
+            <br />
+            <span class="metric">Height: {this.round(obstacle.cylinder_height * METERS_PER_FOOT)} m</span>
+            <span class="imperial">Height: {obstacle.cylinder_height} ft</span>
           </span>
         ) : (
           <span />
         )}
         {obstacle.altitude_msl ? (
           <span>
-            <br />Alt: {obstacle.altitude_msl * METERS_PER_FOOT} m
+            <br />
+            <span class="metric">Alt: {this.round(obstacle.altitude_msl * METERS_PER_FOOT, 1)} m</span>
+            <span class="imperial">Alt: {this.round(obstacle.altitude_msl, 1)} ft</span>
           </span>
         ) : (
           <span />
@@ -1394,6 +1417,11 @@ class Map extends Component {
     let lng2 =
       typeof pt2.lng == 'function' ? pt2.lng() : pt2.lng || pt2.longitude;
     return Math.abs(lat1 - lat2) < 0.000001 && Math.abs(lng1 - lng2) < 0.000001;
+  }
+
+  round(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
   }
 }
 
