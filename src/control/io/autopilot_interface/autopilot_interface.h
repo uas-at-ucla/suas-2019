@@ -102,6 +102,8 @@ class AutopilotInterface {
   void Disarm();
   void DoGimbal();
   void Takeoff();
+  void Hold();
+  void ReturnToLaunch();
   void Offboard();
   void Land();
   void FlightTermination();
