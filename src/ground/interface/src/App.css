@@ -19,3 +19,11 @@ html, body, #root {
   cursor: pointer;
   z-index: 50;
 }
+
+.metric_container .imperial {
+  display: none;
+}
+
+.imperial_container .metric {
+  display: none;
+}

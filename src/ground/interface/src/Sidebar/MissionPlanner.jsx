@@ -20,6 +20,8 @@ import {
   arrayMove
 } from 'react-sortable-hoc';
 
+const METERS_PER_FOOT = 0.3048;
+
 const SortableItem = SortableElement(({ command, changedCommands, myIndex, self }) => {
   let type = command.type;
   let fields = self.props.commandTypes[type];
@@ -258,18 +260,19 @@ class MissionPlanner extends Component {
       }
       return (
         <td key={id} className="input_td">
-          <div>
+          {this.possibleUnits(key).map(units =>
+          <div className={units}>
           <InputGroup>
             <InputGroupAddon addonType="prepend">
               <InputGroupText>{key}</InputGroupText>
             </InputGroupAddon>
             <Input
               type="number"
-              value={subcommand}
+              value={this.convertToUnitsIfDistance(units, subcommand)}
               className="command_input"
               onChange={new_value => {
                 this.changed_number_field(
-                  new_value.target.value,
+                  this.convertToMetersIfDistance(units, new_value.target.value),
                   index,
                   field
                 );
@@ -277,8 +280,13 @@ class MissionPlanner extends Component {
               bsSize="small"
               disabled={command.interop_object && (key === 'latitude' || key === 'longitude')}
             />
+            {units !== "none" ? 
+              <InputGroupAddon addonType="append">
+                <InputGroupText>{units==="metric" ? "m" : "ft"}</InputGroupText>
+              </InputGroupAddon> : null
+            }
           </InputGroup>
-          </div>
+          </div>)}
         </td>
       );
     } else {
@@ -320,6 +328,29 @@ class MissionPlanner extends Component {
         </td>
       );
     }
+  }
+
+  possibleUnits(value_type) {
+    if (value_type === "altitude") {
+      return ["metric", "imperial"];
+    }
+    return ["none"];
+  }
+
+  convertToMetersIfDistance(fromUnits, value) {
+    if (fromUnits === "imperial") {
+      return value * METERS_PER_FOOT;
+    }
+    return value;
+  }
+
+  convertToUnitsIfDistance(toUnits, value) {
+    if (toUnits === "imperial") {
+      return this.round(value / METERS_PER_FOOT, 3);
+    } else if (toUnits === "metric") {
+      return this.round(value, 3);
+    }
+    return value;
   }
 
   commandTypeOptions(index, command) {
@@ -419,6 +450,11 @@ class MissionPlanner extends Component {
       this.setState({willClear: true});
       setTimeout(() => this.setState({willClear: false}), 2000);
     }
+  }
+
+  round(value, precision) {
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(value * multiplier) / multiplier;
   }
 }
 
