@@ -217,8 +217,37 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
     (*sensors_map)["battery_current"] =
         sio::double_message::create((*sensors)->battery_current);
     (*sensors_map)["armed"] = sio::bool_message::create((*sensors)->armed);
+
+    ::src::control::io::AutopilotState autopilot_state =
+        static_cast<::src::control::io::AutopilotState>(
+            (*sensors)->autopilot_state);
+
+    ::std::string autopilot_state_string;
+
+    switch (autopilot_state) {
+      case ::src::control::io::AutopilotState::TAKEOFF:
+        autopilot_state_string = "TAKEOFF";
+        break;
+      case ::src::control::io::AutopilotState::HOLD:
+        autopilot_state_string = "HOLD";
+        break;
+      case ::src::control::io::AutopilotState::OFFBOARD:
+        autopilot_state_string = "OFFBOARD";
+        break;
+      case ::src::control::io::AutopilotState::RTL:
+        autopilot_state_string = "RTL";
+        break;
+      case ::src::control::io::AutopilotState::LAND:
+        autopilot_state_string = "LAND";
+        break;
+      case ::src::control::io::AutopilotState::UNKNOWN:
+      default:
+        autopilot_state_string = "UNKNOWN";
+        break;
+    }
+
     (*sensors_map)["autopilot_state"] =
-        sio::int_message::create((*sensors)->autopilot_state);
+        sio::string_message::create(autopilot_state_string);
   }
 
   if (status->get()) {
@@ -252,14 +281,15 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
         sio::double_message::create((*output)->velocity_y);
     (*output_map)["velocity_z"] =
         sio::double_message::create((*output)->velocity_z);
-    (*output_map)["velocity_control"] =
-        sio::bool_message::create((*output)->velocity_control);
-    (*output_map)["arm"] = sio::bool_message::create((*output)->arm);
-    (*output_map)["disarm"] = sio::bool_message::create((*output)->disarm);
-    (*output_map)["takeoff"] = sio::bool_message::create((*output)->takeoff);
-    (*output_map)["land"] = sio::bool_message::create((*output)->land);
-    (*output_map)["throttle_cut"] =
-        sio::bool_message::create((*output)->throttle_cut);
+    //  (*output_map)["velocity_control"] =
+    //      sio::bool_message::create((*output)->velocity_control);
+    //  (*output_map)["arm"] = sio::bool_message::create((*output)->arm);
+    //  (*output_map)["disarm"] = sio::bool_message::create((*output)->disarm);
+    //  (*output_map)["takeoff"] =
+    //  sio::bool_message::create((*output)->takeoff);
+    //  (*output_map)["land"] = sio::bool_message::create((*output)->land);
+    //  (*output_map)["throttle_cut"] =
+    //      sio::bool_message::create((*output)->throttle_cut);
   }
 
   LOG_LINE("sending telemetry: "
@@ -428,11 +458,11 @@ void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
       flight_loop_goal_message->trigger_throttle_cut = false;
       break;
 
-    case LAND:
-      flight_loop_goal_message->run_mission = false;
-      flight_loop_goal_message->trigger_failsafe = false;
-      flight_loop_goal_message->trigger_throttle_cut = false;
-      break;
+    //  case LAND:
+    //    flight_loop_goal_message->run_mission = false;
+    //    flight_loop_goal_message->trigger_failsafe = false;
+    //    flight_loop_goal_message->trigger_throttle_cut = false;
+    //    break;
 
     case FAILSAFE:
       flight_loop_goal_message->run_mission = false;
@@ -444,6 +474,41 @@ void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
       flight_loop_goal_message->run_mission = false;
       flight_loop_goal_message->trigger_failsafe = true;
       flight_loop_goal_message->trigger_throttle_cut = true;
+      break;
+
+    case TAKEOFF:
+      flight_loop_goal_message->trigger_takeoff = time;
+      LOG_LINE("GOT TAKEOFF @ TIME " << time);
+      break;
+
+    case HOLD:
+      flight_loop_goal_message->trigger_hold = time;
+      LOG_LINE("GOT HOLD @ TIME " << time);
+      break;
+
+    case OFFBOARD:
+      flight_loop_goal_message->trigger_offboard = time;
+      LOG_LINE("GOT OFFBOARD @ TIME " << time);
+      break;
+
+    case RTL:
+      flight_loop_goal_message->trigger_rtl = time;
+      LOG_LINE("GOT RTL @ TIME " << time);
+      break;
+
+    case LAND:
+      flight_loop_goal_message->trigger_land = time;
+      LOG_LINE("GOT LAND @ TIME " << time);
+      break;
+
+    case ARM:
+      flight_loop_goal_message->trigger_arm = time;
+      LOG_LINE("GOT ARM @ TIME " << time);
+      break;
+
+    case DISARM:
+      flight_loop_goal_message->trigger_disarm = time;
+      LOG_LINE("GOT DISARM @ TIME " << time);
       break;
 
     case ALARM:
@@ -471,12 +536,24 @@ void MissionReceiver::SetState(::std::string new_state_string) {
       return;
     }
     new_state = RUN_MISSION;
-  } else if (new_state_string == "LAND") {
-    new_state = LAND;
   } else if (new_state_string == "FAILSAFE") {
     new_state = FAILSAFE;
   } else if (new_state_string == "THROTTLE CUT") {
     new_state = THROTTLE_CUT;
+  } else if (new_state_string == "TAKEOFF") {
+    new_state = TAKEOFF;
+  } else if (new_state_string == "HOLD") {
+    new_state = HOLD;
+  } else if (new_state_string == "OFFBOARD") {
+    new_state = OFFBOARD;
+  } else if (new_state_string == "RTL") {
+    new_state = RTL;
+  } else if (new_state_string == "LAND") {
+    new_state = LAND;
+  } else if (new_state_string == "ARM") {
+    new_state = ARM;
+  } else if (new_state_string == "DISARM") {
+    new_state = DISARM;
   } else if (new_state_string == "ALARM") {
     new_state = ALARM;
   } else {

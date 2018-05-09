@@ -16,6 +16,7 @@
 
 #include "src/control/loops/flight_loop.q.h"
 #include "src/control/loops/flight_loop.h"
+#include "src/control/io/io.h"
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/logger/log_sender.h"
 
@@ -37,9 +38,15 @@ class MissionReceiver {
   enum GoalState {
     STANDBY,
     RUN_MISSION,
-    LAND,
     FAILSAFE,
     THROTTLE_CUT,
+    TAKEOFF,
+    HOLD,
+    OFFBOARD,
+    RTL,
+    LAND,
+    ARM,
+    DISARM,
     ALARM
   };
 
