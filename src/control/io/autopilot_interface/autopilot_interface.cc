@@ -337,66 +337,37 @@ void AutopilotInterface::Land() {
 
 void AutopilotInterface::FlightTermination() {
   // NO LONGER DOES ANYTHING!
-//Disarm();
+  // Disarm();
 
-//mavlink_command_long_t com;
-//com.target_system = system_id;
-//com.target_component = autopilot_id;
-//com.command = MAV_CMD_DO_FLIGHTTERMINATION;
-//com.confirmation = true;
-//com.param1 = 1;
+  // mavlink_command_long_t com;
+  // com.target_system = system_id;
+  // com.target_component = autopilot_id;
+  // com.command = MAV_CMD_DO_FLIGHTTERMINATION;
+  // com.confirmation = true;
+  // com.param1 = 1;
 
-//mavlink_message_t message;
-//mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+  // mavlink_message_t message;
+  // mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
 
-//write_message(message);
+  // write_message(message);
 }
 
 void AutopilotInterface::set_message_period() {
-  // TODO(comran): FIX
-  // THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  return;
-
   for (int i = 0; i < 255; i++) {
     int32_t interval = -1;
-    bool valid = true;
+    bool valid = false;
 
     switch (i) {
       case MAVLINK_MSG_ID_HEARTBEAT:
-        interval = 1;
-        break;
-
       case MAVLINK_MSG_ID_SYS_STATUS:
       case MAVLINK_MSG_ID_BATTERY_STATUS:
       case MAVLINK_MSG_ID_RADIO_STATUS:
       case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
       case MAVLINK_MSG_ID_HIGHRES_IMU:
       case MAVLINK_MSG_ID_ATTITUDE:
-        interval = 1e6 / 10;
-
-      case MAVLINK_MSG_ID_SERVO_OUTPUT_RAW:
-      case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
-      case MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED:
-      case MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT:
-      case MAVLINK_MSG_ID_ATTITUDE_QUATERNION:
-      case MAVLINK_MSG_ID_TIMESYNC:
-      case MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET:
-      case MAVLINK_MSG_ID_SYSTEM_TIME:
-      case MAVLINK_MSG_ID_GPS_RAW_INT:
-      case MAVLINK_MSG_ID_WIND_COV:
-      case MAVLINK_MSG_ID_ALTITUDE:
-      case MAVLINK_MSG_ID_VFR_HUD:
-      case MAVLINK_MSG_ID_EXTENDED_SYS_STATE:
-      case MAVLINK_MSG_ID_HOME_POSITION:
-      case MAVLINK_MSG_ID_ESTIMATOR_STATUS:
-      case MAVLINK_MSG_ID_VIBRATION:
-      case MAVLINK_MSG_ID_ATTITUDE_TARGET:
-      case MAVLINK_MSG_ID_TERRAIN_REPORT:
-        valid = false;
-        interval = -1;
+        interval = 1e6 / 25;
+        valid = true;
         break;
-      default:
-        valid = false;
     }
 
     if (valid) {
@@ -413,6 +384,26 @@ void AutopilotInterface::set_message_period() {
       write_message(message);
     }
   }
+}
+
+void AutopilotInterface::set_params() {
+  set_param("MIS_TAKEOFF_ALT", 5.0);
+}
+
+void AutopilotInterface::set_param(const char id[], float value) {
+  mavlink_param_set_t param_config;
+  param_config.target_system = system_id;
+  param_config.target_component = autopilot_id;
+
+  memcpy(param_config.param_id, id,
+         ::std::min(16, (int)strlen(id)));
+  param_config.param_value = value;
+
+  mavlink_message_t message;
+  mavlink_msg_param_set_encode(system_id, companion_id, &message,
+                                  &param_config);
+
+  write_message(message);
 }
 
 void AutopilotInterface::stop() {
@@ -460,6 +451,7 @@ void AutopilotInterface::write_thread(void) {
   writing_status_ = true;
 
   set_message_period();
+  set_params();
 
   while (!time_to_exit_) {
     // Pixhawk needs to see off-board commands at minimum 2Hz,

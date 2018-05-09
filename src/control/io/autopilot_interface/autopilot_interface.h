@@ -109,6 +109,8 @@ class AutopilotInterface {
   void FlightTermination();
 
   void set_message_period();
+  void set_params();
+  void set_param(const char id[], float value);
 
   Mavlink_Messages current_messages;
   mavlink_set_position_target_local_ned_t initial_position;
