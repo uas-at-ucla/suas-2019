@@ -22,6 +22,15 @@ namespace {
 const int kAlarmGPIOPin = 2;
 }  // namespace
 
+enum AutopilotState {
+  UNKNOWN = 0,
+  TAKEOFF = 1,
+  HOLD = 2,
+  OFFBOARD = 3,
+  RTL = 4,
+  LAND = 5,
+};
+
 void quit_handler(int sig);
 
 class AutopilotSensorReader : public LoopInputHandler {
@@ -46,6 +55,14 @@ class AutopilotOutputWriter : public LoopOutputHandler {
   virtual void Stop() override;
 
   autopilot_interface::AutopilotInterface *copter_io_;
+
+  bool did_takeoff_;
+  bool did_hold_;
+  bool did_offboard_;
+  bool did_rtl_;
+  bool did_land_;
+  bool did_arm_;
+  bool did_disarm_;
 };
 
 class IO {

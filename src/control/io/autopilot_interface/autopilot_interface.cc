@@ -258,8 +258,6 @@ void AutopilotInterface::DoGimbal() {
 }
 
 void AutopilotInterface::Takeoff() {
-  Arm();
-
   mavlink_global_position_int_t gps = current_messages.global_position_int;
 
   mavlink_command_long_t com;
@@ -270,6 +268,35 @@ void AutopilotInterface::Takeoff() {
   com.param5 = static_cast<double>(gps.lat) / 1e7;
   com.param6 = static_cast<double>(gps.lon) / 1e7;
   com.param7 = static_cast<double>(gps.alt) / 1e3;
+
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
+}
+
+void AutopilotInterface::Hold() {
+  mavlink_command_long_t com;
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_DO_SET_MODE;
+  com.confirmation = true;
+  com.param1 = MAV_MODE_AUTO_ARMED;
+  com.param2 = 4;
+  com.param3 = 3;
+
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
+}
+
+void AutopilotInterface::ReturnToLaunch() {
+  mavlink_command_long_t com;
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_NAV_RETURN_TO_LAUNCH;
+  com.confirmation = true;
 
   mavlink_message_t message;
   mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
