@@ -23,7 +23,8 @@ class App extends Component {
       moving_obstacles: [],
       stationary_obstacles: [],
       missions: [],
-      followDrone: true
+      followDrone: true,
+      metric: true
     };
   }
 
@@ -52,7 +53,7 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
+      <div className={`App ${this.state.metric ? "metric_container" : "imperial_container"}`}>
         <img
           id="logo"
           src={logo}
