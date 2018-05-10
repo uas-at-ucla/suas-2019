@@ -233,28 +233,48 @@ void AutopilotInterface::DoGimbal() {
   }
 
   if (flip) {
-    position -= 0.01;
+    position -= 10;
   } else {
-    position += 0.01;
+    position += 10;
   }
 
-  position = 50;
-  mavlink_command_long_t com;
-  com.target_system = system_id;
-  com.target_component = autopilot_id;
-  com.command = MAV_CMD_DO_MOUNT_CONTROL;
-  com.param1 = position;
-  com.param2 = position;
-  com.param3 = position;
-  com.param4 = 0;
-  com.param5 = 0;
-  com.param6 = 0;
-  com.param7 = MAV_MOUNT_MODE_NEUTRAL;
+  {
+    mavlink_command_long_t com;
+    com.target_system = system_id;
+    com.target_component = autopilot_id;
+    com.command = MAV_CMD_DO_MOUNT_CONFIGURE;
+    com.param1 = MAV_MOUNT_MODE_MAVLINK_TARGETING;
+    com.param2 = 1;
+    com.param3 = 1;
+    com.param4 = 1;
+    com.param5 = 0;
+    com.param6 = 0;
+    com.param7 = 0;
 
-  mavlink_message_t message;
-  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+    mavlink_message_t message;
+    mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
 
-  write_message(message);
+    write_message(message);
+  }
+
+  {
+    mavlink_command_long_t com;
+    com.target_system = system_id;
+    com.target_component = autopilot_id;
+    com.command = MAV_CMD_DO_MOUNT_CONTROL;
+    com.param1 = position;
+    com.param2 = position;
+    com.param3 = position;
+    com.param4 = 0;
+    com.param5 = 0;
+    com.param6 = 0;
+    com.param7 = MAV_MOUNT_MODE_MAVLINK_TARGETING;
+
+    mavlink_message_t message;
+    mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+    write_message(message);
+  }
 }
 
 void AutopilotInterface::Takeoff() {
@@ -388,6 +408,7 @@ void AutopilotInterface::set_message_period() {
 
 void AutopilotInterface::set_params() {
   set_param("MIS_TAKEOFF_ALT", 5.0);
+  set_param("MNT_MODE_OUT", 1.0);
 }
 
 void AutopilotInterface::set_param(const char id[], float value) {

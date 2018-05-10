@@ -74,6 +74,8 @@ queue_group FlightLoopQueue {
     float velocity_y;
     float velocity_z;
 
+    float gimbal_angle;
+
     double trigger_takeoff;
     double trigger_hold;
     double trigger_offboard;
