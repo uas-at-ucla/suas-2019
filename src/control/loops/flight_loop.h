@@ -78,6 +78,7 @@ class FlightLoop {
   bool got_sensors_;
   double last_loop_;
   bool did_alarm_;
+  bool did_arm_;
 };
 
 const std::map<FlightLoop::State, std::string> state_string = {
