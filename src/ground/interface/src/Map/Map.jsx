@@ -682,7 +682,7 @@ class Map extends Component {
   }
 
   command_info(i, type, fields) {
-    let title = i + 1 + ') ' + type;
+    let title = (i + 1) + ') ' + type;
 
     let info =
       '<div id="command_infowindow_' +
@@ -923,7 +923,7 @@ class Map extends Component {
         command_alt_metric.textContent = 'Commanded Alt: ' + this.round(pos.altitude, 1) + ' m';
         command_alt_imperial.textContent = 'Commanded Alt: ' + this.round(pos.altitude/METERS_PER_FOOT, 1) + ' ft';
       }
-      let command_info = index + 1 + ') ' + command.type + ': ';
+      let command_info = (index + 1) + ') ' + command.type + ': ';
       command_info_el.textContent = command_info;
       add_btn.setAttribute('hidden', 'hidden');
       remove_btn.removeAttribute('hidden');

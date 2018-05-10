@@ -22,9 +22,16 @@ import {
 
 const METERS_PER_FOOT = 0.3048;
 
-const SortableItem = SortableElement(({ command, changedCommands, myIndex, self }) => {
+const SortableItem = SortableElement(({ command, changedCommands, newCmdStartEnd, myIndex, self }) => {
   let type = command.type;
   let fields = self.props.commandTypes[type];
+  let startCmdIndex = self.props.homeState.commands.findIndex(cmd => cmd.isStart);
+  let endCmdIndex = self.props.homeState.commands.findIndex(cmd => cmd.isEnd);
+  if (endCmdIndex === -1) endCmdIndex = Infinity;
+  if (startCmdIndex > endCmdIndex) {
+    startCmdIndex = -1;
+    endCmdIndex = Infinity;
+  }
 
   return (
     <tr
@@ -33,7 +40,15 @@ const SortableItem = SortableElement(({ command, changedCommands, myIndex, self 
       key={myIndex}
       data-index={myIndex}
     >
-      <td><div>{String(Number(myIndex) + 1)}</div></td>
+      <td>
+        <div
+          style = {(startCmdIndex <= myIndex && myIndex <= endCmdIndex) ? {
+            backgroundColor: "rgba(0, 255, 0, 0.25)"
+          } : {}}
+        >
+          {String(Number(myIndex) + 1)}
+        </div>
+      </td>
       <td><div>{command.name}</div></td>
       <td><div>
         <FormGroup className="type_select">
@@ -49,16 +64,16 @@ const SortableItem = SortableElement(({ command, changedCommands, myIndex, self 
 
 class MySortableItem extends SortableItem {
   shouldComponentUpdate(nextProps, nextState) {
-    let result = nextProps.changedCommands === null || (
+    let result = nextProps.newCmdStartEnd || nextProps.changedCommands === null || (
         nextProps.changedCommands.startIndex <= nextProps.myIndex &&
         nextProps.myIndex <= nextProps.changedCommands.endIndex);
     return result;
   }
 }
 
-const SortableList = SortableContainer(({ commands, changedCommands, self }) => {
+const SortableList = SortableContainer(({ commands, changedCommands, newCmdStartEnd, self }) => {
   return (
-    <div className="scrollbar" onScroll={self.hideDeleteBtn}>
+    <div className="scrollbar" onScroll={self.hideCmdPopup}>
       <table id="commandList">
         <tbody>
           {commands.map((command, index) => (
@@ -67,6 +82,7 @@ const SortableList = SortableContainer(({ commands, changedCommands, self }) => 
               index={index}
               command={command}
               changedCommands={changedCommands}
+              newCmdStartEnd={newCmdStartEnd}
               myIndex={index}
               self={self}
             />
@@ -80,9 +96,9 @@ const SortableList = SortableContainer(({ commands, changedCommands, self }) => 
 class MissionPlanner extends Component {
 
   state = {
-    deleteBtnIndex: null,
-    deleteBtnX: null,
-    deleteBtnY: null
+    cmdPopupIndex: null,
+    cmdPopupX: null,
+    cmdPopupY: null
   }
 
   componentDidMount() {
@@ -92,11 +108,11 @@ class MissionPlanner extends Component {
       let parentElement = e.target.parentElement;
       while (parentElement) {
         if (parentElement.className === 'command_row') {
-          let index = parentElement.getAttribute('data-index');
+          let index = Number(parentElement.getAttribute('data-index'));
           this.setState({
-            deleteBtnIndex: index,
-            deleteBtnX: e.clientX - modal.offsetLeft,
-            deleteBtnY: e.clientY - modal.offsetTop
+            cmdPopupIndex: index,
+            cmdPopupX: e.clientX - modal.offsetLeft,
+            cmdPopupY: e.clientY - modal.offsetTop
           });
           e.preventDefault();
           break;
@@ -106,7 +122,7 @@ class MissionPlanner extends Component {
     });
 
     document.addEventListener('click', (e) => {
-      this.hideDeleteBtn();
+      this.hideCmdPopup();
     });
   }
 
@@ -116,8 +132,9 @@ class MissionPlanner extends Component {
         <SortableList
           commands={this.props.homeState.commands}
           changedCommands={this.props.homeState.changedCommands}
-          onSortEnd={this.onSortEnd}
+          newCmdStartEnd={this.props.homeState.newCmdStartEnd}
           self={this}
+          onSortEnd={this.onSortEnd}
           transitionDuration={200}
           distance={2}
         />
@@ -146,7 +163,7 @@ class MissionPlanner extends Component {
               {this.state.willClear ? "Confirm" : "Clear Commands"}
           </Button>
         </div>
-        {this.deleteBtn()}
+        {this.cmdPopup()}
       </div>
     );
   }
@@ -154,32 +171,88 @@ class MissionPlanner extends Component {
   addCommand = () => {
     let command = this.props.makeCommand('NothingCommand', null);
     let commands = this.props.homeState.commands;
-    console.log(commands)
     this.props.setHomeState({
       commands: commands.concat(command),
       changedCommands: {startIndex: commands.length, endIndex: commands.length}
     });
   }
 
+  setCommandStart = (index) => {
+    let commands = this.props.homeState.commands.slice();
+    let startCmdIndex = commands.findIndex(cmd => cmd.isStart);
+    if (startCmdIndex !== -1) {
+      commands[startCmdIndex].isStart = false;
+      this.props.setHomeState({
+        commands: commands,
+        changedCommands: {startIndex: startCmdIndex, endIndex: startCmdIndex}
+      });
+      commands = commands.slice();
+    }
+    let endCmdIndex = commands.findIndex(cmd => cmd.isEnd);
+    if (endCmdIndex !== -1 && index > endCmdIndex) {
+      commands[endCmdIndex].isEnd = false;
+      this.props.setHomeState({
+        commands: commands,
+        changedCommands: {startIndex: endCmdIndex, endIndex: endCmdIndex}
+      });
+      commands = commands.slice();
+    }
+    commands[index].isStart = true;
+    this.props.setHomeState({
+      commands: commands,
+      changedCommands: {startIndex: index, endIndex: index},
+      newCmdStartEnd: true
+    });
+  }
+
+  setCommandEnd = (index) => {
+    let commands = this.props.homeState.commands.slice();
+    let endCmdIndex = commands.findIndex(cmd => cmd.isEnd);
+    if (endCmdIndex !== -1) {
+      commands[endCmdIndex].isEnd = false;
+      this.props.setHomeState({
+        commands: commands,
+        changedCommands: {startIndex: endCmdIndex, endIndex: endCmdIndex}
+      });
+      commands = commands.slice();
+    }
+    let startCmdIndex = commands.findIndex(cmd => cmd.isStart);
+    if (startCmdIndex !== -1 && index < startCmdIndex) {
+      commands[startCmdIndex].isStart = false;
+      this.props.setHomeState({
+        commands: commands,
+        changedCommands: {startIndex: startCmdIndex, endIndex: startCmdIndex}
+      });
+      commands = commands.slice();
+    }
+    commands[index].isEnd = true;
+    this.props.setHomeState({
+      commands: commands,
+      changedCommands: {startIndex: index, endIndex: index},
+      newCmdStartEnd: true
+    });
+  }
 
   deleteCommand = (index) => {
     let commands = this.props.homeState.commands.slice();
     commands.splice(index, 1);
     this.props.setHomeState({
       commands: commands,
-      changedCommands: {startIndex: index, endIndex: commands.length}
+      changedCommands: {startIndex: index, endIndex: commands.length},
+      newCmdStartEnd: true
     });
   }
 
   onSortEnd = ({ oldIndex, newIndex }) => {
     if (oldIndex !== newIndex) {
-      this.hideDeleteBtn();
+      this.hideCmdPopup();
       this.props.setHomeState({
         commands: arrayMove(this.props.homeState.commands, oldIndex, newIndex),
         changedCommands: {
           startIndex: Math.min(oldIndex, newIndex), 
           endIndex: Math.max(oldIndex, newIndex)
-        }
+        },
+        newCmdStartEnd: true
       });
     }
   };
@@ -199,6 +272,8 @@ class MissionPlanner extends Component {
       commands[index].type = newType;
       commands[index][newType] = command[newType];
     } else {
+      command.isStart = commands[index].isStart;
+      command.isEnd = commands[index].isEnd;
       commands[index] = command;
     }
     
@@ -369,29 +444,46 @@ class MissionPlanner extends Component {
     );
   }
 
-  deleteBtn() {
-    if (this.state.deleteBtnIndex == null) {
+  cmdPopup() {
+    if (this.state.cmdPopupIndex == null) {
       return null;
     }
     return (
-      <button
-        id="delete_command_btn"
-        className="btn btn-danger"
+      <div
+        id="cmd_popup"
+        className="card"
         style={{
           position: 'fixed',
-          left: this.state.deleteBtnX,
-          top: this.state.deleteBtnY
+          left: this.state.cmdPopupX,
+          top: this.state.cmdPopupY
         }}
-        onClick={() => this.deleteCommand(this.state.deleteBtnIndex)}
       >
-        Delete Command {Number(this.state.deleteBtnIndex)+1}
-      </button>
+        <h6 class="card-title"><b>Command {this.state.cmdPopupIndex+1}</b></h6>
+        <button
+          className="btn btn-primary"
+          onClick={() => this.setCommandStart(this.state.cmdPopupIndex)}
+        >
+          Set Start
+        </button>
+        <button
+          className="btn btn-primary"
+          onClick={() => this.setCommandEnd(this.state.cmdPopupIndex)}
+        >
+          Set End
+        </button>
+        <button
+          className="btn btn-danger"
+          onClick={() => this.deleteCommand(this.state.cmdPopupIndex)}
+        >
+          Delete
+        </button>
+      </div>
     );
   }
 
-  hideDeleteBtn = () => {
-    if (this.state.deleteBtnIndex != null) {
-      this.setState({deleteBtnIndex: null});
+  hideCmdPopup = () => {
+    if (this.state.cmdPopupIndex != null) {
+      this.setState({cmdPopupIndex: null});
     }
   }
 
