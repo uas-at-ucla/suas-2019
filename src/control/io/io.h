@@ -10,6 +10,7 @@
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
 #include <wiringPi.h>
+#include <pigpiod_if2.h>
 #endif
 
 #include "src/control/loops/flight_loop.q.h"
@@ -20,6 +21,7 @@ namespace control {
 namespace io {
 namespace {
 const int kAlarmGPIOPin = 2;
+const int kGimbalGPIOPin = 18;
 }  // namespace
 
 enum AutopilotState {
@@ -53,6 +55,10 @@ class AutopilotOutputWriter : public LoopOutputHandler {
   virtual void Read() override;
   virtual void Write() override;
   virtual void Stop() override;
+
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+  int pigpio_;
+#endif
 
   autopilot_interface::AutopilotInterface *copter_io_;
 

@@ -111,8 +111,8 @@ void FlightLoop::RunIteration() {
     // Send out an alarm chirp to signal that the drone loop is running
     // successfully.
     alarm_.AddAlert({0.03, 0.15});
-    alarm_.AddAlert({0.03, 0.15});
-    alarm_.AddAlert({0.03, 0.15});
+    //  alarm_.AddAlert({0.03, 0.15});
+    //  alarm_.AddAlert({0.03, 0.15});
   }
 
   got_sensors_ = true;
@@ -135,6 +135,22 @@ void FlightLoop::RunIteration() {
   last_loop_ = current_time;
 
   auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
+
+  static float gimbal_angle = 0;
+  static bool flip_gimbal_angle = false;
+  output->gimbal_angle = gimbal_angle;
+
+  if (gimbal_angle > 89.9) {
+    flip_gimbal_angle = true;
+  } else if (gimbal_angle < -89.9) {
+    flip_gimbal_angle = false;
+  }
+
+  if(flip_gimbal_angle) {
+    gimbal_angle -= 0.1;
+  } else {
+    gimbal_angle += 0.1;
+  }
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
@@ -267,22 +283,26 @@ void FlightLoop::RunIteration() {
       break;
 
     case IN_AIR: {
-//    if (!run_mission) {
-//      next_state = LANDING;
-//      break;
-//    }
+      //    if (!run_mission) {
+      //      next_state = LANDING;
+      //      break;
+      //    }
 
-//    // Check if altitude is below a safe threshold, which may indicate that
-//    // the autopilot was reset.
-//    if (::src::control::loops::flight_loop_queue.sensors->relative_altitude >
-//            2.2 &&
-//        ::src::control::loops::flight_loop_queue.sensors->relative_altitude <
-//            2.5) {
-//      next_state = TAKING_OFF;
-//    } else if (::src::control::loops::flight_loop_queue.sensors
-//                   ->relative_altitude < 2.2) {
-//      next_state = LANDING;
-//    }
+      //    // Check if altitude is below a safe threshold, which may indicate
+      //    that
+      //    // the autopilot was reset.
+      //    if
+      //    (::src::control::loops::flight_loop_queue.sensors->relative_altitude
+      //    >
+      //            2.2 &&
+      //        ::src::control::loops::flight_loop_queue.sensors->relative_altitude
+      //        <
+      //            2.5) {
+      //      next_state = TAKING_OFF;
+      //    } else if (::src::control::loops::flight_loop_queue.sensors
+      //                   ->relative_altitude < 2.2) {
+      //      next_state = LANDING;
+      //    }
 
       Position3D position = {
           ::src::control::loops::flight_loop_queue.sensors->latitude,
