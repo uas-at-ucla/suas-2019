@@ -72,8 +72,6 @@ void AutopilotSensorReader::RunIteration() {
   autopilot_interface::TimeStamps current_timestamps =
       copter_io_->current_messages.time_stamps;
 
-//copter_io_->DoGimbal();
-
   if (current_timestamps.global_position_int -
       last_timestamps_.global_position_int) {
     last_gps_ = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
@@ -144,7 +142,7 @@ void AutopilotSensorReader::RunIteration() {
 
   AutopilotState autopilot_state = UNKNOWN;
 
-  switch(heartbeat.custom_mode) {
+  switch (heartbeat.custom_mode) {
     case 0b00000010000001000000000000000000:
       autopilot_state = TAKEOFF;
       break;
@@ -165,8 +163,8 @@ void AutopilotSensorReader::RunIteration() {
       autopilot_state = UNKNOWN;
   }
 
-  //std::bitset<32> y(heartbeat.custom_mode);
-  //std::cout << y << ::std::endl;
+  // std::bitset<32> y(heartbeat.custom_mode);
+  // std::cout << y << ::std::endl;
 
   flight_loop_sensors_message->autopilot_state = autopilot_state;
 
@@ -177,8 +175,13 @@ AutopilotOutputWriter::AutopilotOutputWriter(
     autopilot_interface::AutopilotInterface *copter_io)
     : copter_io_(copter_io) {
 #ifdef UAS_AT_UCLA_DEPLOYMENT
+  // Alarm IO setup.
   wiringPiSetup();
   pinMode(kAlarmGPIOPin, OUTPUT);
+
+  // Gimbal IO setup.
+  pigpio_ = pigpio_start(0, 0);
+  set_mode(pigpio_, 24, PI_OUTPUT);
 #endif
 }
 
@@ -208,6 +211,11 @@ void AutopilotOutputWriter::Write() {
   digitalWrite(
       kAlarmGPIOPin,
       ::src::control::loops::flight_loop_queue.output->alarm ? HIGH : LOW);
+
+  int gimbal_angle =
+      1500 +
+      ::src::control::loops::flight_loop_queue.output->gimbal_angle / 90 * 500;
+  set_servo_pulsewidth(pigpio_, 24, gimbal_angle);
 #endif
 
   if (::src::control::loops::flight_loop_queue.output->trigger_takeoff + 0.05 >
