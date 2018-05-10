@@ -9,16 +9,31 @@ import './MissionPlanner.css';
 const METERS_PER_FOOT = 0.3048;
 const oppositeOf = {'comeToStop': 'flyThrough'}
 
-const SortableItem = SortableElement(({ command, changedCommands, myIndex, self }) => {
+const SortableItem = SortableElement(({ command, changedCommands, newCmdStartEnd, myIndex, self }) => {
   let type = command.type;
   let fields = self.props.commandTypes[type];
+  let startCmdIndex = self.props.homeState.commands.findIndex(cmd => cmd.isStart);
+  let endCmdIndex = self.props.homeState.commands.findIndex(cmd => cmd.isEnd);
+  if (endCmdIndex === -1) endCmdIndex = Infinity;
+  if (startCmdIndex > endCmdIndex) {
+    startCmdIndex = -1;
+    endCmdIndex = Infinity;
+  }
 
   return (
     <tr
       className="command_row"
       onClick={event => self.onCommandClick(myIndex, event)}
     >
-      <td><div>{myIndex + 1}</div></td>
+      <td>
+        <div
+          style = {(startCmdIndex <= myIndex && myIndex <= endCmdIndex) ? {
+            backgroundColor: "rgba(0, 255, 0, 0.25)"
+          } : {}}
+        >
+          {myIndex + 1}
+        </div>
+      </td>
       <td><div>{command.name}</div></td>
       <td><div>{type.replace('Command', '')}</div></td>
       {fields.map((field, index) => {
@@ -30,14 +45,14 @@ const SortableItem = SortableElement(({ command, changedCommands, myIndex, self 
 
 class MySortableItem extends SortableItem {
   shouldComponentUpdate(nextProps, nextState) {
-    let result = nextProps.changedCommands === null || (
+    let result = nextProps.newCmdStartEnd || nextProps.changedCommands === null || (
         nextProps.changedCommands.startIndex <= nextProps.myIndex &&
         nextProps.myIndex <= nextProps.changedCommands.endIndex);
     return result;
   }
 }
 
-const SortableList = SortableContainer(({ commands, changedCommands, self }) => {
+const SortableList = SortableContainer(({ commands, changedCommands, newCmdStartEnd, self }) => {
   return (
     <div className="scrollbar">
       <table id="commandListOverview">
@@ -48,6 +63,7 @@ const SortableList = SortableContainer(({ commands, changedCommands, self }) => 
               index={index}
               command={command}
               changedCommands={changedCommands}
+              newCmdStartEnd={newCmdStartEnd}
               myIndex={index}
               self={self}
             />
@@ -64,8 +80,9 @@ class MissionPlannerOverview extends Component {
       <SortableList
         commands={this.props.homeState.commands}
         changedCommands={this.props.homeState.changedCommands}
-        onSortEnd={this.onSortEnd}
+        newCmdStartEnd={this.props.homeState.newCmdStartEnd}
         self={this}
+        onSortEnd={this.onSortEnd}
         transitionDuration={200}
         distance={2}
       />
@@ -79,7 +96,8 @@ class MissionPlannerOverview extends Component {
         changedCommands: {
           startIndex: Math.min(oldIndex, newIndex), 
           endIndex: Math.max(oldIndex, newIndex)
-        }
+        },
+        newCmdStartEnd: true
       });
     }
   };
