@@ -16,6 +16,7 @@
 
 #include "src/control/loops/flight_loop.q.h"
 #include "src/control/loops/flight_loop.h"
+#include "src/control/io/io.h"
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/logger/log_sender.h"
 
@@ -27,7 +28,7 @@ class MissionReceiver {
  public:
   MissionReceiver();
   void Run();
-  void RunIteration();
+  void RunIteration(int loop_index, int message_index);
 
   void OnConnect();
   void OnFail();
@@ -35,15 +36,24 @@ class MissionReceiver {
   void ConnectToGround();
 
   enum GoalState {
+    STANDBY,
     RUN_MISSION,
-    LAND,
     FAILSAFE,
-    THROTTLE_CUT
+    THROTTLE_CUT,
+    TAKEOFF,
+    HOLD,
+    OFFBOARD,
+    RTL,
+    LAND,
+    ARM,
+    DISARM,
+    ALARM
   };
 
  private:
   void SetState(::std::string new_state);
   MissionReceiver::GoalState GetState();
+  void SetFlightLoopGoal(GoalState new_state);
 
   ::lib::mission_message_queue::MissionMessageQueueSender
       mission_message_queue_sender_;
@@ -56,10 +66,7 @@ class MissionReceiver {
 
   ::std::atomic<bool> running_;
 
-  int count_;
-
-  void SendTelemetryPeriodic();
-  void SendTelemetry();
+  void SendTelemetry(int loop_index, int message_index);
 };
 
 void on_connect();

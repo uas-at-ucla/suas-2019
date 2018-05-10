@@ -153,6 +153,13 @@ new_git_repository(
   build_file = "lib/third_party/spdlog.BUILD",
 )
 
+new_git_repository(
+  name = "pigpio",
+  commit = "934874be2fa34a525beb33e8cb75e378df587860",
+  remote = "https://github.com/joan2937/pigpio.git",
+  build_file = "lib/third_party/pigpio.BUILD",
+)
+
 new_local_repository(
     name = "python_linux",
     path = "/usr",

@@ -39,6 +39,9 @@ moving_obstacles = None
 
 commands = []
 
+telemetry_num = 0;
+drone_loop_num = 0;
+
 processes = process_manager.ProcessManager()
 processes.run_command("protoc -I. --proto_path=../../lib/mission_manager/ " \
     + "--python_out=/tmp/ " \
@@ -57,6 +60,8 @@ def signal_received(signal, frame):
 # SocketIO handlers. ###########################################################
 @ground_socketio_server.on('join_room')
 def connect(room):
+    global drone_sid
+
     flask_socketio.join_room(room)
     print(room + " connected!")
 
@@ -69,10 +74,13 @@ def connect(room):
                 'moving_obstacles': moving_obstacles})
         else:
             data = {'interop_disconnected': True}
+
+        if drone_sid:
+            data['drone_connected'] = True
+
         flask_socketio.emit('initial_data', data)
 
     elif room == 'drone':
-        global drone_sid
         drone_sid = request.sid;
 
         data = object_to_dict({ \
@@ -85,9 +93,11 @@ def connect(room):
 
 @ground_socketio_server.on('disconnect')
 def disconnect():
+    global drone_sid
     if request.sid == drone_sid:
         flask_socketio.emit('drone_disconnected', room='frontend')
         print("drone disconnected!")
+        drone_sid = None
 
 
 @ground_socketio_server.on('connect_to_interop')
@@ -116,7 +126,7 @@ def connect_to_interop(data):
 
 
 @ground_socketio_server.on('interop_data')
-def broadcast_obstacles(data):
+def broadcast_interop_data(data):
     flask_socketio.emit('interop_data', data, \
         room='frontend')
 
@@ -131,16 +141,17 @@ def send_commands(data):
 
 
 @ground_socketio_server.on('set_state')
-def send_commands(data):
+def set_state(data):
     flask_socketio.emit('drone_set_state', data, \
         room='drone')
 
 
 @ground_socketio_server.on('request_commands')
-def give_commands():
+def give_commands(options):
     flask_socketio.emit('commands_changed', {
         'commands': commands,
-        'changedCommands': None
+        'changedCommands': None,
+        'restoreCommands': options['restoreCommands']
     })
 
 
@@ -159,10 +170,24 @@ def interop_disconnected():
 
 
 @ground_socketio_server.on('telemetry')
-def telemetry(*args):
+def telemetry(received_telemetry):
+    global telemetry_num
+    global drone_loop_num
+    passed_messages = received_telemetry['message_index'] - telemetry_num;
+    passed_loops = received_telemetry['loop_index'] - drone_loop_num;
+
+    if passed_messages > 1:
+        print "Lost " + str(passed_messages - 1) + " telemetry messages!"
+
+    if passed_loops - passed_messages > 0:
+        print "Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!"
+
+    
+    telemetry_num = received_telemetry['message_index']
+    drone_loop_num = received_telemetry['loop_index']
+    
     global interop_client
 
-    received_telemetry = args[0]
     sensors = received_telemetry['telemetry']['sensors']
 
     flask_socketio.emit('on_telemetry', received_telemetry, \
@@ -188,11 +213,12 @@ def telemetry(*args):
 
 # Interop. #####################################################################
 def object_to_dict(my_object):
-    return json.loads(json.dumps(my_object, default=lambda o: o.__dict__))
+    if my_object:
+        return json.loads(json.dumps(my_object, default=lambda o: o.__dict__))
+    return None
 
 
 def get_interop_data():
-    global interop_client
     global stationary_obstacles
     global moving_obstacles
     global missions
@@ -202,6 +228,7 @@ def get_interop_data():
 
 
 def auto_connect_to_interop():
+    global interop_client
     # Default Interop
     interop_url = 'http://' + INTEROP_IP + ':8000'
     interop_username = 'testuser'
@@ -209,9 +236,6 @@ def auto_connect_to_interop():
     interop_client = None
     for i in range(20):
         try:
-            global stopped
-            global interop_client
-
             if stopped:
                 break
             interop_client = interop.AsyncClient( \
@@ -232,12 +256,9 @@ def refresh_interop_data():
     interface_client = socketIO_client.SocketIO('0.0.0.0', 8081)
 
     global interop_client
-    global missions
-    global stationary_obstacles
-    global moving_obstacles
 
     while True:
-        time.sleep(1)
+        time.sleep(0.5)
 
         if interop_client is not None:
             try:
