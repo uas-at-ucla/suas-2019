@@ -32,6 +32,7 @@ cc_library(
     '//aos/common:time',
     '//aos/common/util:phased_loop',
     "@WiringPi//:WiringPi",
+    "@pigpio//:pigpio",
   ],
 )
 

@@ -31,6 +31,7 @@ TEST(MissionMessageQueueTest, SendMissionOverQueueTest) {
     goal->set_latitude(1.0);
     goal->set_longitude(3.0);
     goal->set_altitude(3.0);
+    goto_cmd->set_come_to_stop(false);
   }
 
   ground_data.set_allocated_mission(mission);

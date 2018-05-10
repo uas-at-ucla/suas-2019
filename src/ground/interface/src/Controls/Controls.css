@@ -3,6 +3,18 @@
   padding: 10px 10px 30px 10px;
 }
 
+#controls .PromptButton+.PromptButton {
+  margin-left: 5px;
+}
+
+#controls .PromptButton+button {
+  margin-left: 5px;
+}
+
+#controls button+.PromptButton {
+  margin-left: 5px;
+}
+
 #controls button+button {
   margin-left: 5px;
 }
@@ -13,7 +25,7 @@
   display: inline;
 }
 
-#emergencyControls {
+#stateControls {
   float: right;
   display: inline;
   padding: 5px;
