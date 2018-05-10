@@ -10,7 +10,7 @@ namespace loops {
 namespace pilot {
 namespace testing {
 namespace {
-const double kMetPositionTolerance = 12;
+const double kMetPositionTolerance = 5;
 const double kMetersPerCoordinate = GetDistance2D({0, 0, 0}, {1, 0, 0});
 }  // namespace
 
@@ -66,6 +66,7 @@ TEST_F(PilotTest, ReachesGoalTest) {
   goto_goal->set_altitude(goal.altitude);
 
   goto_cmd->set_allocated_goal(goto_goal);
+  goto_cmd->set_come_to_stop(true);
 
   pilot_.SetMission(mission);
 
@@ -77,8 +78,6 @@ TEST_F(PilotTest, ReachesGoalTest) {
     usleep(1e3);
     ::std::cout << "drone at (" << plant.GetPosition().latitude << ", "
                 << plant.GetPosition().longitude << ")\n";
-
-    ::std::cout << "latRAW: " << plant.GetPosition().latitude << ::std::endl;
 
     pilot::PilotOutput flight_direction = pilot_.Calculate(plant.GetPosition());
     ::std::cout << flight_direction.flight_velocities.x << ", "
