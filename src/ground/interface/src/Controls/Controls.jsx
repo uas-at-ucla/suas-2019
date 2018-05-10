@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import './Controls.css';
+import PromptButton from '../PromptButton/PromptButton';
 
 class Controls extends Component {
   render() {
@@ -7,37 +8,132 @@ class Controls extends Component {
       <div id="controls" className="text-white">
         <div id="normalControls" className="card">
           <button
-            className="btn btn-outline-success"
+            className="btn btn-outline-secondary"
             onClick={this.sendRunMissionCommand}
+            id="run_mission_btn"
           >
             Run Mission
           </button>
 
           <button
             className="btn btn-outline-secondary"
-            onClick={this.sendLandCommand}
+            onClick={() => this.setDroneState('PAUSE')}
+            id="pause_mission_btn"
           >
-            Land
+            Pause
+          </button>
+
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => this.setDroneState('ALARM')}
+            id="alarm_btn"
+          >
+            Beepy
           </button>
         </div>
 
-        <div id="emergencyControls" className="card">
-          <button
-            className="btn btn-outline-warning"
-            onClick={this.sendFailsafeCommand}
+        <div id="stateControls" className="card">
+          <PromptButton
+            className={
+              this.props.appState.telemetry != undefined &&
+              this.props.appState.telemetry.sensors.armed
+                ? 'btn btn-success'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('ARM')}
+            id="arm_btn"
           >
-            Failsafe Land
-          </button>
+            Arm
+          </PromptButton>
 
-          <button
-            className="btn btn-outline-danger"
-            onClick={this.sendThrottleCutCommand}
+          <PromptButton
+            className={
+              this.props.appState.telemetry != undefined &&
+              !this.props.appState.telemetry.sensors.armed
+                ? 'btn btn-danger'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('DISARM')}
+            id="disarm_btn"
           >
-            Throttle Cut
-          </button>
+            Disarm
+          </PromptButton>
+
+          <PromptButton
+            className={
+              this.props.appState.telemetry != undefined &&
+              this.props.appState.telemetry.sensors.autopilot_state == "TAKEOFF"
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('TAKEOFF')}
+            id="take_off_btn"
+          >
+            Take Off
+          </PromptButton>
+
+          <PromptButton
+            className={
+              this.props.appState.telemetry != undefined &&
+              this.props.appState.telemetry.sensors.autopilot_state == "HOLD"
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('HOLD')}
+            id="hold_btn"
+          >
+            Hold
+          </PromptButton>
+
+          <PromptButton
+            className={
+              this.props.appState.telemetry != undefined &&
+              this.props.appState.telemetry.sensors.autopilot_state == "OFFBOARD"
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('OFFBOARD')}
+            id="offboard_btn"
+          >
+            Offboard
+          </PromptButton>
+
+          <PromptButton
+            className={
+              this.props.appState.telemetry != undefined &&
+              this.props.appState.telemetry.sensors.autopilot_state == "RTL"
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('RTL')}
+            id="rtl_btn"
+          >
+            RTL
+          </PromptButton>
+
+          <PromptButton
+            className={
+              this.props.appState.telemetry != undefined &&
+              this.props.appState.telemetry.sensors.autopilot_state == "LAND"
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('LAND')}
+            id="land_btn"
+          >
+            Land
+          </PromptButton>
         </div>
       </div>
     );
+  }
+
+  setDroneState(state) {
+    const command = {
+      state: state
+    };
+
+    this.props.socketEmit('set_state', command);
   }
 
   sendRunMissionCommand = () => {
@@ -47,30 +143,6 @@ class Controls extends Component {
       'execute_commands',
       this.bin2string(serialized_mission)
     );
-  };
-
-  sendLandCommand = () => {
-    const command = {
-      state: 'LAND'
-    };
-
-    this.props.socketEmit('set_state', command);
-  };
-
-  sendFailsafeCommand = () => {
-    const command = {
-      state: 'FAILSAFE'
-    };
-
-    this.props.socketEmit('set_state', command);
-  };
-
-  sendThrottleCutCommand = () => {
-    const command = {
-      state: 'THROTTLE CUT'
-    };
-
-    this.props.socketEmit('set_state', command);
   };
 
   bin2string(arrayBuffer) {
