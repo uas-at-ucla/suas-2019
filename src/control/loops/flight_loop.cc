@@ -136,21 +136,7 @@ void FlightLoop::RunIteration() {
 
   auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
-//static float gimbal_angle = 0;
-//static bool flip_gimbal_angle = false;
-  output->gimbal_angle = 0;//gimbal_angle;
-
-//if (gimbal_angle > 89.9) {
-//  flip_gimbal_angle = true;
-//} else if (gimbal_angle < -89.9) {
-//  flip_gimbal_angle = false;
-//}
-
-//if(flip_gimbal_angle) {
-//  gimbal_angle -= 0.3;
-//} else {
-//  gimbal_angle += 0.3;
-//}
+  output->gimbal_angle = 20;
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
