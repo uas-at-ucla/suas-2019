@@ -31,7 +31,8 @@ FlightLoop::FlightLoop()
       alarm_(kFlightLoopFrequency),
       got_sensors_(false),
       last_loop_(0),
-      did_alarm_(false) {
+      did_alarm_(false),
+      did_arm_(false) {
   ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
   ::src::control::loops::flight_loop_queue.output.FetchLatest();
@@ -110,9 +111,8 @@ void FlightLoop::RunIteration() {
   if (!got_sensors_) {
     // Send out an alarm chirp to signal that the drone loop is running
     // successfully.
-    alarm_.AddAlert({0.03, 0.15});
-    //  alarm_.AddAlert({0.03, 0.15});
-    //  alarm_.AddAlert({0.03, 0.15});
+    alarm_.AddAlert({0.02, 0.15});
+    alarm_.AddAlert({0.02, 0.15});
   }
 
   got_sensors_ = true;
@@ -136,21 +136,21 @@ void FlightLoop::RunIteration() {
 
   auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
-  static float gimbal_angle = 0;
-  static bool flip_gimbal_angle = false;
-  output->gimbal_angle = gimbal_angle;
+//static float gimbal_angle = 0;
+//static bool flip_gimbal_angle = false;
+  output->gimbal_angle = 0;//gimbal_angle;
 
-  if (gimbal_angle > 89.9) {
-    flip_gimbal_angle = true;
-  } else if (gimbal_angle < -89.9) {
-    flip_gimbal_angle = false;
-  }
+//if (gimbal_angle > 89.9) {
+//  flip_gimbal_angle = true;
+//} else if (gimbal_angle < -89.9) {
+//  flip_gimbal_angle = false;
+//}
 
-  if(flip_gimbal_angle) {
-    gimbal_angle -= 0.1;
-  } else {
-    gimbal_angle += 0.1;
-  }
+//if(flip_gimbal_angle) {
+//  gimbal_angle -= 0.3;
+//} else {
+//  gimbal_angle += 0.3;
+//}
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
@@ -198,6 +198,18 @@ void FlightLoop::RunIteration() {
     did_alarm_ = false;
   }
 
+  // Check if the Pixhawk just got armed, and send out a chirp if it did.
+  if(::src::control::loops::flight_loop_queue.sensors->armed && !did_arm_) {
+    did_arm_ = true;
+
+    alarm_.AddAlert({0.06, 0.15});
+    alarm_.AddAlert({0.06, 0.15});
+  }
+
+  if(!::src::control::loops::flight_loop_queue.sensors->armed) {
+    did_arm_ = false;
+  }
+
   // Set defaults for all outputs.
   output->velocity_x = 0;
   output->velocity_y = 0;
@@ -211,8 +223,6 @@ void FlightLoop::RunIteration() {
     case STANDBY:
       if (run_mission) {
         next_state = ARMING;
-        alarm_.AddAlert({0.03, 0.15});
-        alarm_.AddAlert({0.20, 0.15});
       }
       break;
 
