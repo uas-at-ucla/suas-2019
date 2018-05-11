@@ -60,55 +60,51 @@ std::string base64_decode(std::string const& encoded_string) {
   return ret;
 }
 
-//Base64 encoding from https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
+// Base64 encoding from
+// https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
 
 static const unsigned char base64_table[65] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-std::string base64_encode(const unsigned char *src, size_t len)
-{
-    unsigned char *out, *pos;
-    const unsigned char *end, *in;
+std::string base64_encode(const unsigned char* src, size_t len) {
+  unsigned char *out, *pos;
+  const unsigned char *end, *in;
 
-    size_t olen;
+  size_t olen;
 
-    olen = 4*((len + 2) / 3); /* 3-byte blocks to 4-byte */
+  olen = 4 * ((len + 2) / 3); /* 3-byte blocks to 4-byte */
 
-    if (olen < len)
-        return std::string(); /* integer overflow */
+  if (olen < len) return std::string(); /* integer overflow */
 
-    std::string outStr;
-    outStr.resize(olen);
-    out = (unsigned char*)&outStr[0];
+  std::string outStr;
+  outStr.resize(olen);
+  out = (unsigned char*)&outStr[0];
 
-    end = src + len;
-    in = src;
-    pos = out;
-    while (end - in >= 3) {
-        *pos++ = base64_table[in[0] >> 2];
-        *pos++ = base64_table[((in[0] & 0x03) << 4) | (in[1] >> 4)];
-        *pos++ = base64_table[((in[1] & 0x0f) << 2) | (in[2] >> 6)];
-        *pos++ = base64_table[in[2] & 0x3f];
-        in += 3;
+  end = src + len;
+  in = src;
+  pos = out;
+  while (end - in >= 3) {
+    *pos++ = base64_table[in[0] >> 2];
+    *pos++ = base64_table[((in[0] & 0x03) << 4) | (in[1] >> 4)];
+    *pos++ = base64_table[((in[1] & 0x0f) << 2) | (in[2] >> 6)];
+    *pos++ = base64_table[in[2] & 0x3f];
+    in += 3;
+  }
+
+  if (end - in) {
+    *pos++ = base64_table[in[0] >> 2];
+    if (end - in == 1) {
+      *pos++ = base64_table[(in[0] & 0x03) << 4];
+      *pos++ = '=';
+    } else {
+      *pos++ = base64_table[((in[0] & 0x03) << 4) | (in[1] >> 4)];
+      *pos++ = base64_table[(in[1] & 0x0f) << 2];
     }
+    *pos++ = '=';
+  }
 
-    if (end - in) {
-        *pos++ = base64_table[in[0] >> 2];
-        if (end - in == 1) {
-            *pos++ = base64_table[(in[0] & 0x03) << 4];
-            *pos++ = '=';
-        }
-        else {
-            *pos++ = base64_table[((in[0] & 0x03) << 4) |
-                (in[1] >> 4)];
-            *pos++ = base64_table[(in[1] & 0x0f) << 2];
-        }
-        *pos++ = '=';
-    }
-
-    return outStr;
+  return outStr;
 }
-
 
 MissionReceiver* socketio_ground_communicator;
 
@@ -119,12 +115,14 @@ void on_fail() { socketio_ground_communicator->OnFail(); }
 void connect() { socketio_ground_communicator->ConnectToGround(); }
 
 MissionReceiver::MissionReceiver()
-    : phased_loop_(std::chrono::milliseconds(200), std::chrono::milliseconds(0)),
+    : phased_loop_(std::chrono::milliseconds(200),
+                   std::chrono::milliseconds(0)),
       running_(false) {
   socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
   LOG_LINE("ground_communicator started.");
+  SetFlightLoopGoal(STANDBY);
 
   ::std::thread ground_socket_thread(connect);
   ground_socket_thread.join();
@@ -219,8 +217,37 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
     (*sensors_map)["battery_current"] =
         sio::double_message::create((*sensors)->battery_current);
     (*sensors_map)["armed"] = sio::bool_message::create((*sensors)->armed);
+
+    ::src::control::io::AutopilotState autopilot_state =
+        static_cast<::src::control::io::AutopilotState>(
+            (*sensors)->autopilot_state);
+
+    ::std::string autopilot_state_string;
+
+    switch (autopilot_state) {
+      case ::src::control::io::AutopilotState::TAKEOFF:
+        autopilot_state_string = "TAKEOFF";
+        break;
+      case ::src::control::io::AutopilotState::HOLD:
+        autopilot_state_string = "HOLD";
+        break;
+      case ::src::control::io::AutopilotState::OFFBOARD:
+        autopilot_state_string = "OFFBOARD";
+        break;
+      case ::src::control::io::AutopilotState::RTL:
+        autopilot_state_string = "RTL";
+        break;
+      case ::src::control::io::AutopilotState::LAND:
+        autopilot_state_string = "LAND";
+        break;
+      case ::src::control::io::AutopilotState::UNKNOWN:
+      default:
+        autopilot_state_string = "UNKNOWN";
+        break;
+    }
+
     (*sensors_map)["autopilot_state"] =
-        sio::int_message::create((*sensors)->autopilot_state);
+        sio::string_message::create(autopilot_state_string);
   }
 
   if (status->get()) {
@@ -254,14 +281,15 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
         sio::double_message::create((*output)->velocity_y);
     (*output_map)["velocity_z"] =
         sio::double_message::create((*output)->velocity_z);
-    (*output_map)["velocity_control"] =
-        sio::bool_message::create((*output)->velocity_control);
-    (*output_map)["arm"] = sio::bool_message::create((*output)->arm);
-    (*output_map)["disarm"] = sio::bool_message::create((*output)->disarm);
-    (*output_map)["takeoff"] = sio::bool_message::create((*output)->takeoff);
-    (*output_map)["land"] = sio::bool_message::create((*output)->land);
-    (*output_map)["throttle_cut"] =
-        sio::bool_message::create((*output)->throttle_cut);
+    //  (*output_map)["velocity_control"] =
+    //      sio::bool_message::create((*output)->velocity_control);
+    //  (*output_map)["arm"] = sio::bool_message::create((*output)->arm);
+    //  (*output_map)["disarm"] = sio::bool_message::create((*output)->disarm);
+    //  (*output_map)["takeoff"] =
+    //  sio::bool_message::create((*output)->takeoff);
+    //  (*output_map)["land"] = sio::bool_message::create((*output)->land);
+    //  (*output_map)["throttle_cut"] =
+    //      sio::bool_message::create((*output)->throttle_cut);
   }
 
   LOG_LINE("sending telemetry: "
@@ -275,17 +303,19 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
 
   all_data->get_map()["telemetry"] = telemetry;
 
-  ::lib::mission_manager::Mission mission = mission_message_queue_sender_.GetMission();
+  ::lib::mission_manager::Mission mission =
+      mission_message_queue_sender_.GetMission();
   ::std::string serialized_mission;
   mission.SerializeToString(&serialized_mission);
-  const unsigned char* serialized_mission_cstr = 
+  const unsigned char* serialized_mission_cstr =
       reinterpret_cast<const unsigned char*>(serialized_mission.c_str());
-  ::std::string mission_base64 = base64_encode(serialized_mission_cstr, 
-      serialized_mission.length());
+  ::std::string mission_base64 =
+      base64_encode(serialized_mission_cstr, serialized_mission.length());
   all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
 
   all_data->get_map()["loop_index"] = sio::int_message::create(loop_index);
-  all_data->get_map()["message_index"] = sio::int_message::create(message_index);
+  all_data->get_map()["message_index"] =
+      sio::int_message::create(message_index);
 
   client_.socket()->emit("telemetry", all_data);
 }
@@ -297,15 +327,18 @@ void MissionReceiver::Run() {
   int message_index = 0;
 
   while (running_) {
-    // std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+    // std::chrono::steady_clock::time_point begin =
+    // std::chrono::steady_clock::now();
     RunIteration(loop_index, message_index);
 
     const int iterations = phased_loop_.SleepUntilNext();
     if (iterations > 1) {
-      std::cout << "SKIPPED " << (iterations-1) << " TELEMETRY ITERATIONS\n";
+      std::cout << "SKIPPED " << (iterations - 1) << " TELEMETRY ITERATIONS\n";
     }
-    // std::chrono::steady_clock::time_point end= std::chrono::steady_clock::now();
-    // std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count() << std::endl;
+    // std::chrono::steady_clock::time_point end=
+    // std::chrono::steady_clock::now();
+    // std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end -
+    // begin).count() << std::endl;
     message_index++;
     loop_index += iterations;
   }
@@ -387,28 +420,100 @@ void MissionReceiver::OnConnect() {
 void MissionReceiver::OnFail() { ::std::cout << "socketio failed! :(\n"; }
 
 void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
+  auto last_goal = &::src::control::loops::flight_loop_queue.goal;
+  last_goal->FetchLatest();
+
   auto flight_loop_goal_message =
       ::src::control::loops::flight_loop_queue.goal.MakeMessage();
 
+  if (!::src::control::loops::flight_loop_queue.goal.get()) {
+    // Set initial goal.
+    flight_loop_goal_message->run_mission = false;
+    flight_loop_goal_message->trigger_failsafe = false;
+    flight_loop_goal_message->trigger_throttle_cut = false;
+    flight_loop_goal_message->trigger_alarm = 0;
+  } else {
+    // Copy past goal.
+    flight_loop_goal_message->run_mission = (*last_goal)->trigger_alarm;
+    flight_loop_goal_message->trigger_failsafe = (*last_goal)->trigger_failsafe;
+    flight_loop_goal_message->trigger_throttle_cut =
+        (*last_goal)->trigger_throttle_cut;
+    flight_loop_goal_message->trigger_alarm = (*last_goal)->trigger_alarm;
+  }
+
+  double time = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+                    ::std::chrono::system_clock::now().time_since_epoch())
+                    .count() /
+                1e9;
+
   flight_loop_goal_message->run_mission = false;
-  flight_loop_goal_message->trigger_failsafe = false;
-  flight_loop_goal_message->trigger_throttle_cut = false;
 
   switch (new_state) {
+    case STANDBY:
+      break;
+
     case RUN_MISSION:
       flight_loop_goal_message->run_mission = true;
+      flight_loop_goal_message->trigger_failsafe = false;
+      flight_loop_goal_message->trigger_throttle_cut = false;
       break;
 
-    case LAND:
-      flight_loop_goal_message->run_mission = false;
-      break;
+    //  case LAND:
+    //    flight_loop_goal_message->run_mission = false;
+    //    flight_loop_goal_message->trigger_failsafe = false;
+    //    flight_loop_goal_message->trigger_throttle_cut = false;
+    //    break;
 
     case FAILSAFE:
+      flight_loop_goal_message->run_mission = false;
       flight_loop_goal_message->trigger_failsafe = true;
+      flight_loop_goal_message->trigger_throttle_cut = false;
       break;
 
     case THROTTLE_CUT:
+      flight_loop_goal_message->run_mission = false;
+      flight_loop_goal_message->trigger_failsafe = true;
       flight_loop_goal_message->trigger_throttle_cut = true;
+      break;
+
+    case TAKEOFF:
+      flight_loop_goal_message->trigger_takeoff = time;
+      LOG_LINE("GOT TAKEOFF @ TIME " << time);
+      break;
+
+    case HOLD:
+      flight_loop_goal_message->trigger_hold = time;
+      LOG_LINE("GOT HOLD @ TIME " << time);
+      break;
+
+    case OFFBOARD:
+      flight_loop_goal_message->trigger_offboard = time;
+      LOG_LINE("GOT OFFBOARD @ TIME " << time);
+      break;
+
+    case RTL:
+      flight_loop_goal_message->trigger_rtl = time;
+      LOG_LINE("GOT RTL @ TIME " << time);
+      break;
+
+    case LAND:
+      flight_loop_goal_message->trigger_land = time;
+      LOG_LINE("GOT LAND @ TIME " << time);
+      break;
+
+    case ARM:
+      flight_loop_goal_message->trigger_arm = time;
+      LOG_LINE("GOT ARM @ TIME " << time);
+      break;
+
+    case DISARM:
+      flight_loop_goal_message->trigger_disarm = time;
+      LOG_LINE("GOT DISARM @ TIME " << time);
+      break;
+
+    case ALARM:
+      flight_loop_goal_message->trigger_alarm = time;
+      LOG_LINE("GOT ALARM @ TIME " << time);
       break;
   }
 
@@ -431,12 +536,26 @@ void MissionReceiver::SetState(::std::string new_state_string) {
       return;
     }
     new_state = RUN_MISSION;
-  } else if (new_state_string == "LAND") {
-    new_state = LAND;
   } else if (new_state_string == "FAILSAFE") {
     new_state = FAILSAFE;
   } else if (new_state_string == "THROTTLE CUT") {
     new_state = THROTTLE_CUT;
+  } else if (new_state_string == "TAKEOFF") {
+    new_state = TAKEOFF;
+  } else if (new_state_string == "HOLD") {
+    new_state = HOLD;
+  } else if (new_state_string == "OFFBOARD") {
+    new_state = OFFBOARD;
+  } else if (new_state_string == "RTL") {
+    new_state = RTL;
+  } else if (new_state_string == "LAND") {
+    new_state = LAND;
+  } else if (new_state_string == "ARM") {
+    new_state = ARM;
+  } else if (new_state_string == "DISARM") {
+    new_state = DISARM;
+  } else if (new_state_string == "ALARM") {
+    new_state = ALARM;
   } else {
     ::std::cerr << "Unknown state: " << new_state_string << ::std::endl;
     return;

@@ -10,7 +10,7 @@ sys.path.insert(0, 'lib')
 import process_manager
 
 BIN_FOLDER = './bazel-out/raspi-fastbuild/bin/'
-DRONE_ADDR = 'pi@192.168.2.23'
+DRONE_ADDR = 'pi@192.168.2.21'
 
 processes = process_manager.ProcessManager()
 
@@ -65,6 +65,7 @@ if __name__ == '__main__':
     # Upload the binaries to the drone.
     print_title("Uploading binaries to drone... ")
     upload_to_drone('lib/scripts/start_drone_code.sh')
+    upload_to_drone('lib/scripts/run_mavproxy.sh')
     upload_bin_to_drone('aos/linux_code/core')
     upload_bin_to_drone('src/control/loops/flight_loop')
     upload_bin_to_drone('src/control/io/io')
