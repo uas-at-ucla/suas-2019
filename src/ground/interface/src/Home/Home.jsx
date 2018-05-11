@@ -118,7 +118,7 @@ class Home extends Component {
           </div>
         </div>
 
-        <Controls homeState={this.state} socketEmit={this.props.socketEmit}
+        <Controls homeState={this.state} appState={this.props.appState} socketEmit={this.props.socketEmit}
                   getMission={this.get_mission} />
       </div>
     );
