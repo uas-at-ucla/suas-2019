@@ -160,6 +160,13 @@ new_git_repository(
   build_file = "lib/third_party/pigpio.BUILD",
 )
 
+new_git_repository(
+  name = "libgphoto2",
+  commit = "85875694bf337e4dd18a454f2f086a1212672f85",
+  remote = "https://github.com/uas-at-ucla/libgphoto2.git",
+  build_file = "lib/third_party/libgphoto2.BUILD",
+)
+
 new_local_repository(
     name = "python_linux",
     path = "/usr",
