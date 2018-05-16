@@ -30,6 +30,14 @@ class Controls extends Component {
           >
             Beepy
           </button>
+
+          <button
+            className="btn btn-outline-secondary"
+            onClick={() => this.setDroneState('BOMB_DROP')}
+            id="bomb_drop_btn"
+          >
+            Droppy
+          </button>
         </div>
 
         <div id="stateControls" className="card">
@@ -59,7 +67,7 @@ class Controls extends Component {
             Disarm
           </PromptButton>
 
-          <PromptButton
+          <button
             className={
               this.props.appState.telemetry != undefined &&
               this.props.appState.telemetry.sensors.autopilot_state == "TAKEOFF"
@@ -70,9 +78,9 @@ class Controls extends Component {
             id="take_off_btn"
           >
             Take Off
-          </PromptButton>
+          </button>
 
-          <PromptButton
+          <button
             className={
               this.props.appState.telemetry != undefined &&
               this.props.appState.telemetry.sensors.autopilot_state == "HOLD"
@@ -83,9 +91,9 @@ class Controls extends Component {
             id="hold_btn"
           >
             Hold
-          </PromptButton>
+          </button>
 
-          <PromptButton
+          <button
             className={
               this.props.appState.telemetry != undefined &&
               this.props.appState.telemetry.sensors.autopilot_state == "OFFBOARD"
@@ -96,9 +104,9 @@ class Controls extends Component {
             id="offboard_btn"
           >
             Offboard
-          </PromptButton>
+          </button>
 
-          <PromptButton
+          <button
             className={
               this.props.appState.telemetry != undefined &&
               this.props.appState.telemetry.sensors.autopilot_state == "RTL"
@@ -109,9 +117,9 @@ class Controls extends Component {
             id="rtl_btn"
           >
             RTL
-          </PromptButton>
+          </button>
 
-          <PromptButton
+          <button
             className={
               this.props.appState.telemetry != undefined &&
               this.props.appState.telemetry.sensors.autopilot_state == "LAND"
@@ -122,7 +130,7 @@ class Controls extends Component {
             id="land_btn"
           >
             Land
-          </PromptButton>
+          </button>
         </div>
       </div>
     );
