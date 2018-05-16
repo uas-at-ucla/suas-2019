@@ -162,9 +162,16 @@ new_git_repository(
 
 new_git_repository(
   name = "libgphoto2",
-  commit = "85875694bf337e4dd18a454f2f086a1212672f85",
+  commit = "a9f979459f0a64ff356318cd48b6f5b817850ec5",
   remote = "https://github.com/uas-at-ucla/libgphoto2.git",
   build_file = "lib/third_party/libgphoto2.BUILD",
+)
+
+new_git_repository(
+  name = "libexif",
+  commit = "3cc93d33d4cb11899b986cc15fa9e8ec9cc7a9a1",
+  remote = "https://github.com/libexif/libexif.git",
+  build_file = "lib/third_party/libexif.BUILD",
 )
 
 new_local_repository(
