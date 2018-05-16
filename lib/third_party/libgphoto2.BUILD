@@ -6,11 +6,14 @@ cc_library(
   ]),
   hdrs = glob([
     'libgphoto2/*.h',
+    'libgphoto2_port/**/*.h',
     'gphoto2/*.h',
     'config.h',
   ]),
   includes = [
     'gphoto2',
+    'libgphoto2_port',
+    '.',
   ],
   copts = [
     '-Wno-unused-parameter',
