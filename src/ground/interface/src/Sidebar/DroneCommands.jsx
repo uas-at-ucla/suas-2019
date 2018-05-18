@@ -9,7 +9,7 @@ import './MissionPlanner.css';
 const METERS_PER_FOOT = 0.3048;
 const oppositeOf = {'comeToStop': 'flyThrough'}
 
-const SortableItem = SortableElement(({ command, myIndex, self }) => {
+const SortableItem = SortableElement(({ command, myIndex, subMission, self }) => {
   let type = Object.keys(command)[0];
   if (type === 'subMission') type = Object.keys(command)[1];
   let fields = self.props.commandTypes[type];
@@ -17,8 +17,8 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => {
   return (
     <tr
       className="command_row"
-      style = {myIndex === self.props.homeState.droneCurrentCommand ? {
-        backgroundColor: "rgba(0, 0, 255, 0.25)"
+      style = {!subMission && myIndex === self.props.homeState.droneCurrentCommand ? {
+        backgroundColor: "rgba(0, 0, 255, 0.35)"
       } : {}}
     >
       <td>
@@ -40,6 +40,7 @@ const SortableItem = SortableElement(({ command, myIndex, self }) => {
                     index={index}
                     command={command}
                     myIndex={index}
+                    subMission={true}
                     self={self}
                     disabled={true}
                   />
@@ -64,6 +65,7 @@ const SortableList = SortableContainer(({ commands, self }) => {
               index={index}
               command={command}
               myIndex={index}
+              subMission={false}
               self={self}
               disabled={true}
             />
