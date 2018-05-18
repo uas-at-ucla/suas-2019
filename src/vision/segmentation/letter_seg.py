@@ -4,10 +4,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import sys
 
-def letter_seg():
-    #get image path
-    path = sys.argv[1]
-
+def letter_seg(path):
     #convert image to a numpy array
     img = Image.open(path)
     img = img.resize((224,224))
