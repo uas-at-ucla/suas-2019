@@ -14,12 +14,12 @@
 
 #Raw-Images-List
 {
-    position: fixed;
+    /* position: fixed; */
     min-height: 175px;
-    max-height: 400px;
+    max-height: 430px;
     bottom: 300px; /* todo: This needs to be fixed */
     background-color: white;
-    width: 35%;
+    width: 100%;
     overflow: auto;
 }
 
