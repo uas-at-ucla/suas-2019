@@ -36,36 +36,16 @@ class Images extends Component {
 
     return (
       <div className="Images">
-        {/*<DownloadMap />*/}
-        <img id="CurrentImage" src={this.state.currentImage}/>
-        <div id="PotentialTargets">
-        <h1>Possible Targets</h1>
-        {
-          this.renderPotentialTargets()
-        }
-        </div>
 
-        <div id="ImageOptions">
-        <button className="actionBtn" id="RecentBtn" onClick={()=>this.setState({listSelected: "Recent"})}
-        onDoubleClick={()=>window.alert(this.state.recentImages)}>-Recently Viewed-</button>
-        <button className="actionBtn" id="SavedBtn" onClick={()=>this.setState({listSelected: "Saved"})}>-Saved-</button>
-        <button className="actionBtn" id="LatestBtn" onClick={()=>this.setState({listSelected: "Latest"})}>-Latest from Drone-</button>
-        <button className="actionBtn" id="SubmittedBtn" onClick={()=>this.setState({listSelected: "Submitted"})}>-Submitted to Interop-</button>
-        </div>
-        <div id="ImageList">
-        <div id="PhotoList">
-        {
-          this.renderSelection()
-        }
-        </div>
-
+        <div id="Raw-Images-List">
+          {this.renderSelection()}
         </div>
         <div id="actionBar">
-        <button className="actionBtn" id="SubmitBtn" onClick={this.submitToInterop}>Submit</button>
-        <button className="actionBtn" id="ClearBtn" onClick={this.clearBtn}>Clear</button>
-        <button className="actionBtn" id="SelectAllBtn" onClick={this.selectAllBtn}>Select All</button>
-        <button className="actionBtn" id="DeselectAllBtn" onClick={this.deselectAllBtn}>Deselect All</button>
-        <button className="actionBtn" id="SaveBtn" onClick={this.saveBtn}>Save Selection</button>
+          <button className="actionBtn" id="SubmitBtn" onClick={this.submitToInterop}>Submit</button>
+          <button className="actionBtn" id="ClearBtn" onClick={this.clearBtn}>Clear</button>
+          <button className="actionBtn" id="SelectAllBtn" onClick={this.selectAllBtn}>Select All</button>
+          <button className="actionBtn" id="DeselectAllBtn" onClick={this.deselectAllBtn}>Deselect All</button>
+          <button className="actionBtn" id="SaveBtn" onClick={this.saveBtn}>Save Selection</button>
         </div>
       </div>
 
