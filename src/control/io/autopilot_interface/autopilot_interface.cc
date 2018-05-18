@@ -407,8 +407,7 @@ void AutopilotInterface::set_message_period() {
 }
 
 void AutopilotInterface::set_params() {
-  //set_param("MIS_TAKEOFF_ALT", 4.0);
-  //set_param("MNT_MODE_OUT", 1.0);
+  set_param("MIS_TAKEOFF_ALT", 5.0);
 }
 
 void AutopilotInterface::set_param(const char id[], float value) {

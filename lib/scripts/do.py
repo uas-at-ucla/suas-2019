@@ -97,7 +97,7 @@ def run_simulate(args):
                             None, True, args.verbose)
 
     # Give aos core some time to run.
-    time.sleep(0.5)
+    time.sleep(1)
 
 #   # Simulator and port forwarder.
     processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",

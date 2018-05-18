@@ -34,6 +34,13 @@ IO::IO()
   io_quit = this;
   signal(SIGINT, quit_handler);
   signal(SIGTERM, quit_handler);
+
+  ::readlink("/proc/self/exe", flight_loop_path,
+             sizeof(flight_loop_path) - 1);
+  ::std::string flight_loop_folder(flight_loop_path);
+  flight_loop_folder =
+      flight_loop_folder.substr(0, flight_loop_folder.find_last_of("\\/"));
+  chdir(flight_loop_folder.c_str());
 }
 
 void IO::Run() {
@@ -162,9 +169,6 @@ void AutopilotSensorReader::RunIteration() {
     default:
       autopilot_state = UNKNOWN;
   }
-
-  // std::bitset<32> y(heartbeat.custom_mode);
-  // std::cout << y << ::std::endl;
 
   flight_loop_sensors_message->autopilot_state = autopilot_state;
 

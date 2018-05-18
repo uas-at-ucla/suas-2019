@@ -174,6 +174,13 @@ new_git_repository(
   build_file = "lib/third_party/libexif.BUILD",
 )
 
+new_git_repository(
+  name = "gphoto2pp",
+  commit = "da6db6f79edc4291f7a5ff38d825b8f3102d6270",
+  remote = "https://github.com/maldworth/gphoto2pp.git",
+  build_file = "lib/third_party/gphoto2pp.BUILD",
+)
+
 new_local_repository(
     name = "python_linux",
     path = "/usr",
