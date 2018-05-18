@@ -519,8 +519,7 @@ class Map extends Component {
       this.props.setHomeState({ focusedCommand: null });
       let command = props.homeState.commands[props.homeState.focusedCommand];
       let point =
-        this.commands[props.homeState.focusedCommand] ||
-        command.mission_point;
+        this.commands[props.homeState.focusedCommand] || command.mission_point;
       let pos = null;
       let marker = null;
       if (point && point.marker) {
@@ -604,13 +603,15 @@ class Map extends Component {
     );
 
     let current_path = this.drone_path.getPath();
-    if (
-      current_path.getLength() == 0 ||
-      this.get_distance(
+    let drone_distance = 0;
+    if (current_path.getLength() > 0) {
+      drone_distance = this.get_distance(
         new_position,
         current_path.getAt(current_path.getLength() - 1)
-      ) > 10.0
-    ) {
+      );
+    }
+
+    if (drone_distance > 10.0 && drone_distance < 10000) {
       this.drone_path.getPath().push(new_position);
     }
     if (current_path.getLength() > 50) {
@@ -697,7 +698,7 @@ class Map extends Component {
       'Lng: ' +
       fields.longitude +
       '<br>';
-    if (fields.altitude != undefined) {
+    if (fields.altitude !== null) {
       info += 'Alt: ' + fields.altitude + ' m<br>';
     }
     info +=
@@ -978,17 +979,17 @@ class Map extends Component {
 
     let info = (
       <div id="infowindow_search_area">
-        <h6 class="infowindow_title">
-          <span class="command_info" />
+        <h6 className="infowindow_title">
+          <span className="command_info" />
           Search Area
         </h6>
-        <span class="command_alt" />
-        <button class="add_point_to_plan btn btn-sm btn-outline-success">
+        <span className="command_alt" />
+        <button className="add_point_to_plan btn btn-sm btn-outline-success">
           Add to Plan
         </button>
         <button
           hidden
-          class="remove_point_from_plan btn btn-sm btn-outline-danger"
+          className="remove_point_from_plan btn btn-sm btn-outline-danger"
         >
           Remove from Plan
         </button>
@@ -1086,8 +1087,8 @@ class Map extends Component {
 
     let info = (
       <div id={'mission_point_infowindow_' + id}>
-        <h6 class="infowindow_title">
-          <span class="command_info" />
+        <h6 className="infowindow_title">
+          <span className="command_info" />
           {title}
         </h6>
         Lat: {coords.lat}
@@ -1101,16 +1102,16 @@ class Map extends Component {
           <span />
         )}
         <br />
-        <span class="command_alt" />
+        <span className="command_alt" />
         {mission_point_key !== 'off_axis_object' ? (
           <span>
             <br />
-            <button class="add_point_to_plan btn btn-sm btn-outline-success">
+            <button className="add_point_to_plan btn btn-sm btn-outline-success">
               Add to Plan
             </button>
             <button
               hidden
-              class="remove_point_from_plan btn btn-sm btn-outline-danger"
+              className="remove_point_from_plan btn btn-sm btn-outline-danger"
             >
               Remove from Plan
             </button>
@@ -1386,13 +1387,13 @@ class Map extends Component {
 
   same_location(pt1, pt2) {
     let lat1 =
-      typeof pt1.lat == 'function' ? pt1.lat() : pt1.lat || pt1.latitude;
+      typeof pt1.lat === 'function' ? pt1.lat() : pt1.lat || pt1.latitude;
     let lng1 =
-      typeof pt1.lng == 'function' ? pt1.lng() : pt1.lng || pt1.longitude;
+      typeof pt1.lng === 'function' ? pt1.lng() : pt1.lng || pt1.longitude;
     let lat2 =
-      typeof pt2.lat == 'function' ? pt2.lat() : pt2.lat || pt2.latitude;
+      typeof pt2.lat === 'function' ? pt2.lat() : pt2.lat || pt2.latitude;
     let lng2 =
-      typeof pt2.lng == 'function' ? pt2.lng() : pt2.lng || pt2.longitude;
+      typeof pt2.lng === 'function' ? pt2.lng() : pt2.lng || pt2.longitude;
     return Math.abs(lat1 - lat2) < 0.000001 && Math.abs(lng1 - lng2) < 0.000001;
   }
 }

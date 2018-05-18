@@ -7,6 +7,7 @@
 #include "src/control/io/loop_input_handler.h"
 
 #include <atomic>
+#include <unistd.h>
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
 #include <wiringPi.h>
@@ -58,6 +59,9 @@ class AutopilotOutputWriter : public LoopOutputHandler {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   int pigpio_;
+
+  int camera_script_pid_;
+  int camera_script_run_;
 #endif
 
   autopilot_interface::AutopilotInterface *copter_io_;

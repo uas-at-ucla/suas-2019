@@ -1,6 +1,5 @@
 import React, { Component } from "react";
 import './Images.css';
-import logo from "../graphics/vector_logo.svg";
 
 import { PageHeader } from "react-bootstrap";
 
