@@ -146,6 +146,13 @@
   padding: 0px 5px 0px 5px;
 }
 
-#delete_command_btn {
+#cmd_popup {
   z-index: 100;
+  padding: 5px;
+  border-radius: 5px;
+  background-color: rgba(0, 0, 0, 1) !important;
+}
+
+#cmd_popup button+button {
+  margin-top: 5px;
 }
