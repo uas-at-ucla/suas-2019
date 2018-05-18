@@ -3,6 +3,32 @@ import './Controls.css';
 import PromptButton from '../PromptButton/PromptButton';
 
 class Controls extends Component {
+
+  keymap = {
+    'KeyZ': 'run_mission_btn',
+    'KeyX': 'pause_mission_btn',
+    'KeyC': 'alarm_btn',
+    'KeyV': 'arm_btn',
+    'KeyB': 'disarm_btn',
+    'KeyN': 'take_off_btn',
+    'KeyM': 'hold_btn',
+    'Comma': 'offboard_btn',
+    'Period': 'rtl_btn',
+    'Slash': 'land_btn'
+  }
+
+  componentDidMount() {
+    document.addEventListener("keypress", (e) => {
+      if (e.altKey && e.shiftKey && this.keymap[e.code]) {
+        let button = this.refs[this.keymap[e.code]];
+        button.click();
+        if (button.tagName === 'BUTTON') {
+          this.refs[this.keymap[e.code]].focus();
+        }
+      }
+    });
+  }
+
   render() {
     return (
       <div id="controls" className="text-white">
@@ -11,24 +37,27 @@ class Controls extends Component {
             className="btn btn-outline-secondary"
             onClick={this.sendRunMissionCommand}
             id="run_mission_btn"
+            ref="run_mission_btn"
           >
-            Run Mission
+            Run Mission (Z)
           </button>
 
           <button
             className="btn btn-outline-secondary"
             onClick={() => this.setDroneState('PAUSE')}
             id="pause_mission_btn"
+            ref="pause_mission_btn"
           >
-            Pause
+            Pause (X)
           </button>
 
           <button
             className="btn btn-outline-secondary"
             onClick={() => this.setDroneState('ALARM')}
             id="alarm_btn"
+            ref="alarm_btn"
           >
-            Beepy
+            Beepy (C)
           </button>
         </div>
 
@@ -42,8 +71,9 @@ class Controls extends Component {
             }
             onClick={() => this.setDroneState('ARM')}
             id="arm_btn"
+            ref="arm_btn"
           >
-            Arm
+            Arm (V)
           </PromptButton>
 
           <PromptButton
@@ -55,8 +85,9 @@ class Controls extends Component {
             }
             onClick={() => this.setDroneState('DISARM')}
             id="disarm_btn"
+            ref="disarm_btn"
           >
-            Disarm
+            Disarm (B)
           </PromptButton>
 
           <PromptButton
@@ -68,8 +99,9 @@ class Controls extends Component {
             }
             onClick={() => this.setDroneState('TAKEOFF')}
             id="take_off_btn"
+            ref="take_off_btn"
           >
-            Take Off
+            Take Off (N)
           </PromptButton>
 
           <PromptButton
@@ -81,8 +113,9 @@ class Controls extends Component {
             }
             onClick={() => this.setDroneState('HOLD')}
             id="hold_btn"
+            ref="hold_btn"
           >
-            Hold
+            Hold (M)
           </PromptButton>
 
           <PromptButton
@@ -94,8 +127,9 @@ class Controls extends Component {
             }
             onClick={() => this.setDroneState('OFFBOARD')}
             id="offboard_btn"
+            ref="offboard_btn"
           >
-            Offboard
+            Offboard (&lt;)
           </PromptButton>
 
           <PromptButton
@@ -107,8 +141,9 @@ class Controls extends Component {
             }
             onClick={() => this.setDroneState('RTL')}
             id="rtl_btn"
+            ref="rtl_btn"
           >
-            RTL
+            RTL (&gt;)
           </PromptButton>
 
           <PromptButton
@@ -120,8 +155,9 @@ class Controls extends Component {
             }
             onClick={() => this.setDroneState('LAND')}
             id="land_btn"
+            ref="land_btn"
           >
-            Land
+            Land (?)
           </PromptButton>
         </div>
       </div>
