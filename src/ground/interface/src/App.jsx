@@ -54,13 +54,15 @@ class App extends Component {
   render() {
     return (
       <div className={`App ${this.state.metric ? "metric_container" : "imperial_container"}`}>
-        <img
-          id="logo"
-          src={logo}
-          width="380px"
-          onClick={this.followDrone}
-          alt="UAS"
-        />
+        {this.state.optionSelected !== "Images" ?
+          <img
+            id="logo"
+            src={logo}
+            width="380px"
+            onClick={this.followDrone}
+            alt="UAS"
+          /> : null
+        }
         <Navbar
           appState={this.state}
           setAppState={this.setAppState}
