@@ -41,7 +41,8 @@ class Images extends Component {
             <h3>Raw Images</h3>
             <div id="Raw-Images-List">
               {this.renderSelection()}
-              {/* todo: Howard double-click image to pop-up photo editor */}
+              {/* todo: Howard+Ryan - double-click image to pop-up photo editor
+                  make modal into a new file */}
             </div>
           </div>
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
@@ -51,7 +52,12 @@ class Images extends Component {
           </div>
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
             <h3>Position of Photo Taken</h3>
-            {/* todo: Ivan - Google Maps insert here */}
+            {/* todo: Ivan - Google Maps insert here
+                *Ben sends me JSON data of photo file name with
+                latitude and longitude position - we get to choose
+                the JSON data for Comran to setup for us
+                *Every photo click will display the position on the map
+              */}
           </div>
         </div>
 
