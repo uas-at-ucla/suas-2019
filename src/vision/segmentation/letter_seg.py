@@ -5,7 +5,7 @@ from PIL import Image
 import sys
 
 def letter_seg():
-    #get path
+    #get image path
     path = sys.argv[1]
 
     #convert image to a numpy array
