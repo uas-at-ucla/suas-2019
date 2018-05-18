@@ -12,21 +12,17 @@
     position:absolute;
 }
 
-#ImageList
+#Raw-Images-List
 {
     position: fixed;
     min-height: 175px;
-    max-height: 175px;
-    bottom: 0px;
+    max-height: 400px;
+    bottom: 300px; /* todo: This needs to be fixed */
     background-color: white;
-    width: 100%;
+    width: 35%;
     overflow: auto;
 }
 
-#PhotoList
-{
-    width: 30000px;
-}
 
 #CurrentImage
 {
@@ -68,8 +64,8 @@
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 5px;
     left:5px;
-    
-    
+
+
 }
 
 #actionBar
@@ -84,7 +80,7 @@
     border-radius: 5px;
     left: 50%;
     transform: translate(-50%, -50%);
-    
+
 }
 
 .actionBtn, .actionBtn:hover, .actionBtn:visited
