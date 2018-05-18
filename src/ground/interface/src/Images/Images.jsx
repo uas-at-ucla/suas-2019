@@ -37,9 +37,27 @@ class Images extends Component {
     return (
       <div className="Images">
 
-        <div id="Raw-Images-List">
-          {this.renderSelection()}
+        <div className="row">
+
+          <div className="col-md-4 col-sm-4 col-xs-4 text-center">
+            <h3>Raw Images</h3>
+            <div id="Raw-Images-List">
+              {this.renderSelection()}
+            </div>
+          </div>
+
+          <div className="col-md-4 col-sm-4 col-xs-4 text-center">
+            <h3>Segmented Images</h3>
+            {/* todo: Howard */}
+          </div>
+
+          <div className="col-md-4 col-sm-4 col-xs-4 text-center">
+            <h3>Position of Photo Taken</h3>
+            {/* Google Maps insert here */}
+          </div>
+
         </div>
+
         <div id="actionBar">
           <button className="actionBtn" id="SubmitBtn" onClick={this.submitToInterop}>Submit</button>
           <button className="actionBtn" id="ClearBtn" onClick={this.clearBtn}>Clear</button>
