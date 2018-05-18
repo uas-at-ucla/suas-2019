@@ -4,14 +4,6 @@ import logo from "../graphics/vector_logo.svg";
 
 import { PageHeader } from "react-bootstrap";
 
-
-//stuff to still figure out:
-//how to submit to interop
-//how to display location of image taken? (depends on what data is saved with image)
-
-//questions:
-//is 'possible targets' suppoesd to be handpicked by the user, or weeded out by the computer, or both?
-//should images automatically be 'saved' when they are submitted to interop?
 class Images extends Component {
 
   //gets the images out of the testPhotos folder
@@ -20,14 +12,14 @@ class Images extends Component {
     r.keys().map((item, index) => { images[item.replace('./', '')] = r(item); });
     return images;
   }
-  
+
   images = this.importAll(require.context('./testPhotos', false, /\.(png|jpe?g|svg)$/));
 
   constructor (props)
   {
     super(props);
     this.state = {
-      listSelected: "Latest", /*options: Recent, Saved, Latest, Submitted*/ 
+      listSelected: "Latest", /*options: Recent, Saved, Latest, Submitted*/
       selectedImages: [],
       recentImages: [],
       savedImages: [],
@@ -39,9 +31,9 @@ class Images extends Component {
     }
   }
 
-  
+
   render() {
-    
+
     return (
       <div className="Images">
         {/*<DownloadMap />*/}
@@ -52,9 +44,9 @@ class Images extends Component {
           this.renderPotentialTargets()
         }
         </div>
-        
-        <div id="ImageOptions"> 
-        <button className="actionBtn" id="RecentBtn" onClick={()=>this.setState({listSelected: "Recent"})} 
+
+        <div id="ImageOptions">
+        <button className="actionBtn" id="RecentBtn" onClick={()=>this.setState({listSelected: "Recent"})}
         onDoubleClick={()=>window.alert(this.state.recentImages)}>-Recently Viewed-</button>
         <button className="actionBtn" id="SavedBtn" onClick={()=>this.setState({listSelected: "Saved"})}>-Saved-</button>
         <button className="actionBtn" id="LatestBtn" onClick={()=>this.setState({listSelected: "Latest"})}>-Latest from Drone-</button>
@@ -63,10 +55,10 @@ class Images extends Component {
         <div id="ImageList">
         <div id="PhotoList">
         {
-          this.renderSelection() 
+          this.renderSelection()
         }
         </div>
-        
+
         </div>
         <div id="actionBar">
         <button className="actionBtn" id="SubmitBtn" onClick={this.submitToInterop}>Submit</button>
@@ -76,7 +68,7 @@ class Images extends Component {
         <button className="actionBtn" id="SaveBtn" onClick={this.saveBtn}>Save Selection</button>
         </div>
       </div>
-      
+
     );
   }
 
@@ -110,7 +102,7 @@ class Images extends Component {
       this.state.latestImages.unshift(photo); //add the new photo to the front of latestImages
       if (this.contains(myList, photo))
       {
-        
+
         this.state.styleMap[photo] = '0px';
         let bdWidth = this.isSelected(photo) ? "3px" : "0px";
         return (
@@ -119,7 +111,7 @@ class Images extends Component {
               onClick={()=>this.setToCurrent(photo)} />
         );
       }
-    })*/ 
+    })*/
     //fix to iterate thru myList and print mylist[i]
     Object.keys(this.images).map((photo) => {
       this.state.allImages.push(photo);
@@ -217,7 +209,7 @@ class Images extends Component {
   selectAllBtn = () => {
     var selectAll = "selected images: \n";
     //select the images which are currently displayed in the ImageList
-    switch (this.state.listSelected) 
+    switch (this.state.listSelected)
     {//figure out which list is currently displayed
     case "Recent":
       this.state.selectedImages = Array.from(this.state.recentImages);
@@ -225,7 +217,7 @@ class Images extends Component {
     case "Saved":
       this.state.selectedImages = Array.from(this.state.savedImages);
       break;
-    case "Latest": 
+    case "Latest":
       this.state.selectedImages = Array.from(this.state.latestImages);
       break;
     case "Submitted":
@@ -258,7 +250,7 @@ class Images extends Component {
       {  this.state.submittedImages.push(this.state.selectedImages[i]);
           submit += (this.state.selectedImages[i] + "\n");
       }
-      else 
+      else
       alert += (this.state.selectedImages[i]);
     }
     this.state.selectedImages = []; //clear selected images
@@ -266,7 +258,7 @@ class Images extends Component {
   }
 
   clearBtn = () => {
-    if (window.confirm('Are you sure you want to clear all selected images?')) 
+    if (window.confirm('Are you sure you want to clear all selected images?'))
     {
       var clear = "Clearing the following images: \n";
       for (var i = 0; i < this.state.selectedImages.length; i++)
