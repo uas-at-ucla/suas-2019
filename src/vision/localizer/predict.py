@@ -3,6 +3,7 @@ import cv2
 import random
 import signal
 import sys
+import time
 
 def randomColor():
     return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -13,9 +14,9 @@ def signal_received(signal, frame):
 signal.signal(signal.SIGINT, signal_received)
 
 options = {
-    "model": "cfg/yolo-auvsi.cfg",
-    "load": "darkflow/bin/tiny-yolo-voc.weights",
-    "threshold": 0.1
+    "pbLoad": "darkflow/built_graph/yolo-auvsi.pb",
+    "metaLoad": "darkflow/built_graph/yolo-auvsi.meta",
+    "threshold": 0.001
 }
 
 tfnet = TFNet(options)
@@ -38,5 +39,7 @@ for result in results:
 print("Results:")
 print(results)
 cv2.imshow("img", img)
-cv2.waitKey(0)
+cv2.waitKey(1)
+while (True):
+    time.sleep(0.5)
 cv2.destroyAllWindows()
