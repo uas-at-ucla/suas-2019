@@ -25,7 +25,7 @@ def display(name, image): #show image
 
 
 class ColorDetector:
-	def __init__(self): #initialize color arrays
+	def __init__(self): #initialize arrays
 		self.blue = np.array([255, 0, 0])
 		self.green = np.array([0, 255, 0])
 		self.red = np.array([0, 0, 255])

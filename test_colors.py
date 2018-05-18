@@ -21,7 +21,6 @@ color_dict = {
 }
 
 def softmax(predictions): #get the softmax probability classification 
-	print(predictions.shape)
 	return np.exp(predictions)/(sum(np.exp(predictions)))
 
 

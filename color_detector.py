@@ -10,7 +10,7 @@ directory = "/home/uas/Documents/suas_2018/src/vision/target_generator/DATA/crop
 labels_path = "/home/uas/Documents/suas_2018/src/vision/target_generator/DATA/labels-5-1-2018.txt"
 
 
-def load_data(): #load the labels and the rgb values corresponding to the images with the corresponding label name
+def load_data(): #load the labels and the rgb values corresponding to the images with the corresponding label 
 	detector = ColorDetector() #create new color detector instance
 	image_id = 0 
 	f = open(labels_path)
