@@ -36,26 +36,23 @@ class Images extends Component {
 
     return (
       <div className="Images">
-
         <div className="row">
-
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
             <h3>Raw Images</h3>
             <div id="Raw-Images-List">
               {this.renderSelection()}
+              {/* todo: Howard double-click image to pop-up photo editor */}
             </div>
           </div>
-
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
             <h3>Segmented Images</h3>
-            {/* todo: Howard */}
+            {/* todo: Howard+Ryan - insert photos from segmented files folder;
+                also set-up photo editor*/}
           </div>
-
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
             <h3>Position of Photo Taken</h3>
-            {/* Google Maps insert here */}
+            {/* todo: Ivan - Google Maps insert here */}
           </div>
-
         </div>
 
         <div id="actionBar">
@@ -81,35 +78,11 @@ class Images extends Component {
   }
 
   renderSelection() { //chooses which set of images to display
-    switch (this.state.listSelected)
-    {
-      case "Recent":
-        return this.displayList(this.state.recentImages);
-      case "Saved":
-        return this.displayList(this.state.savedImages);
-      case "Latest":
-        return this.displayList(this.state.latestImages);
-      case "Submitted":
-        return this.displayList(this.state.submittedImages);
-    }
+    return this.displayList(this.state.latestImages);
   }
-  displayList(myList) { //displays the given list of images (called above)
-    this.state.allImages = [];
-    /*return Object.keys(this.images).map((photo) => {
-      this.state.allImages.push(photo); //this line should probalby go somewhere else!!!
-      this.state.latestImages.unshift(photo); //add the new photo to the front of latestImages
-      if (this.contains(myList, photo))
-      {
 
-        this.state.styleMap[photo] = '0px';
-        let bdWidth = this.isSelected(photo) ? "3px" : "0px";
-        return (
-            <img className="surveyPhoto" style={{borderWidth: bdWidth}}
-              id={photo} src={this.images[photo]} onDoubleClick={() => this.selectBtn(photo)}
-              onClick={()=>this.setToCurrent(photo)} />
-        );
-      }
-    })*/
+  displayList(myList) {
+    this.state.allImages = [];
     //fix to iterate thru myList and print mylist[i]
     Object.keys(this.images).map((photo) => {
       this.state.allImages.push(photo);
