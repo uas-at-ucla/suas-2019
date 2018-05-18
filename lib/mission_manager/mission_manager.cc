@@ -132,20 +132,20 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
           sleep_cmd_raw->mutable_sleepcommand();
       sleep_cmd->set_time(3);
     } else if (cmd->has_surveycommand()) {
-      ::lib::mission_manager::WaypointCommand *waypoint_cmd =
-          cmd->mutable_waypointcommand();
+//    ::lib::mission_manager::WaypointCommand *waypoint_cmd =
+//        cmd->mutable_waypointcommand();
 
-      // Create a goto command to fly to the waypoint position.
-      {
-        ::lib::mission_manager::GotoCommand *goto_cmd =
-            sub_mission->add_commands()->mutable_gotocommand();
+//    // Create a goto command to fly to the waypoint position.
+//    {
+//      ::lib::mission_manager::GotoCommand *goto_cmd =
+//          sub_mission->add_commands()->mutable_gotocommand();
 
-        ::lib::mission_manager::Position3D *goal =
-            new ::lib::mission_manager::Position3D(waypoint_cmd->goal());
-        ::std::cout << goal->latitude() << ", " << goal->longitude()
-                    << ::std::endl;
-        goto_cmd->set_allocated_goal(goal);
-      }
+//      ::lib::mission_manager::Position3D *goal =
+//          new ::lib::mission_manager::Position3D(waypoint_cmd->goal());
+//      ::std::cout << goal->latitude() << ", " << goal->longitude()
+//                  << ::std::endl;
+//      goto_cmd->set_allocated_goal(goal);
+//    }
     } else if (cmd->has_bombdropcommand()) {
       ::lib::mission_manager::BombDropCommand *bomb_cmd =
           cmd->mutable_bombdropcommand();
