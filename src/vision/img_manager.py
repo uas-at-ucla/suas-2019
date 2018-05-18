@@ -19,6 +19,7 @@ class ImgManager:
         truth_src: {'user', 'addr', 'remote_dir', 'os_type'}
             user: username of the remote machine
             addr: ip address of the remote machine
+            port: port for ssh
             remote_dir: the absolute path of the remote img directory
             os_type: type of os: 'windows' or 'posix'
         '''
@@ -35,7 +36,8 @@ class ImgManager:
         self.procs.killall()
 
     def gen_id():
-        return base64.urlsafe_b64encode(uuid.uuid4().bytes).decode('utf-8')[:-2]
+        return base64.urlsafe_b64encode(
+            uuid.uuid4().bytes).decode('utf-8')[:-2]
 
     def get_prop(self, img_id, prop, attempts=1):
         '''
@@ -49,9 +51,9 @@ class ImgManager:
                 return json.load(f)[prop]
         except OSError as err:
             if attempts <= 0:
-                raise err # retrieval failed twice in a row!
+                raise err  # retrieval failed twice in a row!
             self._retrieve_img(img_id)
-            return self.get_prop(img_id, prop, attempts-1) # try again
+            return self.get_prop(img_id, prop, attempts - 1)  # try again
         except KeyError as err:
             return None
 
@@ -66,17 +68,18 @@ class ImgManager:
                 json.dump(data, f)
         except OSError as err:
             if attempts <= 0:
-                raise err # retrieval failed twice in a row!
+                raise err  # retrieval failed twice in a row!
             self._retrieve_img(img_id)
-            return self.set_prop(img_id, prop, val, attempts-1)
+            return self.set_prop(img_id, prop, val, attempts - 1)
 
     def _retrieve_img(self, img_id):
         for ext in ('.jpg', '.json'):
             if 0 != processes.spawn_process_wait_for_code(
-                    'rsync -vz --progress -e "ssh -p 22" "' +
-                    self.truth_src['user'] + '@' + self.truth_src['addr'] + ':' +
-                    str(self.remote_dir / (img_id + ext)) + 
-                    '" ' + os.path.join(self.dir, img_id + ext)):
+                    'rsync -vz --progress -e "ssh -p ' + str(
+                        self.truth_src['port']) + '" "' +
+                    self.truth_src['user'] + '@' + self.truth_src['addr'] +
+                    ':' + str(self.remote_dir / (img_id + ext)) + '" ' +
+                    os.path.join(self.dir, img_id + ext)):
                 # TODO handle download failure
                 pass
 
@@ -89,7 +92,7 @@ class ImgManager:
 
         # not in local dir, retrieve from original source of truth
         self._retrieve_img(img_id)
-        return self.get_img(img_id, attempts-1)
+        return self.get_img(img_id, attempts - 1)
 
     def create_img(self, img, props):
         img_inc_path = os.path.join(self.dir, props['id'])
@@ -108,7 +111,13 @@ class ImgManager:
         except OSError:
             # TODO handle OSError
             pass
-    def create_new_img(self, img, img_id=None, time_gen=None, hash_type=None, other={}):
+
+    def create_new_img(self,
+                       img,
+                       img_id=None,
+                       time_gen=None,
+                       hash_type=None,
+                       other={}):
         if img_id is None:
             img_id = self.gen_id()
 
@@ -118,5 +127,3 @@ class ImgManager:
         }, **other)
 
         self.create_img(img, img_info)
-
-
