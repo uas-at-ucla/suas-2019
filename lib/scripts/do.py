@@ -106,7 +106,7 @@ def run_simulate(args):
             "--mav20 " \
             "--state-basedir=/tmp/ " \
             "--master=0.0.0.0:14540 " \
-            "--out=udp:0.0.0.0:8083 " \
+            "--out=udp:0.0.0.0:8084 " \
             "--out=udp:0.0.0.0:8085 ", \
             None, True, False)
 
@@ -117,15 +117,15 @@ def run_simulate(args):
     # Drone control code.
     processes.spawn_process(
             "./bazel-out/k8-fastbuild/bin/src/control/ground_communicator/" \
-                    "ground_communicator", None, True, True)
+                    "ground_communicator", None, True, args.verbose)
     processes.spawn_process("./bazel-out/k8-fastbuild/bin/src/control/io/io",
-                            None, True, args.verbose)
+                            None, True, True)
     processes.spawn_process(
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop", None,
         True, args.verbose)
 
     # Ground server and interface.
-    processes.spawn_process("python ./src/ground/ground.py", None, True, True)
+    processes.spawn_process("python ./src/ground/ground.py", None, True, args.verbose)
     processes.wait_for_complete()
 
 
