@@ -1,12 +1,28 @@
-#include "semaphore.h"
+#include "dslr_interface.h"
 
 namespace lib {
 
 DSLRInterface::DSLRInterface()
-    : take_photos_triggered_(0),
-      thread_(&MissionMessageQueueReceiver::Run, this) {}
+    : state_(STANDBY),
+      thread_(&DSLRInterface::Run, this),
+      phased_loop_(::std::chrono::milliseconds(static_cast<int>(1e3 / 25)),
+                   ::std::chrono::milliseconds(0)),
+      take_photos_triggered_(0),
+      photos_available_to_download_(true) {}
 
-void DSLRInterface::Quit() { KillDSLRAndWait(); }
+void DSLRInterface::Quit() {
+  exiting_ = true;
+  thread_.join();
+
+  int unmount_dslr_pid = fork();
+
+  // Fork a process for downloading photos from the DSLR.
+  if (!unmount_dslr_pid) {
+    setsid();
+    execl("/bin/fusermount", "-u", "/tmp/suas_2018_dslr_mounted", NULL);
+    exit(0);
+  }
+}
 
 void DSLRInterface::Run() {
   while (run_) {
@@ -15,39 +31,123 @@ void DSLRInterface::Run() {
 }
 
 void DSLRInterface::RunIteration() {
+  phased_loop_.SleepUntilNext();
+
+  State next_state;
+
+  double current_time =
+      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+          ::std::chrono::system_clock::now().time_since_epoch())
+          .count() *
+      1e-9;
+
+  ::std::cout << "dslr state: " << state_ << ::std::endl;
+
   switch (state_) {
     case STANDBY:
+      if(exiting_) {
+        next_state = EXITED;
+      } else if (take_photos_triggered_ + 0.25 > current_time) {
+        next_state = START_CONTINUOUS_PHOTO_CAPTURE;
+      } else if(photos_available_to_download_) {
+        next_state = START_DOWNLOAD_PHOTOS;
+      }
+
       break;
 
-    case CONTINUOUSLY_TAKE_PHOTOS:
+    case EXITED:
+      run_ = false;
+      break;
+
+    case START_CONTINUOUS_PHOTO_CAPTURE:
+      photos_available_to_download_ = true;
+
+      photos_capture_pid_ = fork();
+
+      if (!photos_capture_pid_) {
+        setsid();
+        execl("/bin/sh", "sh", "-c", "/home/comran/Code/suas_2018/lib/scripts/take_photos_continuously.sh", NULL);
+        exit(0);
+      }
+
+      next_state = CONTINUOUS_PHOTO_CAPTURE;
+      break;
+
+    case CONTINUOUS_PHOTO_CAPTURE:
+      if(exiting_) {
+        next_state = STOP_CONTINUOUS_PHOTO_CAPTURE;
+      } else if (kill(photos_download_pid_, 0)) {
+        // Photos capture finished successfully.
+        next_state = STANDBY;
+      } else if (take_photos_triggered_ + 0.25 <= current_time) {
+        // Camera doesn't need to take photos anymore, so stop capturing.
+        next_state = STOP_CONTINUOUS_PHOTO_CAPTURE;
+      }
+
+      break;
+
+    case STOP_CONTINUOUS_PHOTO_CAPTURE:
+      // Interrupt photos capture.
+      kill(-1 * photos_capture_pid_, SIGINT);
+      next_state = WAIT_FOR_PHOTOS_CAPTURE_EXIT;
+
+      break;
+
+    case WAIT_FOR_PHOTOS_CAPTURE_EXIT:
+      if (kill(photos_capture_pid_, 0)) {
+        // Photos capture successfully killed.
+        next_state = STANDBY;
+      }
 
       break;
 
     case START_DOWNLOAD_PHOTOS:
+      photos_download_pid_ = fork();
 
-      state = DOWNLOAD_PHOTOS;
+      // Fork a process for downloading photos from the DSLR.
+      if (!photos_download_pid_) {
+        setsid();
+        execl("/bin/sh", "sh", "-c", "/home/comran/Code/suas_2018/lib/scripts/download_photos.sh", NULL);
+        exit(0);
+      }
+
+      next_state = DOWNLOAD_PHOTOS;
       break;
 
     case DOWNLOAD_PHOTOS:
-      if (kill(camera_trigger_pid_, 0)) {
-        // Photos downloader finished.
-        state_ = STANDBY;
+      ::std::cout << "RESULT: " << kill(photos_download_pid_, 0) << ::std::endl;
+
+      int pid_stat;
+
+      if(exiting_) {
+        next_state = STOP_DOWNLOADING_PHOTOS;
+      } else if (waitpid(photos_download_pid_, &pid_stat, WNOHANG)) {
+        // Photos downloader finished successfully.
+        photos_available_to_download_ = false;
+        next_state = STANDBY;
+      } else if (take_photos_triggered_ + 0.25 > current_time) {
+        // Camera needs to take photos, so stop downloading.
+        next_state = STOP_DOWNLOADING_PHOTOS;
       }
 
       break;
 
     case STOP_DOWNLOADING_PHOTOS:
-      // Kill photos downloader.
+      // Interrupt photos downloader.
       kill(-1 * photos_download_pid_, SIGINT);
+      next_state = WAIT_FOR_DOWNLOADING_PHOTOS_EXIT;
+      break;
 
     case WAIT_FOR_DOWNLOADING_PHOTOS_EXIT:
       if (kill(photos_download_pid_, 0)) {
         // Photos downloader successfully killed.
-        state_ = STANDBY;
+        next_state = STANDBY;
       }
 
       break;
   }
+
+  state_ = next_state;
 }
 
 void DSLRInterface::TakePhotos() {

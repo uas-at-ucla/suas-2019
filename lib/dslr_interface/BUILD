@@ -9,4 +9,7 @@ cc_library(
   hdrs = [
     'dslr_interface.h',
   ],
+  deps = [
+    '//aos/common/util:phased_loop',
+  ],
 )

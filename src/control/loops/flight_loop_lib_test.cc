@@ -64,7 +64,7 @@ void create_procs() {
             "--mav20 ",
             "--state-basedir=/tmp/ ",
             "--master=0.0.0.0:14550 ",
-            "--out=udp:0.0.0.0:8083 ",
+            "--out=udp:0.0.0.0:8084 ",
             "--out=udp:0.0.0.0:8085 ", NULL);
     exit(0);
   }
