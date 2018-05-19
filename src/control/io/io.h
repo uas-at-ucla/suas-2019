@@ -17,6 +17,8 @@
 #include "src/control/loops/flight_loop.q.h"
 #include "aos/common/util/phased_loop.h"
 
+#include "lib/dslr_interface/dslr_interface.h"
+
 namespace src {
 namespace control {
 namespace io {
@@ -63,6 +65,8 @@ class AutopilotOutputWriter : public LoopOutputHandler {
   int camera_script_pid_;
   int camera_script_run_;
 #endif
+
+  ::lib::DSLRInterface dslr_interface_;
 
   autopilot_interface::AutopilotInterface *copter_io_;
 
