@@ -38,10 +38,10 @@ import process_manager
 # Defaults #####################################################################
 
 # General Defaults
-DEFAULT_DATA_DIR = os.path.abspath(os.path.join('.', 'local_data'))
+DEFAULT_DATA_DIR = os.path.abspath(os.path.join('.', 'data_local'))
 
 # Server defaults
-DRONE_USER = 'benssh'
+DRONE_USER = 'benlimpa'
 SECRET_KEY = 'flappy'
 DEFAULT_SRV_IP = '0.0.0.0'
 DEFAULT_SRV_PORT = 8099
@@ -51,10 +51,10 @@ YOLO_IP = '0.0.0.0'
 RSYNC_IP = '0.0.0.0'
 SNIPPER_IP = '0.0.0.0'
 CLASSIFIER_IP = '0.0.0.0'
-SNIPPER_USER = 'username'
+SNIPPER_USER = 'benlimpa'
 
 # Client Defaults
-DEFAULT_VSN_USER = 'benssh'
+DEFAULT_VSN_USER = 'benlimpa'
 DEFAULT_VSN_PORT = DEFAULT_SRV_PORT
 DEFAULT_SSH_PORT = 22
 DEFAULT_REMOTE_DIR = DEFAULT_DATA_DIR
@@ -65,9 +65,9 @@ DEFAULT_AUCTION_TIMEOUT = 3
 MAX_THREADS = 20
 
 # Yolo Defaults
-DEFAULT_YOLO_CFG = 'localizer/cfg/yolo-auvsi.cfg'
-DEFAULT_YOLO_WEIGHTS = 'localizer/darkflow/bin/tiny-yolo-voc.weights'
-DEFAULT_YOLO_THRESH = 0.1
+DEFAULT_YOLO_PB = 'localizer/built_graph/yolo-auvsi.pb'
+DEFAULT_YOLO_META = 'localizer/built_graph/yolo-auvsi.meta'
+DEFAULT_YOLO_THRESH = 0.01
 
 processes = process_manager.ProcessManager()
 c_workers = []
@@ -453,8 +453,8 @@ class RsyncWorker(ClientWorker):
         task_args = task[0]
         global verbose
         if verbose:
-            print(
-                'Called rsync with args: <' + '> <'.join(map(str, task)) + '>')
+            print('Called rsync with args: <' + '> <'.join(map(str, task)) +
+                  '>')
 
         if 0 == processes.spawn_process_wait_for_code(
                 'rsync -vz --progress -e "ssh -p 22" "' + task_args['user'] +
@@ -487,8 +487,8 @@ class YoloWorker(ClientWorker):
 
         # load model
         yolo_options = {
-            "model": args.yolo_cfg,
-            "load": args.yolo_weights,
+            "pbLoad": args.yolo_pb,
+            "metaLoad": args.yolo_meta,
             "threshold": args.yolo_threshold
         }
         self.tfnet = TFNet(options)
@@ -498,8 +498,8 @@ class YoloWorker(ClientWorker):
         img_id = task[0]['img_id']
         global verbose
         if verbose:
-            print(
-                'Called yolo with args: <' + '> <'.join(map(str, task)) + '>')
+            print('Called yolo with args: <' + '> <'.join(map(str, task)) +
+                  '>')
 
         img = self.manager.get_img(img_id)
         results = self.tfnet.return_predict(img)
@@ -520,7 +520,10 @@ class YoloWorker(ClientWorker):
 
 class MockYoloWorker(ClientWorker):
     def __init__(self, in_q, args):
-        super().__init(in_q, args)
+        super().__init__(in_q, args)
+
+    def get_event_name(self):
+        return 'yolo'
 
     def _do_work(self, task):
         img_id = task[0]['img_id']
@@ -541,7 +544,10 @@ class MockYoloWorker(ClientWorker):
 
 
 def yolo_worker(args):
-    client_worker(args, MockYoloWorker)
+    if args.mock:
+        client_worker(args, MockYoloWorker)
+    else:
+        client_worker(args, YoloWorker)
 
 
 # Target Localization ##########################################################
@@ -633,7 +639,8 @@ if __name__ == '__main__':
     server_parser.set_defaults(func=server_worker)
 
     # Client Parsers ###################################################
-    client_parser = subparsers.add_parser('client', help='client help')
+    client_parser = subparsers.add_parser(
+        'client', help='start a worker client')
     client_parser.add_argument(
         "--vsn-addr",
         action='store',
@@ -657,7 +664,7 @@ if __name__ == '__main__':
         action='store',
         dest='remote_dir',
         default=DEFAULT_REMOTE_DIR,
-        help='Data directory of the primary vision server')
+        help='data directory of the primary vision server')
     client_parser.add_argument(
         '--user',
         action='store',
@@ -671,32 +678,46 @@ if __name__ == '__main__':
         default=DEFAULT_THREADS,
         choices=range(1, MAX_THREADS + 1),
         help='number of threads to run the client worker with')
+    client_parser.add_argument(
+        '--mock',
+        action='store_true',
+        dest='mock',
+        default=False,
+        help='use the mock version of the client instead')
 
     client_subparsers = client_parser.add_subparsers()
 
     # Rsync specific args
-    rsync_parser = client_subparsers.add_parser('rsync', help='rsync help')
+    rsync_parser = client_subparsers.add_parser(
+        'rsync', help='start an rsync worker client')
     rsync_parser.set_defaults(func=rsync_worker)
 
     # Yolo specific args
-    yolo_parser = client_subparsers.add_parser('yolo', help='yolo help')
+    yolo_parser = client_subparsers.add_parser(
+        'yolo', help='start a YOLO worker client')
     yolo_parser.add_argument(
-        "--cfg", action='store', dest='yolo_cfg', default=DEFAULT_YOLO_CFG)
-    yolo_parser.add_argument(
-        "--weights",
+        "--protobuf",
         action='store',
-        dest='yolo_weights',
-        default=DEFAULT_YOLO_WEIGHTS)
+        dest='yolo_pb',
+        default=DEFAULT_YOLO_PB,
+        help='specify the protobuf file of the built graph to load')
+    yolo_parser.add_argument(
+        "--meta",
+        action='store',
+        dest='yolo_meta',
+        default=DEFAULT_YOLO_META,
+        help='specify the meta file of the built graph to load')
     yolo_parser.add_argument(
         "--thresh",
         action='store',
         dest='yolo_threshold',
-        default=DEFAULT_YOLO_THRESH)
+        default=DEFAULT_YOLO_THRESH,
+        help='specify the threshold for recognizing a target')
     yolo_parser.set_defaults(func=yolo_worker)
 
     # snipper specific args
     snipper_parser = client_subparsers.add_parser(
-        'snipper', help='snipper help')
+        'snipper', help='start a snipper worker client')
     snipper_parser.set_defaults(func=snipper_worker)
 
     args = parser.parse_args()
