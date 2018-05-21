@@ -15,6 +15,7 @@ cc_library(
     '//lib/mission_message_queue:mission_message_queue',
     '//aos/linux_code:init',
     "@cppzmq//:cppzmq",
+    "@com_google_protobuf//:protobuf",
   ],
 )
 

@@ -7,6 +7,9 @@ cc_binary(
   deps = [
     ":io_lib"
   ],
+  copts = [
+    "-g",
+  ],
 )
 
 cc_library(
@@ -29,6 +32,7 @@ cc_library(
     '//aos/common:time',
     '//aos/common/util:phased_loop',
     "@WiringPi//:WiringPi",
+    "@pigpio//:pigpio",
   ],
 )
 
