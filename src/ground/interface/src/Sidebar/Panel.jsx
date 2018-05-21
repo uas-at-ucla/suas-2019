@@ -49,6 +49,7 @@ class Panel extends Component {
                   makeCommand={this.props.makeCommand}
                   commandTypes={this.props.commandTypes}
                   getCommandPosKey={this.props.getCommandPosKey}
+                  socketEmit={this.props.socketEmit}
                 />
               </div>
             </div>

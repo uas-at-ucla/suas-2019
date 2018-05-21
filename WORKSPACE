@@ -43,6 +43,13 @@ new_git_repository(
 )
 
 new_git_repository(
+  name = 'mavlink_v2',
+  remote = 'https://github.com/mavlink/c_library_v2.git',
+  build_file = 'lib/third_party/mavlink_v2.BUILD',
+  commit = '748192f661d0df3763501cfc432861d981952921',
+)
+
+new_git_repository(
   name = 'libmavconn',
   remote = 'https://github.com/mavlink/mavros.git',
   build_file = 'lib/third_party/libmavconn.BUILD',
@@ -144,6 +151,13 @@ new_git_repository(
   commit = "93d41b2c0ecd0db7075e2386596ce39cb20546c9",
   remote = "https://github.com/gabime/spdlog.git",
   build_file = "lib/third_party/spdlog.BUILD",
+)
+
+new_git_repository(
+  name = "pigpio",
+  commit = "934874be2fa34a525beb33e8cb75e378df587860",
+  remote = "https://github.com/joan2937/pigpio.git",
+  build_file = "lib/third_party/pigpio.BUILD",
 )
 
 new_local_repository(

@@ -30,7 +30,9 @@ FlightLoop::FlightLoop()
       current_flight_start_time_(0),
       alarm_(kFlightLoopFrequency),
       got_sensors_(false),
-      last_loop_(0) {
+      last_loop_(0),
+      did_alarm_(false),
+      did_arm_(false) {
   ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
   ::src::control::loops::flight_loop_queue.output.FetchLatest();
@@ -109,7 +111,8 @@ void FlightLoop::RunIteration() {
   if (!got_sensors_) {
     // Send out an alarm chirp to signal that the drone loop is running
     // successfully.
-    alarm_.AddAlert({0.02, 0.50});
+    alarm_.AddAlert({0.02, 0.15});
+    alarm_.AddAlert({0.02, 0.15});
   }
 
   got_sensors_ = true;
@@ -131,6 +134,10 @@ void FlightLoop::RunIteration() {
   }
   last_loop_ = current_time;
 
+  auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
+
+  output->gimbal_angle = 20;
+
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
 
@@ -139,9 +146,22 @@ void FlightLoop::RunIteration() {
       std::cout << "SKIPPED ITERATIONS\n";
     }
     return;
+  } else {
+    output->trigger_takeoff =
+        ::src::control::loops::flight_loop_queue.goal->trigger_takeoff;
+    output->trigger_hold =
+        ::src::control::loops::flight_loop_queue.goal->trigger_hold;
+    output->trigger_offboard =
+        ::src::control::loops::flight_loop_queue.goal->trigger_offboard;
+    output->trigger_rtl =
+        ::src::control::loops::flight_loop_queue.goal->trigger_rtl;
+    output->trigger_land =
+        ::src::control::loops::flight_loop_queue.goal->trigger_land;
+    output->trigger_arm =
+        ::src::control::loops::flight_loop_queue.goal->trigger_arm;
+    output->trigger_disarm =
+        ::src::control::loops::flight_loop_queue.goal->trigger_disarm;
   }
-
-  auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
   if (::src::control::loops::flight_loop_queue.goal->trigger_failsafe) {
     EndFlightTimer();
@@ -153,16 +173,33 @@ void FlightLoop::RunIteration() {
     next_state = FLIGHT_TERMINATION;
   }
 
+  if (::src::control::loops::flight_loop_queue.goal->trigger_alarm + 0.05 >
+      current_time) {
+    if (!did_alarm_) {
+      did_alarm_ = true;
+      alarm_.AddAlert({0.30, 0.30});
+      LOG_LINE("Alarm was manually triggered");
+    }
+  } else {
+    did_alarm_ = false;
+  }
+
+  // Check if the Pixhawk just got armed, and send out a chirp if it did.
+  if(::src::control::loops::flight_loop_queue.sensors->armed && !did_arm_) {
+    did_arm_ = true;
+
+    alarm_.AddAlert({0.06, 0.15});
+    alarm_.AddAlert({0.06, 0.15});
+  }
+
+  if(!::src::control::loops::flight_loop_queue.sensors->armed) {
+    did_arm_ = false;
+  }
+
   // Set defaults for all outputs.
   output->velocity_x = 0;
   output->velocity_y = 0;
   output->velocity_z = 0;
-
-  output->velocity_control = false;
-  output->arm = false;
-  output->takeoff = false;
-  output->land = false;
-  output->throttle_cut = false;
 
   output->alarm = false;
 
@@ -172,8 +209,6 @@ void FlightLoop::RunIteration() {
     case STANDBY:
       if (run_mission) {
         next_state = ARMING;
-        alarm_.AddAlert({0.10, 0.50});
-        alarm_.AddAlert({0.10, 0.50});
       }
       break;
 
@@ -198,8 +233,6 @@ void FlightLoop::RunIteration() {
         next_state = ARMED;
         break;
       }
-
-      output->arm = true;
       break;
 
     case ARMED:
@@ -238,13 +271,6 @@ void FlightLoop::RunIteration() {
         takeoff_ticker_++;
       }
 
-      if (takeoff_ticker_ < 800) {
-        output->arm = true;
-        output->takeoff = true;
-      } else {
-        output->disarm = true;
-      }
-
       if (::src::control::loops::flight_loop_queue.sensors->relative_altitude >
           2.2) {
         takeoff_ticker_ = 0;
@@ -253,22 +279,26 @@ void FlightLoop::RunIteration() {
       break;
 
     case IN_AIR: {
-      if (!run_mission) {
-        next_state = LANDING;
-        break;
-      }
+      //    if (!run_mission) {
+      //      next_state = LANDING;
+      //      break;
+      //    }
 
-      // Check if altitude is below a safe threshold, which may indicate that
-      // the autopilot was reset.
-      if (::src::control::loops::flight_loop_queue.sensors->relative_altitude >
-              2.2 &&
-          ::src::control::loops::flight_loop_queue.sensors->relative_altitude <
-              2.5) {
-        next_state = TAKING_OFF;
-      } else if (::src::control::loops::flight_loop_queue.sensors
-                     ->relative_altitude < 2.2) {
-        next_state = LANDING;
-      }
+      //    // Check if altitude is below a safe threshold, which may indicate
+      //    that
+      //    // the autopilot was reset.
+      //    if
+      //    (::src::control::loops::flight_loop_queue.sensors->relative_altitude
+      //    >
+      //            2.2 &&
+      //        ::src::control::loops::flight_loop_queue.sensors->relative_altitude
+      //        <
+      //            2.5) {
+      //      next_state = TAKING_OFF;
+      //    } else if (::src::control::loops::flight_loop_queue.sensors
+      //                   ->relative_altitude < 2.2) {
+      //      next_state = LANDING;
+      //    }
 
       Position3D position = {
           ::src::control::loops::flight_loop_queue.sensors->latitude,
@@ -280,8 +310,6 @@ void FlightLoop::RunIteration() {
       output->velocity_x = flight_direction.flight_velocities.x;
       output->velocity_y = flight_direction.flight_velocities.y;
       output->velocity_z = flight_direction.flight_velocities.z;
-
-      output->velocity_control = true;
       break;
     }
 
@@ -299,15 +327,12 @@ void FlightLoop::RunIteration() {
         break;
       }
 
-      output->land = true;
       break;
 
     case FAILSAFE:
-      output->land = true;
       break;
 
     case FLIGHT_TERMINATION:
-      output->throttle_cut = true;
       break;
   }
 
@@ -332,18 +357,13 @@ void FlightLoop::RunIteration() {
   output->alarm = alarm_.ShouldAlarm();
   LOG_LINE("Flight loop iteration OUTPUT..."
            << " VelocityX: " << output->velocity_x << " VelocityY: "
-           << output->velocity_y << " VelocityZ: " << output->velocity_z
-           << " VelocityControl: " << output->velocity_control
-           << " Arm: " << output->arm << " Disarm: " << output->disarm
-           << " Takeoff: " << output->takeoff << " Land: " << output->land
-           << " ThrottleCut: " << output->throttle_cut
-           << " Alarm: " << output->alarm);
+           << output->velocity_y << " VelocityZ: " << output->velocity_z);
 
   output.Send();
 
   auto status = ::src::control::loops::flight_loop_queue.status.MakeMessage();
   status->state = next_state;
-  status->current_command_index = pilot_.GetCurrentCommandIndex();
+  status->current_command_index = 0;
 
   if (current_flight_start_time_ == 0) {
     status->flight_time = previous_flights_time_;
