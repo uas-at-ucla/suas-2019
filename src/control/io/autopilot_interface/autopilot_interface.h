@@ -1,11 +1,12 @@
 #ifndef AUTOPILOT_INTERFACE_H_
 #define AUTOPILOT_INTERFACE_H_
 
-#include "lib/mavlink_serial/mavlink_serial.h"
+#include "lib/mavconn_udp/interface.h"
 
 #include <signal.h>
 #include <sys/time.h>
 #include <time.h>
+#include <unistd.h>
 
 #include <common/mavlink.h>
 
@@ -13,8 +14,6 @@ namespace src {
 namespace control {
 namespace io {
 namespace autopilot_interface {
-
-using namespace lib::mavlink_serial;
 
  // Bitmasks to indicate what type of message is being sent to the vehicle.
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_POSITION 0b0000110111111000
@@ -33,7 +32,6 @@ void set_velocity(float vx, float vy, float vz,
 void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp);
 void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp);
 
-void *start_autopilot_interface_read_thread(void *args);
 void *start_autopilot_interface_write_thread(void *args);
 
 struct TimeStamps {
@@ -84,6 +82,7 @@ struct Mavlink_Messages {
   mavlink_highres_imu_t highres_imu;
   mavlink_attitude_t attitude;
   mavlink_vfr_hud_t vfr_hud;
+  mavlink_actuator_control_target_t control_target;
 
   TimeStamps time_stamps;
 
@@ -101,39 +100,41 @@ class AutopilotInterface {
 
   void Arm();
   void Disarm();
+  void DoGimbal();
   void Takeoff();
+  void Hold();
+  void ReturnToLaunch();
   void Offboard();
   void Land();
   void FlightTermination();
 
   void set_message_period();
+  void set_params();
+  void set_param(const char id[], float value);
 
   Mavlink_Messages current_messages;
   mavlink_set_position_target_local_ned_t initial_position;
 
   void update_setpoint(mavlink_set_position_target_local_ned_t setpoint);
   void read_messages();
-  int write_message(mavlink_message_t message);
+  void write_message(mavlink_message_t message);
 
   void start();
   void stop();
 
-  void start_read_thread();
   void start_write_thread(void);
 
   void handle_quit(int sig);
 
  private:
-  MavlinkSerial *mavlink_serial_;
+  ::mavconn::MAVConnInterface::Ptr pixhawk_;
 
   mavlink_set_position_target_local_ned_t current_setpoint;
 
-  void read_thread();
   void write_thread(void);
 
   void write_setpoint();
 
-  pthread_t read_tid_;
   pthread_t write_tid_;
 
   char reading_status_;

@@ -9,8 +9,13 @@
 #include <string>
 #include <thread>
 #include <vector>
+#include <cmath>
+#include <algorithm>
+#include <iostream>
 
 #include "zmq.hpp"
+
+#include <google/protobuf/util/message_differencer.h>
 
 #include "lib/mission_message_queue/mission_message_queue.h"
 #include "lib/mission_manager/mission_commands.pb.h"
@@ -34,7 +39,6 @@ class Pilot {
 
   PilotOutput Calculate(Position3D drone_position);
   void PreprocessorThread();
-  int GetCurrentCommandIndex();
   void SetMission(::lib::mission_manager::Mission mission);
 
   void Quit() { run_ = false; }
@@ -42,6 +46,9 @@ class Pilot {
  private:
   ::lib::mission_message_queue::MissionMessageQueueReceiver
       mission_message_queue_receiver_;
+
+  ::lib::mission_manager::Command cmd_, last_cmd_;
+  bool cmd_set_;
 
   Position3D drone_position_;
   bool drone_position_set_;

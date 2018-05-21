@@ -6,6 +6,8 @@ import {
 } from 'react-sortable-hoc';
 import './MissionPlanner.css';
 
+const oppositeOf = {'comeToStop': 'flyThrough'}
+
 const SortableItem = SortableElement(({ command, changedCommands, myIndex, self }) => {
   let type = command.type;
   let fields = self.props.commandTypes[type];
@@ -17,7 +19,7 @@ const SortableItem = SortableElement(({ command, changedCommands, myIndex, self 
     >
       <td><div>{myIndex + 1}</div></td>
       <td><div>{command.name}</div></td>
-      <td><div>{type}</div></td>
+      <td><div>{type.replace('Command', '')}</div></td>
       {fields.map((field, index) => {
         return self.commandField(command, field.name, index);
       })}
@@ -104,8 +106,12 @@ class MissionPlannerOverview extends Component {
       }
     }
 
-    if (!isNaN(subcommand)) {
-      return <td key={id}><div>{parseFloat(subcommand).toFixed(3)}</div></td>;
+    if (typeof subcommand !== 'object') {
+      if (type === 'bool') {
+        return <td key={id}><div>{subcommand ? field : oppositeOf[field]}</div></td>;
+      } else {
+        return <td key={id}><div>{parseFloat(subcommand).toFixed(3)}</div></td>;
+      }
     } else {
       let fields = this.props.commandTypes[type];
       if (Array.isArray(subcommand)) {
@@ -115,7 +121,7 @@ class MissionPlannerOverview extends Component {
             <table>
               <tbody>
                 {subcommand.map((cmd, i) => 
-                  <tr>
+                  <tr key={i}>
                     {fields.map((next_field, j) => {
                       return this.commandField(command, field+'.'+i+'.'+next_field.name, j);
                     })}
