@@ -138,6 +138,10 @@ class App extends Component {
     });
 
     this.socket.on("initial_data", data => {
+      if (data.drone_connected) {
+        this.setState({droneState: "Drone Connected!"});
+      }
+      
       if (data.interop_disconnected) {
         this.receivedInteropStatus(false);
       } else {

@@ -99,12 +99,16 @@ def run_simulate(args):
     # Give aos core some time to run.
     time.sleep(0.5)
 
-    # Simulator and port forwarder.
-    processes.spawn_process(
-        "socat pty,link=/tmp/virtualcom0,raw udp4-listen:14540", None, True,
-        args.verbose)
+#   # Simulator and port forwarder.
     processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
                             None, True, args.verbose)
+    processes.spawn_process("mavproxy.py " \
+            "--mav20 " \
+            "--state-basedir=/tmp/ " \
+            "--master=0.0.0.0:14540 " \
+            "--out=udp:0.0.0.0:8083 " \
+            "--out=udp:0.0.0.0:8085 ", \
+            None, True, False)
 
     # Log writer.
     processes.spawn_process("./bazel-out/k8-fastbuild/bin/lib/logger/" \

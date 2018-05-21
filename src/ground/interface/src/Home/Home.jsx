@@ -79,7 +79,7 @@ class Home extends Component {
         this.setState(newState);
       });
 
-      this.props.socketEmit('request_commands');
+      this.props.socketEmit('request_commands', {restoreCommands: false});
     });
   }
 
@@ -118,7 +118,7 @@ class Home extends Component {
           </div>
         </div>
 
-        <Controls homeState={this.state} socketEmit={this.props.socketEmit}
+        <Controls homeState={this.state} appState={this.props.appState} socketEmit={this.props.socketEmit}
                   getMission={this.get_mission} />
       </div>
     );
@@ -133,7 +133,7 @@ class Home extends Component {
       }
     }
 
-    if (nextProps.appState.drone_mission_base64 !== this.props.appState.drone_mission_base64) {
+    if (this.protobuf_root && nextProps.appState.drone_mission_base64 !== this.props.appState.drone_mission_base64) {
       if (nextProps.appState.drone_mission_base64) {
         const Mission = this.protobuf_root.lookupType('lib.mission_manager.Mission');
         let base64_str = nextProps.appState.drone_mission_base64;
@@ -321,6 +321,9 @@ class Home extends Component {
         ];
       }
       return this.make_inner_command(field.type, null);
+    }
+    if (field.type === 'bool') {
+      return false;
     }
     return 0;
   }

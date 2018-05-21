@@ -48,8 +48,7 @@ void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
 }
 
 AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
-    : read_tid_(0),
-      write_tid_(0),
+    : write_tid_(0),
       reading_status_(0),
       writing_status_(0),
       write_count_(0),
@@ -61,7 +60,76 @@ AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
   current_messages.sysid = system_id;
   current_messages.compid = autopilot_id;
 
-  mavlink_serial_ = new MavlinkSerial(serial_port, baud);
+  pixhawk_ =
+      ::mavconn::MAVConnInterface::open_url("udp://0.0.0.0:8083@:8083", 0, 0);
+  pixhawk_->set_protocol_version(mavconn::Protocol::V20);
+  pixhawk_->message_received_cb = [this](const mavlink_message_t *msg,
+                                         const ::mavconn::Framing framing) {
+
+    switch (msg->msgid) {
+      case MAVLINK_MSG_ID_HEARTBEAT:
+        mavlink_msg_heartbeat_decode(msg, &(current_messages.heartbeat));
+        current_messages.time_stamps.heartbeat = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_SYS_STATUS:
+        mavlink_msg_sys_status_decode(msg, &(current_messages.sys_status));
+        current_messages.time_stamps.sys_status = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_BATTERY_STATUS:
+        mavlink_msg_battery_status_decode(msg,
+                                          &(current_messages.battery_status));
+        current_messages.time_stamps.battery_status = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_RADIO_STATUS:
+        mavlink_msg_radio_status_decode(msg, &(current_messages.radio_status));
+        current_messages.time_stamps.radio_status = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
+        mavlink_msg_local_position_ned_decode(
+            msg, &(current_messages.local_position_ned));
+        current_messages.time_stamps.local_position_ned = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+        mavlink_msg_global_position_int_decode(
+            msg, &(current_messages.global_position_int));
+        current_messages.time_stamps.global_position_int = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_GPS_RAW_INT:
+        mavlink_msg_gps_raw_int_decode(msg, &(current_messages.gps_raw_int));
+        current_messages.time_stamps.gps_raw_int = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_HIGHRES_IMU:
+        mavlink_msg_highres_imu_decode(msg, &(current_messages.highres_imu));
+        current_messages.time_stamps.highres_imu = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_ATTITUDE:
+        mavlink_msg_attitude_decode(msg, &(current_messages.attitude));
+        current_messages.time_stamps.attitude = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_VFR_HUD:
+        mavlink_msg_vfr_hud_decode(msg, &(current_messages.vfr_hud));
+        current_messages.time_stamps.vfr_hud = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET:
+        mavlink_msg_actuator_control_target_decode(
+            msg, &(current_messages.control_target));
+
+        break;
+
+      default:
+        break;
+    }
+  };
 }
 
 AutopilotInterface::~AutopilotInterface() {}
@@ -71,115 +139,8 @@ void AutopilotInterface::update_setpoint(
   current_setpoint = setpoint;
 }
 
-void AutopilotInterface::read_messages() {
-  TimeStamps this_timestamps;
-
-  // Blocking wait for new data
-  while (!time_to_exit_ && mavlink_serial_->status > 0) {
-    ::std::vector<mavlink_message_t> messages;
-    mavlink_serial_->read_messages(messages);
-
-    for (std::vector<mavlink_message_t>::iterator it = messages.begin();
-         it != messages.end(); it++) {
-      mavlink_message_t message = *it;
-      // Store message sysid and compid.
-      // Note this doesn't handle multiple message sources.
-      current_messages.sysid = message.sysid;
-      current_messages.compid = message.compid;
-
-      // Handle Message ID
-      switch (message.msgid) {
-        case MAVLINK_MSG_ID_HEARTBEAT:
-          mavlink_msg_heartbeat_decode(&message, &(current_messages.heartbeat));
-          current_messages.time_stamps.heartbeat = get_time_usec();
-          this_timestamps.heartbeat = current_messages.time_stamps.heartbeat;
-          break;
-
-        case MAVLINK_MSG_ID_SYS_STATUS:
-          mavlink_msg_sys_status_decode(&message,
-                                        &(current_messages.sys_status));
-          current_messages.time_stamps.sys_status = get_time_usec();
-          this_timestamps.sys_status = current_messages.time_stamps.sys_status;
-          break;
-
-        case MAVLINK_MSG_ID_BATTERY_STATUS:
-          mavlink_msg_battery_status_decode(&message,
-                                            &(current_messages.battery_status));
-          current_messages.time_stamps.battery_status = get_time_usec();
-          this_timestamps.battery_status =
-              current_messages.time_stamps.battery_status;
-          break;
-
-        case MAVLINK_MSG_ID_RADIO_STATUS:
-          mavlink_msg_radio_status_decode(&message,
-                                          &(current_messages.radio_status));
-          current_messages.time_stamps.radio_status = get_time_usec();
-          this_timestamps.radio_status =
-              current_messages.time_stamps.radio_status;
-          break;
-
-        case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
-          mavlink_msg_local_position_ned_decode(
-              &message, &(current_messages.local_position_ned));
-          current_messages.time_stamps.local_position_ned = get_time_usec();
-          this_timestamps.local_position_ned =
-              current_messages.time_stamps.local_position_ned;
-          break;
-
-        case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
-          mavlink_msg_global_position_int_decode(
-              &message, &(current_messages.global_position_int));
-          current_messages.time_stamps.global_position_int = get_time_usec();
-          this_timestamps.global_position_int =
-              current_messages.time_stamps.global_position_int;
-          break;
-
-        case MAVLINK_MSG_ID_GPS_RAW_INT:
-          mavlink_msg_gps_raw_int_decode(
-              &message, &(current_messages.gps_raw_int));
-          current_messages.time_stamps.gps_raw_int = get_time_usec();
-          this_timestamps.gps_raw_int =
-              current_messages.time_stamps.gps_raw_int;
-          break;
-
-        case MAVLINK_MSG_ID_HIGHRES_IMU:
-          mavlink_msg_highres_imu_decode(&message,
-                                         &(current_messages.highres_imu));
-          current_messages.time_stamps.highres_imu = get_time_usec();
-          this_timestamps.highres_imu =
-              current_messages.time_stamps.highres_imu;
-          break;
-
-        case MAVLINK_MSG_ID_ATTITUDE:
-          mavlink_msg_attitude_decode(&message, &(current_messages.attitude));
-          current_messages.time_stamps.attitude = get_time_usec();
-          this_timestamps.attitude = current_messages.time_stamps.attitude;
-          break;
-
-        case MAVLINK_MSG_ID_VFR_HUD:
-          mavlink_msg_vfr_hud_decode(&message, &(current_messages.vfr_hud));
-          current_messages.time_stamps.vfr_hud = get_time_usec();
-          this_timestamps.vfr_hud = current_messages.time_stamps.vfr_hud;
-          break;
-
-        default:
-          break;
-      }
-    }
-
-    // give the write thread time to use the port
-    if (writing_status_ > false) {
-      // TODO(comran): This may break stuff for the write thread...
-      usleep(1e6 / 1e2);
-    }
-  }
-}
-
-int AutopilotInterface::write_message(mavlink_message_t message) {
-  int len = mavlink_serial_->write_message(message);
-  write_count_++;
-
-  return len;
+void AutopilotInterface::write_message(mavlink_message_t message) {
+  pixhawk_->send_message(&message);
 }
 
 void AutopilotInterface::write_setpoint() {
@@ -195,35 +156,15 @@ void AutopilotInterface::write_setpoint() {
   mavlink_msg_set_position_target_local_ned_encode(system_id, companion_id,
                                                    &message, &sp);
 
-  if (write_message(message) <= 0) {
-    fprintf(stderr, "WARNING: could not send POSITION_TARGET_LOCAL_NED \n");
-  }
-
-  return;
+  write_message(message);
 }
 
 void AutopilotInterface::start() {
   int result;
 
-  do {
-    mavlink_serial_->start();
-    usleep(1e6 / 10);
-  } while (mavlink_serial_->status != 1);
-
-  printf("START READ THREAD \n");
-
-  result = pthread_create(&read_tid_, NULL,
-                          &start_autopilot_interface_read_thread, this);
-  if (result) throw result;
-
-  // now we're reading messages
-  printf("\n");
-
   // Component ID
   if (not autopilot_id) {
     autopilot_id = current_messages.compid;
-    printf("GOT AUTOPILOT COMPONENT ID: %i\n", autopilot_id);
-    printf("\n");
   }
 
   // Wait for initial position ned
@@ -244,21 +185,12 @@ void AutopilotInterface::start() {
   initial_position.yaw = local_data.attitude.yaw;
   initial_position.yaw_rate = local_data.attitude.yawspeed;
 
-  printf("INITIAL POSITION XYZ = [ %.4f , %.4f , %.4f ] \n", initial_position.x,
-         initial_position.y, initial_position.z);
-  printf("INITIAL POSITION YAW = %.4f \n", initial_position.yaw);
-  printf("\n");
-
-  printf("START WRITE THREAD \n");
-
   result = pthread_create(&write_tid_, NULL,
                           &start_autopilot_interface_write_thread, this);
   if (result) throw result;
 
   // Wait for write thread to be started.
   while (not writing_status_) usleep(1e6 / 10);
-
-  printf("\n");
 
   return;
 }
@@ -291,9 +223,61 @@ void AutopilotInterface::Disarm() {
   write_message(message);
 }
 
-void AutopilotInterface::Takeoff() {
-  Arm();
+void AutopilotInterface::DoGimbal() {
+  static float position = 0;
+  static bool flip = false;
+  if (position > 89.9) {
+    flip = true;
+  } else if (position < 0.1) {
+    flip = false;
+  }
 
+  if (flip) {
+    position -= 10;
+  } else {
+    position += 10;
+  }
+
+  {
+    mavlink_command_long_t com;
+    com.target_system = system_id;
+    com.target_component = autopilot_id;
+    com.command = MAV_CMD_DO_MOUNT_CONFIGURE;
+    com.param1 = MAV_MOUNT_MODE_MAVLINK_TARGETING;
+    com.param2 = 1;
+    com.param3 = 1;
+    com.param4 = 1;
+    com.param5 = 0;
+    com.param6 = 0;
+    com.param7 = 0;
+
+    mavlink_message_t message;
+    mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+    write_message(message);
+  }
+
+  {
+    mavlink_command_long_t com;
+    com.target_system = system_id;
+    com.target_component = autopilot_id;
+    com.command = MAV_CMD_DO_MOUNT_CONTROL;
+    com.param1 = position;
+    com.param2 = position;
+    com.param3 = position;
+    com.param4 = 0;
+    com.param5 = 0;
+    com.param6 = 0;
+    com.param7 = MAV_MOUNT_MODE_MAVLINK_TARGETING;
+
+    mavlink_message_t message;
+    mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+    write_message(message);
+  }
+}
+
+void AutopilotInterface::Takeoff() {
   mavlink_global_position_int_t gps = current_messages.global_position_int;
 
   mavlink_command_long_t com;
@@ -304,6 +288,35 @@ void AutopilotInterface::Takeoff() {
   com.param5 = static_cast<double>(gps.lat) / 1e7;
   com.param6 = static_cast<double>(gps.lon) / 1e7;
   com.param7 = static_cast<double>(gps.alt) / 1e3;
+
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
+}
+
+void AutopilotInterface::Hold() {
+  mavlink_command_long_t com;
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_DO_SET_MODE;
+  com.confirmation = true;
+  com.param1 = MAV_MODE_AUTO_ARMED;
+  com.param2 = 4;
+  com.param3 = 3;
+
+  mavlink_message_t message;
+  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+
+  write_message(message);
+}
+
+void AutopilotInterface::ReturnToLaunch() {
+  mavlink_command_long_t com;
+  com.target_system = system_id;
+  com.target_component = autopilot_id;
+  com.command = MAV_CMD_NAV_RETURN_TO_LAUNCH;
+  com.confirmation = true;
 
   mavlink_message_t message;
   mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
@@ -343,66 +356,38 @@ void AutopilotInterface::Land() {
 }
 
 void AutopilotInterface::FlightTermination() {
-  Disarm();
+  // NO LONGER DOES ANYTHING!
+  // Disarm();
 
-  mavlink_command_long_t com;
-  com.target_system = system_id;
-  com.target_component = autopilot_id;
-  com.command = MAV_CMD_DO_FLIGHTTERMINATION;
-  com.confirmation = true;
-  com.param1 = 1;
+  // mavlink_command_long_t com;
+  // com.target_system = system_id;
+  // com.target_component = autopilot_id;
+  // com.command = MAV_CMD_DO_FLIGHTTERMINATION;
+  // com.confirmation = true;
+  // com.param1 = 1;
 
-  mavlink_message_t message;
-  mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
+  // mavlink_message_t message;
+  // mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
 
-  write_message(message);
+  // write_message(message);
 }
 
 void AutopilotInterface::set_message_period() {
-  // TODO(comran): FIX
-  // THIS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  return;
-
   for (int i = 0; i < 255; i++) {
     int32_t interval = -1;
-    bool valid = true;
+    bool valid = false;
 
     switch (i) {
       case MAVLINK_MSG_ID_HEARTBEAT:
-        interval = 1;
-        break;
-
       case MAVLINK_MSG_ID_SYS_STATUS:
       case MAVLINK_MSG_ID_BATTERY_STATUS:
       case MAVLINK_MSG_ID_RADIO_STATUS:
       case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
       case MAVLINK_MSG_ID_HIGHRES_IMU:
       case MAVLINK_MSG_ID_ATTITUDE:
-        interval = 1e6 / 10;
-
-      case MAVLINK_MSG_ID_SERVO_OUTPUT_RAW:
-      case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
-      case MAVLINK_MSG_ID_POSITION_TARGET_LOCAL_NED:
-      case MAVLINK_MSG_ID_POSITION_TARGET_GLOBAL_INT:
-      case MAVLINK_MSG_ID_ATTITUDE_QUATERNION:
-      case MAVLINK_MSG_ID_TIMESYNC:
-      case MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET:
-      case MAVLINK_MSG_ID_SYSTEM_TIME:
-      case MAVLINK_MSG_ID_GPS_RAW_INT:
-      case MAVLINK_MSG_ID_WIND_COV:
-      case MAVLINK_MSG_ID_ALTITUDE:
-      case MAVLINK_MSG_ID_VFR_HUD:
-      case MAVLINK_MSG_ID_EXTENDED_SYS_STATE:
-      case MAVLINK_MSG_ID_HOME_POSITION:
-      case MAVLINK_MSG_ID_ESTIMATOR_STATUS:
-      case MAVLINK_MSG_ID_VIBRATION:
-      case MAVLINK_MSG_ID_ATTITUDE_TARGET:
-      case MAVLINK_MSG_ID_TERRAIN_REPORT:
-        valid = false;
-        interval = -1;
+        interval = 1e6 / 25;
+        valid = true;
         break;
-      default:
-        valid = false;
     }
 
     if (valid) {
@@ -421,25 +406,31 @@ void AutopilotInterface::set_message_period() {
   }
 }
 
+void AutopilotInterface::set_params() {
+  set_param("MIS_TAKEOFF_ALT", 5.0);
+  set_param("MNT_MODE_OUT", 1.0);
+}
+
+void AutopilotInterface::set_param(const char id[], float value) {
+  mavlink_param_set_t param_config;
+  param_config.target_system = system_id;
+  param_config.target_component = autopilot_id;
+
+  memcpy(param_config.param_id, id,
+         ::std::min(16, (int)strlen(id)));
+  param_config.param_value = value;
+
+  mavlink_message_t message;
+  mavlink_msg_param_set_encode(system_id, companion_id, &message,
+                                  &param_config);
+
+  write_message(message);
+}
+
 void AutopilotInterface::stop() {
   time_to_exit_ = true;
 
-  pthread_join(read_tid_, NULL);
   pthread_join(write_tid_, NULL);
-
-  printf("\n");
-
-  mavlink_serial_->stop();
-}
-
-void AutopilotInterface::start_read_thread() {
-  if (reading_status_ != 0) {
-    fprintf(stderr, "read thread already running\n");
-    return;
-  } else {
-    read_thread();
-    return;
-  }
 }
 
 void AutopilotInterface::start_write_thread(void) {
@@ -455,27 +446,11 @@ void AutopilotInterface::start_write_thread(void) {
 }
 
 void AutopilotInterface::handle_quit(int sig) {
-  ::std::cout << "QUIT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
   try {
     stop();
   } catch (int error) {
     fprintf(stderr, "Warning, could not stop autopilot interface\n");
   }
-
-  mavlink_serial_->handle_quit(sig);
-}
-
-void AutopilotInterface::read_thread() {
-  reading_status_ = true;
-
-  ::std::cout << time_to_exit_ << ::std::endl;
-  while (!time_to_exit_) {
-    read_messages();
-  }
-
-  reading_status_ = false;
-
-  return;
 }
 
 void AutopilotInterface::write_thread(void) {
@@ -497,8 +472,9 @@ void AutopilotInterface::write_thread(void) {
   writing_status_ = true;
 
   set_message_period();
+  set_params();
 
-  while (!time_to_exit_ && mavlink_serial_->status > 0) {
+  while (!time_to_exit_) {
     // Pixhawk needs to see off-board commands at minimum 2Hz,
     // otherwise it will go into fail safe.
 
@@ -509,13 +485,6 @@ void AutopilotInterface::write_thread(void) {
   writing_status_ = false;
 
   return;
-}
-
-void *start_autopilot_interface_read_thread(void *args) {
-  AutopilotInterface *autopilot_interface = (AutopilotInterface *)args;
-  autopilot_interface->start_read_thread();
-
-  return NULL;
 }
 
 void *start_autopilot_interface_write_thread(void *args) {
