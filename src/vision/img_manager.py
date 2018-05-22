@@ -52,7 +52,7 @@ class ImgManager:
         except OSError as err:
             if attempts <= 0:
                 raise err  # retrieval failed twice in a row!
-            self._retrieve_img(img_id)
+            self._update_props(img_id)
             return self.get_prop(img_id, prop, attempts - 1)  # try again
         except KeyError as err:
             return None
@@ -69,18 +69,51 @@ class ImgManager:
         except OSError as err:
             if attempts <= 0:
                 raise err  # retrieval failed twice in a row!
-            self._retrieve_img(img_id)
+            self._update_props(img_id)
             return self.set_prop(img_id, prop, val, attempts - 1)
 
     def _retrieve_img(self, img_id):
-        for ext in ('.jpg', '.json'):
-            if 0 != processes.spawn_process_wait_for_code(
-                    'rsync -vz --progress -e "ssh -p ' + str(
-                        self.truth_src['port']) + '" "' +
-                    self.truth_src['user'] + '@' + self.truth_src['addr'] +
-                    ':' + str(self.remote_dir / (img_id + ext)) + '" ' +
-                    os.path.join(self.dir, img_id + ext)):
-                # TODO handle download failure
+        if 0 != processes.spawn_process_wait_for_code(
+                'rsync -vz --progress -e "ssh -p ' +
+                str(self.truth_src['port']) + '" "' + self.truth_src['user'] +
+                '@' + self.truth_src['addr'] + ':' + str(self.remote_dir /
+                                                         (img_id + '.jpg')) +
+                '" ' + os.path.join(self.dir, img_id + '.jpg')):
+            # TODO handle download failure
+            pass
+
+    def _update_props(self, img_id):
+        if 0 != processes.spawn_process_wait_for_code(
+                'rsync -vz --progress -e "ssh -p ' +
+                str(self.truth_src['port']) + '" "' + self.truth_src['user'] +
+                '@' + self.truth_src['addr'] + ':' + str(self.remote_dir /
+                                                         (img_id + '.json')) +
+                '" ' + os.path.join(self.dir, img_id + '.json.tmp')):
+            # TODO handle download failure
+            pass
+        else:
+            img_inc_path = os.path.join(self.dir, img_id)
+            org_data = None
+            data = None
+            try:
+                with open(img_inc_path + '.json', 'r') as f:
+                    org_data = json.load(f)
+            except OSError:
+                org_data = {}
+
+            try:
+                with open(img_inc_path + '.json.tmp', 'r') as f:
+                    data = json.load(f)
+            except OSError:
+                # This should never happen; download failure is handled earlier
+                pass
+
+            new_data = dict(org_data, **data)
+            try:
+                with open(img_inc_path + '.json', 'w') as f:
+                    json.dump(new_data, f)
+            except OSError:
+                # TODO handle OSError
                 pass
 
     def get_img(self, img_id, attempts=1):
