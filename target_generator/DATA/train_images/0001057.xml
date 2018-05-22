@@ -1,0 +1,24 @@
+<annotation>
+	<filename>0001057.jpg</filename>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>512</width>
+		<height>512</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>octagon</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>374</xmin>
+			<ymin>76</ymin>
+			<xmax>514</xmax>
+			<ymax>216</ymax>
+		</bndbox>
+	</object>
+</annotation>

@@ -1,0 +1,24 @@
+<annotation>
+	<filename>0001491.jpg</filename>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>512</width>
+		<height>512</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>circle</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>278</xmin>
+			<ymin>322</ymin>
+			<xmax>410</xmax>
+			<ymax>454</ymax>
+		</bndbox>
+	</object>
+</annotation>
