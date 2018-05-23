@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import './Images.css';
 import logo from '../graphics/vector_logo.svg';
 import Position from './Position';
+import Modal from './Modal';
 
 import { PageHeader } from 'react-bootstrap';
 
@@ -10,21 +11,25 @@ class Images extends Component {
   constructor (props) {
     super(props);
     this.state = {
-      latestImages: [],
+      currentPhoto: null,
       allImages: [],
     }
   }
-
+/*
+1) double click raw image- open up to modal for cropping
+2) do shit with image
+3) save segmented images 
+*/
   render() {
     return (
       <div className="Images">
-
         <div className="row">
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
             <h3>Raw Images</h3>
             <div id="Raw-Images-List">
               {this.renderRawImages()}
-              {/* todo: Howard+Ryan - double-click image to pop-up photo editor
+              {
+                /* todo: Howard+Ryan - double-click image to pop-up photo editor
                   make modal into a new file */}
             </div>
           </div>
@@ -81,11 +86,18 @@ class Images extends Component {
   photoshop = (photo) => {
     // todo: Open modal photoshop editor here
     console.log(photo);
+    <Modal>
+    
+    </Modal>
+
   }
 
 
   showPosition = (photo) => {
     // todo: show position on map + highlight the border of selected photo
+    this.setState( {
+      currentPhoto: photo
+    });
     console.log(photo);
   }
 
