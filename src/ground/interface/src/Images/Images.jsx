@@ -1,8 +1,9 @@
 import React, { Component } from "react";
 import './Images.css';
-import logo from "../graphics/vector_logo.svg";
+import logo from '../graphics/vector_logo.svg';
+import Position from './Position';
 
-import { PageHeader } from "react-bootstrap";
+import { PageHeader } from 'react-bootstrap';
 
 class Images extends Component {
 
@@ -57,7 +58,9 @@ class Images extends Component {
                 latitude and longitude position - we get to choose
                 the JSON data for Comran to setup for us
                 *Every photo click will display the position on the map
+                *Props must be passed down here
               */}
+            <Position/>
           </div>
         </div>
 
