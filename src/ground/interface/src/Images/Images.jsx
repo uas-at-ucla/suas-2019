@@ -86,6 +86,9 @@ class Images extends Component {
   photoshop = (photo) => {
     // todo: Open modal photoshop editor here
     console.log(photo);
+    <h1>
+      
+    </h1>
     <Modal>
     
     </Modal>
