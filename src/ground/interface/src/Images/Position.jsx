@@ -5,16 +5,18 @@ import './Position.css';
 
 const google = window.google;
 
-// todo: two options:
-// 1. Display flight route with position of all photos taken
-// 2. When a photo is selected, display its position
+// When a photo is selected, display its position
 class Position extends Component {
   constructor(props) {
     super(props);
   }
 
   render() {
+
+    // This is photo name
+    // use this to extract json id
     console.log(this.props.photo);
+
     return (
       <div className="Position" ref="map"/>
     );
