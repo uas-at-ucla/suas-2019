@@ -21,6 +21,7 @@
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/semaphore/semaphore.h"
+#include "lib/pid/pid.h"
 
 namespace src {
 namespace control {
@@ -40,10 +41,14 @@ class Pilot {
   PilotOutput Calculate(Position3D drone_position);
   void PreprocessorThread();
   void SetMission(::lib::mission_manager::Mission mission);
+  Vector3D VelocityNavigator();
+  bool MetGoal();
 
   void Quit() { run_ = false; }
 
  private:
+  ::lib::pid::PID thrust_pid_;
+
   ::lib::mission_message_queue::MissionMessageQueueReceiver
       mission_message_queue_receiver_;
 
@@ -57,6 +62,14 @@ class Pilot {
   ::std::atomic<bool> run_{true};
 
   ::std::thread thread_;
+
+  double sleep_time_;
+  bool come_to_stop_;
+  int come_to_stop_count_;
+
+  bool setpoint_reset_;
+  bool met_goal_;
+  Position3D start_, end_;
 };
 
 }  // namespace pilot

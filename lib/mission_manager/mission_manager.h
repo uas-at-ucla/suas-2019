@@ -21,6 +21,7 @@ class MissionManager {
   void SetObstacles(::lib::mission_manager::Obstacles obstacles);
 
   void ClearCommands();
+  bool CheckNewCommand();
   void PopCommand();
   size_t NumberOfCommands();
 
@@ -42,6 +43,8 @@ class MissionManager {
       ::lib::mission_manager::Mission &mission);
   bool PopCommand(::lib::mission_manager::Mission &mission);
   void DumpMission(::lib::mission_manager::Mission, int nest);
+
+  bool new_command_;
 
   Semaphore semaphore_;
 };
