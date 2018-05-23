@@ -13,6 +13,7 @@ cc_library(
     '//src/control/loops:flight_loop_queue',
     '//lib/physics_structs:physics_structs',
     '//lib/mission_message_queue:mission_message_queue',
+    '//lib/pid:pid',
     '//aos/linux_code:init',
     "@cppzmq//:cppzmq",
     "@com_google_protobuf//:protobuf",

@@ -2,7 +2,7 @@
 
 namespace lib {
 
-MissionManager::MissionManager() : semaphore_(1) {}
+MissionManager::MissionManager() : new_command_(false), semaphore_(1) {}
 
 void MissionManager::SetCommands(::lib::mission_manager::Mission mission) {
   semaphore_.Wait();
@@ -27,7 +27,18 @@ void MissionManager::ClearCommands() {
   semaphore_.Notify();
 }
 
+bool MissionManager::CheckNewCommand() {
+  if(new_command_) {
+    new_command_ = false;
+    return true;
+  }
+
+  return false;
+}
+
 void MissionManager::PopCommand() {
+  new_command_ = true;
+
   semaphore_.Wait();
   if (PopCommand(mission_)) {
     mission_ = ::lib::mission_manager::Mission();
