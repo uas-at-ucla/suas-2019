@@ -18,7 +18,7 @@ class Images extends Component {
 /*
 1) double click raw image- open up to modal for cropping
 2) do shit with image
-3) save segmented images 
+3) save segmented images
 */
   render() {
     return (
@@ -46,7 +46,7 @@ class Images extends Component {
               *Every photo click will display the position on the map
               *Props must be passed down here
               */}
-            <Position/>
+            <Position photo={this.state.currentPhoto}/>
           </div>
         </div>
 
@@ -86,12 +86,7 @@ class Images extends Component {
   photoshop = (photo) => {
     // todo: Open modal photoshop editor here
     console.log(photo);
-    <h1>
-      
-    </h1>
-    <Modal>
-    
-    </Modal>
+    <Modal/>
 
   }
 

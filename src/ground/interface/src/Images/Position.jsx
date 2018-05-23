@@ -9,8 +9,12 @@ const google = window.google;
 // 1. Display flight route with position of all photos taken
 // 2. When a photo is selected, display its position
 class Position extends Component {
+  constructor(props) {
+    super(props);
+  }
 
   render() {
+    console.log(this.props.photo);
     return (
       <div className="Position" ref="map"/>
     );
