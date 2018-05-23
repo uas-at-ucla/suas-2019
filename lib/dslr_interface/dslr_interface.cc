@@ -12,12 +12,19 @@ void DSLRInterface::Quit() {
   exiting_ = true;
   thread_.join();
 
-  int unmount_dslr_pid = fork();
-
   // Fork a process for downloading photos from the DSLR.
+  int unmount_dslr_pid = fork();
   if (!unmount_dslr_pid) {
     setsid();
     execl("/bin/fusermount", "/tmp/suas_2018_dslr_mounted", NULL);
+    exit(0);
+  }
+
+  // Fork a process for downloading photos from the DSLR.
+  int kill_gphotofs_pid = fork();
+  if (!kill_gphotofs_pid) {
+    setsid();
+    execl("/usr/bin/killall", "killall", "gphotofs", NULL);
     exit(0);
   }
 
@@ -28,7 +35,6 @@ void DSLRInterface::Run() {
   while (run_) {
     RunIteration();
   }
-  ::std::cout << "DEAD\n";
 }
 
 void DSLRInterface::RunIteration() {
@@ -41,8 +47,6 @@ void DSLRInterface::RunIteration() {
           ::std::chrono::system_clock::now().time_since_epoch())
           .count() *
       1e-9;
-
-  ::std::cout << "dslr state: " << state_ << ::std::endl;
 
   int pid_stat;
   switch (state_) {
@@ -85,7 +89,6 @@ void DSLRInterface::RunIteration() {
       // Photos capture finished successfully.
       next_state = STANDBY;
     } else if (take_photos_triggered_ + 0.25 <= current_time) {
-      ::std::cout << "GREATER THAN! EXITING\n";
       // Camera doesn't need to take photos anymore, so stop capturing.
       next_state = STOP_CONTINUOUS_PHOTO_CAPTURE;
     }
@@ -124,9 +127,6 @@ void DSLRInterface::RunIteration() {
     break;
 
   case DOWNLOAD_PHOTOS:
-    ::std::cout << "RESULT: " << kill(photos_download_pid_, 0) << ::std::endl;
-
-    ::std::cout << "pid " << photos_download_pid_ << ::std::endl;
     if (exiting_) {
       next_state = STOP_DOWNLOADING_PHOTOS;
     } else if (waitpid(photos_download_pid_, &pid_stat, WNOHANG)) {
