@@ -1,7 +1,7 @@
 .Images {
     margin-top: calc(45px + 2vw);
     padding: 6px 6px 6px 6px;
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 #PotentialTargets
