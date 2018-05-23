@@ -3,9 +3,7 @@ import GMapCache from '../Map/GMapCache';
 import map_style from '../Map/map_style.js';
 import './Position.css';
 
-
 const google = window.google;
-
 
 // todo: two options:
 // 1. Display flight route with position of all photos taken
@@ -17,7 +15,6 @@ class Position extends Component {
       <div className="Position" ref="map"/>
     );
   }
-
 
   componentDidMount() {
 
