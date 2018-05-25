@@ -104,10 +104,6 @@ hasher = hashlib.blake2b()
 server_img_manager = None
 
 
-def gen_id():
-    return base64.urlsafe_b64encode(uuid.uuid4().bytes).decode('utf-8')[:-2]
-
-
 class ServerWorker(threading.Thread):
     def __init__(self, in_q):  # accept args anyway even if not used
         super(ServerWorker, self).__init__()
@@ -225,7 +221,7 @@ def process_image(json, attempts=1):
         print('process_image request made')
     # Create a new image info file
     img_info = {
-        'id': gen_id(),
+        'id': ImgManager.gen_id(),
         'time_gen': time.time(),
     }
     # TODO custom data dir
@@ -373,14 +369,7 @@ def record_class(json):
 def server_worker(args):
     global server_img_manager
     # TODO Server should not be using a client img_manager
-    server_img_manager = ImgManager(
-        args.data_dir, {
-            'user': args.vsn_user,
-            'addr': args.vsn_addr,
-            'port': args.ssh_port,
-            'remote_dir': args.remote_dir,
-            'os_type': os.name
-        })
+    server_img_manager = ImgManager(args.data_dir, master=True)
     global img_count
     img_count = len(os.listdir(args.data_dir))
     global s_worker
@@ -526,7 +515,7 @@ class YoloWorker(ClientWorker):
             "metaLoad": args.yolo_meta,
             "threshold": args.yolo_threshold
         }
-        self.tfnet = TFNet(options)
+        self.tfnet = TFNet(yolo_options)
 
     # task format: [{'file_path': str}]
     def _do_work(self, task):
@@ -636,6 +625,15 @@ def snipper_worker(args):
     client_worker(args, SnipperWorker)
 
 
+# Classifiers ##################################################################
+def classifier_worker(args):
+    if args.classifier_type == 'shape':
+        shape_classifier_worker(args)
+    if args.classifier_type == 'letter':
+        letter_classifier_worker(args)
+
+
+
 # Shape Classification #########################################################
 class ShapeClassifierWorker(ClientWorker):
     def __init__(self, in_q, args):
@@ -661,7 +659,7 @@ class ShapeClassifierWorker(ClientWorker):
         return 'classify_shape'
 
 
-def shape_classifier(args):
+def shape_classifier_worker(args):
     client_worker(args, ShapeClassifierWorker)
 
 
@@ -690,7 +688,7 @@ class LetterClassifierWorker(ClientWorker):
         return 'classify_letter'
 
 
-def letter_classifier(args):
+def letter_classifier_worker(args):
     client_worker(args, LetterClassifierWorker)
 
 
@@ -813,20 +811,18 @@ if __name__ == '__main__':
     snipper_parser.set_defaults(func=snipper_worker)
 
     # classifier specific args
-    classifier_parser = client_subparser.add_parser(
+    classifier_parser = client_subparsers.add_parser(
         'classifier', help='start a classifier worker client')
     classifier_parser.add_argument(
         'classifier_type',
         choices=('shape', 'letter'),
-        required=True,
         help='specify which type of classifier')
     classifier_parser.add_argument(
         '--model',
         action='store',
-        dest='model',
-        required=
-        True,  # cannot specify default since there are two different types
+        dest='model_path',# cannot specify default since there are two different types
         help='specify the classification model to load')
+    classifier_parser.set_defaults(func=classifier_worker)
 
     args = parser.parse_args()
     #global verbose
