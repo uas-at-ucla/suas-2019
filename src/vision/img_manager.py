@@ -4,6 +4,7 @@ import sys
 import uuid
 import base64
 import json
+import time
 from pathlib import PurePosixPath, PureWindowsPath
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -13,7 +14,7 @@ import process_manager
 
 
 class ImgManager:
-    def __init__(self, parent_dir, truth_src):
+    def __init__(self, parent_dir, truth_src=None, master=False):
         '''
         parent_dir: str that represents the abs path to the working directory
         truth_src: {'user', 'addr', 'remote_dir', 'os_type'}
@@ -23,14 +24,16 @@ class ImgManager:
             remote_dir: the absolute path of the remote img directory
             os_type: type of os: 'windows' or 'posix'
         '''
+        self.master = master
         self.dir = parent_dir
         self.truth_src = truth_src
         self.procs = process_manager.ProcessManager()
 
-        if truth_src['os_type'] == 'nt':
-            self.remote_dir = PureWindowsPath(truth_src['remote_dir'])
-        else:
-            self.remote_dir = PurePosixPath(truth_src['remote_dir'])
+        if not master:
+            if truth_src['os_type'] == 'nt':
+                self.remote_dir = PureWindowsPath(truth_src['remote_dir'])
+            else:
+                self.remote_dir = PurePosixPath(truth_src['remote_dir'])
 
     def stop(self):
         self.procs.killall()
@@ -50,7 +53,7 @@ class ImgManager:
             with open(os.path.join(self.dir, img_id + '.json'), 'r') as f:
                 return json.load(f)[prop]
         except OSError as err:
-            if attempts <= 0:
+            if attempts <= 0 or self.master:
                 raise err  # retrieval failed twice in a row!
             self._update_props(img_id)
             return self.get_prop(img_id, prop, attempts - 1)  # try again
@@ -67,7 +70,7 @@ class ImgManager:
             with open(filename, 'w') as f:
                 json.dump(data, f)
         except OSError as err:
-            if attempts <= 0:
+            if attempts <= 0 or self.master:
                 raise err  # retrieval failed twice in a row!
             self._update_props(img_id)
             return self.set_prop(img_id, prop, val, attempts - 1)
@@ -124,8 +127,11 @@ class ImgManager:
                 return cv2.imread(os.path.join(self.dir, f))
 
         # not in local dir, retrieve from original source of truth
-        self._retrieve_img(img_id)
-        return self.get_img(img_id, attempts - 1)
+        if master:
+            return None
+        else:
+            self._retrieve_img(img_id)
+            return self.get_img(img_id, attempts - 1)
 
     def create_img(self, img, props):
         img_inc_path = os.path.join(self.dir, props['id'])
@@ -150,13 +156,32 @@ class ImgManager:
                        img_id=None,
                        time_gen=None,
                        hash_type=None,
-                       other={}):
-        if img_id is None:
-            img_id = self.gen_id()
+                       other={},
+                       attempts=1):
+        img_info = dict(
+            {
+                'id': img_id if img_id is not None else ImgManager.gen_id(),
+                'time_gen': time_gen if time_gen is not None else time.time(),
+            }, **other)
 
-        img_info = dict({
-            'id': img_id,
-            'time_gen': time.time(),
-        }, **other)
+        img_inc_path = os.path.join(self.dir, img_info['id'])
 
-        self.create_img(img, img_info)
+        # create the files
+        try:
+            with open(img_inc_path + '.json', 'x') as f:
+                json.dump(img_info, f)
+            cv2.imwrite(img_inc_path + '.jpg', img)
+            return img_info['id']
+        except FileExistsError as err:
+            if attempts <= 0:
+                raise err  # what are the chances of two collisions in a row?
+            # try again with a random image
+            return self.create_new_img(
+                img,
+                time_gen=img_info['time_gen'],
+                hash_type=hash_type,
+                other=other,
+                attempts=attempts - 1)
+        except OSError:
+            # TODO handle OSError
+            pass
