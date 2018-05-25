@@ -19,6 +19,9 @@ sys.path.insert(0, './localizer')
 from localizer.darkflow.net.build import TFNet  # yolo neural net
 import cv2  # reading images
 
+# Classification dependencies
+import vision_process
+
 # Multithreading
 import threading  # multithreading library
 import queue  # input/output queues
@@ -98,6 +101,7 @@ active_auctions = {}
 taken_auctions = {}
 img_count = 0
 hasher = hashlib.blake2b()
+server_img_manager = None
 
 
 def gen_id():
@@ -217,6 +221,8 @@ def receive_bid(json):
 # Step 1 - download the image
 @vision_socketio_server.on('process_image')
 def process_image(json, attempts=1):
+    if verbose:
+        print('process_image request made')
     # Create a new image info file
     img_info = {
         'id': gen_id(),
@@ -329,7 +335,26 @@ def download_snipped(json):
 
 @vision_socketio_server.on('classify')
 def classify(json):
-    pass
+    server_task_queue.put({
+        'type': 'auction',
+        'event_name': 'classify_shape',
+        'args': {
+            'img_id': json['img_id']
+        }
+    })
+    server_task_queue.put({
+        'type': 'auction',
+        'event_name': 'classify_letter',
+        'args': {
+            'img_id': json['img_id']
+        }
+    })
+
+
+@vision_socketio_server.on('classified')
+def record_class(json):
+    class_type = json['type']
+    server_img_manager.set_prop(json['img_id'], class_type, json[class_type])
 
 
 # TODO handle autodownloading images as needed
@@ -346,6 +371,16 @@ def classify(json):
 
 
 def server_worker(args):
+    global server_img_manager
+    # TODO Server should not be using a client img_manager
+    server_img_manager = ImgManager(
+        args.data_dir, {
+            'user': args.vsn_user,
+            'addr': args.vsn_addr,
+            'port': args.ssh_port,
+            'remote_dir': args.remote_dir,
+            'os_type': os.name
+        })
     global img_count
     img_count = len(os.listdir(args.data_dir))
     global s_worker
@@ -555,14 +590,13 @@ class SnipperWorker(ClientWorker):
 
     # task format:
     #   [{
-    #       'src_img_path': str,
+    #       'src_img_id': str,
     #       'loc_info': {
     #           'lat': float,
     #           'lng': float,
     #           'alt': float
     #       },
     #       'yolo_results': [],
-    #       'out_dir': str
     #   }]
     def _do_work(self, task):
         src_img_id = task[0]['img_id']
@@ -600,6 +634,64 @@ class SnipperWorker(ClientWorker):
 
 def snipper_worker(args):
     client_worker(args, SnipperWorker)
+
+
+# Shape Classification #########################################################
+class ShapeClassifierWorker(ClientWorker):
+    def __init__(self, in_q, args):
+        super().__init__(in_q, args)
+        self.model = vision_process.load_model(args.model_path)
+        self.data_dir = args.data_dir
+
+    # task format:
+    #   [{
+    #       'img_id': str,
+    #   }]
+    def _do_work(self, task):
+        img = vision_process.shape_img(
+            os.path.join(self.data_dir, task[0]['img_id'] + '.jpg'))
+        prediction = vision_process.predict_shape(model, img)
+        vision_client.emit('classified', {
+            'img_id': img_id,
+            'type': 'shape',
+            'shape': prediction
+        })
+
+    def get_event_name(self):
+        return 'classify_shape'
+
+
+def shape_classifier(args):
+    client_worker(args, ShapeClassifierWorker)
+
+
+# Letter Classification ########################################################
+class LetterClassifierWorker(ClientWorker):
+    def __init__(self, in_q, args):
+        super().__init__(in_q, args)
+        self.model = vision_process.load_model(args.model_path)
+        self.data_dir = args.data_dir
+
+    # task format:
+    #   [{
+    #       'img_id': str,
+    #   }]
+    def _do_work(self, task):
+        img = vision_process.shape_img(
+            os.path.join(self.data_dir, task[0]['img_id'] + '.jpg'))
+        prediction = vision_process.predict_letter(model, img)
+        vision_client.emit('classified', {
+            'img_id': img_id,
+            'type': 'letter',
+            'letter': prediction
+        })
+
+    def get_event_name(self):
+        return 'classify_letter'
+
+
+def letter_classifier(args):
+    client_worker(args, LetterClassifierWorker)
 
 
 # Parse command line arguments #################################################
@@ -719,6 +811,22 @@ if __name__ == '__main__':
     snipper_parser = client_subparsers.add_parser(
         'snipper', help='start a snipper worker client')
     snipper_parser.set_defaults(func=snipper_worker)
+
+    # classifier specific args
+    classifier_parser = client_subparser.add_parser(
+        'classifier', help='start a classifier worker client')
+    classifier_parser.add_argument(
+        'classifier_type',
+        choices=('shape', 'letter'),
+        required=True,
+        help='specify which type of classifier')
+    classifier_parser.add_argument(
+        '--model',
+        action='store',
+        dest='model',
+        required=
+        True,  # cannot specify default since there are two different types
+        help='specify the classification model to load')
 
     args = parser.parse_args()
     #global verbose
