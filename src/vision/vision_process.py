@@ -1,8 +1,8 @@
 from PIL import Image
 import numpy as np
 import cv2
-from keras.models import load_model
-import letter_seg as ls
+import keras.models
+import segmentation.letter_seg as ls
 
 SHAPE_INDEX = [
     'circle', 'cross', 'heptagon', 'octagon', 'pentagon', 'quarter_circle',
@@ -26,7 +26,7 @@ def letter_img(path):
 
 
 def load_model(path):
-    return load_model(path)
+    return keras.models.load_model(path)
 
 
 def predict(model, img):
