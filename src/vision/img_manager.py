@@ -39,8 +39,10 @@ class ImgManager:
         self.procs.killall()
 
     def gen_id():
-        return base64.urlsafe_b64encode(
-            uuid.uuid4().bytes).decode('utf-8')[:-2]
+        nid = base64.urlsafe_b64encode(uuid.uuid4().bytes).decode('utf-8')[:-2]
+        if nid[0] == '-':
+            nid[0] = '0'
+        return nid
 
     def get_prop(self, img_id, prop, attempts=1):
         '''
