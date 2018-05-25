@@ -1,7 +1,14 @@
 .Images {
     margin-top: calc(45px + 2vw);
     padding: 6px 6px 6px 6px;
+    overflow: hidden;
 }
+
+.resize {
+    max-width: 80%;
+    max-height: 80%;
+}
+
 
 #PotentialTargets
 {
@@ -12,21 +19,17 @@
     position:absolute;
 }
 
-#ImageList
+#Raw-Images-List
 {
-    position: fixed;
+    /* position: fixed; */
     min-height: 175px;
-    max-height: 175px;
-    bottom: 0px;
+    max-height: 430px;
+    bottom: 300px; /* todo: This needs to be fixed */
     background-color: white;
     width: 100%;
     overflow: auto;
 }
 
-#PhotoList
-{
-    width: 30000px;
-}
 
 #CurrentImage
 {
@@ -68,8 +71,8 @@
     background-color: rgba(0, 0, 0, 0.7);
     border-radius: 5px;
     left:5px;
-    
-    
+
+
 }
 
 #actionBar
@@ -84,7 +87,7 @@
     border-radius: 5px;
     left: 50%;
     transform: translate(-50%, -50%);
-    
+
 }
 
 .actionBtn, .actionBtn:hover, .actionBtn:visited

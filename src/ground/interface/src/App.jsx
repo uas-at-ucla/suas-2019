@@ -23,7 +23,8 @@ class App extends Component {
       moving_obstacles: [],
       stationary_obstacles: [],
       missions: [],
-      followDrone: true
+      followDrone: true,
+      metric: true
     };
   }
 
@@ -52,14 +53,16 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        <img
-          id="logo"
-          src={logo}
-          width="380px"
-          onClick={this.followDrone}
-          alt="UAS"
-        />
+      <div className={`App ${this.state.metric ? "metric_container" : "imperial_container"}`}>
+        {this.state.optionSelected !== "Images" ?
+          <img
+            id="logo"
+            src={logo}
+            width="380px"
+            onClick={this.followDrone}
+            alt="UAS"
+          /> : null
+        }
         <Navbar
           appState={this.state}
           setAppState={this.setAppState}
@@ -141,7 +144,7 @@ class App extends Component {
       if (data.drone_connected) {
         this.setState({droneState: "Drone Connected!"});
       }
-      
+
       if (data.interop_disconnected) {
         this.receivedInteropStatus(false);
       } else {

@@ -13,15 +13,24 @@ class Telemetry extends Component {
 
     if (this.telemetry) {
       this.telemetryText = {
-        speed:
+        speed_metric:
+          this.round(
+            this.telemetry.sensors["gps_ground_speed"],
+            1
+          ) + " m/s",
+        speed_imperial:
           this.round(
             this.telemetry.sensors["gps_ground_speed"] *
               METERS_PER_SECOND_TO_MPH,
             1
-          ) + "mph",
-        altitude:
+          ) + " mph",
+        altitude_metric:
           this.round(this.telemetry.sensors["relative_altitude"], 1) +
           " meters",
+        altitude_imperial:
+          this.round(this.telemetry.sensors["relative_altitude"]
+           / METERS_PER_FOOT, 1) +
+          " feet",
         position:
           this.round(this.telemetry.sensors["latitude"], 7) +
           ", " +
@@ -78,7 +87,8 @@ class Telemetry extends Component {
             margin: "auto"
           }}
         >
-          {this.round(boundaryAlt, 1)}m
+          <span className="metric">{this.round(boundaryAlt, 1)}m</span>
+          <span className="imperial">{this.round(boundaryAlt/METERS_PER_FOOT, 0)}ft</span>
         </p>
       );
     }
@@ -93,7 +103,10 @@ class Telemetry extends Component {
             <tbody>
               <tr id="telemetry_important">
                 <td>Speed</td>
-                <td id="telemetry_speed">{this.telemetryText.speed}</td>
+                <td id="telemetry_speed">
+                  <span class="metric">{this.telemetryText.speed_metric}</span>
+                  <span class="imperial">{this.telemetryText.speed_imperial}</span>
+                </td>
               </tr>
               <tr>
                 <td>Position</td>
@@ -105,7 +118,10 @@ class Telemetry extends Component {
               </tr>
               <tr>
                 <td>Altitude</td>
-                <td id="telemetry_altitude">{this.telemetryText.altitude}</td>
+                <td id="telemetry_altitude">
+                  <span class="metric">{this.telemetryText.altitude_metric}</span>
+                  <span class="imperial">{this.telemetryText.altitude_imperial}</span>
+                </td>
               </tr>
               <tr>
                 <td>Satellite Count</td>
@@ -126,9 +142,15 @@ class Telemetry extends Component {
         </div>
 
         <div className="card text-white" id="altimeter">
-          <p id="altimeterMaxAlt">{MAX_ALTITUDE}m</p>
+          <p id="altimeterMaxAlt">
+            <span className="metric">{MAX_ALTITUDE}m</span>
+            <span className="imperial">{this.round(MAX_ALTITUDE/METERS_PER_FOOT, 0)}ft</span>
+          </p>
           {boundaryAltLine}
-          <p id="altimeterMinAlt">0m</p>
+          <p id="altimeterMinAlt">
+            <span className="metric">0m</span>
+            <span className="imperial">0ft</span>
+          </p>
           <div
             id="altimeterAltitudeIndicator"
             style={{
