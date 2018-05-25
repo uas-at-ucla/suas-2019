@@ -1,6 +1,6 @@
 import signal
 import socketIO_client
-from argparse import Namespace
+from argparse
 import threading
 import time
 
@@ -12,7 +12,8 @@ import process_manager
 import vision
 
 MAX_TIMEOUT = 5  # seconds
-
+MOCK_RECEIVERS = ['rsync', 'yolo', 'snip', 'classify_shape', 'classify_letter']
+DEFAULT_PATH = '~/Projects/vision/target_generator/DATA/all_imgs/0000232.jpg'
 
 class TestVisionServer(unittest.TestCase):
     def setUp(self):
@@ -20,7 +21,7 @@ class TestVisionServer(unittest.TestCase):
         self.messages = []
 
         # start the server worker
-        args = Namespace()
+        args = argparse.Namespace()
         args.port = 8099
         self.running_threads = []
         self.running_threads.append(
@@ -72,10 +73,30 @@ class TestVisionServer(unittest.TestCase):
                     'user': 'pi',
                     'addr': 'INSERT_DRONE_IP',
                     'img_remote_src': dummy_path,
-                    'img_local_dest': '/home/benlimpa/')
+                    'img_local_printf '\033]2;%s\033\\' 'server1'dest': '/home/benlimpa/')
                 }]
             })
 
+def make_listener(name):
+    def listener(*args):
+        print('{}: {}'.format(name, args))
+    return listener
+
+def create_mock_listeners():
+    socket = socketIO.SocketIO('0.0.0.0', 8099)
+    for name in MOCK_RECEIVERS:
+        socket.on(name, make_listener(name))
 
 if __name__ == '__main__':
-    unittest.main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('type')
+    parser.add_argument('-t', dest='target', default=DEFAULT_PATH)
+    args = parser.parse_args()
+
+    if args.type == 'main':
+        unittest.main()
+    elif args.type == 'listen':
+        create_mock_listeners()
+    elif args.type == 'send':
+        with socketIO_client.SocketIO('0.0.0.0', 8099) as socket:
+            socket.emit('process_image', {'file_path': args.target})
