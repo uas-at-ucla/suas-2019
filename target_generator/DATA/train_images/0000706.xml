@@ -1,0 +1,24 @@
+<annotation>
+	<filename>0000706.jpg</filename>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>512</width>
+		<height>512</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>semicircle</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>112</xmin>
+			<ymin>272</ymin>
+			<xmax>236</xmax>
+			<ymax>396</ymax>
+		</bndbox>
+	</object>
+</annotation>

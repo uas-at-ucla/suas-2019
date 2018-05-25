@@ -1,0 +1,24 @@
+<annotation>
+	<filename>0001009.jpg</filename>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>512</width>
+		<height>512</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>trapezoid</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>42</xmin>
+			<ymin>162</ymin>
+			<xmax>150</xmax>
+			<ymax>270</ymax>
+		</bndbox>
+	</object>
+</annotation>

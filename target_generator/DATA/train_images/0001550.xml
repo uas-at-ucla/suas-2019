@@ -1,0 +1,24 @@
+<annotation>
+	<filename>0001550.jpg</filename>
+	<source>
+		<database>Unknown</database>
+	</source>
+	<size>
+		<width>512</width>
+		<height>512</height>
+		<depth>3</depth>
+	</size>
+	<segmented>0</segmented>
+	<object>
+		<name>quarter_circle</name>
+		<pose>Unspecified</pose>
+		<truncated>0</truncated>
+		<difficult>0</difficult>
+		<bndbox>
+			<xmin>314</xmin>
+			<ymin>412</ymin>
+			<xmax>358</xmax>
+			<ymax>456</ymax>
+		</bndbox>
+	</object>
+</annotation>
