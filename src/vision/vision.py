@@ -70,7 +70,7 @@ MAX_THREADS = 20
 # Yolo Defaults
 DEFAULT_YOLO_PB = 'localizer/built_graph/yolo-auvsi.pb'
 DEFAULT_YOLO_META = 'localizer/built_graph/yolo-auvsi.meta'
-DEFAULT_YOLO_THRESH = 0.01
+DEFAULT_YOLO_THRESH = 0.0012
 
 processes = process_manager.ProcessManager()
 c_workers = []
@@ -528,6 +528,12 @@ class YoloWorker(ClientWorker):
         img = self.manager.get_img(img_id)
         results = self.tfnet.return_predict(img)
 
+        for result in results:
+            result['confidence'] = float(result['confidence'])
+
+        if verbose:
+            print('yolo_results: ' + str(results))
+
         # TODO Calculate the coordinates
         #        for result in results:
         #            result
@@ -631,7 +637,6 @@ def classifier_worker(args):
         shape_classifier_worker(args)
     if args.classifier_type == 'letter':
         letter_classifier_worker(args)
-
 
 
 # Shape Classification #########################################################
@@ -820,7 +825,8 @@ if __name__ == '__main__':
     classifier_parser.add_argument(
         '--model',
         action='store',
-        dest='model_path',# cannot specify default since there are two different types
+        dest=
+        'model_path',  # cannot specify default since there are two different types
         help='specify the classification model to load')
     classifier_parser.set_defaults(func=classifier_worker)
 
