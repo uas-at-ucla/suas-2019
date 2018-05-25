@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import './Images.css';
 import logo from '../graphics/vector_logo.svg';
 import Position from './Position';
-import Modal from './Modal';
+import ModalComponent from './Modal';
 
 import { PageHeader } from 'react-bootstrap';
 
@@ -11,9 +11,13 @@ class Images extends Component {
   constructor (props) {
     super(props);
     this.state = {
+      doubleClicked: false,
       currentPhoto: null,
       allImages: [],
     }
+    Object.keys(this.images).map((photo) => {
+      this.state.allImages.push(photo);
+    })
   }
 /*
 1) double click raw image- open up to modal for cropping
@@ -29,6 +33,7 @@ class Images extends Component {
             <div id="Raw-Images-List">
               {this.renderRawImages()}
               {
+                this.state.doubleClicked ? <ModalComponent image={this.state.currentPhoto}/> : null
                 /* todo: Howard+Ryan - double-click image to pop-up photo editor
                   make modal into a new file */}
             </div>
@@ -60,6 +65,13 @@ class Images extends Component {
     );
   }
 
+  changeDoubleClicked() {
+    this.setState({
+      doubleClicked: false
+    });
+    console.log(this.state.doubleClicked);
+  }
+
   // Import images from testPhotos folder
   importAll(r) {
     let images = {};
@@ -67,12 +79,11 @@ class Images extends Component {
     return images;
   }
 
-  images = this.importAll(require.context('./testPhotos', false, /\.(png|jpe?g|svg)$/));
+  images = this.importAll(require.context('../../public/testPhotos', false, /\.(png|jpe?g|svg)$/));
 
   renderRawImages(myList) {
-    Object.keys(this.images).map((photo) => {
-      this.state.allImages.push(photo);
-    })
+    
+    //console.log("number of images: " + this.state.allImages.length);
     return this.state.allImages.map((photo) => {
       return (
         <img className="surveyPhotoOdd"
@@ -85,14 +96,11 @@ class Images extends Component {
 
   photoshop = (photo) => {
     // todo: Open modal photoshop editor here
-    console.log(photo);
-    <h1>
-      
-    </h1>
-    <Modal>
-    
-    </Modal>
-
+    console.log("toggle: " + this.state.doubleClicked);
+    this.setState({
+      doubleClicked: !this.state.doubleClicked,
+      currentPhoto: photo
+    }); 
   }
 
 
@@ -101,7 +109,7 @@ class Images extends Component {
     this.setState( {
       currentPhoto: photo
     });
-    console.log(photo);
+    //console.log(photo);
   }
 
   submitToInterop = () => {
