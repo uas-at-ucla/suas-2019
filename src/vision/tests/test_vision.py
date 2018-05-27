@@ -8,10 +8,12 @@ import sys
 import unittest
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
+os.chdir('..')
 sys.dont_write_bytecode = True
 sys.path.insert(0, '../../lib')
 import process_manager
 
+sys.path.insert(0, '..')
 import vision
 
 MAX_TIMEOUT = 5  # seconds

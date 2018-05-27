@@ -1,7 +1,9 @@
+import sys
 from PIL import Image
 import numpy as np
 import cv2
 import keras.models
+sys.path.insert(0, 'segmentation')
 import segmentation.letter_seg as ls
 
 SHAPE_INDEX = [

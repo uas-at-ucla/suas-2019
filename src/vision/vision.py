@@ -15,13 +15,19 @@ import json as json_module
 import hashlib
 import base64
 
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+sys.dont_write_bytecode = True
+sys.path.insert(0, '../../lib')
+import process_manager
+
 # Yolo dependencies
 sys.path.insert(0, './localizer')
 from localizer.darkflow.net.build import TFNet  # yolo neural net
 import cv2  # reading images
 
 # Classification dependencies
-import vision_process
+sys.path.insert(0, './classifier')
+from classifier import vision_classifier
 import tensorflow as tf
 
 # Multithreading
@@ -33,17 +39,16 @@ import queue  # input/output queues
 import ntpath  # finding the name of a file (windows compatible)
 
 # Client dependency
-from img_manager import ImgManager
+sys.path.insert(0, './util')
+from util.img_manager import ImgManager
 
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-sys.dont_write_bytecode = True
-sys.path.insert(0, '../../lib')
-import process_manager
 
 # Defaults #####################################################################
 
 # General Defaults
-DEFAULT_DATA_DIR = os.path.abspath(os.path.join('.', 'data_local'))
+DEFAULT_DATA_DIR = os.path.abspath('data_local')
+print('cwd: ' + os.getcwd())
+print('dir: ' + DEFAULT_DATA_DIR)
 
 # Server defaults
 DRONE_USER = 'benlimpa'
@@ -655,7 +660,7 @@ def classifier_worker(args):
 class ShapeClassifierWorker(ClientWorker):
     def __init__(self, in_q, args):
         super().__init__(in_q, args)
-        self.model = vision_process.load_model(args.model_path)
+        self.model = vision_classifier.load_model(args.model_path)
         self.data_dir = args.data_dir
 
         # Keras w/ Tensorflow backend bug workaround
@@ -670,12 +675,12 @@ class ShapeClassifierWorker(ClientWorker):
     #   }]
     def _do_work(self, task):
         img_id = task[0]['img_id']
-        img = vision_process.shape_img(
+        img = vision_classifier.shape_img(
             os.path.join(self.data_dir, img_id + '.jpg'))
 
         # Keras w/ Tensorflow backend bug workaround
         with self.graph.as_default():
-            prediction = vision_process.predict_shape(self.model, img)
+            prediction = vision_classifier.predict_shape(self.model, img)
             vision_client.emit('classified', {
                 'img_id': img_id,
                 'type': 'shape',
@@ -694,7 +699,7 @@ def shape_classifier_worker(args):
 class LetterClassifierWorker(ClientWorker):
     def __init__(self, in_q, args):
         super().__init__(in_q, args)
-        self.model = vision_process.load_model(args.model_path)
+        self.model = vision_classifier.load_model(args.model_path)
         self.data_dir = args.data_dir
 
         # Keras w/ Tensorflow backend bug workaround
@@ -708,12 +713,12 @@ class LetterClassifierWorker(ClientWorker):
     #   }]
     def _do_work(self, task):
         img_id = task[0]['img_id']
-        img = vision_process.letter_img(
+        img = vision_classifier.letter_img(
             os.path.join(self.data_dir, img_id + '.jpg'))
 
         # Keras w/ Tensorflow backend bug workaround
         with self.graph.as_default():
-            prediction = vision_process.predict_letter(self.model, img)
+            prediction = vision_classifier.predict_letter(self.model, img)
             vision_client.emit('classified', {
                 'img_id': img_id,
                 'type': 'letter',
