@@ -1,8 +1,11 @@
 import signal
 import socketIO_client
-from argparse
+import argparse
 import threading
 import time
+import os
+import sys
+import unittest
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
@@ -73,7 +76,7 @@ class TestVisionServer(unittest.TestCase):
                     'user': 'pi',
                     'addr': 'INSERT_DRONE_IP',
                     'img_remote_src': dummy_path,
-                    'img_local_printf '\033]2;%s\033\\' 'server1'dest': '/home/benlimpa/')
+                    'img_local_dest': dummy_path
                 }]
             })
 
