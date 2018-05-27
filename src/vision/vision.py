@@ -6,6 +6,7 @@ import argparse
 from argparse import Namespace
 from flask import Flask, render_template
 import flask_socketio, socketIO_client
+import logging
 
 # Server dependencies
 import time
@@ -21,6 +22,7 @@ import cv2  # reading images
 
 # Classification dependencies
 import vision_process
+import tensorflow as tf
 
 # Multithreading
 import threading  # multithreading library
@@ -64,7 +66,7 @@ DEFAULT_REMOTE_DIR = DEFAULT_DATA_DIR
 DEFAULT_VSN_IP = DEFAULT_SRV_IP
 DEFAULT_VSN_SRV = DEFAULT_SRV_IP + ':' + str(DEFAULT_SRV_PORT)
 DEFAULT_THREADS = 1
-DEFAULT_AUCTION_TIMEOUT = 3
+DEFAULT_AUCTION_TIMEOUT = 1
 MAX_THREADS = 20
 
 # Yolo Defaults
@@ -94,7 +96,7 @@ def signal_received(signal, frame):
 
 socketio_app = Flask(__name__)
 socketio_app.config['SECRET_KEY'] = SECRET_KEY
-vision_socketio_server = flask_socketio.SocketIO(socketio_app)
+vision_socketio_server = flask_socketio.SocketIO(socketio_app, logger=False)
 server_task_queue = queue.Queue()
 connected_clients = {'rsync': [], 'yolo': [], 'snipper': []}
 active_auctions = {}
@@ -250,12 +252,12 @@ def process_image(json, attempts=1):
                 'event_name': 'process_image',
                 'json': json
             },
-            'next': {
+            'next': [{
                 'event_name': 'yolo',
                 'json': {
                     'img_id': img_info['id']
                 }
-            },
+            }],
             'user': DRONE_USER,
             'addr': DRONE_IP,
             'img_remote_src': json['file_path'],
@@ -269,15 +271,16 @@ def process_image(json, attempts=1):
 # Intermediate step
 @vision_socketio_server.on('download_complete')
 def call_next(json):
-    next_task = json['next']
+    next_tasks = json['next']
     global verbose
     if verbose:
-        print("Download Complete; Next Up: " + next_task['event_name'])
-    server_task_queue.put({
-        'type': 'auction',
-        'event_name': next_task['event_name'],
-        'args': next_task['json']
-    })
+        print("Download Complete; Next Up: " + str([next_task['event_name'] for next_task in next_tasks]))
+    for next_task in next_tasks:
+        server_task_queue.put({
+            'type': 'auction',
+            'event_name': next_task['event_name'],
+            'args': next_task['json']
+        })
 
 
 # Step 2 - find the targets in the image (yolo)
@@ -315,12 +318,20 @@ def download_snipped(json):
                     'event_name': 'snipped',
                     'json': json
                 },
-                'next': {
-                    'event_name': 'classify',
-                    'json': {
-                        'img_id': json['img_id']
+                'next': [
+                    {
+                        'event_name': 'classify_shape',
+                        'json': {
+                            'img_id': json['img_id']
+                        }
+                    },
+                    {
+                        'event_name': 'classify_letter',
+                        'json': {
+                            'img_id': json['img_id']
+                        }
                     }
-                },
+                ],
                 'user': SNIPPER_USER,
                 'addr': SNIPPER_IP,
                 'img_remote_src': os.path.join(download_dir, img_id + ext),
@@ -329,22 +340,22 @@ def download_snipped(json):
         })
 
 
-@vision_socketio_server.on('classify')
-def classify(json):
-    server_task_queue.put({
-        'type': 'auction',
-        'event_name': 'classify_shape',
-        'args': {
-            'img_id': json['img_id']
-        }
-    })
-    server_task_queue.put({
-        'type': 'auction',
-        'event_name': 'classify_letter',
-        'args': {
-            'img_id': json['img_id']
-        }
-    })
+#@vision_socketio_server.on('classify')
+#def classify(json):
+#    server_task_queue.put({
+#        'type': 'auction',
+#        'event_name': 'classify_shape',
+#        'args': {
+#            'img_id': json['img_id']
+#        }
+#    })
+#    server_task_queue.put({
+#        'type': 'auction',
+#        'event_name': 'classify_letter',
+#        'args': {
+#            'img_id': json['img_id']
+#        }
+#    })
 
 
 @vision_socketio_server.on('classified')
@@ -375,7 +386,8 @@ def server_worker(args):
     global s_worker
     s_worker = ServerWorker(server_task_queue)
     s_worker.start()
-    vision_socketio_server.run(socketio_app, '0.0.0.0', port=int(args.port))
+    logging.getLogger('werkzeug').setLevel(logging.ERROR)
+    vision_socketio_server.run(socketio_app, '0.0.0.0', port=int(args.port), log_output=False)
 
 
 # Clients ######################################################################
@@ -646,19 +658,29 @@ class ShapeClassifierWorker(ClientWorker):
         self.model = vision_process.load_model(args.model_path)
         self.data_dir = args.data_dir
 
+        # Keras w/ Tensorflow backend bug workaround
+        # This is required when using keras with tensorflow on multiple threads
+        self.model._make_predict_function()
+        self.graph = tf.get_default_graph()
+
+
     # task format:
     #   [{
     #       'img_id': str,
     #   }]
     def _do_work(self, task):
+        img_id = task[0]['img_id']
         img = vision_process.shape_img(
-            os.path.join(self.data_dir, task[0]['img_id'] + '.jpg'))
-        prediction = vision_process.predict_shape(model, img)
-        vision_client.emit('classified', {
-            'img_id': img_id,
-            'type': 'shape',
-            'shape': prediction
-        })
+            os.path.join(self.data_dir, img_id + '.jpg'))
+
+        # Keras w/ Tensorflow backend bug workaround
+        with self.graph.as_default():
+            prediction = vision_process.predict_shape(self.model, img)
+            vision_client.emit('classified', {
+                'img_id': img_id,
+                'type': 'shape',
+                'shape': prediction
+            })
 
     def get_event_name(self):
         return 'classify_shape'
@@ -675,19 +697,28 @@ class LetterClassifierWorker(ClientWorker):
         self.model = vision_process.load_model(args.model_path)
         self.data_dir = args.data_dir
 
+        # Keras w/ Tensorflow backend bug workaround
+        # This is required when using keras with tensorflow on multiple threads
+        self.model._make_predict_function()
+        self.graph = tf.get_default_graph()
+
     # task format:
     #   [{
     #       'img_id': str,
     #   }]
     def _do_work(self, task):
-        img = vision_process.shape_img(
-            os.path.join(self.data_dir, task[0]['img_id'] + '.jpg'))
-        prediction = vision_process.predict_letter(model, img)
-        vision_client.emit('classified', {
-            'img_id': img_id,
-            'type': 'letter',
-            'letter': prediction
-        })
+        img_id = task[0]['img_id']
+        img = vision_process.letter_img(
+            os.path.join(self.data_dir, img_id + '.jpg'))
+
+        # Keras w/ Tensorflow backend bug workaround
+        with self.graph.as_default():
+            prediction = vision_process.predict_letter(self.model, img)
+            vision_client.emit('classified', {
+                'img_id': img_id,
+                'type': 'letter',
+                'letter': prediction
+            })
 
     def get_event_name(self):
         return 'classify_letter'
