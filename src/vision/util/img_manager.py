@@ -7,9 +7,8 @@ import json
 import time
 from pathlib import PurePosixPath, PureWindowsPath
 
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
-sys.path.insert(0, '../../lib')
+sys.path.insert(0, '../../../lib')
 import process_manager
 
 
@@ -25,7 +24,7 @@ class ImgManager:
             os_type: type of os: 'windows' or 'posix'
         '''
         self.master = master
-        self.dir = parent_dir
+        self.dir = os.path.realpath(parent_dir)
         self.truth_src = truth_src
         self.procs = process_manager.ProcessManager()
 
