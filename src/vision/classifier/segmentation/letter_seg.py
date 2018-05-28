@@ -33,5 +33,5 @@ def letter_seg(path):
     #Floodfill from point (0, 0)
     cv2.floodFill(res2, mask, (0,0), 0)
     
-    return res2
+    return np.expand_dims(res2[:,:,0], axis=2)
 
