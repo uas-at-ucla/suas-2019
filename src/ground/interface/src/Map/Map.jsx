@@ -611,7 +611,7 @@ class Map extends Component {
       );
     }
 
-    if (drone_distance > 10.0 && drone_distance < 10000) {
+    if (drone_distance > 10.0 && drone_distance < 10000.0) {
       this.drone_path.getPath().push(new_position);
     }
     if (current_path.getLength() > 50) {
