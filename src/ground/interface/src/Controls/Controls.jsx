@@ -19,7 +19,7 @@ class Controls extends Component {
 
   componentDidMount() {
     document.addEventListener("keypress", (e) => {
-      if (e.altKey && e.shiftKey && this.keymap[e.code]) {
+      if (e.altKey && e.shiftKey && e.ctrlKey && this.keymap[e.code]) {
         let button = this.refs[this.keymap[e.code]];
         button.click();
         if (button.tagName === 'BUTTON') {
@@ -137,7 +137,7 @@ class Controls extends Component {
             id="offboard_btn"
             ref="offboard_btn"
           >
-            Offboard (&lt;)
+            Offboard (,)
           </button>
 
           <button
@@ -151,7 +151,7 @@ class Controls extends Component {
             id="rtl_btn"
             ref="rtl_btn"
           >
-            RTL (&gt;)
+            RTL (.)
           </button>
 
           <button
@@ -165,7 +165,7 @@ class Controls extends Component {
             id="land_btn"
             ref="land_btn"
           >
-            Land (?)
+            Land (/)
           </button>
         </div>
       </div>
