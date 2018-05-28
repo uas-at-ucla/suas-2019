@@ -9,63 +9,65 @@ import './MissionPlanner.css';
 const METERS_PER_FOOT = 0.3048;
 const oppositeOf = {'comeToStop': 'flyThrough'}
 
-const SortableItem = SortableElement(({ command, changedCommands, newCmdStartEnd, myIndex, self }) => {
-  let type = command.type;
+const SortableItem = SortableElement(({ command, myIndex, subMission, self }) => {
+  let type = Object.keys(command)[0];
+  if (type === 'subMission') type = Object.keys(command)[1];
   let fields = self.props.commandTypes[type];
-  let startCmdIndex = self.props.homeState.commands.findIndex(cmd => cmd.isStart);
-  let endCmdIndex = self.props.homeState.commands.findIndex(cmd => cmd.isEnd);
-  if (endCmdIndex === -1) endCmdIndex = Infinity;
-  if (startCmdIndex > endCmdIndex) {
-    startCmdIndex = -1;
-    endCmdIndex = Infinity;
-  }
 
   return (
     <tr
       className="command_row"
-      onClick={event => self.onCommandClick(myIndex, event)}
+      style = {!subMission && myIndex === self.props.homeState.droneCurrentCommand ? {
+        backgroundColor: "rgba(0, 0, 255, 0.35)"
+      } : {}}
     >
       <td>
-        <div
-          style = {(startCmdIndex <= myIndex && myIndex <= endCmdIndex) ? {
-            backgroundColor: "rgba(0, 255, 0, 0.25)"
-          } : {}}
-        >
-          {myIndex + 1}
-        </div>
+        <div>{myIndex + 1}</div>
       </td>
-      <td><div>{command.name}</div></td>
       <td><div>{type.replace('Command', '')}</div></td>
       {fields.map((field, index) => {
         return self.commandField(command, field.name, index);
       })}
+      <td>
+        {command.subMission && command.subMission.commands.length > 0 ?
+          <div className="sub_mission">
+            <div className="sub_mission_title">sub-mission:</div>
+            <table>
+              <tbody>
+                {command.subMission.commands.map((command, index) => (
+                  <SortableItem
+                    key={index}
+                    index={index}
+                    command={command}
+                    myIndex={index}
+                    subMission={true}
+                    self={self}
+                    disabled={true}
+                  />
+                ))}
+              </tbody>
+            </table>
+          </div> : null
+        }
+      </td>
     </tr>
   );
 });
 
-class MySortableItem extends SortableItem {
-  shouldComponentUpdate(nextProps, nextState) {
-    let result = nextProps.newCmdStartEnd || nextProps.changedCommands === null || (
-        nextProps.changedCommands.startIndex <= nextProps.myIndex &&
-        nextProps.myIndex <= nextProps.changedCommands.endIndex);
-    return result;
-  }
-}
-
-const SortableList = SortableContainer(({ commands, changedCommands, newCmdStartEnd, self }) => {
+const SortableList = SortableContainer(({ commands, self }) => {
   return (
     <div className="scrollbar">
       <table id="commandListOverview">
         <tbody>
           {commands.map((command, index) => (
-            <MySortableItem
+            <SortableItem
               key={index}
               index={index}
               command={command}
-              changedCommands={changedCommands}
-              newCmdStartEnd={newCmdStartEnd}
               myIndex={index}
+              subMission={false}
               self={self}
+              disabled={true}
             />
           ))}
         </tbody>
@@ -74,42 +76,19 @@ const SortableList = SortableContainer(({ commands, changedCommands, newCmdStart
   );
 });
 
-class MissionPlannerOverview extends Component {
+class DroneCommands extends Component {
   render() {
     return (
       <SortableList
-        commands={this.props.homeState.commands}
-        changedCommands={this.props.homeState.changedCommands}
-        newCmdStartEnd={this.props.homeState.newCmdStartEnd}
+        commands={this.props.homeState.droneCommands}
         self={this}
-        onSortEnd={this.onSortEnd}
-        transitionDuration={200}
-        distance={2}
       />
     );
   }
 
-  onSortEnd = ({ oldIndex, newIndex }) => {
-    if (oldIndex !== newIndex) {
-      this.props.setHomeState({
-        commands: arrayMove(this.props.homeState.commands, oldIndex, newIndex),
-        changedCommands: {
-          startIndex: Math.min(oldIndex, newIndex), 
-          endIndex: Math.max(oldIndex, newIndex)
-        },
-        newCmdStartEnd: true
-      });
-    }
-  };
-
-  onCommandClick(index, event) {
-    if (event.target.tagName === 'TD' || event.target.tagName === 'DIV') {
-      this.props.setHomeState({ focusedCommand: index });
-    }
-  }
-
   commandField(command, field, id) {
-    let type = command.type;
+    let type = Object.keys(command)[0];
+    if (type === 'subMission') type = Object.keys(command)[1];
     let keys = field.split('.');
     let subcommand = command[type];
     let key = null;
@@ -192,4 +171,4 @@ class MissionPlannerOverview extends Component {
   }
 }
 
-export default MissionPlannerOverview;
+export default DroneCommands;
