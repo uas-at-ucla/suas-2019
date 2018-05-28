@@ -18,6 +18,7 @@ class App extends Component {
       optionSelected: "Control", // Default is Control
       droneState: "Offline",
       telemetry: null,
+      drone_ping_ms: null,
       interopBtnText: "Connect to Interop",
       interopBtnEnabled: true,
       moving_obstacles: [],
@@ -117,6 +118,10 @@ class App extends Component {
         telemetry: null,
         drone_mission_base64: null
       });
+    });
+
+    this.socket.on("drone_ping", (data) => {
+      this.setState({drone_ping_ms: data.ms});
     });
 
     this.socket.on("on_telemetry", telemetry => {
