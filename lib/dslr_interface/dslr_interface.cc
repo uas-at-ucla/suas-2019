@@ -66,6 +66,7 @@ void DSLRInterface::RunIteration() {
       1e-9;
 
   int pid_stat;
+
   switch (state_) {
     case STANDBY:
       if (exiting_) {
