@@ -68,6 +68,7 @@ queue_group FlightLoopQueue {
 
     double trigger_alarm;
     double trigger_bomb_drop;
+    double trigger_dslr;
   };
 
   message Output {
@@ -77,6 +78,8 @@ queue_group FlightLoopQueue {
 
     float gimbal_angle;
     bool bomb_drop;
+    bool alarm;
+    bool dslr;
 
     double trigger_takeoff;
     double trigger_hold;
@@ -85,8 +88,6 @@ queue_group FlightLoopQueue {
     double trigger_land;
     double trigger_arm;
     double trigger_disarm;
-
-    bool alarm;
   };
 
   queue Dummy dummy;
