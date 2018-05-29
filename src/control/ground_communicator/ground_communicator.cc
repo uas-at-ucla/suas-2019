@@ -432,6 +432,7 @@ void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
     flight_loop_goal_message->trigger_failsafe = false;
     flight_loop_goal_message->trigger_throttle_cut = false;
     flight_loop_goal_message->trigger_alarm = 0;
+    flight_loop_goal_message->trigger_bomb_drop = 0;
   } else {
     // Copy past goal.
     flight_loop_goal_message->run_mission = (*last_goal)->trigger_alarm;
@@ -515,6 +516,11 @@ void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
       flight_loop_goal_message->trigger_alarm = time;
       LOG_LINE("GOT ALARM @ TIME " << time);
       break;
+
+    case BOMB_DROP:
+      flight_loop_goal_message->trigger_bomb_drop = time;
+      LOG_LINE("GOT BOMB DROP @ TIME " << time);
+      break;
   }
 
   flight_loop_goal_message.Send();
@@ -556,6 +562,8 @@ void MissionReceiver::SetState(::std::string new_state_string) {
     new_state = DISARM;
   } else if (new_state_string == "ALARM") {
     new_state = ALARM;
+  } else if (new_state_string == "BOMB_DROP") {
+    new_state = BOMB_DROP;
   } else {
     ::std::cerr << "Unknown state: " << new_state_string << ::std::endl;
     return;
