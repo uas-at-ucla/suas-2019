@@ -188,7 +188,7 @@ void AutopilotOutputWriter::Write() {
     return;
   }
 
-  if(::src::control::loops::flight_loop_queue.output->bomb_drop) {
+  if(::src::control::loops::flight_loop_queue.output->dslr) {
     dslr_interface_.TakePhotos();
   }
 
