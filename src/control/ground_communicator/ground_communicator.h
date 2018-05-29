@@ -48,7 +48,8 @@ class MissionReceiver {
     ARM,
     DISARM,
     ALARM,
-    BOMB_DROP
+    BOMB_DROP,
+    DSLR
   };
 
  private:
