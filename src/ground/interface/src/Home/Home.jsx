@@ -156,6 +156,8 @@ class Home extends Component {
       return false;
     }
 
+    if (newState.commands && !newState.newCmdStartEnd) newState.newCmdStartEnd = false;
+
     this.setState(newState);
 
     if (newState.commands && !newState.dontSendCommandChanges) {
@@ -166,11 +168,14 @@ class Home extends Component {
         command_info[command.type] = command[command.type];
         command_info.interop_object = command.interop_object;
         command_info.name = command.name;
+        command_info.isStart = command.isStart;
+        command_info.isEnd = command.isEnd;
         commands_info.push(command_info);
       }
       let obj = {
         commands: commands_info,
-        changedCommands: newState.changedCommands
+        changedCommands: newState.changedCommands,
+        newCmdStartEnd: newState.newCmdStartEnd
       };
 
       let currentTime = Date.now();
@@ -225,7 +230,22 @@ class Home extends Component {
   get_mission = () => {
     const Mission = this.protobuf_root.lookupType('lib.mission_manager.Mission');
 
-    const cmds = {commands: this.state.commands.slice()};
+    const cmds_array = [];
+
+    let startCmdIndex = this.state.commands.findIndex(cmd => cmd.isStart);
+    let endCmdIndex = this.state.commands.findIndex(cmd => cmd.isEnd);
+    if (startCmdIndex === -1) startCmdIndex = 0;
+    if (endCmdIndex === -1) endCmdIndex = this.state.commands.length-1;
+    if (startCmdIndex > endCmdIndex) {
+      startCmdIndex = 0;
+      endCmdIndex = this.state.commands.length-1;
+    }
+
+    for (let i = startCmdIndex; i <= endCmdIndex; i++) {
+      cmds_array.push(this.state.commands[i]);
+    }
+
+    const cmds = {commands: cmds_array};
     const mission = Mission.create(cmds);
     const serialized_mission = Mission.encode(mission).finish();
 
