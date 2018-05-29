@@ -611,11 +611,17 @@ class Map extends Component {
       );
     }
 
-    if (drone_distance > 10.0 && drone_distance < 10000.0) {
+    if (drone_distance > 10000.0) {
+      // Clear the path.
+      this.drone_path.length = 0;
+    } else if (drone_distance > 10.0) {
       this.drone_path.getPath().push(new_position);
     }
+
     if (current_path.getLength() > 50) {
       this.drone_path.getPath().removeAt(0);
+    } else if(current_path.getLength() == 0) {
+      this.drone_path.getPath().push(new_position);
     }
 
     this.drone_marker.setPosition(new_position);
