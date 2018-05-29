@@ -368,6 +368,19 @@ def record_class(json):
     class_type = json['type']
     server_img_manager.set_prop(json['img_id'], class_type, json[class_type])
 
+@vision_socketio_server.on('manual_request')
+def manual_request(json):
+    json['args']['manual'] = True
+    server_task_queue.put({
+        'type': 'auction',
+        'event_name': json['event_name'],
+        'args': json['args']
+        })
+
+@vision_socketio_server.on('manual_request_done')
+def manual_request_done(json):
+    vision_socketio_server.emit('manual_request_done', json)
+
 
 # TODO handle autodownloading images as needed
 #@vision_socketio_server.on('download_complete')
@@ -396,9 +409,9 @@ def server_worker(args):
 
 
 # Clients ######################################################################
-vision_client = None
 client_id = None
 work_queue = queue.Queue()
+vision_client = None
 
 
 def client_add_task(*args):
@@ -430,7 +443,7 @@ def client_worker(args, worker_class):
     client_id = str(uuid.uuid4())
     global work_queue
     for i in range(0, args.threads):
-        c_worker = worker_class(work_queue, args)
+        c_worker = worker_class(in_q=work_queue, socket_client=vision_client, args=args)
         c_worker.start()
         c_workers.append(c_worker)
     vision_client.on(c_workers[0].get_event_name(), client_bid_for_task)
@@ -440,7 +453,7 @@ def client_worker(args, worker_class):
 
 
 class ClientWorker(threading.Thread):
-    def __init__(self, in_q, args):  # accept args anyway even if not used
+    def __init__(self, in_q, socket_client, args):  # accept args anyway even if not used
         super(ClientWorker, self).__init__()
         self.in_q = in_q  # input queue (queue.Queue)
         self.stop_req = threading.Event()  # listen for a stop request
@@ -449,6 +462,7 @@ class ClientWorker(threading.Thread):
         self.vsn_port = args.vsn_port
         self.ssh_port = args.ssh_port
         self.data_dir = args.data_dir
+        self.socket_client = socket_client
 
         self.manager = ImgManager(
             args.data_dir, {
@@ -458,6 +472,13 @@ class ClientWorker(threading.Thread):
                 'remote_dir': args.remote_dir,
                 'os_type': os.name
             })
+
+    def _emit(self, task, event_name, args):
+        if 'manual' in task[0] and task[0]['manual']:
+            args['event_name'] = event_name
+            self.socket_client.emit('manual_request_done', args)
+        else:
+            self.socket_client.emit(event_name, args)
 
     def _do_work(self, task):
         raise NotImplementedError("Client Worker doesn't know what to do.")
@@ -501,13 +522,13 @@ class RsyncWorker(ClientWorker):
                 'rsync -vz --progress -e "ssh -p 22" "' + task_args['user'] +
                 '@' + task_args['addr'] + ':' + task_args['img_remote_src'] +
                 '" ' + task_args['img_local_dest']):
-            vision_client.emit(
+            self._emit(task, 
                 'download_complete', {
                     'saved_path': task_args['img_local_dest'],
                     'next': task_args['next']
                 })
         else:
-            vision_client.emit(
+            self._emit(task, 
                 'download_failed', {
                     'attempted_path': task_args['img_local_dest'],
                     'prev': task_args['prev']
@@ -523,8 +544,8 @@ def rsync_worker(args):
 
 # YOLO image classification ####################################################
 class YoloWorker(ClientWorker):
-    def __init__(self, in_q, args):
-        super().__init__(in_q, args)
+    def __init__(self, in_q, socket_client, args):
+        super().__init__(in_q, socket_client, args)
 
         # load model
         yolo_options = {
@@ -554,7 +575,7 @@ class YoloWorker(ClientWorker):
         # TODO Calculate the coordinates
         #        for result in results:
         #            result
-        vision_client.emit('yolo_done', {'img_id': img_id, 'results': results})
+        self._emit(task, 'yolo_done', {'img_id': img_id, 'results': results})
 
         # Result format: [{'label': str, 'confidence': int,
         #                  'topleft': {'x': int, 'y': int},
@@ -566,8 +587,8 @@ class YoloWorker(ClientWorker):
 
 
 class MockYoloWorker(ClientWorker):
-    def __init__(self, in_q, args):
-        super().__init__(in_q, args)
+    def __init__(self, in_q, socket_client, args):
+        super().__init__(in_q, socket_client, args)
 
     def get_event_name(self):
         return 'yolo'
@@ -587,7 +608,7 @@ class MockYoloWorker(ClientWorker):
                 'y': img.shape[0] / 2 + 10
             }
         }]
-        vision_client.emit('yolo_done', {'img_id': img_id, 'results': results})
+        self._emit(task, 'yolo_done', {'img_id': img_id, 'results': results})
 
 
 def yolo_worker(args):
@@ -635,7 +656,7 @@ class SnipperWorker(ClientWorker):
                     }
                 })
 
-            vision_client.emit('snipped', {
+            self._emit(task, 'snipped', {
                 'img_id': img_id,
                 'download_dir': self.data_dir
             })
@@ -658,8 +679,8 @@ def classifier_worker(args):
 
 # Shape Classification #########################################################
 class ShapeClassifierWorker(ClientWorker):
-    def __init__(self, in_q, args):
-        super().__init__(in_q, args)
+    def __init__(self, in_q, socket_client, args):
+        super().__init__(in_q, socket_client, args)
         self.model = vision_classifier.load_model(args.model_path)
         self.data_dir = args.data_dir
 
@@ -681,7 +702,7 @@ class ShapeClassifierWorker(ClientWorker):
         # Keras w/ Tensorflow backend bug workaround
         with self.graph.as_default():
             prediction = vision_classifier.predict_shape(self.model, img)
-            vision_client.emit('classified', {
+            self._emit(task, 'classified', {
                 'img_id': img_id,
                 'type': 'shape',
                 'shape': prediction
@@ -697,8 +718,8 @@ def shape_classifier_worker(args):
 
 # Letter Classification ########################################################
 class LetterClassifierWorker(ClientWorker):
-    def __init__(self, in_q, args):
-        super().__init__(in_q, args)
+    def __init__(self, in_q, socket_client, args):
+        super().__init__(in_q, socket_client, args)
         self.model = vision_classifier.load_model(args.model_path)
         self.data_dir = args.data_dir
 
@@ -719,7 +740,7 @@ class LetterClassifierWorker(ClientWorker):
         # Keras w/ Tensorflow backend bug workaround
         with self.graph.as_default():
             prediction = vision_classifier.predict_letter(self.model, img)
-            vision_client.emit('classified', {
+            self._emit(task, 'classified', {
                 'img_id': img_id,
                 'type': 'letter',
                 'letter': prediction
