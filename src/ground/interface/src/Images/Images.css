@@ -4,6 +4,12 @@
     overflow: hidden;
 }
 
+.resize {
+    max-width: 80%;
+    max-height: 80%;
+}
+
+
 #PotentialTargets
 {
     height: 500px;
