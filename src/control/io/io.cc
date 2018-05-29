@@ -181,6 +181,7 @@ AutopilotOutputWriter::AutopilotOutputWriter(
 
   // Gimbal IO setup.
   pigpio_ = pigpio_start(0, 0);
+  set_mode(pigpio_, 23, PI_OUTPUT);
   set_mode(pigpio_, 24, PI_OUTPUT);
 #endif
 }
@@ -211,6 +212,11 @@ void AutopilotOutputWriter::Write() {
   digitalWrite(
       kAlarmGPIOPin,
       ::src::control::loops::flight_loop_queue.output->alarm ? HIGH : LOW);
+
+  int bomb_drop_signal =
+      ::src::control::loops::flight_loop_queue.output->bomb_drop ? 1000 : 1600;
+
+  set_servo_pulsewidth(pigpio_, 23, bomb_drop_signal);
 
   int gimbal_angle =
       1500 +
