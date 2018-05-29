@@ -70,7 +70,7 @@ TEST_F(PilotTest, ReachesGoalTest) {
 
   pilot_.SetMission(mission);
 
-  double runtime_in_seconds = 10;
+  double runtime_in_seconds = 25;
 
   ::Eigen::Vector3d current_velocities(0, 0, 0);
 
