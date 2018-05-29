@@ -92,10 +92,8 @@ def run_build(args):
 
 
 def run_simulate(args):
-    processes.spawn_process("bazel build //src/...")
-    processes.wait_for_complete()
-    processes.spawn_process("bazel build @PX4_sitl//:jmavsim")
-    processes.wait_for_complete()
+    run_and_die_if_error("bazel build //src/...")
+    run_and_die_if_error("bazel build @PX4_sitl//:jmavsim")
 
     # Initialize shared memory for queues.
     processes.spawn_process("ipcrm --all", None, True, args.verbose)
@@ -114,7 +112,7 @@ def run_simulate(args):
             "--mav20 " \
             "--state-basedir=/tmp/ " \
             "--master=0.0.0.0:14540 " \
-            "--out=udp:0.0.0.0:8084 " \
+            "--out=udp:0.0.0.0:8083 " \
             "--out=udp:0.0.0.0:8085 ", \
             None, True, False)
 
