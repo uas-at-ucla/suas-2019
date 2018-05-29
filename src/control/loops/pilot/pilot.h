@@ -19,6 +19,7 @@
 
 #include "lib/mission_message_queue/mission_message_queue.h"
 #include "lib/mission_manager/mission_commands.pb.h"
+#include "lib/motion_profile/motion_profile.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/semaphore/semaphore.h"
 #include "lib/pid/pid.h"
@@ -38,7 +39,7 @@ class Pilot {
   Pilot();
   ~Pilot();
 
-  PilotOutput Calculate(Position3D drone_position);
+  PilotOutput Calculate(Position3D position, ::Eigen::Vector3d velocity);
   void PreprocessorThread();
   void SetMission(::lib::mission_manager::Mission mission);
   Vector3D VelocityNavigator();
@@ -48,6 +49,7 @@ class Pilot {
 
  private:
   ::lib::pid::PID thrust_pid_;
+  ::lib::motion_profile::MotionProfile profile_;
 
   ::lib::mission_message_queue::MissionMessageQueueReceiver
       mission_message_queue_receiver_;
@@ -55,9 +57,9 @@ class Pilot {
   ::lib::mission_manager::Command cmd_, last_cmd_;
   bool cmd_set_;
 
-  Position3D drone_position_;
-  bool drone_position_set_;
-  ::lib::Semaphore drone_position_semaphore_;
+  Position3D position_;
+  bool position_set_;
+  ::lib::Semaphore position_semaphore_;
 
   ::std::atomic<bool> run_{true};
 
@@ -70,6 +72,7 @@ class Pilot {
   bool setpoint_reset_;
   bool met_goal_;
   Position3D start_, end_;
+  ::Eigen::Vector3d current_physical_velocity_;
 };
 
 }  // namespace pilot

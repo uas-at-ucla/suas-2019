@@ -282,7 +282,13 @@ void FlightLoop::RunIteration() {
           ::src::control::loops::flight_loop_queue.sensors->longitude,
           ::src::control::loops::flight_loop_queue.sensors->relative_altitude};
 
-      pilot::PilotOutput flight_direction = pilot_.Calculate(position);
+      ::Eigen::Vector3d velocity(
+          ::src::control::loops::flight_loop_queue.sensors->velocity_x,
+          ::src::control::loops::flight_loop_queue.sensors->velocity_y,
+          ::src::control::loops::flight_loop_queue.sensors->velocity_z);
+
+      pilot::PilotOutput flight_direction =
+          pilot_.Calculate(position, velocity);
 
       output->velocity_x = flight_direction.flight_velocities.x;
       output->velocity_y = flight_direction.flight_velocities.y;
