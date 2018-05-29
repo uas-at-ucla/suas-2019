@@ -1,19 +1,14 @@
 cc_library(
-  name = 'libgphoto2',
+  name = 'gphoto2pp',
   visibility = ['//visibility:public'],
   srcs = glob([
-    'libgphoto2/*.c',
+    'src/**/*.cpp',
   ]),
   hdrs = glob([
-    'libgphoto2/**/*.h',
-    'libgphoto2_port/**/*.h',
-    'gphoto2/*.h',
-    'config.h',
+    'include/**/*.hpp',
   ]),
   includes = [
-    'gphoto2',
-    'libgphoto2_port',
-    '.',
+    'include',
   ],
   copts = [
     '-Wno-unused-parameter',

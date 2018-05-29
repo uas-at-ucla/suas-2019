@@ -68,6 +68,8 @@ class LoopOutputHandler {
     ::std::atomic<bool> run_{true};
   };
 
+  ::aos::time::PhasedLoop phased_loop_;
+
   Watchdog watchdog_;
 
   ::std::atomic<bool> run_{true};
