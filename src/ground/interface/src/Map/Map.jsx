@@ -3,6 +3,7 @@ import ReactDOMServer from 'react-dom/server';
 import './Map.css';
 import GMapCache from './GMapCache.jsx';
 import map_style from './map_style.js';
+import scriptLoader from 'react-async-script-loader';
 
 const METERS_PER_FOOT = 0.3048;
 const google = window.google;
@@ -29,6 +30,12 @@ class Map extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    if (nextProps.isScriptLoaded && !this.props.isScriptLoaded) { // load finished
+      if (nextProps.isScriptLoadSucceed) {
+        this.initMap();
+      }
+    }
+
     for (let item of this.whenStateChanges) {
       if (this.stateDidChange(nextProps, item.stateProp, item.key)) {
         item.func(nextProps);
@@ -37,6 +44,12 @@ class Map extends Component {
   }
 
   componentDidMount() {
+    if (google.maps || (this.props.isScriptLoaded && this.props.isScriptLoadSucceed)) {
+      this.initMap();
+    }
+  }
+
+  initMap() {
     this.last_commands = null;
 
     // Default field to zoom into.
@@ -47,6 +60,7 @@ class Map extends Component {
       lng: -118.48159
     };
 
+    console.log(google);
     this.map = new google.maps.Map(this.refs.map, {
       center: field,
       zoom: 11,
@@ -1425,4 +1439,6 @@ class Map extends Component {
   }
 }
 
-export default Map;
+export default scriptLoader(
+    ["https://maps.googleapis.com/maps/api/js?key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c&libraries=visualization"]
+)(Map)
