@@ -1,9 +1,18 @@
 .Settings {
-    margin-top: calc(60px + 2vw);
+    padding-top: calc(60px + 2vw);
+    text-align: center;
 }
-.ip_address {
-    margin-top: calc(15px + 2vw);
+
+.settings_body {
+	text-align: left;
+	margin-top: 15px;
+	display: inline-block;
 }
+
+.ip_address button {
+	margin-left: 10px;
+}
+
 .ip_address input {
     width: 40px;
     height: 25px;

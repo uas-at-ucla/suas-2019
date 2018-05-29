@@ -27,6 +27,7 @@ if LOCAL_INTEROP:
     INTEROP_IP = '0.0.0.0'
 
 drone_sid = None
+drone_ip = None
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'flappy'
@@ -61,9 +62,10 @@ def signal_received(signal, frame):
 @ground_socketio_server.on('join_room')
 def connect(room):
     global drone_sid
+    global drone_ip
 
     flask_socketio.join_room(room)
-    print(room + " connected!")
+    print(room + " connected! (ip: " + request.remote_addr + ")")
 
     if room == 'frontend':
         data = None
@@ -82,6 +84,7 @@ def connect(room):
 
     elif room == 'drone':
         drone_sid = request.sid;
+        drone_ip = request.remote_addr;
 
         data = object_to_dict({ \
             'stationary_obstacles': stationary_obstacles, \
@@ -132,6 +135,12 @@ def broadcast_interop_data(data):
 
     flask_socketio.emit('interop_data', \
         interop_data_to_obstacles_proto(data), room='drone')
+
+
+@ground_socketio_server.on('drone_ping')
+def send_ping_result(data):
+    flask_socketio.emit('drone_ping', data, \
+        room='frontend')
 
 
 @ground_socketio_server.on('execute_commands')
@@ -328,6 +337,21 @@ def interop_data_to_obstacles_proto(data):
     return obstacles.SerializeToString().encode('base64')
 
 
+def ping_drone():
+    # This is necessary to talk to the socket from a separate thread
+    interface_client = socketIO_client.SocketIO('0.0.0.0', 8081)
+
+    while True:
+        time.sleep(1)
+        if drone_ip:
+            output = os.popen("ping -c 1 " + drone_ip).readlines()
+            if len(output) >= 6:
+                ms = output[5].split('= ')[1].split('/')[0]
+                interface_client.emit('drone_ping', {'ms': ms});
+            else:
+                interface_client.emit('drone_ping', {'ms': None});
+
+
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
@@ -335,9 +359,9 @@ if __name__ == '__main__':
                             True, False)
 
     if AUTO_CONNECT_TO_INTEROP:
-        t = threading.Thread(target=auto_connect_to_interop)
-        t.daemon = True
-        t.start()
+        t_connect = threading.Thread(target=auto_connect_to_interop)
+        t_connect.daemon = True
+        t_connect.start()
 
     if USE_INTEROP:
         if LOCAL_INTEROP:
@@ -347,5 +371,10 @@ if __name__ == '__main__':
         t = threading.Thread(target=refresh_interop_data)
         t.daemon = True
         t.start()
+
+
+    t_ping = threading.Thread(target=ping_drone)
+    t_ping.daemon = True
+    t_ping.start()
 
     ground_socketio_server.run(app, '0.0.0.0', port=8081)
