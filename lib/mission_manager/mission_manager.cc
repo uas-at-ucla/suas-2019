@@ -145,6 +145,8 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
             sleep_cmd_raw->mutable_sleepcommand();
         sleep_cmd->set_time(5);
       }
+    } else if (cmd->has_surveycommand()) {
+      // Do nothing at the moment.
     } else if (cmd->has_bombdropcommand()) {
       ::lib::mission_manager::BombDropCommand *bomb_cmd =
           cmd->mutable_bombdropcommand();
