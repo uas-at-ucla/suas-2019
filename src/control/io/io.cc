@@ -187,11 +187,10 @@ void AutopilotOutputWriter::Write() {
       !::src::control::loops::flight_loop_queue.sensors.get()) {
     return;
   }
-  static int i = 0;
-  if(i++ > 100 && i < 300) {
+
+  if(::src::control::loops::flight_loop_queue.output->bomb_drop) {
     dslr_interface_.TakePhotos();
   }
-
 
   double current_time =
       ::std::chrono::duration_cast<::std::chrono::nanoseconds>(

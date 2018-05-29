@@ -32,7 +32,9 @@ FlightLoop::FlightLoop()
       got_sensors_(false),
       last_loop_(0),
       did_alarm_(false),
-      did_arm_(false) {
+      did_arm_(false),
+      last_bomb_drop_(0),
+      last_dslr_(0) {
   ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
   ::src::control::loops::flight_loop_queue.output.FetchLatest();
@@ -340,12 +342,21 @@ void FlightLoop::RunIteration() {
   output->alarm = alarm_.ShouldAlarm();
 
   // Handle bomb drop.
+  last_bomb_drop_ = ::std::max(
+      last_bomb_drop_,
+      ::src::control::loops::flight_loop_queue.goal->trigger_bomb_drop);
+
   output->bomb_drop = false;
-  if (::src::control::loops::flight_loop_queue.goal->trigger_bomb_drop <=
-          current_time &&
-      ::src::control::loops::flight_loop_queue.goal->trigger_bomb_drop + 5.0 >
-          current_time) {
+  if (last_bomb_drop_ <= current_time && last_bomb_drop_ + 5.0 > current_time) {
     output->bomb_drop = true;
+  }
+
+  // Handle dslr.
+  output->dslr = false;
+  last_dslr_ = ::std::max(
+      last_dslr_, ::src::control::loops::flight_loop_queue.goal->trigger_dslr);
+  if (last_dslr_ <= current_time && last_dslr_ + 5.0 > current_time) {
+    output->dslr = true;
   }
 
   LOG_LINE("Flight loop iteration OUTPUT..."

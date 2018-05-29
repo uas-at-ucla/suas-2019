@@ -104,7 +104,6 @@ Vector3D Pilot::VelocityNavigator() {
       GetDistance2D({0, 0, 0}, {1, 0, 0}) * (end_.latitude - start_.latitude),
       GetDistance2D({0, 0, 0}, {0, 1, 0}) * (end_.longitude - start_.longitude),
       start_.altitude - end_.altitude);
-  ::std::cout << "start_to_end_vector: " << start_to_end_vector << ::std::endl;
 
   ::Eigen::Vector3d drone_projection_on_path_vector =
       start_to_end_vector.norm() > 0
@@ -146,12 +145,6 @@ Vector3D Pilot::VelocityNavigator() {
   ::Eigen::Vector3d flight_direction_half_pipe_vector =
       drone_projection_on_path_unit_vector * (1 - half_pipe_mix) +
       error_unit_vector * half_pipe_mix;
-  ::std::cout << "drone_projection_on_path_unit_vector: "
-              << drone_projection_on_path_unit_vector << ::std::endl;
-  ::std::cout << "error_unit_vector: " << error_unit_vector << ::std::endl;
-  ::std::cout << "mix: " << half_pipe_mix << ::std::endl;
-  ::std::cout << "flight_direction_half_pipe_vector: "
-              << flight_direction_half_pipe_vector << ::std::endl;
   flight_direction_half_pipe_vector *= kSpeed;
 
   // A vector for directing the drone towards its goal point from all

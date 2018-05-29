@@ -8,13 +8,15 @@ class Controls extends Component {
     'KeyZ': 'run_mission_btn',
     'KeyX': 'pause_mission_btn',
     'KeyC': 'alarm_btn',
-    'KeyV': 'arm_btn',
-    'KeyB': 'disarm_btn',
-    'KeyN': 'take_off_btn',
-    'KeyM': 'hold_btn',
-    'Comma': 'offboard_btn',
-    'Period': 'rtl_btn',
-    'Slash': 'land_btn'
+    'KeyV': 'bomb_drop_btn',
+    'KeyB': 'dslr_btn',
+    'KeyD': 'arm_btn',
+    'KeyF': 'disarm_btn',
+    'KeyG': 'take_off_btn',
+    'KeyH': 'hold_btn',
+    'KeyJ': 'offboard_btn',
+    'KeyK': 'rtl_btn',
+    'KeyL': 'land_btn'
   }
 
   componentDidMount() {
@@ -34,7 +36,12 @@ class Controls extends Component {
       <div id="controls" className="text-white">
         <div id="normalControls" className="card">
           <button
-            className="btn btn-outline-secondary"
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.status.state == "IN_AIR"
+                ? 'btn btn-success'
+                : 'btn btn-outline-secondary'
+            }
             onClick={this.sendRunMissionCommand}
             id="run_mission_btn"
             ref="run_mission_btn"
@@ -52,7 +59,12 @@ class Controls extends Component {
           </button>
 
           <button
-            className="btn btn-outline-secondary"
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.output.alarm
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
             onClick={() => this.setDroneState('ALARM')}
             id="alarm_btn"
             ref="alarm_btn"
@@ -61,11 +73,31 @@ class Controls extends Component {
           </button>
 
           <button
-            className="btn btn-outline-secondary"
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.output.bomb_drop
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
             onClick={() => this.setDroneState('BOMB_DROP')}
             id="bomb_drop_btn"
+            ref="bomb_drop_btn"
           >
-            Droppy
+            Droppy (V)
+          </button>
+
+          <button
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.output.dslr
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('DSLR')}
+            id="dslr_btn"
+            ref="dslr_btn"
+          >
+            DSLR (B)
           </button>
         </div>
 
@@ -81,7 +113,7 @@ class Controls extends Component {
             id="arm_btn"
             ref="arm_btn"
           >
-            Arm (V)
+            Arm (D)
           </PromptButton>
 
           <PromptButton
@@ -95,7 +127,7 @@ class Controls extends Component {
             id="disarm_btn"
             ref="disarm_btn"
           >
-            Disarm (B)
+            Disarm (F)
           </PromptButton>
 
           <button
@@ -109,7 +141,7 @@ class Controls extends Component {
             id="take_off_btn"
             ref="take_off_btn"
           >
-            Take Off (N)
+            Take Off (G)
           </button>
 
           <button
@@ -123,7 +155,7 @@ class Controls extends Component {
             id="hold_btn"
             ref="hold_btn"
           >
-            Hold (M)
+            Hold (H)
           </button>
 
           <button
@@ -137,7 +169,7 @@ class Controls extends Component {
             id="offboard_btn"
             ref="offboard_btn"
           >
-            Offboard (,)
+            Offboard (J)
           </button>
 
           <button
@@ -151,7 +183,7 @@ class Controls extends Component {
             id="rtl_btn"
             ref="rtl_btn"
           >
-            RTL (.)
+            RTL (K)
           </button>
 
           <button
@@ -165,7 +197,7 @@ class Controls extends Component {
             id="land_btn"
             ref="land_btn"
           >
-            Land (/)
+            Land (L)
           </button>
         </div>
       </div>
