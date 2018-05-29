@@ -240,8 +240,6 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
       mission_message_queue_receiver_.get_mission_manager()->PopCommand();
     }
 
-    ::std::cout << sleep_time_ << " / " << cmd.sleepcommand().time()
-                << ::std::endl;
   } else if (cmd.has_gotorawcommand()) {
     start_ = end_;
 

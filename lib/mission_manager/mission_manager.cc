@@ -28,7 +28,7 @@ void MissionManager::ClearCommands() {
 }
 
 bool MissionManager::CheckNewCommand() {
-  if(new_command_) {
+  if (new_command_) {
     new_command_ = false;
     return true;
   }
@@ -124,58 +124,53 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
       ::lib::mission_manager::WaypointCommand *waypoint_cmd =
           cmd->mutable_waypointcommand();
 
-      // Create a goto command to fly to the waypoint position.
-      {
-        ::lib::mission_manager::GotoCommand *goto_cmd =
-            sub_mission->add_commands()->mutable_gotocommand();
+      if (cmd->sub_mission().commands_size() == 0) {
+        // Create a goto command to fly to the waypoint position.
+        {
+          ::lib::mission_manager::GotoCommand *goto_cmd =
+              sub_mission->add_commands()->mutable_gotocommand();
 
-        ::lib::mission_manager::Position3D *goal =
-            new ::lib::mission_manager::Position3D(waypoint_cmd->goal());
-        ::std::cout << goal->latitude() << ", " << goal->longitude()
-                    << ::std::endl;
-        goto_cmd->set_allocated_goal(goal);
-      }
+          ::lib::mission_manager::Position3D *goal =
+              new ::lib::mission_manager::Position3D(waypoint_cmd->goal());
+          ::std::cout << "create waypoint " << goal->latitude() << ", "
+                      << goal->longitude() << ::std::endl;
+          goto_cmd->set_come_to_stop(true);
+          goto_cmd->set_allocated_goal(goal);
+        }
 
-      // Sleep at the waypoint position once the drone arrives there.
-      ::lib::mission_manager::Command *sleep_cmd_raw =
-          sub_mission->add_commands();
-      ::lib::mission_manager::SleepCommand *sleep_cmd =
-          sleep_cmd_raw->mutable_sleepcommand();
-      sleep_cmd->set_time(3);
-    } else if (cmd->has_surveycommand()) {
-      ::lib::mission_manager::WaypointCommand *waypoint_cmd =
-          cmd->mutable_waypointcommand();
-
-      // Create a goto command to fly to the waypoint position.
-      {
-        ::lib::mission_manager::GotoCommand *goto_cmd =
-            sub_mission->add_commands()->mutable_gotocommand();
-
-        ::lib::mission_manager::Position3D *goal =
-            new ::lib::mission_manager::Position3D(waypoint_cmd->goal());
-        ::std::cout << goal->latitude() << ", " << goal->longitude()
-                    << ::std::endl;
-        goto_cmd->set_allocated_goal(goal);
+        // Sleep at the waypoint position once the drone arrives there.
+        ::lib::mission_manager::Command *sleep_cmd_raw =
+            sub_mission->add_commands();
+        ::lib::mission_manager::SleepCommand *sleep_cmd =
+            sleep_cmd_raw->mutable_sleepcommand();
+        sleep_cmd->set_time(5);
       }
     } else if (cmd->has_bombdropcommand()) {
       ::lib::mission_manager::BombDropCommand *bomb_cmd =
           cmd->mutable_bombdropcommand();
 
-      // Create a waypoint command to go to the bomb drop location.
-      {
-        ::lib::mission_manager::WaypointCommand *waypoint_cmd =
-            sub_mission->add_commands()->mutable_waypointcommand();
+      if (cmd->sub_mission().commands_size() == 0) {
+        // Create a waypoint command to go to the bomb drop location.
+        {
+          ::lib::mission_manager::WaypointCommand *waypoint_cmd =
+              sub_mission->add_commands()->mutable_waypointcommand();
 
-        ::lib::mission_manager::Position3D *goal =
-            new ::lib::mission_manager::Position3D();
-        goal->set_latitude(bomb_cmd->drop_zone().latitude());
-        goal->set_longitude(bomb_cmd->drop_zone().latitude());
-        goal->set_altitude(20);
-        waypoint_cmd->set_allocated_goal(goal);
+          ::lib::mission_manager::Position3D *goal =
+              new ::lib::mission_manager::Position3D();
+          goal->set_latitude(bomb_cmd->drop_zone().latitude());
+          goal->set_longitude(bomb_cmd->drop_zone().longitude());
+          goal->set_altitude(20);
+          waypoint_cmd->set_allocated_goal(goal);
+
+          ::lib::mission_manager::SleepCommand *sleep_cmd =
+              sub_mission->add_commands()->mutable_sleepcommand();
+          sleep_cmd->set_time(5);
+        }
       }
     } else if (cmd->has_gotocommand()) {
       ::lib::mission_manager::GotoCommand *goto_cmd =
           cmd->mutable_gotocommand();
+
       if (cmd->sub_mission().commands_size() == 0) {
         // Fly directly towards the goal.
         ::lib::mission_manager::GotoRawCommand *goto_raw_cmd =
@@ -191,27 +186,29 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
         goto_raw_cmd->set_come_to_stop(goto_cmd->come_to_stop());
 
         // Disable random tree stuff for tests.
-//      Position3D end = {goto_cmd->goal().latitude(),
-//                        goto_cmd->goal().longitude(),
-//                        goto_cmd->goal().altitude()};
-//
-//      ::std::vector<Position3D> avoidance_path =
-//          rrt_avoidance_.Process(drone_position, end, obstacles_);
+        //      Position3D end = {goto_cmd->goal().latitude(),
+        //                        goto_cmd->goal().longitude(),
+        //                        goto_cmd->goal().altitude()};
+        //
+        //      ::std::vector<Position3D> avoidance_path =
+        //          rrt_avoidance_.Process(drone_position, end, obstacles_);
 
-//      // Add the path for avoiding obstacles as a list of raw goto commands,
-//      // which will not undergo additional lower-level rrt calculations by the
-//      // preprocessor.
-//      for (Position3D goto_step : avoidance_path) {
-//        ::lib::mission_manager::GotoRawCommand *goto_raw_cmd =
-//            sub_mission->add_commands()->mutable_gotorawcommand();
+        //      // Add the path for avoiding obstacles as a list of raw goto
+        //      commands,
+        //      // which will not undergo additional lower-level rrt
+        //      calculations by the
+        //      // preprocessor.
+        //      for (Position3D goto_step : avoidance_path) {
+        //        ::lib::mission_manager::GotoRawCommand *goto_raw_cmd =
+        //            sub_mission->add_commands()->mutable_gotorawcommand();
 
-//        ::lib::mission_manager::Position3D *goto_raw_goal =
-//            new ::lib::mission_manager::Position3D();
-//        goto_raw_goal->set_latitude(goto_step.latitude);
-//        goto_raw_goal->set_longitude(goto_step.longitude);
-//        goto_raw_goal->set_altitude(goto_cmd->goal().altitude());
-//        goto_raw_cmd->set_allocated_goal(goto_raw_goal);
-//      }
+        //        ::lib::mission_manager::Position3D *goto_raw_goal =
+        //            new ::lib::mission_manager::Position3D();
+        //        goto_raw_goal->set_latitude(goto_step.latitude);
+        //        goto_raw_goal->set_longitude(goto_step.longitude);
+        //        goto_raw_goal->set_altitude(goto_cmd->goal().altitude());
+        //        goto_raw_cmd->set_allocated_goal(goto_raw_goal);
+        //      }
       }
     }
 
