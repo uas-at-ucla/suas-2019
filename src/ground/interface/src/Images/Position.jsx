@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import GMapCache from '../Map/GMapCache';
 import map_style from '../Map/map_style.js';
 import './Position.css';
-
+import scriptLoader from 'react-async-script-loader';
 
 const google = window.google;
 
@@ -19,7 +19,21 @@ class Position extends Component {
   }
 
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.isScriptLoaded && !this.props.isScriptLoaded) { // load finished
+      if (nextProps.isScriptLoadSucceed) {
+        this.initMap();
+      }
+    }
+  }
+
   componentDidMount() {
+    if (google.maps || (this.props.isScriptLoaded && this.props.isScriptLoadSucceed)) {
+      this.initMap();
+    }
+  }
+
+  initMap() {
 
     // Default field to zoom into.
     let field = {
@@ -67,4 +81,6 @@ class Position extends Component {
   }
 }
 
-export default Position;
+export default scriptLoader(
+    ["https://maps.googleapis.com/maps/api/js?key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c&libraries=visualization"]
+)(Position)
