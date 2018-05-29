@@ -31,9 +31,9 @@ class Home extends Component {
         .nested;
 
       for (let proto_command in proto_commands) {
-        if (proto_command == 'Mission') break;
+        if (proto_command === 'Mission') break;
 
-        let fields = Array();
+        let fields = [];
         for (let field in proto_commands[proto_command].fields) {
           let field_info = proto_commands[proto_command].fields[field];
           if (field_info.type !== 'Mission') {
@@ -272,7 +272,7 @@ class Home extends Component {
 
       // add missing fields
       for(let field of this.command_types[type]) {
-        if (fields[field.name] == undefined) {
+        if (fields[field.name] === null) {
           fields[field.name] = defaults[type] ? defaults[type][field] || 
             this.add_field(type, field) : this.add_field(type, field);
         }

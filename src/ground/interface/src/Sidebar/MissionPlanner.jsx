@@ -248,7 +248,7 @@ class MissionPlanner extends Component {
                   }}
                   id={index+field}
                 />
-                <label className="form-check-label" for={index+field}>
+                <label className="form-check-label" htmlFor={index+field}>
                   {key}
                 </label>
               </div>
