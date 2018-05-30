@@ -32,7 +32,9 @@ FlightLoop::FlightLoop()
       got_sensors_(false),
       last_loop_(0),
       did_alarm_(false),
-      did_arm_(false) {
+      did_arm_(false),
+      last_bomb_drop_(0),
+      last_dslr_(0) {
   ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
   ::src::control::loops::flight_loop_queue.output.FetchLatest();
@@ -111,8 +113,7 @@ void FlightLoop::RunIteration() {
   if (!got_sensors_) {
     // Send out an alarm chirp to signal that the drone loop is running
     // successfully.
-    alarm_.AddAlert({0.02, 0.15});
-    alarm_.AddAlert({0.02, 0.15});
+    alarm_.AddAlert({0.01, 0.50});
   }
 
   got_sensors_ = true;
@@ -136,7 +137,7 @@ void FlightLoop::RunIteration() {
 
   auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
-  output->gimbal_angle = 20;
+  output->gimbal_angle = 50;
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
@@ -185,14 +186,13 @@ void FlightLoop::RunIteration() {
   }
 
   // Check if the Pixhawk just got armed, and send out a chirp if it did.
-  if(::src::control::loops::flight_loop_queue.sensors->armed && !did_arm_) {
+  if (::src::control::loops::flight_loop_queue.sensors->armed && !did_arm_) {
     did_arm_ = true;
 
-    alarm_.AddAlert({0.06, 0.15});
-    alarm_.AddAlert({0.06, 0.15});
+    alarm_.AddAlert({0.03, 0.25});
   }
 
-  if(!::src::control::loops::flight_loop_queue.sensors->armed) {
+  if (!::src::control::loops::flight_loop_queue.sensors->armed) {
     did_arm_ = false;
   }
 
@@ -279,33 +279,18 @@ void FlightLoop::RunIteration() {
       break;
 
     case IN_AIR: {
-      //    if (!run_mission) {
-      //      next_state = LANDING;
-      //      break;
-      //    }
-
-      //    // Check if altitude is below a safe threshold, which may indicate
-      //    that
-      //    // the autopilot was reset.
-      //    if
-      //    (::src::control::loops::flight_loop_queue.sensors->relative_altitude
-      //    >
-      //            2.2 &&
-      //        ::src::control::loops::flight_loop_queue.sensors->relative_altitude
-      //        <
-      //            2.5) {
-      //      next_state = TAKING_OFF;
-      //    } else if (::src::control::loops::flight_loop_queue.sensors
-      //                   ->relative_altitude < 2.2) {
-      //      next_state = LANDING;
-      //    }
-
       Position3D position = {
           ::src::control::loops::flight_loop_queue.sensors->latitude,
           ::src::control::loops::flight_loop_queue.sensors->longitude,
           ::src::control::loops::flight_loop_queue.sensors->relative_altitude};
 
-      pilot::PilotOutput flight_direction = pilot_.Calculate(position);
+      ::Eigen::Vector3d velocity(
+          ::src::control::loops::flight_loop_queue.sensors->velocity_x,
+          ::src::control::loops::flight_loop_queue.sensors->velocity_y,
+          ::src::control::loops::flight_loop_queue.sensors->velocity_z);
+
+      pilot::PilotOutput flight_direction =
+          pilot_.Calculate(position, velocity);
 
       output->velocity_x = flight_direction.flight_velocities.x;
       output->velocity_y = flight_direction.flight_velocities.y;
@@ -355,6 +340,25 @@ void FlightLoop::RunIteration() {
   state_ = next_state;
 
   output->alarm = alarm_.ShouldAlarm();
+
+  // Handle bomb drop.
+  last_bomb_drop_ = ::std::max(
+      last_bomb_drop_,
+      ::src::control::loops::flight_loop_queue.goal->trigger_bomb_drop);
+
+  output->bomb_drop = false;
+  if (last_bomb_drop_ <= current_time && last_bomb_drop_ + 5.0 > current_time) {
+    output->bomb_drop = true;
+  }
+
+  // Handle dslr.
+  output->dslr = false;
+  last_dslr_ = ::std::max(
+      last_dslr_, ::src::control::loops::flight_loop_queue.goal->trigger_dslr);
+  if (last_dslr_ <= current_time && last_dslr_ + 5.0 > current_time) {
+    output->dslr = true;
+  }
+
   LOG_LINE("Flight loop iteration OUTPUT..."
            << " VelocityX: " << output->velocity_x << " VelocityY: "
            << output->velocity_y << " VelocityZ: " << output->velocity_z);
