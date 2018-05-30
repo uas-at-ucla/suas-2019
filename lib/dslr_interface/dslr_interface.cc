@@ -5,9 +5,9 @@ namespace {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
 const char* kTakePhotosBashScriptLocation =
-    "/home/pi/suas_2018_deploy/take_photos_continuously.sh";
+    "/home/pi/suas_2018_deploy/scripts/take_photos_continuously.sh";
 const char* kDownloadPhotosBashScriptLocation =
-    "/home/pi/suas_2018_deploy/download_photos.sh";
+    "/home/pi/suas_2018_deploy/scripts/download_photos.sh";
 #else
 const char* kTakePhotosBashScriptLocation =
     "./lib/scripts/take_photos_continuously.sh";
@@ -57,7 +57,7 @@ void DSLRInterface::Run() {
 void DSLRInterface::RunIteration() {
   phased_loop_.SleepUntilNext();
 
-  State next_state;
+  State next_state = state_;
 
   double current_time =
       ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
