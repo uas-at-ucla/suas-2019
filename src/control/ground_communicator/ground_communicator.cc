@@ -281,6 +281,15 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
         sio::double_message::create((*output)->velocity_y);
     (*output_map)["velocity_z"] =
         sio::double_message::create((*output)->velocity_z);
+
+    (*output_map)["gimbal_angle"] =
+        sio::double_message::create((*output)->gimbal_angle);
+    (*output_map)["bomb_drop"] =
+        sio::bool_message::create((*output)->bomb_drop);
+    (*output_map)["alarm"] =
+        sio::bool_message::create((*output)->alarm);
+    (*output_map)["dslr"] =
+        sio::bool_message::create((*output)->dslr);
     //  (*output_map)["velocity_control"] =
     //      sio::bool_message::create((*output)->velocity_control);
     //  (*output_map)["arm"] = sio::bool_message::create((*output)->arm);
@@ -432,6 +441,7 @@ void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
     flight_loop_goal_message->trigger_failsafe = false;
     flight_loop_goal_message->trigger_throttle_cut = false;
     flight_loop_goal_message->trigger_alarm = 0;
+    flight_loop_goal_message->trigger_bomb_drop = 0;
   } else {
     // Copy past goal.
     flight_loop_goal_message->run_mission = (*last_goal)->trigger_alarm;
@@ -515,6 +525,16 @@ void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
       flight_loop_goal_message->trigger_alarm = time;
       LOG_LINE("GOT ALARM @ TIME " << time);
       break;
+
+    case BOMB_DROP:
+      flight_loop_goal_message->trigger_bomb_drop = time;
+      LOG_LINE("GOT BOMB DROP @ TIME " << time);
+      break;
+
+    case DSLR:
+      flight_loop_goal_message->trigger_dslr = time;
+      LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
+      break;
   }
 
   flight_loop_goal_message.Send();
@@ -556,6 +576,10 @@ void MissionReceiver::SetState(::std::string new_state_string) {
     new_state = DISARM;
   } else if (new_state_string == "ALARM") {
     new_state = ALARM;
+  } else if (new_state_string == "BOMB_DROP") {
+    new_state = BOMB_DROP;
+  } else if (new_state_string == "DSLR") {
+    new_state = DSLR;
   } else {
     ::std::cerr << "Unknown state: " << new_state_string << ::std::endl;
     return;

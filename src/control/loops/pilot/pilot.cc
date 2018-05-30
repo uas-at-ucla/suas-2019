@@ -6,7 +6,7 @@ namespace loops {
 namespace pilot {
 namespace {
 
-constexpr double kSpeed = 25.0;
+constexpr double kSpeed = 4.0;
 
 // Constant for how tight we want the ramp to be for re-centering the drone
 // on the straight-line path between start and end.
@@ -16,13 +16,19 @@ constexpr double kGotoRawReCenterRamp = 15;
 // trigger a continuation to the next command.
 constexpr double kGotoRawWaypointTolerance = 1.3;
 
-} // namespace
+}  // namespace
 
 Pilot::Pilot()
-    : thrust_pid_(1 / 100.0, kSpeed, 0, 0.3, 0.4, 0, 4), cmd_set_(false),
-      drone_position_set_(false), drone_position_semaphore_(1),
-      thread_(&Pilot::PreprocessorThread, this), sleep_time_(0),
-      come_to_stop_(true), come_to_stop_count_(0), setpoint_reset_(true),
+    : thrust_pid_(1 / 100.0, kSpeed, 0, 0.2, 0.4, 0, 4),
+      profile_(kSpeed, 5, 1 / 100.0),
+      cmd_set_(false),
+      position_set_(false),
+      position_semaphore_(1),
+      thread_(&Pilot::PreprocessorThread, this),
+      sleep_time_(0),
+      come_to_stop_(true),
+      come_to_stop_count_(0),
+      setpoint_reset_(true),
       met_goal_(false) {}
 
 Pilot::~Pilot() {
@@ -32,12 +38,12 @@ Pilot::~Pilot() {
 
 void Pilot::PreprocessorThread() {
   while (run_) {
-    if (drone_position_set_) {
-      drone_position_semaphore_.Wait();
-      Position3D drone_position = drone_position_;
-      drone_position_semaphore_.Notify();
+    if (position_set_) {
+      position_semaphore_.Wait();
+      Position3D position = position_;
+      position_semaphore_.Notify();
 
-      mission_message_queue_receiver_.RunPreprocessor(drone_position);
+      mission_message_queue_receiver_.RunPreprocessor(position);
     }
 
     usleep(1e4);
@@ -89,10 +95,10 @@ Vector3D Pilot::VelocityNavigator() {
   // flipped...
   ::Eigen::Vector3d drone_to_end_vector(
       GetDistance2D({0, 0, 0}, {1, 0, 0}) *
-          (end_.latitude - drone_position_.latitude),
+          (end_.latitude - position_.latitude),
       GetDistance2D({0, 0, 0}, {0, 1, 0}) *
-          (end_.longitude - drone_position_.longitude),
-      drone_position_.altitude - end_.altitude);
+          (end_.longitude - position_.longitude),
+      position_.altitude - end_.altitude);
 
   ::Eigen::Vector3d start_to_end_vector(
       GetDistance2D({0, 0, 0}, {1, 0, 0}) * (end_.latitude - start_.latitude),
@@ -119,12 +125,27 @@ Vector3D Pilot::VelocityNavigator() {
   // A vector for directing the drone towards its goal point while also
   // keeping it roughly close to a direct path between its start and end.
   double half_pipe_mix = ::std::min(1.0, ::std::pow(error_vector.norm(), 2));
+
+  ::Eigen::Vector3d drone_projection_on_path_unit_vector;
+  if (drone_projection_on_path_vector.norm() > 0) {
+    drone_projection_on_path_unit_vector =
+        drone_projection_on_path_vector /
+        drone_projection_on_path_vector.norm();
+  } else {
+    drone_projection_on_path_unit_vector = ::Eigen::Vector3d(0, 0, 0);
+  }
+
+  ::Eigen::Vector3d error_unit_vector;
+  if (error_vector.norm() > 0) {
+    error_unit_vector = error_vector / error_vector.norm();
+  } else {
+    error_vector = ::Eigen::Vector3d(0, 0, 0);
+  }
+
   ::Eigen::Vector3d flight_direction_half_pipe_vector =
-      ((drone_projection_on_path_vector /
-        ::std::max(1.0, drone_projection_on_path_vector.norm())) *
-           (1 - half_pipe_mix) +
-       (error_vector / ::std::max(1.0, error_vector.norm())) * half_pipe_mix) *
-      kSpeed;
+      drone_projection_on_path_unit_vector * (1 - half_pipe_mix) +
+      error_unit_vector * half_pipe_mix;
+  flight_direction_half_pipe_vector *= kSpeed;
 
   // A vector for directing the drone towards its goal point from all
   // directions.
@@ -148,6 +169,14 @@ Vector3D Pilot::VelocityNavigator() {
                               flight_direction_black_hole_vector * (1 - mix);
   } else {
     flight_direction_vector = flight_direction_half_pipe_vector;
+  }
+
+  // Apply profile.
+  flight_direction_vector = profile_.Calculate(flight_direction_vector);
+
+  // Prevent profiling windup.
+  if ((flight_direction_vector - current_physical_velocity_).norm() > 4) {
+    profile_.SetOutput(current_physical_velocity_);
   }
 
   // Convert from Eigen vectors to our code's internal Vector3D structure.
@@ -186,16 +215,16 @@ Vector3D Pilot::VelocityNavigator() {
 
 bool Pilot::MetGoal() { return met_goal_ && !setpoint_reset_; }
 
-PilotOutput Pilot::Calculate(Position3D drone_position) {
-  if (!drone_position_set_) {
-    start_ = drone_position;
-    end_ = drone_position;
+PilotOutput Pilot::Calculate(Position3D position, ::Eigen::Vector3d velocity) {
+  if (!position_set_) {
+    start_ = position;
+    end_ = position;
   }
 
-  drone_position_semaphore_.Wait();
-  drone_position_ = drone_position;
-  drone_position_set_ = true;
-  drone_position_semaphore_.Notify();
+  position_semaphore_.Wait();
+  position_ = position;
+  position_set_ = true;
+  position_semaphore_.Notify();
 
   ::lib::mission_manager::Command cmd =
       mission_message_queue_receiver_.get_mission_manager()
@@ -206,8 +235,9 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
   //                exactly the same?)
   come_to_stop_ = true;
 
+  bool first_run = !google::protobuf::util::MessageDifferencer::Equals(cmd, cmd_);
   if (cmd_set_) {
-    if (!google::protobuf::util::MessageDifferencer::Equals(cmd, cmd_)) {
+    if (first_run) {
       if (cmd.has_gotorawcommand()) {
         setpoint_reset_ = true;
       }
@@ -233,17 +263,17 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
       sleep_time_ = 0;
     } else {
       sleep_time_ +=
-          1 / 100.0; // TODO(comran): Loop speed should not be hard coded.
+          1 / 100.0;  // TODO(comran): Loop speed should not be hard coded.
     }
 
     if (sleep_time_ >= cmd.sleepcommand().time()) {
       mission_message_queue_receiver_.get_mission_manager()->PopCommand();
     }
 
-    ::std::cout << sleep_time_ << " / " << cmd.sleepcommand().time()
-                << ::std::endl;
   } else if (cmd.has_gotorawcommand()) {
-    start_ = end_;
+    if(first_run) {
+      start_ = end_;
+    }
 
     end_ = {cmd_.gotorawcommand().goal().latitude(),
             cmd_.gotorawcommand().goal().longitude(),
@@ -258,6 +288,8 @@ PilotOutput Pilot::Calculate(Position3D drone_position) {
     ::std::cout << "ERROR: Unknown command.\n";
   }
 
+  current_physical_velocity_ = velocity;
+
   Vector3D flight_direction = VelocityNavigator();
 
   return {flight_direction, bomb_drop};
@@ -267,7 +299,7 @@ void Pilot::SetMission(::lib::mission_manager::Mission mission) {
   mission_message_queue_receiver_.SetMission(mission);
 }
 
-} // namespace pilot
-} // namespace loops
-} // namespace control
-} // namespace src
+}  // namespace pilot
+}  // namespace loops
+}  // namespace control
+}  // namespace src
