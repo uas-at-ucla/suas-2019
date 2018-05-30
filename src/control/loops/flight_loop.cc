@@ -137,7 +137,7 @@ void FlightLoop::RunIteration() {
 
   auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
-  output->gimbal_angle = 50;
+  output->gimbal_angle = 0;
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
