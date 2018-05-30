@@ -9,13 +9,19 @@ const google = window.google;
 class Position extends Component {
   constructor(props) {
     super(props);
+    this.state = {};
   }
 
   render() {
 
     // This is photo name
     // use this to extract json id
-    console.log(this.props.photo);
+    /* console.log(this.props.photo);*/
+
+    /* if (this.state.location != null) {*/
+    /* console.log(this.state.location.lat);*/
+    /* console.log(this.state.location.lon);*/
+    /* }*/
 
     return (
       <div className="Position" ref="map"/>
@@ -31,7 +37,6 @@ class Position extends Component {
       lat: 34.175048,
       lng: -118.48159
     };
-
 
     this.map = new google.maps.Map(this.refs.map, {
       center: field,
@@ -66,7 +71,22 @@ class Position extends Component {
     );
 
     this.map.setMapTypeId('offline_gmap');
+  }
 
+  componentWillReceiveProps(nextProps) {
+    console.log(nextProps.lon);
+
+    let coords = {
+      lat: nextProps.lat,
+      lng: nextProps.lon
+    };
+
+    let marker_options = {
+      map: this.map,
+      position: coords
+    }
+
+    let marker = new google.maps.Marker(marker_options);
   }
 }
 
