@@ -18,8 +18,6 @@ void quit_handler(int sig) {
     copter_io_quit->handle_quit(sig);
   } catch (int error) {
   }
-
-  exit(0);
 }
 
 IO::IO()
@@ -33,7 +31,6 @@ IO::IO()
   copter_io_quit = &copter_io_;
   io_quit = this;
   signal(SIGINT, quit_handler);
-  signal(SIGTERM, quit_handler);
 }
 
 void IO::Run() {
@@ -44,12 +41,7 @@ void IO::Run() {
   ::std::thread autopilot_output_writer_thread(
       ::std::ref(autopilot_output_writer_));
 
-  // Wait forever.
-  select(0, nullptr, nullptr, nullptr, nullptr);
-
-  autopilot_sensor_reader_.Quit();
   autopilot_sensor_reader_thread.join();
-  autopilot_output_writer_.Quit();
   autopilot_output_writer_thread.join();
 
   copter_io_.stop();
@@ -57,6 +49,7 @@ void IO::Run() {
 
 void IO::Quit() {
   run_ = false;
+  autopilot_sensor_reader_.Quit();
   autopilot_output_writer_.Quit();
 }
 
@@ -143,28 +136,25 @@ void AutopilotSensorReader::RunIteration() {
   AutopilotState autopilot_state = UNKNOWN;
 
   switch (heartbeat.custom_mode) {
-    case 0b00000010000001000000000000000000:
-      autopilot_state = TAKEOFF;
-      break;
-    case 0b00000100000001000000000000000000:
-    case 0b00000011000001000000000000000000:
-      autopilot_state = HOLD;
-      break;
-    case 0b00000000000001100000000000000000:
-      autopilot_state = OFFBOARD;
-      break;
-    case 0b00000101000001000000000000000000:
-      autopilot_state = RTL;
-      break;
-    case 0b00000110000001000000000000000000:
-      autopilot_state = LAND;
-      break;
-    default:
-      autopilot_state = UNKNOWN;
+  case 0b00000010000001000000000000000000:
+    autopilot_state = TAKEOFF;
+    break;
+  case 0b00000100000001000000000000000000:
+  case 0b00000011000001000000000000000000:
+    autopilot_state = HOLD;
+    break;
+  case 0b00000000000001100000000000000000:
+    autopilot_state = OFFBOARD;
+    break;
+  case 0b00000101000001000000000000000000:
+    autopilot_state = RTL;
+    break;
+  case 0b00000110000001000000000000000000:
+    autopilot_state = LAND;
+    break;
+  default:
+    autopilot_state = UNKNOWN;
   }
-
-  // std::bitset<32> y(heartbeat.custom_mode);
-  // std::cout << y << ::std::endl;
 
   flight_loop_sensors_message->autopilot_state = autopilot_state;
 
@@ -181,17 +171,27 @@ AutopilotOutputWriter::AutopilotOutputWriter(
 
   // Gimbal IO setup.
   pigpio_ = pigpio_start(0, 0);
+  set_mode(pigpio_, 23, PI_OUTPUT);
   set_mode(pigpio_, 24, PI_OUTPUT);
 #endif
 }
 
 void AutopilotOutputWriter::Read() {
-  ::src::control::loops::flight_loop_queue.output.FetchAnother();
-  ::src::control::loops::flight_loop_queue.sensors.FetchAnother();
+  ::src::control::loops::flight_loop_queue.output.FetchLatest();
+  ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
 }
 
 void AutopilotOutputWriter::Write() {
+  if (!::src::control::loops::flight_loop_queue.output.get() ||
+      !::src::control::loops::flight_loop_queue.sensors.get()) {
+    return;
+  }
+
+  if(::src::control::loops::flight_loop_queue.output->dslr) {
+    dslr_interface_.TakePhotos();
+  }
+
   double current_time =
       ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
           ::std::chrono::system_clock::now().time_since_epoch())
@@ -208,9 +208,14 @@ void AutopilotOutputWriter::Write() {
   copter_io_->update_setpoint(sp);
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-  digitalWrite(
-      kAlarmGPIOPin,
-      ::src::control::loops::flight_loop_queue.output->alarm ? HIGH : LOW);
+  digitalWrite(kAlarmGPIOPin,
+               ::src::control::loops::flight_loop_queue.output->alarm ? HIGH
+                                                                      : LOW);
+
+  int bomb_drop_signal =
+      ::src::control::loops::flight_loop_queue.output->bomb_drop ? 1000 : 1600;
+
+  set_servo_pulsewidth(pigpio_, 23, bomb_drop_signal);
 
   int gimbal_angle =
       1500 +
@@ -291,7 +296,7 @@ void AutopilotOutputWriter::Write() {
 
 void AutopilotOutputWriter::Stop() {
   // No recent output queue messages received, so land drone.
-  copter_io_->Land();
+  dslr_interface_.Quit();
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Don't leave the alarm on after quitting code.
@@ -299,6 +304,6 @@ void AutopilotOutputWriter::Stop() {
 #endif
 }
 
-}  // namespace io
-}  // namespace control
-}  // namespace src
+} // namespace io
+} // namespace control
+} // namespace src

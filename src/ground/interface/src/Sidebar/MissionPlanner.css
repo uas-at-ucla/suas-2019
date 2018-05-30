@@ -146,6 +146,14 @@
   padding: 0px 5px 0px 5px;
 }
 
+.sub_mission td {
+  padding: 0px !important;
+}
+
+.sub_mission td td {
+  padding: 0px 5px 0px 5px !important;
+}
+
 #cmd_popup {
   z-index: 100;
   padding: 5px;
