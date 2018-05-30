@@ -408,7 +408,8 @@ void AutopilotInterface::set_message_period() {
 
 void AutopilotInterface::set_params() {
   set_param("MIS_TAKEOFF_ALT", 5.0);
-  set_param("MNT_MODE_OUT", 1.0);
+  set_param("MPC_XY_CRUISE", 10.0);
+  set_param("MPC_XY_VEL_MAX", 10.0);
 }
 
 void AutopilotInterface::set_param(const char id[], float value) {
@@ -429,6 +430,7 @@ void AutopilotInterface::set_param(const char id[], float value) {
 
 void AutopilotInterface::stop() {
   time_to_exit_ = true;
+  //pixhawk_->close();
 
   pthread_join(write_tid_, NULL);
 }
