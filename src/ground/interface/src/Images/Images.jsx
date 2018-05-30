@@ -96,16 +96,16 @@ class Images extends Component {
   }
 
 
-  showPosition = (photo) => {
+  showPosition(photo) {
     // todo: show position on map + highlight the border of selected photo
 
     let photo_name = photo.slice(0, photo.length-4);
     fetch('/testPhotos/' + photo_name + '.json')
-      .then(r => r.json())
-      .then(data => {
+      .then(res => res.json())
+      .then(location_data => {
         this.setState({
-          photo_lat: data.location.lat,
-          photo_lon: data.location.lon
+          photo_lat: location_data.location.lat,
+          photo_lon: location_data.location.lon
         });
       });
   }
