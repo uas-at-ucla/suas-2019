@@ -25,7 +25,12 @@ class App extends Component {
       stationary_obstacles: [],
       missions: [],
       followDrone: true,
-      metric: true
+      metric: true,
+      newImages: {
+        raw: [],
+        localized: [],
+        classified: []
+      }
     };
   }
 
@@ -139,10 +144,8 @@ class App extends Component {
       this.setState(newState);
     });
 
-    this.socket.on("image", data => {
-      this.setState({
-        testImage: data
-      });
+    this.socket.on("added_images", data => {
+      this.setState({newImages: data});
     });
 
     this.socket.on("initial_data", data => {
