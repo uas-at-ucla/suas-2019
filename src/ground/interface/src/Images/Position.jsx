@@ -4,12 +4,12 @@ import map_style from '../Map/map_style.js';
 import './Position.css';
 
 const google = window.google;
+var marker = null;
 
 // When a photo is selected, display its position
 class Position extends Component {
   constructor(props) {
     super(props);
-    this.state = {};
   }
 
   render() {
@@ -71,22 +71,30 @@ class Position extends Component {
     );
 
     this.map.setMapTypeId('offline_gmap');
+
+    // Declare a single marker
+    let coords = {
+      lat: 0,
+      lng: 0
+    };
+    let marker_options = {
+      map: this.map,
+      position: coords
+    };
+    marker = new google.maps.Marker(marker_options);
   }
 
+  // Update the marker posiiton
   componentWillReceiveProps(nextProps) {
     console.log(nextProps.lon);
-
     let coords = {
       lat: nextProps.lat,
       lng: nextProps.lon
     };
+    console.log(this.marker);
+    marker.setPosition(coords);
 
-    let marker_options = {
-      map: this.map,
-      position: coords
-    }
-
-    let marker = new google.maps.Marker(marker_options);
+    this.map.panTo(coords);
   }
 }
 
