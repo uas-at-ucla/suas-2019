@@ -15,7 +15,7 @@ class App extends Component {
     super(props);
 
     this.state = {
-      optionSelected: "Images", // Default is Control
+      optionSelected: "Control", // Default is Control
       droneState: "Offline",
       telemetry: null,
       interopBtnText: "Connect to Interop",
