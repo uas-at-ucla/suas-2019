@@ -5,7 +5,8 @@ namespace control {
 namespace io {
 
 LoopOutputHandler::LoopOutputHandler(::std::chrono::nanoseconds timeout)
-    : watchdog_(this, timeout) {}
+    : phased_loop_(::std::chrono::milliseconds(5),
+                   ::std::chrono::milliseconds(0)), watchdog_(this, timeout) {}
 
 void LoopOutputHandler::operator()() {
   ::std::thread watchdog_thread(::std::ref(watchdog_));
@@ -14,6 +15,8 @@ void LoopOutputHandler::operator()() {
     Read();
     watchdog_.Reset();
     Write();
+
+    phased_loop_.SleepUntilNext();
   }
 
   Stop();

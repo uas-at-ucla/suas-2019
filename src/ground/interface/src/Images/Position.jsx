@@ -4,7 +4,7 @@ import map_style from '../Map/map_style.js';
 import './Position.css';
 
 const google = window.google;
-var marker = null;
+var photo_position = null;
 
 // When a photo is selected, display its position
 class Position extends Component {
@@ -38,9 +38,9 @@ class Position extends Component {
       lng: -118.48159
     };
 
-    this.map = new google.maps.Map(this.refs.map, {
+    this.map_photo = new google.maps.Map(this.refs.map, {
       center: field,
-      zoom: 17,
+      zoom: 19,
       tilt: 0,
       disableDefaultUI: true,
       scrollwheel: true,
@@ -55,7 +55,7 @@ class Position extends Component {
     this.gmap_cache = new GMapCache();
     let this_local = this;
 
-    this.map.mapTypes.set(
+    this.map_photo.mapTypes.set(
       'offline_gmap',
       new google.maps.ImageMapType({
         getTileUrl: function(coord, zoom) {
@@ -70,31 +70,29 @@ class Position extends Component {
       })
     );
 
-    this.map.setMapTypeId('offline_gmap');
+    this.map_photo.setMapTypeId('offline_gmap');
 
     // Declare a single marker
-    let coords = {
+    let placement = {
       lat: 0,
       lng: 0
     };
     let marker_options = {
-      map: this.map,
-      position: coords
+      map: this.map_photo,
+      position: placement
     };
-    marker = new google.maps.Marker(marker_options);
+    photo_position = new google.maps.Marker(marker_options);
   }
 
   // Update the marker posiiton
   componentWillReceiveProps(nextProps) {
-    console.log(nextProps.lon);
-    let coords = {
+    let placement = {
       lat: nextProps.lat,
       lng: nextProps.lon
     };
-    console.log(this.marker);
-    marker.setPosition(coords);
+    photo_position.setPosition(placement);
 
-    this.map.panTo(coords);
+    this.map_photo.panTo(placement);
   }
 }
 
