@@ -66,6 +66,8 @@ if __name__ == '__main__':
     print_title("Uploading binaries to drone... ")
     upload_to_drone('lib/scripts/start_drone_code.sh')
     upload_to_drone('lib/scripts/run_mavproxy.sh')
+    upload_to_drone('lib/scripts/download_photos.sh')
+    upload_to_drone('lib/scripts/take_photos_continuously.sh')
     upload_bin_to_drone('aos/linux_code/core')
     upload_bin_to_drone('src/control/loops/flight_loop')
     upload_bin_to_drone('src/control/io/io')
