@@ -172,7 +172,7 @@ class Map extends Component {
     });
 
     this.map.addListener('dblclick', e => {
-      this.add_goto_command(e.latLng.lat(), e.latLng.lng(), 30);
+      this.add_goto_command(e.latLng.lat(), e.latLng.lng(), null);
     });
 
     this.registerStateDepFunction(
@@ -643,6 +643,20 @@ class Map extends Component {
   };
 
   add_goto_command(lat, lng, alt, name, mission_point, interop_object_name) {
+    //get recent altitude
+    if (alt == null) {
+      alt = 30
+      for (let i = this.props.homeState.commands.length-1; i >= 0; i--) {
+        let type = this.props.homeState.commands[i].type;
+        let fields = this.props.homeState.commands[i][type];
+        let pos = this.get_command_pos(fields, type);
+        if (pos && pos.altitude != null) {
+          alt = pos.altitude;
+          break;
+        }
+      }
+    }
+
     let command = this.props.makeCommand('GotoCommand', {
       goal: {
         latitude: lat,
@@ -1175,7 +1189,7 @@ class Map extends Component {
             this.add_goto_command(
               coords.lat,
               coords.lng,
-              coords.alt || 30,
+              coords.alt || null,
               title,
               mission_point,
               id
