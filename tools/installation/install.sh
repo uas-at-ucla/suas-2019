@@ -87,7 +87,7 @@ then
     sudo apt-get -qq install libc++abi-dev;
     echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list;
     curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-    sudo apt-get update && sudo apt-get -y -qq install bazel clang-3.9 libc++-dev clang-format-3.5;
+    sudo apt-get update && sudo apt-get -y -qq install bazel clang-3.9 libc++-dev clang-format-3.9;
     sudo apt-get -y -qq install ruby;
 #   for i in $(seq 1 3);
 #   do
