@@ -40,8 +40,20 @@ moving_obstacles = None
 
 commands = []
 
-telemetry_num = 0;
-drone_loop_num = 0;
+all_images = {
+    'raw': [],
+    'localized': [],
+    'classified': []
+}
+new_images = {
+    'raw': [],
+    'localized': [],
+    'classified': []
+}
+manual_cropped_images = [] # list of ids of raw images that were manually cropped
+
+telemetry_num = 0
+drone_loop_num = 0
 
 processes = process_manager.ProcessManager()
 processes.run_command("protoc -I. --proto_path=../../lib/mission_manager/ " \
@@ -80,11 +92,13 @@ def connect(room):
         if drone_sid:
             data['drone_connected'] = True
 
+        data['all_images'] = all_images
+
         flask_socketio.emit('initial_data', data)
 
     elif room == 'drone':
-        drone_sid = request.sid;
-        drone_ip = request.remote_addr;
+        drone_sid = request.sid
+        drone_ip = request.remote_addr
 
         data = object_to_dict({ \
             'stationary_obstacles': stationary_obstacles, \
@@ -142,6 +156,11 @@ def send_ping_result(data):
     flask_socketio.emit('drone_ping', data, \
         room='frontend')
 
+@ground_socketio_server.on('added_images')
+def send_added_images(data):
+    flask_socketio.emit('added_images', data, \
+        room='frontend')
+
 
 @ground_socketio_server.on('execute_commands')
 def send_commands(data):
@@ -182,8 +201,8 @@ def interop_disconnected():
 def telemetry(received_telemetry):
     global telemetry_num
     global drone_loop_num
-    passed_messages = received_telemetry['message_index'] - telemetry_num;
-    passed_loops = received_telemetry['loop_index'] - drone_loop_num;
+    passed_messages = received_telemetry['message_index'] - telemetry_num
+    passed_loops = received_telemetry['loop_index'] - drone_loop_num
 
     if passed_messages > 1:
         print "Lost " + str(passed_messages - 1) + " telemetry messages!"
@@ -347,9 +366,54 @@ def ping_drone():
             output = os.popen("ping -c 1 " + drone_ip).readlines()
             if len(output) >= 6:
                 ms = output[5].split('= ')[1].split('/')[0]
-                interface_client.emit('drone_ping', {'ms': ms});
+                interface_client.emit('drone_ping', {'ms': ms})
             else:
-                interface_client.emit('drone_ping', {'ms': None});
+                interface_client.emit('drone_ping', {'ms': None})
+
+
+def get_all_images(*args):
+    new_images['raw'] = args[0]['raw']
+    new_images['localized'] = args[0]['localized']
+    new_images['classified'] = args[0]['classified']
+
+
+def new_raw(*args):
+    new_images['raw'] += args[0]
+    
+
+def new_localized(*args):
+    new_images['localized'] += args[0]
+
+
+def new_classified(*args):
+    new_images['classified'] += args[0]
+
+
+def images_backend_connected():
+    images_client.emit('get_all_images')
+
+
+def connect_to_images_backend():
+    images_client = socketIO_client.SocketIO('0.0.0.0', 8099)
+    images_client.on('connect', images_backend_connected)
+    images_client.on('all_images', get_all_images)
+    images_client.on('new_raw', new_raw)
+    images_client.on('new_localized', new_localized)
+    images_client.on('new_classified', new_classified)
+    images_client.wait()
+
+
+def send_images_to_frontend():
+    interface_client = socketIO_client.SocketIO('0.0.0.0', 8081)
+    while True:
+        time.sleep(1.5)
+        interface_client.emit('added_images', new_images)
+        all_images['raw'] +=  new_images['raw']
+        all_images['localized'] +=  new_images['localized']
+        all_images['classified'] +=  new_images['classified']
+        new_images['raw'] = []
+        new_images['localized'] = []
+        new_images['classified'] = []
 
 
 if __name__ == '__main__':
@@ -376,5 +440,13 @@ if __name__ == '__main__':
     t_ping = threading.Thread(target=ping_drone)
     t_ping.daemon = True
     t_ping.start()
+
+    # t_image_socket = threading.Thread(target=connect_to_images_backend)
+    # t_image_socket.daemon = True
+    # t_image_socket.start()
+
+    # t_image_refresh = threading.Thread(target=send_images_to_frontend)
+    # t_image_refresh.daemon = True
+    # t_image_refresh.start()
 
     ground_socketio_server.run(app, '0.0.0.0', port=8081)
