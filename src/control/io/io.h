@@ -7,6 +7,7 @@
 #include "src/control/io/loop_input_handler.h"
 
 #include <atomic>
+#include <unistd.h>
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
 #include <wiringPi.h>
@@ -15,6 +16,8 @@
 
 #include "src/control/loops/flight_loop.q.h"
 #include "aos/common/util/phased_loop.h"
+
+#include "lib/dslr_interface/dslr_interface.h"
 
 namespace src {
 namespace control {
@@ -58,7 +61,12 @@ class AutopilotOutputWriter : public LoopOutputHandler {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   int pigpio_;
+
+  int camera_script_pid_;
+  int camera_script_run_;
 #endif
+
+  ::lib::DSLRInterface dslr_interface_;
 
   autopilot_interface::AutopilotInterface *copter_io_;
 

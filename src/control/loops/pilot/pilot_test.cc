@@ -70,7 +70,9 @@ TEST_F(PilotTest, ReachesGoalTest) {
 
   pilot_.SetMission(mission);
 
-  double runtime_in_seconds = 10;
+  double runtime_in_seconds = 25;
+
+  ::Eigen::Vector3d current_velocities(0, 0, 0);
 
   for (int i = 0; i < runtime_in_seconds * plant.GetLoopFrequency() &&
                   !CheckMetGoal(plant.GetPosition(), goal);
@@ -79,10 +81,15 @@ TEST_F(PilotTest, ReachesGoalTest) {
     ::std::cout << "drone at (" << plant.GetPosition().latitude << ", "
                 << plant.GetPosition().longitude << ")\n";
 
-    pilot::PilotOutput flight_direction = pilot_.Calculate(plant.GetPosition());
+    pilot::PilotOutput flight_direction =
+        pilot_.Calculate(plant.GetPosition(), current_velocities);
     ::std::cout << flight_direction.flight_velocities.x << ", "
                 << flight_direction.flight_velocities.y << ", "
                 << flight_direction.flight_velocities.z << ::std::endl;
+
+    current_velocities << flight_direction.flight_velocities.x,
+        flight_direction.flight_velocities.y,
+        flight_direction.flight_velocities.z;
 
     plant.MoveDrone(flight_direction.flight_velocities);
   }
