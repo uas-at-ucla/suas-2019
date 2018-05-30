@@ -14,28 +14,26 @@ class Images extends Component {
       doubleClicked: false,
       currentPhoto: null,
       allImages: [],
+      photo_lat: null,
+      photo_lon: null
     }
     Object.keys(this.images).map((photo) => {
       this.state.allImages.push(photo);
     })
   }
-/*
-1) double click raw image- open up to modal for cropping
-2) do shit with image
-3) save segmented images
-*/
+
   render() {
     return (
       <div className="Images">
         <div className="row">
-          <div className="col-md-4 col-sm-4 col-xs-4 text-center">
+          <div className="col-md-4 col-sm-4 col-xs-4 text-center"
+               id="raw-images">
             <h3>Raw Images</h3>
             <div id="Raw-Images-List">
               {this.renderRawImages()}
               {
                 this.state.doubleClicked ? <ModalComponent image={this.state.currentPhoto}/> : null
-                /* todo: Howard+Ryan - double-click image to pop-up photo editor
-                  make modal into a new file */}
+              }
             </div>
           </div>
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
@@ -44,14 +42,8 @@ class Images extends Component {
           </div>
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
             <h3>Position of Photo Taken</h3>
-            {/* todo: Ivan - Google Maps insert here
-              *Ben sends me JSON data of photo file name with
-                latitude and longitude position - we get to choose
-                the JSON data for Comran to setup for us
-              *Every photo click will display the position on the map
-              *Props must be passed down here
-              */}
-            <Position photo={this.state.currentPhoto}/>
+            <Position lon={this.state.photo_lon}
+                      lat={this.state.photo_lat}/>
           </div>
         </div>
 
@@ -106,10 +98,16 @@ class Images extends Component {
 
   showPosition = (photo) => {
     // todo: show position on map + highlight the border of selected photo
-    this.setState( {
-      currentPhoto: photo
-    });
-    //console.log(photo);
+
+    let photo_name = photo.slice(0, photo.length-4);
+    fetch('/testPhotos/' + photo_name + '.json')
+      .then(r => r.json())
+      .then(data => {
+        this.setState({
+          photo_lat: data.location.lat,
+          photo_lon: data.location.lon
+        });
+      });
   }
 
   submitToInterop = () => {
