@@ -123,8 +123,8 @@ def connect_to_interop(data):
 
     if USE_INTEROP:
         try:
-            interop_username = 'testuser'
-            interop_password = 'testpass'
+            interop_username = data[5]
+            interop_password = data[6]
             interop_url = 'http://' + str(data[0]) + '.' + str(data[1]) + \
             '.' + str(data[2]) + '.' + str(data[3]) + ':' + str(data[4])
             interop_client = interop.AsyncClient( \
