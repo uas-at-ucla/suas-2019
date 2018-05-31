@@ -40,7 +40,7 @@ class ImgManager:
     def gen_id():
         nid = base64.urlsafe_b64encode(uuid.uuid4().bytes).decode('utf-8')[:-2]
         if nid[0] == '-':
-            nid[0] = '0'
+            nid = '0' + nid[1:]
         return nid
 
     def get_prop(self, img_id, prop, attempts=1):
