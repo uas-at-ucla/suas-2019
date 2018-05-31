@@ -136,24 +136,24 @@ void AutopilotSensorReader::RunIteration() {
   AutopilotState autopilot_state = UNKNOWN;
 
   switch (heartbeat.custom_mode) {
-  case 0b00000010000001000000000000000000:
-    autopilot_state = TAKEOFF;
-    break;
-  case 0b00000100000001000000000000000000:
-  case 0b00000011000001000000000000000000:
-    autopilot_state = HOLD;
-    break;
-  case 0b00000000000001100000000000000000:
-    autopilot_state = OFFBOARD;
-    break;
-  case 0b00000101000001000000000000000000:
-    autopilot_state = RTL;
-    break;
-  case 0b00000110000001000000000000000000:
-    autopilot_state = LAND;
-    break;
-  default:
-    autopilot_state = UNKNOWN;
+    case 0b00000010000001000000000000000000:
+      autopilot_state = TAKEOFF;
+      break;
+    case 0b00000100000001000000000000000000:
+    case 0b00000011000001000000000000000000:
+      autopilot_state = HOLD;
+      break;
+    case 0b00000000000001100000000000000000:
+      autopilot_state = OFFBOARD;
+      break;
+    case 0b00000101000001000000000000000000:
+      autopilot_state = RTL;
+      break;
+    case 0b00000110000001000000000000000000:
+      autopilot_state = LAND;
+      break;
+    default:
+      autopilot_state = UNKNOWN;
   }
 
   flight_loop_sensors_message->autopilot_state = autopilot_state;
@@ -188,7 +188,7 @@ void AutopilotOutputWriter::Write() {
     return;
   }
 
-  if(::src::control::loops::flight_loop_queue.output->dslr) {
+  if (::src::control::loops::flight_loop_queue.output->dslr) {
     dslr_interface_.TakePhotos();
   }
 
@@ -209,8 +209,9 @@ void AutopilotOutputWriter::Write() {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   digitalWrite(kAlarmGPIOPin,
-               ::src::control::loops::flight_loop_queue.output->alarm ? HIGH
-                                                                      : LOW);
+               ::src::control::loops::flight_loop_queue.output->alarm
+                   ? HIGH
+                   : LOW);
 
   int bomb_drop_signal =
       ::src::control::loops::flight_loop_queue.output->bomb_drop ? 1000 : 1600;
@@ -218,7 +219,7 @@ void AutopilotOutputWriter::Write() {
   set_servo_pulsewidth(pigpio_, 23, bomb_drop_signal);
 
   int gimbal_angle =
-      1500 +
+      1000 +
       ::src::control::loops::flight_loop_queue.output->gimbal_angle / 90 * 500;
   set_servo_pulsewidth(pigpio_, 24, gimbal_angle);
 #endif
@@ -295,15 +296,15 @@ void AutopilotOutputWriter::Write() {
 }
 
 void AutopilotOutputWriter::Stop() {
-  // No recent output queue messages received, so land drone.
-  dslr_interface_.Quit();
-
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Don't leave the alarm on after quitting code.
   digitalWrite(kAlarmGPIOPin, LOW);
 #endif
+
+  // No recent output queue messages received, so land drone.
+  dslr_interface_.Quit();
 }
 
-} // namespace io
-} // namespace control
-} // namespace src
+}  // namespace io
+}  // namespace control
+}  // namespace src
