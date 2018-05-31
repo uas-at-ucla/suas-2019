@@ -8,18 +8,20 @@ class Controls extends Component {
     'KeyZ': 'run_mission_btn',
     'KeyX': 'pause_mission_btn',
     'KeyC': 'alarm_btn',
-    'KeyV': 'arm_btn',
-    'KeyB': 'disarm_btn',
-    'KeyN': 'take_off_btn',
-    'KeyM': 'hold_btn',
-    'Comma': 'offboard_btn',
-    'Period': 'rtl_btn',
-    'Slash': 'land_btn'
+    'KeyV': 'bomb_drop_btn',
+    'KeyB': 'dslr_btn',
+    'KeyD': 'arm_btn',
+    'KeyF': 'disarm_btn',
+    'KeyG': 'take_off_btn',
+    'KeyH': 'hold_btn',
+    'KeyJ': 'offboard_btn',
+    'KeyK': 'rtl_btn',
+    'KeyL': 'land_btn'
   }
 
   componentDidMount() {
     document.addEventListener("keypress", (e) => {
-      if (e.altKey && e.shiftKey && this.keymap[e.code]) {
+      if (e.altKey && e.shiftKey && e.ctrlKey && this.keymap[e.code]) {
         let button = this.refs[this.keymap[e.code]];
         button.click();
         if (button.tagName === 'BUTTON') {
@@ -34,7 +36,12 @@ class Controls extends Component {
       <div id="controls" className="text-white">
         <div id="normalControls" className="card">
           <button
-            className="btn btn-outline-secondary"
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.status.state == "IN_AIR"
+                ? 'btn btn-success'
+                : 'btn btn-outline-secondary'
+            }
             onClick={this.sendRunMissionCommand}
             id="run_mission_btn"
             ref="run_mission_btn"
@@ -52,19 +59,52 @@ class Controls extends Component {
           </button>
 
           <button
-            className="btn btn-outline-secondary"
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.output.alarm
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
             onClick={() => this.setDroneState('ALARM')}
             id="alarm_btn"
             ref="alarm_btn"
           >
             Beepy (C)
           </button>
+
+          <button
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.output.bomb_drop
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('BOMB_DROP')}
+            id="bomb_drop_btn"
+            ref="bomb_drop_btn"
+          >
+            Droppy (V)
+          </button>
+
+          <button
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.output.dslr
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('DSLR')}
+            id="dslr_btn"
+            ref="dslr_btn"
+          >
+            DSLR (B)
+          </button>
         </div>
 
         <div id="stateControls" className="card">
           <PromptButton
             className={
-              this.props.appState.telemetry != undefined &&
+              this.props.appState.telemetry !== null &&
               this.props.appState.telemetry.sensors.armed
                 ? 'btn btn-success'
                 : 'btn btn-outline-secondary'
@@ -73,12 +113,12 @@ class Controls extends Component {
             id="arm_btn"
             ref="arm_btn"
           >
-            Arm (V)
+            Arm (D)
           </PromptButton>
 
           <PromptButton
             className={
-              this.props.appState.telemetry != undefined &&
+              this.props.appState.telemetry !== null &&
               !this.props.appState.telemetry.sensors.armed
                 ? 'btn btn-danger'
                 : 'btn btn-outline-secondary'
@@ -87,13 +127,13 @@ class Controls extends Component {
             id="disarm_btn"
             ref="disarm_btn"
           >
-            Disarm (B)
+            Disarm (F)
           </PromptButton>
 
-          <PromptButton
+          <button
             className={
-              this.props.appState.telemetry != undefined &&
-              this.props.appState.telemetry.sensors.autopilot_state == "TAKEOFF"
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.autopilot_state === "TAKEOFF"
                 ? 'btn btn-primary'
                 : 'btn btn-outline-secondary'
             }
@@ -101,13 +141,13 @@ class Controls extends Component {
             id="take_off_btn"
             ref="take_off_btn"
           >
-            Take Off (N)
-          </PromptButton>
+            Take Off (G)
+          </button>
 
-          <PromptButton
+          <button
             className={
-              this.props.appState.telemetry != undefined &&
-              this.props.appState.telemetry.sensors.autopilot_state == "HOLD"
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.autopilot_state === "HOLD"
                 ? 'btn btn-primary'
                 : 'btn btn-outline-secondary'
             }
@@ -115,13 +155,13 @@ class Controls extends Component {
             id="hold_btn"
             ref="hold_btn"
           >
-            Hold (M)
-          </PromptButton>
+            Hold (H)
+          </button>
 
-          <PromptButton
+          <button
             className={
-              this.props.appState.telemetry != undefined &&
-              this.props.appState.telemetry.sensors.autopilot_state == "OFFBOARD"
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.autopilot_state === "OFFBOARD"
                 ? 'btn btn-primary'
                 : 'btn btn-outline-secondary'
             }
@@ -129,13 +169,13 @@ class Controls extends Component {
             id="offboard_btn"
             ref="offboard_btn"
           >
-            Offboard (&lt;)
-          </PromptButton>
+            Offboard (J)
+          </button>
 
-          <PromptButton
+          <button
             className={
-              this.props.appState.telemetry != undefined &&
-              this.props.appState.telemetry.sensors.autopilot_state == "RTL"
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.autopilot_state === "RTL"
                 ? 'btn btn-primary'
                 : 'btn btn-outline-secondary'
             }
@@ -143,13 +183,13 @@ class Controls extends Component {
             id="rtl_btn"
             ref="rtl_btn"
           >
-            RTL (&gt;)
-          </PromptButton>
+            RTL (K)
+          </button>
 
-          <PromptButton
+          <button
             className={
-              this.props.appState.telemetry != undefined &&
-              this.props.appState.telemetry.sensors.autopilot_state == "LAND"
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.autopilot_state === "LAND"
                 ? 'btn btn-primary'
                 : 'btn btn-outline-secondary'
             }
@@ -157,8 +197,8 @@ class Controls extends Component {
             id="land_btn"
             ref="land_btn"
           >
-            Land (?)
-          </PromptButton>
+            Land (L)
+          </button>
         </div>
       </div>
     );
@@ -211,7 +251,7 @@ class Controls extends Component {
     }
 
     // Deal with the remaining bytes and padding
-    if (byteRemainder == 1) {
+    if (byteRemainder === 1) {
       chunk = bytes[mainLength];
 
       a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
@@ -220,7 +260,7 @@ class Controls extends Component {
       b = (chunk & 3) << 4; // 3   = 2^2 - 1
 
       base64 += encodings[a] + encodings[b] + '==';
-    } else if (byteRemainder == 2) {
+    } else if (byteRemainder === 2) {
       chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1];
 
       a = (chunk & 64512) >> 10; // 64512 = (2^6 - 1) << 10

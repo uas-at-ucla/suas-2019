@@ -160,6 +160,27 @@ new_git_repository(
   build_file = "lib/third_party/pigpio.BUILD",
 )
 
+new_git_repository(
+  name = "libgphoto2",
+  commit = "a9f979459f0a64ff356318cd48b6f5b817850ec5",
+  remote = "https://github.com/uas-at-ucla/libgphoto2.git",
+  build_file = "lib/third_party/libgphoto2.BUILD",
+)
+
+new_git_repository(
+  name = "libexif",
+  commit = "3cc93d33d4cb11899b986cc15fa9e8ec9cc7a9a1",
+  remote = "https://github.com/libexif/libexif.git",
+  build_file = "lib/third_party/libexif.BUILD",
+)
+
+new_git_repository(
+  name = "gphoto2pp",
+  commit = "da6db6f79edc4291f7a5ff38d825b8f3102d6270",
+  remote = "https://github.com/maldworth/gphoto2pp.git",
+  build_file = "lib/third_party/gphoto2pp.BUILD",
+)
+
 new_local_repository(
     name = "python_linux",
     path = "/usr",
