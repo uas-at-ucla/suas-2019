@@ -71,7 +71,7 @@ DEFAULT_REMOTE_DIR = DEFAULT_DATA_DIR
 DEFAULT_VSN_IP = DEFAULT_SRV_IP
 DEFAULT_VSN_SRV = DEFAULT_SRV_IP + ':' + str(DEFAULT_SRV_PORT)
 DEFAULT_THREADS = 1
-DEFAULT_AUCTION_TIMEOUT = 1
+DEFAULT_AUCTION_TIMEOUT = 0.3
 MAX_THREADS = 20
 
 # Yolo Defaults
@@ -226,11 +226,17 @@ def receive_bid(json):
 def process_image(json, attempts=1):
     if verbose:
         print('process_image request made')
+
     # Create a new image info file
-    img_info = {
-        'id': ImgManager.gen_id(),
-        'time_gen': time.time(),
-    }
+    img_info = {'time_gen': time.time()}
+    manual_id = None
+    try:
+        img_info['id'] = json['img_id']
+        manual_id = True
+    except KeyError:
+        img_info['id'] = ImgManager.gen_id()
+        manual_id = False
+
     # TODO custom data dir
     img_inc_path = os.path.join(DEFAULT_DATA_DIR, img_info['id'])
 
@@ -238,8 +244,15 @@ def process_image(json, attempts=1):
         with open(img_inc_path + '.json', 'x') as f:
             json_module.dump(img_info, f)
     except FileExistsError as err:
+        if manual_id:
+            print('Manually Selected ID already exists: "{}"'.format(
+                img_info['id']))
+            return
         if attempts <= 0:
-            raise err  # what are the chances of two collisions in a row?
+            print(
+                'Process Image Error: Double image id collision for "{}"\n What are the odds? You should by a lottery ticket.'.
+                format(img_info['id']))
+            return
         # try again with a random image
         process_image(json, attempts - 1)
         return
@@ -271,7 +284,6 @@ def process_image(json, attempts=1):
     })
     global img_count
     img_count += 1
-
 
 # Intermediate step
 @vision_socketio_server.on('download_complete')
@@ -314,35 +326,50 @@ def download_snipped(json):
     img_id = json['img_id']
     download_dir = json['download_dir']
     print("Telling rsync client to download snipped image")
-    for ext in ('.jpg', '.json'):
-        server_task_queue.put({
-            'type': 'auction',
-            'event_name': 'rsync',
-            'args': {
-                'prev': {
-                    'event_name': 'snipped',
-                    'json': json
-                },
-                'next': [
-                    {
-                        'event_name': 'classify_shape',
-                        'json': {
-                            'img_id': json['img_id']
-                        }
-                    },
-                    {
-                        'event_name': 'classify_letter',
-                        'json': {
-                            'img_id': json['img_id']
-                        }
+    # WARNING do not combine these using a for loop, otherwise duplicate next tasks will be sent
+    server_task_queue.put({
+        'type': 'auction',
+        'event_name': 'rsync',
+        'args': {
+            'prev': {
+                'event_name': 'snipped',
+                'json': json
+            },
+            'next': [
+                {
+                    'event_name': 'classify_shape',
+                    'json': {
+                        'img_id': json['img_id']
                     }
-                ],
-                'user': SNIPPER_USER,
-                'addr': SNIPPER_IP,
-                'img_remote_src': os.path.join(download_dir, img_id + ext),
-                'img_local_dest': os.path.join(DEFAULT_DATA_DIR, img_id + ext)
-            }
-        })
+                },
+                {
+                    'event_name': 'classify_letter',
+                    'json': {
+                        'img_id': json['img_id']
+                    }
+                }
+            ],
+            'user': SNIPPER_USER,
+            'addr': SNIPPER_IP,
+            'img_remote_src': os.path.join(download_dir, img_id + '.jpg'),
+            'img_local_dest': os.path.join(DEFAULT_DATA_DIR, img_id + '.jpg')
+        }
+    })
+    server_task_queue.put({
+        'type': 'auction',
+        'event_name': 'rsync',
+        'args': {
+            'prev': {
+                'event_name': 'snipped',
+                'json': json
+            },
+            'next': [],
+            'user': SNIPPER_USER,
+            'addr': SNIPPER_IP,
+            'img_remote_src': os.path.join(download_dir, img_id + '.json'),
+            'img_local_dest': os.path.join(DEFAULT_DATA_DIR, img_id + '.json')
+        }
+    })
 
 
 #@vision_socketio_server.on('classify')
@@ -366,7 +393,13 @@ def download_snipped(json):
 @vision_socketio_server.on('classified')
 def record_class(json):
     class_type = json['type']
-    server_img_manager.set_prop(json['img_id'], class_type, json[class_type])
+    img_id = json['img_id']
+    server_img_manager.set_prop(img_id, class_type, json[class_type])
+    for check_class in ('shape', 'letter'):
+        if server_img_manager.get_prop(img_id, check_class) is None:
+            return
+    # if it gets to this point without returning, then everything is done
+    vision_socketio_server.emit('image_processed', {'img_id': img_id})
 
 
 # TODO handle autodownloading images as needed
@@ -634,7 +667,8 @@ class SnipperWorker(ClientWorker):
                         'lng': None
                     }
                 })
-
+            if verbose:
+                print('Snipped {} -> {}'.format(src_img_id, img_id))
             vision_client.emit('snipped', {
                 'img_id': img_id,
                 'download_dir': self.data_dir
@@ -652,7 +686,7 @@ def snipper_worker(args):
 def classifier_worker(args):
     if args.classifier_type == 'shape':
         shape_classifier_worker(args)
-    if args.classifier_type == 'letter':
+    elif args.classifier_type == 'letter':
         letter_classifier_worker(args)
 
 
@@ -681,6 +715,8 @@ class ShapeClassifierWorker(ClientWorker):
         # Keras w/ Tensorflow backend bug workaround
         with self.graph.as_default():
             prediction = vision_classifier.predict_shape(self.model, img)
+            if verbose:
+                print('Classified {} as a {}'.format(img_id, prediction))
             vision_client.emit('classified', {
                 'img_id': img_id,
                 'type': 'shape',
@@ -719,6 +755,8 @@ class LetterClassifierWorker(ClientWorker):
         # Keras w/ Tensorflow backend bug workaround
         with self.graph.as_default():
             prediction = vision_classifier.predict_letter(self.model, img)
+            if verbose:
+                print('Classified {} as a {}'.format(img_id, prediction))
             vision_client.emit('classified', {
                 'img_id': img_id,
                 'type': 'letter',
