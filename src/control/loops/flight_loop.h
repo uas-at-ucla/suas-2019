@@ -35,14 +35,14 @@ class FlightLoop {
 
   // Flight loop state machine states.
   enum State {
-    STANDBY,
-    ARMING,
-    ARMED,
-    TAKING_OFF,
-    IN_AIR,
-    LANDING,
-    FAILSAFE,
-    FLIGHT_TERMINATION
+    STANDBY = 0, 
+    ARMING = 1,
+    ARMED = 2,
+    TAKING_OFF = 3,
+    IN_AIR = 4,
+    LANDING = 5,
+    FAILSAFE = 6,
+    FLIGHT_TERMINATION = 7
   };
 
   State state() const { return state_; }
@@ -79,6 +79,9 @@ class FlightLoop {
   double last_loop_;
   bool did_alarm_;
   bool did_arm_;
+
+  double last_bomb_drop_;
+  double last_dslr_;
 };
 
 const std::map<FlightLoop::State, std::string> state_string = {
