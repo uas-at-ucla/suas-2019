@@ -3,11 +3,9 @@ import './Images.css';
 import logo from '../graphics/vector_logo.svg';
 import Position from './Position';
 import ModalComponent from './Modal';
-
 import { PageHeader } from 'react-bootstrap';
 
 class Images extends Component {
-
   constructor (props) {
     super(props);
     this.state = {
@@ -87,7 +85,6 @@ class Images extends Component {
   }
 
   photoshop = (photo) => {
-    // todo: Open modal photoshop editor here
     console.log("toggle: " + this.state.doubleClicked);
     this.setState({
       doubleClicked: !this.state.doubleClicked,
@@ -95,10 +92,8 @@ class Images extends Component {
     });
   }
 
-
   showPosition(photo) {
-    // todo: show position on map + highlight the border of selected photo
-
+    // todo: highlight the border of selected photo
     let photo_name = photo.slice(0, photo.length-4);
     fetch('/testPhotos/' + photo_name + '.json')
       .then(res => res.json())
@@ -114,8 +109,6 @@ class Images extends Component {
     // todo: submit images to interop server
     console.log("Hello!")
   }
-
-
 }
 
 export default Images;
