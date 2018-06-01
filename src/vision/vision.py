@@ -14,6 +14,7 @@ import uuid
 import json as json_module
 import hashlib
 import base64
+import sqlite3
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
@@ -89,6 +90,7 @@ verbose = False
 def signal_received(signal, frame):
     # Shutdown all the spawned processes and exit cleanly.
     processes.killall()
+
     # Ask the workers to join us in death
     if s_worker is not None:
         s_worker.join()
@@ -118,6 +120,11 @@ class ServerWorker(threading.Thread):
         self.stop_req = threading.Event()  # listen for a stop request
 
     def run(self):
+        sql_connection = sqlite3.connect('image_types.db')
+        sql_cursor = sql_connection.cursor()
+        with sql_connection:
+            sql_cursor.execute('create table if not exists Images (ImageID text, Type text)')
+
         while not self.stop_req.isSet():  # Exit run if stop was requested
             try:
                 # Try to get an item from the queue
@@ -135,9 +142,31 @@ class ServerWorker(threading.Thread):
                 #     'event_name': str,
                 #     'args': {}
                 # }
+                # task = {
+                #     'type': 'add_record',
+                #     'sql_statement': str
+                # }
+                # task = {
+                #     'type': 'retrieve_records'
+                # }
+
+                if task['type'] == 'add_record':
+                    with sql_connection:
+                        sql_cursor.execute(task['sql_statement'])
+                if task['type'] == 'retrieve_records':
+                    all_images = {
+                        'raw': None,
+                        'localized': None,
+                        'classified': None
+                    }
+                    with sql_connection:
+                        for img_type in ('raw', 'localized', 'classified'):
+                            sql_cursor.execute("select ImageID from Images where Type=?", (img_type,))
+                            all_images[img_type] = sql_cursor.fetchall()
+                    vision_socketio_server.emit('all_images', all_images)
 
                 # check on the progress of an auction
-                if task['type'] == 'timeout':
+                elif task['type'] == 'timeout':
                     if (time.time() -
                             task['time_began']) >= DEFAULT_AUCTION_TIMEOUT:
                         auction = active_auctions[task['auction_id']]
@@ -193,6 +222,7 @@ class ServerWorker(threading.Thread):
                 continue
 
     def join(self, timeout=None):
+        self.sql_connection.close()
         self.stop_req.set()
         super().join(timeout)
 
@@ -269,6 +299,11 @@ def process_image(json, attempts=1):
             'img_local_dest': img_inc_path + '.jpg'
         }
     })
+    server_task_queue.put({
+        'type': 'add_record',
+        'sql_statement': "insert into Images values ('{}','{}')".format(img_info['id'], 'raw')
+        })
+    vision_socketio_server.emit('new_raw', {'img_id': img_info['id']})
     global img_count
     img_count += 1
 
@@ -343,6 +378,11 @@ def download_snipped(json):
                 'img_local_dest': os.path.join(DEFAULT_DATA_DIR, img_id + ext)
             }
         })
+    server_task_queue.put({
+        'type': 'add_record',
+        'sql_statement': "insert into Images values ('{}', 'localized')".format(img_id)
+    })
+    vision_socketio_server.emit('new_localized', json)
 
 
 #@vision_socketio_server.on('classify')
@@ -366,7 +406,35 @@ def download_snipped(json):
 @vision_socketio_server.on('classified')
 def record_class(json):
     class_type = json['type']
+    img_id = json['img_id']
     server_img_manager.set_prop(json['img_id'], class_type, json[class_type])
+    server_img_manager.set_prop(img_id, class_type, json[class_type])
+    for check_class in ('shape', 'letter'):
+        if server_img_manager.get_prop(img_id, check_class) is None:
+            return
+    # if it gets to this point without returning, then everything is done
+    server_task_queue.put({
+        'type': 'add_record',
+        'sql_statement': "update Images set Type = 'classified' where ImageID='{}'".format(img_id)
+    })
+    vision_socketio_server.emit('new_classified', {'img_id': img_id})
+
+@vision_socketio_server.on('manual_request')
+def manual_request(json):
+    json['args']['manual'] = True
+    server_task_queue.put({
+        'type': 'auction',
+        'event_name': json['event_name'],
+        'args': json['args']
+        })
+
+@vision_socketio_server.on('manual_request_done')
+def manual_request_done(json):
+    vision_socketio_server.emit('manual_request_done', json)
+
+@vision_socketio_server.on('get_all_images')
+def return_all_images(json):
+    server_task_queue.put({'type': 'retrieve_records'})
 
 
 # TODO handle autodownloading images as needed
@@ -383,6 +451,7 @@ def record_class(json):
 
 
 def server_worker(args):
+    # setup the database:
     global server_img_manager
     # TODO Server should not be using a client img_manager
     server_img_manager = ImgManager(args.data_dir, master=True)
@@ -396,9 +465,9 @@ def server_worker(args):
 
 
 # Clients ######################################################################
-vision_client = None
 client_id = None
 work_queue = queue.Queue()
+vision_client = None
 
 
 def client_add_task(*args):
@@ -430,7 +499,7 @@ def client_worker(args, worker_class):
     client_id = str(uuid.uuid4())
     global work_queue
     for i in range(0, args.threads):
-        c_worker = worker_class(work_queue, args)
+        c_worker = worker_class(in_q=work_queue, socket_client=vision_client, args=args)
         c_worker.start()
         c_workers.append(c_worker)
     vision_client.on(c_workers[0].get_event_name(), client_bid_for_task)
@@ -440,7 +509,7 @@ def client_worker(args, worker_class):
 
 
 class ClientWorker(threading.Thread):
-    def __init__(self, in_q, args):  # accept args anyway even if not used
+    def __init__(self, in_q, socket_client, args):  # accept args anyway even if not used
         super(ClientWorker, self).__init__()
         self.in_q = in_q  # input queue (queue.Queue)
         self.stop_req = threading.Event()  # listen for a stop request
@@ -449,6 +518,7 @@ class ClientWorker(threading.Thread):
         self.vsn_port = args.vsn_port
         self.ssh_port = args.ssh_port
         self.data_dir = args.data_dir
+        self.socket_client = socket_client
 
         self.manager = ImgManager(
             args.data_dir, {
@@ -458,6 +528,13 @@ class ClientWorker(threading.Thread):
                 'remote_dir': args.remote_dir,
                 'os_type': os.name
             })
+
+    def _emit(self, task, event_name, args):
+        if 'manual' in task[0] and task[0]['manual']:
+            args['event_name'] = event_name
+            self.socket_client.emit('manual_request_done', args)
+        else:
+            self.socket_client.emit(event_name, args)
 
     def _do_work(self, task):
         raise NotImplementedError("Client Worker doesn't know what to do.")
@@ -501,13 +578,13 @@ class RsyncWorker(ClientWorker):
                 'rsync -vz --progress -e "ssh -p 22" "' + task_args['user'] +
                 '@' + task_args['addr'] + ':' + task_args['img_remote_src'] +
                 '" ' + task_args['img_local_dest']):
-            vision_client.emit(
+            self._emit(task, 
                 'download_complete', {
                     'saved_path': task_args['img_local_dest'],
                     'next': task_args['next']
                 })
         else:
-            vision_client.emit(
+            self._emit(task, 
                 'download_failed', {
                     'attempted_path': task_args['img_local_dest'],
                     'prev': task_args['prev']
@@ -523,8 +600,8 @@ def rsync_worker(args):
 
 # YOLO image classification ####################################################
 class YoloWorker(ClientWorker):
-    def __init__(self, in_q, args):
-        super().__init__(in_q, args)
+    def __init__(self, in_q, socket_client, args):
+        super().__init__(in_q, socket_client, args)
 
         # load model
         yolo_options = {
@@ -554,7 +631,7 @@ class YoloWorker(ClientWorker):
         # TODO Calculate the coordinates
         #        for result in results:
         #            result
-        vision_client.emit('yolo_done', {'img_id': img_id, 'results': results})
+        self._emit(task, 'yolo_done', {'img_id': img_id, 'results': results})
 
         # Result format: [{'label': str, 'confidence': int,
         #                  'topleft': {'x': int, 'y': int},
@@ -566,8 +643,8 @@ class YoloWorker(ClientWorker):
 
 
 class MockYoloWorker(ClientWorker):
-    def __init__(self, in_q, args):
-        super().__init__(in_q, args)
+    def __init__(self, in_q, socket_client, args):
+        super().__init__(in_q, socket_client, args)
 
     def get_event_name(self):
         return 'yolo'
@@ -587,7 +664,7 @@ class MockYoloWorker(ClientWorker):
                 'y': img.shape[0] / 2 + 10
             }
         }]
-        vision_client.emit('yolo_done', {'img_id': img_id, 'results': results})
+        self._emit(task, 'yolo_done', {'img_id': img_id, 'results': results})
 
 
 def yolo_worker(args):
@@ -635,7 +712,7 @@ class SnipperWorker(ClientWorker):
                     }
                 })
 
-            vision_client.emit('snipped', {
+            self._emit(task, 'snipped', {
                 'img_id': img_id,
                 'download_dir': self.data_dir
             })
@@ -658,8 +735,8 @@ def classifier_worker(args):
 
 # Shape Classification #########################################################
 class ShapeClassifierWorker(ClientWorker):
-    def __init__(self, in_q, args):
-        super().__init__(in_q, args)
+    def __init__(self, in_q, socket_client, args):
+        super().__init__(in_q, socket_client, args)
         self.model = vision_classifier.load_model(args.model_path)
         self.data_dir = args.data_dir
 
@@ -681,7 +758,7 @@ class ShapeClassifierWorker(ClientWorker):
         # Keras w/ Tensorflow backend bug workaround
         with self.graph.as_default():
             prediction = vision_classifier.predict_shape(self.model, img)
-            vision_client.emit('classified', {
+            self._emit(task, 'classified', {
                 'img_id': img_id,
                 'type': 'shape',
                 'shape': prediction
@@ -697,8 +774,8 @@ def shape_classifier_worker(args):
 
 # Letter Classification ########################################################
 class LetterClassifierWorker(ClientWorker):
-    def __init__(self, in_q, args):
-        super().__init__(in_q, args)
+    def __init__(self, in_q, socket_client, args):
+        super().__init__(in_q, socket_client, args)
         self.model = vision_classifier.load_model(args.model_path)
         self.data_dir = args.data_dir
 
@@ -719,7 +796,7 @@ class LetterClassifierWorker(ClientWorker):
         # Keras w/ Tensorflow backend bug workaround
         with self.graph.as_default():
             prediction = vision_classifier.predict_letter(self.model, img)
-            vision_client.emit('classified', {
+            self._emit(task, 'classified', {
                 'img_id': img_id,
                 'type': 'letter',
                 'letter': prediction
