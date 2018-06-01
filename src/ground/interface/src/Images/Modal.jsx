@@ -6,12 +6,16 @@ import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap'
 export default class ModalComponent extends React.Component {
     constructor(props) {
         super(props);
+        let img = new Image();
+        img.src = "testPhotos/" + props.image
         this.state = {
             display: true,
             img_x_1: 0,
             img_y_1: 0,
             img_x_2: 0,
-            img_y_2: 0
+            img_y_2: 0,
+            img_width: img.naturalWidth,
+            img_height: img.naturalHeight
         };
         this.toggle = this.toggle.bind(this);
         this.send_manual = this.send_manual.bind(this);
@@ -27,8 +31,16 @@ export default class ModalComponent extends React.Component {
 
     _onMouseMove(e) {
         let bounds = e.target.getBoundingClientRect();
-        this.setState({cur_img_x: (e.clientX - bounds.left),
-                        cur_img_y: (e.clientY - bounds.top)});
+        this.setState({
+          cur_img_x:
+            (e.clientX - bounds.left) /
+            (bounds.right - bounds.left) *
+            this.state.img_width,
+          cur_img_y:
+            (e.clientY - bounds.top) /
+            (bounds.bottom - bounds.top) *
+            this.state.img_height
+        });
     }
 
     toggle() {
@@ -76,7 +88,7 @@ export default class ModalComponent extends React.Component {
                     <ModalBody>
                         <Button onClick={this.send_manual_test}>Crop</Button>
                         <ModalFooter>
-                            <img className="resize" ref="image" onClick={this.markCoords.bind(this)} onMouseMove={this._onMouseMove.bind(this)} src={photoURL}/>
+                            <img className="resize" onClick={this.markCoords.bind(this)} onMouseMove={this._onMouseMove.bind(this)} src={photoURL}/>
                         </ModalFooter>
                         <Button color="danger" onClick={this.toggle}>Close</Button>
                     </ModalBody>
