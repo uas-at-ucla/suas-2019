@@ -78,7 +78,7 @@ if [ $OS = "Linux" ]
 then
     echo "Checking all necessary packages..."
     echo "sudo apt-get install python3.5 python3-pip python-pip python3-dev build-essential\n"
-    sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential sl;
+    sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential;
     sudo apt-get install -qq python-matplotlib python-numpy python2.7-dev sshpass;
 
     # Do Bazel stuff
