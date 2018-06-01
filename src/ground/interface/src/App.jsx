@@ -149,7 +149,7 @@ class App extends Component {
       if (data.drone_connected) {
         this.setState({droneState: "Drone Connected!"});
       }
-      
+
       if (data.interop_disconnected) {
         this.receivedInteropStatus(false);
       } else {
