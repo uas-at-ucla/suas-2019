@@ -7,7 +7,11 @@ export default class ModalComponent extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            display: true
+            display: true,
+            img_x_1: 0,
+            img_y_1: 0,
+            img_x_2: 0,
+            img_y_2: 0
         };
         this.toggle = this.toggle.bind(this);
         this.send_manual = this.send_manual.bind(this);
@@ -21,6 +25,12 @@ export default class ModalComponent extends React.Component {
         });
     }
 
+    _onMouseMove(e) {
+        let bounds = e.target.getBoundingClientRect();
+        this.setState({cur_img_x: (e.clientX - bounds.left),
+                        cur_img_y: (e.clientY - bounds.top)});
+    }
+
     toggle() {
         this.setState({
             display: !this.state.display
@@ -28,7 +38,11 @@ export default class ModalComponent extends React.Component {
     }
 
     send_manual_test() {
-        this.send_manual("4fg2E94PTjKwb681diPaGA", [25, 25], [50, 50]);
+        this.send_manual(
+          this.props.image.split('.')[0],
+          [this.state.img_x_1, this.state.img_y_1],
+          [this.state.img_x_2, this.state.img_y_2]
+        );
     }
 
     send_manual(img_id, top_left, bottom_right) {
@@ -43,6 +57,15 @@ export default class ModalComponent extends React.Component {
             }
         });
     }
+    
+    markCoords() {
+        this.setState({
+          img_x_1: this.state.img_x_2,
+          img_y_1: this.state.img_y_2,
+          img_x_2: Math.trunc(this.state.cur_img_x),
+          img_y_2: Math.trunc(this.state.cur_img_y)
+        });
+    }
 
     render() {
         var photoURL = "testPhotos/" + this.props.image;
@@ -53,7 +76,7 @@ export default class ModalComponent extends React.Component {
                     <ModalBody>
                         <Button onClick={this.send_manual_test}>Crop</Button>
                         <ModalFooter>
-                            <img className="resize" src={photoURL}/>
+                            <img className="resize" ref="image" onClick={this.markCoords.bind(this)} onMouseMove={this._onMouseMove.bind(this)} src={photoURL}/>
                         </ModalFooter>
                         <Button color="danger" onClick={this.toggle}>Close</Button>
                     </ModalBody>
