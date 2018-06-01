@@ -137,7 +137,7 @@ void FlightLoop::RunIteration() {
 
   auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
-  output->gimbal_angle = 50;
+  output->gimbal_angle = 45;
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
@@ -355,7 +355,7 @@ void FlightLoop::RunIteration() {
   output->dslr = false;
   last_dslr_ = ::std::max(
       last_dslr_, ::src::control::loops::flight_loop_queue.goal->trigger_dslr);
-  if (last_dslr_ <= current_time && last_dslr_ + 5.0 > current_time) {
+  if (last_dslr_ <= current_time && last_dslr_ + 15.0 > current_time) {
     output->dslr = true;
   }
 
