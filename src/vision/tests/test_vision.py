@@ -92,6 +92,31 @@ def create_mock_listeners():
     for name in MOCK_RECEIVERS:
         socket.on(name, make_listener(name))
 
+
+def sample_manual_request(args):
+    def printmess(*json):
+        print(json)
+
+    socket = socketIO_client.SocketIO('0.0.0.0', 8099)
+    socket.on('manual_request_done', printmess)
+    socket.emit('manual_request',
+        {
+            'event_name': 'snip',
+            'args':
+            {
+                'img_id': args.target,
+                'yolo_results':
+                [
+                    {
+                        'topleft':      {'x': 25, 'y': 25},
+                        'bottomright':  {'x': 50, 'y': 50}
+                    }
+                ]
+            }
+        })
+    socket.wait()
+    
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('type')
@@ -105,3 +130,5 @@ if __name__ == '__main__':
     elif args.type == 'send':
         with socketIO_client.SocketIO('0.0.0.0', 8099) as socket:
             socket.emit('process_image', {'file_path': args.target})
+    elif args.type == 'manual':
+        sample_manual_request(args)

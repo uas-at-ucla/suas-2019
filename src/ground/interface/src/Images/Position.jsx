@@ -5,12 +5,16 @@ import './Position.css';
 import scriptLoader from 'react-async-script-loader';
 
 const google = window.google;
+var photo_position = null;
 
+const INITIAL_LAT = 34.173048;
+const INITIAL_LON = -118.48159;
 
-// todo: two options:
-// 1. Display flight route with position of all photos taken
-// 2. When a photo is selected, display its position
+// When a photo is selected, display its position
 class Position extends Component {
+  constructor(props) {
+    super(props);
+  }
 
   render() {
     return (
@@ -37,16 +41,13 @@ class Position extends Component {
 
     // Default field to zoom into.
     let field = {
-      //lat: 38.145298,
-      //lng: -76.42861
-      lat: 34.175048,
-      lng: -118.48159
+      lat: INITIAL_LAT,
+      lng: INITIAL_LON
     };
 
-
-    this.map = new google.maps.Map(this.refs.map, {
+    this.map_photo = new google.maps.Map(this.refs.map, {
       center: field,
-      zoom: 17,
+      zoom: 19,
       tilt: 0,
       disableDefaultUI: true,
       scrollwheel: true,
@@ -61,7 +62,7 @@ class Position extends Component {
     this.gmap_cache = new GMapCache();
     let this_local = this;
 
-    this.map.mapTypes.set(
+    this.map_photo.mapTypes.set(
       'offline_gmap',
       new google.maps.ImageMapType({
         getTileUrl: function(coord, zoom) {
@@ -76,8 +77,32 @@ class Position extends Component {
       })
     );
 
-    this.map.setMapTypeId('offline_gmap');
+    this.map_photo.setMapTypeId('offline_gmap');
 
+    // Declare a single marker
+    let placement = {
+      lat: 0,
+      lng: 0
+    };
+    let marker_options = {
+      map: this.map_photo,
+      position: placement
+    };
+    photo_position = new google.maps.Marker(marker_options);
+  }
+
+  // Update the marker posiiton
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.lat !== this.props.lat &&
+        nextProps.lon !== this.props.lon) {
+      console.log(nextProps);
+      let placement = {
+        lat: nextProps.lat,
+        lng: nextProps.lon
+      };
+      photo_position.setPosition(placement);
+      this.map_photo.panTo(placement);
+    }
   }
 }
 
