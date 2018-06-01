@@ -14,7 +14,7 @@ constexpr double kGotoRawReCenterRamp = 15;
 
 // Required tolerance distance, in meters, for halting goto_raw waypoints to
 // trigger a continuation to the next command.
-constexpr double kGotoRawWaypointTolerance = 1.3;
+constexpr double kGotoRawWaypointTolerance = 2;
 
 }  // namespace
 
