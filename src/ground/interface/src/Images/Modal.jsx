@@ -18,7 +18,6 @@ export default class ModalComponent extends React.Component {
     }
 
     render() {
-        var photoURL = "testPhotos/" + this.props.image;
         return (
             <div>
                 <Modal isOpen={ this.state.display } size="lg">
@@ -26,7 +25,7 @@ export default class ModalComponent extends React.Component {
                     <ModalBody>
                         <Button>Crop</Button>
                         <ModalFooter>
-                            <img className="resize" src={photoURL}/>
+                            <img className="resize" src={this.props.image.src}/>
                         </ModalFooter>
                         <Button color="danger" onClick={this.toggle}>Close</Button>
                     </ModalBody>

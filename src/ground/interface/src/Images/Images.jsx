@@ -6,19 +6,27 @@ import ModalComponent from './Modal';
 
 import { PageHeader } from 'react-bootstrap';
 
+const photoFolder = 'testPhotos'
+
 class Images extends Component {
   constructor (props) {
     super(props);
     this.state = {
       doubleClicked: false,
       currentPhoto: null,
-      allImages: [],
+      allImages: [
+        {
+          id: '00019',
+          src: '/'+photoFolder+'/00019.JPG'
+        },
+        {
+          id: 'flappy',
+          src: '/'+photoFolder+'/flappy.JPG'
+        }
+      ],
       photo_lat: null,
       photo_lon: null
     }
-    Object.keys(this.images).map((photo) => {
-      this.state.allImages.push(photo);
-    })
   }
 
   render() {
@@ -63,22 +71,25 @@ class Images extends Component {
     console.log(this.state.doubleClicked);
   }
 
-  // Import images from testPhotos folder
-  importAll(r) {
-    let images = {};
-    r.keys().map((item, index) => { images[item.replace('./', '')] = r(item); });
-    return images;
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.appState.newImages !== this.props.appState.newImages) { // load finished
+      for (let id of nextProps.appState.newImages.raw) {
+        this.allImages.push({
+          id: id,
+          src: '/'+photoFolder+'/' + id + '.JPG'
+        });
+      }
+    }
   }
-
-  images = this.importAll(require.context('../../public/testPhotos', false, /\.(png|jpe?g|svg)$/));
 
   renderRawImages(myList) {
 
     //console.log("number of images: " + this.state.allImages.length);
-    return this.state.allImages.map((photo) => {
+    return this.state.allImages.map((photo, index) => {
       return (
         <img className="surveyPhotoOdd"
-             id={photo} src={this.images[photo]}
+             key={index}
+             id={photo.id} src={photo.src}
              onDoubleClick={() => this.photoshop(photo)}
              onClick={()=>this.showPosition(photo)} />
       );
@@ -95,8 +106,8 @@ class Images extends Component {
 
   showPosition(photo) {
     // todo: highlight the border of selected photo
-    let photo_name = photo.slice(0, photo.length-4);
-    fetch('/testPhotos/' + photo_name + '.json')
+    let photo_name = photo.id;
+    fetch('/'+photoFolder+'/' + photo_name + '.json')
       .then(res => res.json())
       .then(location_data => {
         this.setState({
