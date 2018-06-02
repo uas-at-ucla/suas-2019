@@ -378,15 +378,15 @@ def get_all_images(*args):
 
 
 def new_raw(*args):
-    new_images['raw'] += args[0]
+    new_images['raw'].append(args[0])
     
 
 def new_localized(*args):
-    new_images['localized'] += args[0]
+    new_images['localized'].append(args[0])
 
 
 def new_classified(*args):
-    new_images['classified'] += args[0]
+    new_images['classified'].append(args[0])
 
 
 def images_backend_connected():
@@ -407,13 +407,14 @@ def send_images_to_frontend():
     interface_client = socketIO_client.SocketIO('0.0.0.0', 8081)
     while True:
         time.sleep(1.5)
-        interface_client.emit('added_images', new_images)
-        all_images['raw'] +=  new_images['raw']
-        all_images['localized'] +=  new_images['localized']
-        all_images['classified'] +=  new_images['classified']
-        new_images['raw'] = []
-        new_images['localized'] = []
-        new_images['classified'] = []
+        if len(new_images['raw']) or len(new_images['localized']) or len(new_images['classified']):
+            interface_client.emit('added_images', new_images)
+            all_images['raw'] +=  new_images['raw']
+            all_images['localized'] +=  new_images['localized']
+            all_images['classified'] +=  new_images['classified']
+            new_images['raw'] = []
+            new_images['localized'] = []
+            new_images['classified'] = []
 
 
 if __name__ == '__main__':
@@ -441,12 +442,12 @@ if __name__ == '__main__':
     t_ping.daemon = True
     t_ping.start()
 
-    # t_image_socket = threading.Thread(target=connect_to_images_backend)
-    # t_image_socket.daemon = True
-    # t_image_socket.start()
+    t_image_socket = threading.Thread(target=connect_to_images_backend)
+    t_image_socket.daemon = True
+    t_image_socket.start()
 
-    # t_image_refresh = threading.Thread(target=send_images_to_frontend)
-    # t_image_refresh.daemon = True
-    # t_image_refresh.start()
+    t_image_refresh = threading.Thread(target=send_images_to_frontend)
+    t_image_refresh.daemon = True
+    t_image_refresh.start()
 
     ground_socketio_server.run(app, '0.0.0.0', port=8081)
