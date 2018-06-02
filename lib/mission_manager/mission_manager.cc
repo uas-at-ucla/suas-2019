@@ -143,7 +143,7 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
             sub_mission->add_commands();
         ::lib::mission_manager::SleepCommand *sleep_cmd =
             sleep_cmd_raw->mutable_sleepcommand();
-        sleep_cmd->set_time(5);
+        sleep_cmd->set_time(2);
       }
     } else if (cmd->has_surveycommand()) {
       // Do nothing at the moment.
@@ -152,7 +152,8 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
           cmd->mutable_bombdropcommand();
 
       if (cmd->sub_mission().commands_size() == 0) {
-        // Create a waypoint command to go to the bomb drop location.
+        // Create a waypoint command to go to the bomb drop location, sleep a bit,
+        // and drop the payload.
         {
           ::lib::mission_manager::WaypointCommand *waypoint_cmd =
               sub_mission->add_commands()->mutable_waypointcommand();
@@ -161,12 +162,20 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
               new ::lib::mission_manager::Position3D();
           goal->set_latitude(bomb_cmd->drop_zone().latitude());
           goal->set_longitude(bomb_cmd->drop_zone().longitude());
-          goal->set_altitude(20);
+          goal->set_altitude(50);
           waypoint_cmd->set_allocated_goal(goal);
+
+          sub_mission->add_commands()->mutable_triggeralarmcommand();
 
           ::lib::mission_manager::SleepCommand *sleep_cmd =
               sub_mission->add_commands()->mutable_sleepcommand();
           sleep_cmd->set_time(5);
+
+          sub_mission->add_commands()->mutable_triggerbombdropcommand();
+
+          ::lib::mission_manager::SleepCommand *another_sleep_cmd =
+              sub_mission->add_commands()->mutable_sleepcommand();
+          another_sleep_cmd->set_time(5);
         }
       }
     } else if (cmd->has_gotocommand()) {

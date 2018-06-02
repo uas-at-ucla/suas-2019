@@ -205,6 +205,9 @@ void AutopilotOutputWriter::Write() {
       ::src::control::loops::flight_loop_queue.output->velocity_y,
       ::src::control::loops::flight_loop_queue.output->velocity_z, sp);
 
+  autopilot_interface::set_yaw(::src::control::loops::flight_loop_queue.output->yaw, sp);
+
+
   copter_io_->update_setpoint(sp);
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT

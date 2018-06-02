@@ -50,7 +50,7 @@ void Pilot::PreprocessorThread() {
   }
 }
 
-Vector3D Pilot::VelocityNavigator() {
+PilotOutput Pilot::VelocityNavigator() {
   if (setpoint_reset_) {
     come_to_stop_count_ = 0;
     met_goal_ = false;
@@ -114,6 +114,8 @@ Vector3D Pilot::VelocityNavigator() {
   ::Eigen::Vector3d error_vector =
       (drone_to_end_vector - drone_projection_on_path_vector) /
       kGotoRawReCenterRamp;
+
+  float direction_of_travel = ::std::atan2(start_to_end_vector.y(), start_to_end_vector.x());
 
   // A value, between 0 and 1, which determines whether the output vector
   // should point straight at the goal relative to the start-end path (mix =
@@ -210,7 +212,7 @@ Vector3D Pilot::VelocityNavigator() {
     }
   }
 
-  return flight_direction;
+  return {flight_direction, direction_of_travel, false, false};
 }
 
 bool Pilot::MetGoal() { return met_goal_ && !setpoint_reset_; }
@@ -252,6 +254,7 @@ PilotOutput Pilot::Calculate(Position3D position, ::Eigen::Vector3d velocity) {
   cmd_ = cmd;
 
   bool bomb_drop = false;
+  bool alarm = false;
 
   if (cmd.has_nothingcommand()) {
     // Do nothing.
@@ -271,6 +274,8 @@ PilotOutput Pilot::Calculate(Position3D position, ::Eigen::Vector3d velocity) {
     }
 
   } else if (cmd.has_gotorawcommand()) {
+    // Change the goal setpoint and choose whether to use the come-to-stop
+    // or fly-through controller.
     if(first_run) {
       start_ = end_;
     }
@@ -284,15 +289,23 @@ PilotOutput Pilot::Calculate(Position3D position, ::Eigen::Vector3d velocity) {
     if (MetGoal()) {
       mission_message_queue_receiver_.get_mission_manager()->PopCommand();
     }
+  } else if (cmd.has_triggerbombdropcommand()) {
+    bomb_drop = true;
+    mission_message_queue_receiver_.get_mission_manager()->PopCommand();
+  } else if (cmd.has_triggeralarmcommand()) {
+    alarm = true;
+    mission_message_queue_receiver_.get_mission_manager()->PopCommand();
   } else {
     ::std::cout << "ERROR: Unknown command.\n";
   }
 
   current_physical_velocity_ = velocity;
 
-  Vector3D flight_direction = VelocityNavigator();
+  PilotOutput pilot_output = VelocityNavigator();
+  pilot_output.bomb_drop = bomb_drop;
+  pilot_output.alarm = alarm;
 
-  return {flight_direction, bomb_drop};
+  return pilot_output;
 }
 
 void Pilot::SetMission(::lib::mission_manager::Mission mission) {
