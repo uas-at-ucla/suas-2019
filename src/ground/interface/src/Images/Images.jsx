@@ -24,6 +24,7 @@ class Images extends Component {
           src: '/'+photoFolder+'/flappy.JPG'
         }
       ],
+      segmentedImages: [],
       photo_lat: null,
       photo_lon: null
     }
@@ -45,7 +46,7 @@ class Images extends Component {
           </div>
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
             <h3>Segmented Images</h3>
-            {/* todo: Howard+Ryan - insert photos from segmented files */}
+            {this.renderSegmentedImages()}
           </div>
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
             <h3>Position of Photo Taken</h3>
@@ -74,16 +75,23 @@ class Images extends Component {
   componentWillReceiveProps(nextProps) {
     if (nextProps.appState.newImages !== this.props.appState.newImages) { // load finished
       for (let id of nextProps.appState.newImages.raw) {
-        this.allImages.push({
+        this.state.allImages.push({
+          id: id,
+          src: '/'+photoFolder+'/' + id + '.JPG'
+        });
+
+      }
+      for (let id of nextProps.appState.newImages.localized) {
+        this.state.segmentedImages.push({
           id: id,
           src: '/'+photoFolder+'/' + id + '.JPG'
         });
       }
+      this.setState({});
     }
   }
 
-  renderRawImages(myList) {
-
+  renderRawImages() {
     //console.log("number of images: " + this.state.allImages.length);
     return this.state.allImages.map((photo, index) => {
       return (
@@ -91,6 +99,18 @@ class Images extends Component {
              key={index}
              id={photo.id} src={photo.src}
              onDoubleClick={() => this.photoshop(photo)}
+             onClick={()=>this.showPosition(photo)} />
+      );
+    })
+  }
+
+  renderSegmentedImages() {
+    //console.log("number of images: " + this.state.allImages.length);
+    return this.state.segmentedImages.map((photo, index) => {
+      return (
+        <img className="surveyPhotoOdd"
+             key={index}
+             id={photo.id} src={photo.src}
              onClick={()=>this.showPosition(photo)} />
       );
     })
