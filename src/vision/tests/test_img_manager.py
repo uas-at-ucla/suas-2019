@@ -1,15 +1,28 @@
 import signal
 import sys
+import os
 import time
 import unittest
+import json
 from unittest import mock
 
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+os.chdir('..')
+
+sys.path.insert(0, 'util')
 import img_manager
 
-class TestImgManager(unittest.TestCase):
+# Move to the vision directory
 
+
+class TestImgManagerOthers(unittest.TestCase):
     def setUp(self):
-        self.mock_truth = {'user': 'mock_user', 'addr': 'mock_addr', 'remote_dir': 'mock_remote_dir', 'os_type': 'nt'}
+        self.mock_truth = {
+            'user': 'mock_user',
+            'addr': 'mock_addr',
+            'remote_dir': 'mock_remote_dir',
+            'os_type': 'nt'
+        }
 
     @mock.patch('img_manager.PureWindowsPath', autospec=True)
     @mock.patch('img_manager.PurePosixPath', autospec=True)
@@ -20,7 +33,7 @@ class TestImgManager(unittest.TestCase):
         manager = img_manager.ImgManager('mock_par', self.mock_truth)
 
         # Check attributes
-        self.assertEqual(manager.dir, 'mock_par')
+        self.assertEqual(manager.dir, os.path.abspath('mock_par'))
         self.assertEqual(manager.truth_src, self.mock_truth)
         self.assertTrue(mock_pm.ProcessManager.called)
 
@@ -56,7 +69,7 @@ class TestImgManager(unittest.TestCase):
     def test_stop(self, mock_pm):
         # initialize
         manager = img_manager.ImgManager('mock_par', self.mock_truth)
-        
+
         # check stop
         manager.stop()
         self.assertTrue(mock_pm.ProcessManager.called)
@@ -67,107 +80,118 @@ class TestImgManager(unittest.TestCase):
         ids = set()
         for i in range(5000):
             new_id = img_manager.ImgManager.gen_id()
-            self.assertFalse(new_id in ids)
-            ids.add(new_id)
+            with self.subTest(id=new_id):
+                self.assertFalse(new_id in ids)
+                self.assertFalse(new_id[0] == '-')
+                ids.add(new_id)
 
-    @mock.patch('img_manager.open')
-    @mock.patch('img_manager.json.load')
-    @mock.patch('img_manager.ImgManager._retrieve_img')
-    def test_get_prop(self, mock_retrieve, mock_load, mock_open):
-        def reset_mocks():
-            mock_retrieve.reset_mock()
-            mock_load.reset_mock()
-            mock_open.reset_mock()
 
-        # init manager
-        manager = img_manager.ImgManager('mock_par', self.mock_truth)
+@mock.patch('img_manager.print')
+@mock.patch('img_manager.open')
+@mock.patch('img_manager.json.load')
+@mock.patch('img_manager.ImgManager._update_props')
+class TestImgManagerGetProp(unittest.TestCase):
+    def setUp(self):
+        self.mock_truth = {
+            'user': 'mock_user',
+            'addr': 'mock_addr',
+            'remote_dir': 'mock_remote_dir',
+            'os_type': 'nt'
+        }
+        self.manager = img_manager.ImgManager('mock_par', self.mock_truth)
 
-        # test regular call
+    def test_get_prop_reg_call(self, mock_update, mock_load, mock_open, mock_print):
         mock_open.return_value.__enter__.return_value = 'mockfile'
         mock_load.return_value = {'a': 1, 'b': 2, 'c': 3}
 
-        self.assertEqual(manager.get_prop('mock_id', 'b'), 2)
+        self.assertEqual(self.manager.get_prop('mock_id', 'b'), 2)
 
-        mock_retrieve.assert_not_called()
+        mock_update.assert_not_called()
         mock_load.assert_called_with('mockfile')
-        mock_open.return_value.__enter__.assert_called_with(os.path.join('mock_par', 'mock_id.json'), 'r')
+        mock_open.assert_called_with(
+            os.path.join(os.path.abspath('mock_par'), 'mock_id.json'), 'r')
         self.assertTrue(mock_open.return_value.__exit__.called)
 
-        reset_mocks()
-        
-        # test retry error
+    def test_get_prop_retry_err(self, mock_update, mock_load, mock_open, mock_print):
         mock_open.side_effect = OSError()
-        try:
-            manager.get_prop('mock_id', 'b')
-        except OSError:
-            self.assertEqual(mock_retrieve.call_count, 2)
-        else:
-            self.assertTrue(False) # did not properly throw error
+        self.manager.get_prop('mock_id', 'b')
+        self.assertEqual(mock_update.call_count, 1)
+        self.assertEqual(mock_open.call_count, 2)
 
-        mock_open.side_effect = None
-        reset_mocks()
-
-        # test key error
+    def test_get_prop_key_err(self, mock_update, mock_load, mock_open, mock_print):
         mock_load.side_effect = KeyError()
-        try:
-            manager.get_prop('mock_id', 'd')
-        except KeyError:
-            pass
-        else:
-            self.assertTrue(False) # did not properly throw error
-        
-    @mock.patch('img_manager.open')
-    @mock.patch('img_manager.json.dump')
-    @mock.patch('img_manager.json.load')
-    @mock.patch('img_manager.ImgManager._retrieve_img')
-    def test_set_prop(self, mock_retrieve, mock_load, mock_dump, mock_open):
-        def reset_mocks():
-            mock_retrieve.reset_mock()
-            mock_load.reset_mock()
-            mock_dump.reset_mock()
-            mock_open.reset_mock()
+        self.assertEqual(self.manager.get_prop('mock_id', 'd'), None)
 
+
+class TestImgManagerGetImg(unittest.TestCase):
+    @mock.patch('img_manager.open')
+    @mock.patch('img_manager.ImgManager._retrieve_img')
+    def test_get_img_existing(self, mock_retrieve, mock_open):
         # init manager
+        self.mock_truth = {
+            'user': 'mock_user',
+            'addr': 'mock_addr',
+            'remote_dir': 'mock_remote_dir',
+            'os_type': 'nt'
+        }
         manager = img_manager.ImgManager('mock_par', self.mock_truth)
-        
+
+        # test getting an existing image
+
+
+@mock.patch('img_manager.print')
+@mock.patch('img_manager.open')
+@mock.patch('img_manager.json.dump')
+@mock.patch('img_manager.json.load')
+@mock.patch('img_manager.ImgManager._update_props')
+class TestImgManagerSetProp(unittest.TestCase):
+    def setUp(self):
+        self.mock_truth = {
+            'user': 'mock_user',
+            'addr': 'mock_addr',
+            'remote_dir': 'mock_remote_dir',
+            'os_type': 'nt'
+        }
+        self.manager = img_manager.ImgManager('mock_par', self.mock_truth)
+
+    def test_set_prop_update(self, mock_update, mock_load, mock_dump, mock_open, mock_print):
         # test regular call
         mock_open.return_value.__enter__.return_value = 'mockfile'
         mock_load.return_value = {'a': 1, 'b': 2, 'c': 3}
 
-        manager.set_prop('mock_id', 'b', 0)
+        self.manager.set_prop('mock_id', 'b', 0)
 
-        mock_retrieve.assert_not_called()
+        mock_update.assert_not_called()
         mock_load.assert_called_with('mockfile')
-        mock_open.return_value.__enter__assert_called_with(os.path.join('mock_par', 'mock_id.json'), 'r')
-        mock_open.return_value.__enter__.assert_called_with(os.path.join('mock_par', 'mock_id.json'), 'w')
         self.assertEqual(mock_open.return_value.__exit__.call_count, 2)
         mock_dump.assert_called_with({'a': 1, 'b': 0, 'c': 3}, 'mockfile')
 
-        reset_mocks()
+    def test_set_prop_new(self, mock_update, mock_load, mock_dump, mock_open, mock_print):
+        mock_open.return_value.__enter__.return_value = 'mockfile'
+        mock_load.return_value = {'a': 1, 'b': 2, 'c': 3}
+
+        self.manager.set_prop('mock_id', 'd', 0)
 
         mock_open.return_value.__enter__.return_value = 'mockfile'
         mock_load.return_value = {'a': 1, 'b': 2, 'c': 3}
-        manager.get_prop('mock_id', 'd', 0)
-        mock_retrieve.assert_not_called()
+        self.manager.get_prop('mock_id', 'd', 0)
+        mock_update.assert_not_called()
         mock_load.assert_called_with('mockfile')
-        mock_open.return_value.__enter__.assert_called_with(os.path.join('mock_par', 'mock_id.json'), 'r')
-        mock_open.return_value.__enter__.assert_called_with(os.path.join('mock_par', 'mock_id.json'), 'w')
-        self.assertEqual(mock_open.__exit__.call_count, 2)
-        mock_dump.assert_called_with({'a': 1, 'b': 2, 'c': 3, 'd': 0}, 'mockfile')
+        self.assertEqual(mock_open.return_value.__exit__.call_count, 3)
+        mock_dump.assert_called_with({
+            'a': 1,
+            'b': 2,
+            'c': 3,
+            'd': 0
+        }, 'mockfile')
 
-        reset_mocks()
-
-        # test oserror
+    def test_set_prop_os_err(self, mock_update, mock_load, mock_dump,
+                             mock_open, mock_print):
         mock_open.side_effect = OSError()
+        self.manager.set_prop('mock_id', 'b', 0)
+        self.assertEqual(mock_update.call_count, 1)
+        self.assertEqual(mock_open.call_count, 2)
 
-        try:
-            manager.set_prop('mock_id', 'b', 0)
-        except OSError:
-            self.assertEqual(mock_retrieve.call_count, 2)
-        else:
-            self.assertTrue(False) # error not properly thrown
-
-    # TODO test the rest of the methods 
 
 if __name__ == '__main__':
     unittest.main()
