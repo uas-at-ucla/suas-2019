@@ -4,29 +4,29 @@
 }
 
 #controls .PromptButton+.PromptButton {
-  margin-left: 5px;
+  margin-left: 4.5px;
 }
 
 #controls .PromptButton+button {
-  margin-left: 5px;
+  margin-left: 4.5px;
 }
 
 #controls button+.PromptButton {
-  margin-left: 5px;
+  margin-left: 4.5px;
 }
 
 #controls button+button {
-  margin-left: 5px;
+  margin-left: 4.5px;
 }
 
 #normalControls {
   float: left;
-  padding: 5px;
+  padding: 4.5px;
   display: inline;
 }
 
 #stateControls {
   float: right;
   display: inline;
-  padding: 5px;
+  padding: 4.5px;
 }
