@@ -137,7 +137,7 @@ void FlightLoop::RunIteration() {
 
   auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
-  output->gimbal_angle = 50;
+  output->gimbal_angle = -45;
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
@@ -200,6 +200,7 @@ void FlightLoop::RunIteration() {
   output->velocity_x = 0;
   output->velocity_y = 0;
   output->velocity_z = 0;
+  output->yaw = 0;
 
   output->alarm = false;
 
@@ -289,12 +290,19 @@ void FlightLoop::RunIteration() {
           ::src::control::loops::flight_loop_queue.sensors->velocity_y,
           ::src::control::loops::flight_loop_queue.sensors->velocity_z);
 
-      pilot::PilotOutput flight_direction =
+      pilot::PilotOutput pilot_output =
           pilot_.Calculate(position, velocity);
 
-      output->velocity_x = flight_direction.flight_velocities.x;
-      output->velocity_y = flight_direction.flight_velocities.y;
-      output->velocity_z = flight_direction.flight_velocities.z;
+      last_bomb_drop_ = pilot_output.bomb_drop ? current_time : last_bomb_drop_;
+
+      if(pilot_output.alarm) {
+        alarm_.AddAlert({5.0, 0.50});
+      }
+
+      output->velocity_x = pilot_output.flight_velocities.x;
+      output->velocity_y = pilot_output.flight_velocities.y;
+      output->velocity_z = pilot_output.flight_velocities.z;
+      output->yaw = pilot_output.yaw;
       break;
     }
 
@@ -355,7 +363,7 @@ void FlightLoop::RunIteration() {
   output->dslr = false;
   last_dslr_ = ::std::max(
       last_dslr_, ::src::control::loops::flight_loop_queue.goal->trigger_dslr);
-  if (last_dslr_ <= current_time && last_dslr_ + 5.0 > current_time) {
+  if (last_dslr_ <= current_time && last_dslr_ + 15.0 > current_time) {
     output->dslr = true;
   }
 
