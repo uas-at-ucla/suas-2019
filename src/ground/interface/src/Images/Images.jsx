@@ -6,25 +6,12 @@ import ModalComponent from './Modal';
 
 import { PageHeader } from 'react-bootstrap';
 
-const photoFolder = 'testPhotos'
-
 class Images extends Component {
   constructor (props) {
     super(props);
     this.state = {
       doubleClicked: false,
       currentPhoto: null,
-      allImages: [
-        {
-          id: '00019',
-          src: '/'+photoFolder+'/00019.JPG'
-        },
-        {
-          id: 'flappy',
-          src: '/'+photoFolder+'/flappy.JPG'
-        }
-      ],
-      segmentedImages: [],
       photo_lat: null,
       photo_lon: null
     }
@@ -72,28 +59,9 @@ class Images extends Component {
     console.log(this.state.doubleClicked);
   }
 
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.appState.newImages !== this.props.appState.newImages) { // load finished
-      for (let id of nextProps.appState.newImages.raw) {
-        this.state.allImages.push({
-          id: id,
-          src: '/'+photoFolder+'/' + id + '.JPG'
-        });
-
-      }
-      for (let id of nextProps.appState.newImages.localized) {
-        this.state.segmentedImages.push({
-          id: id,
-          src: '/'+photoFolder+'/' + id + '.JPG'
-        });
-      }
-      this.setState({});
-    }
-  }
-
   renderRawImages() {
-    //console.log("number of images: " + this.state.allImages.length);
-    return this.state.allImages.map((photo, index) => {
+    //console.log("number of images: " + this.props.appState.rawImages.length);
+    return this.props.appState.rawImages.map((photo, index) => {
       return (
         <img className="surveyPhotoOdd"
              key={index}
@@ -105,8 +73,7 @@ class Images extends Component {
   }
 
   renderSegmentedImages() {
-    //console.log("number of images: " + this.state.allImages.length);
-    return this.state.segmentedImages.map((photo, index) => {
+    return this.props.appState.segmentedImages.map((photo, index) => {
       return (
         <img className="surveyPhotoOdd"
              key={index}
@@ -127,7 +94,7 @@ class Images extends Component {
   showPosition(photo) {
     // todo: highlight the border of selected photo
     let photo_name = photo.id;
-    fetch('/'+photoFolder+'/' + photo_name + '.json')
+    fetch('/'+this.props.appState.photoFolder+'/' + photo_name + '.json')
       .then(res => res.json())
       .then(location_data => {
         this.setState({
