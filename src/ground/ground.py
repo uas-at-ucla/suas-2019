@@ -41,8 +41,8 @@ moving_obstacles = None
 commands = []
 
 all_images = {
-    'raw': [],
-    'localized': [],
+    'raw': ['00019', 'flappy'],
+    'localized': ['00019'],
     'classified': []
 }
 new_images = {

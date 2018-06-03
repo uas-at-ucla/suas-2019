@@ -10,6 +10,8 @@ import Images from "./Images/Images";
 import Settings from "./Settings/Settings";
 import Training from "./Training/Training";
 
+const photoFolder = 'testPhotos'
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -26,11 +28,9 @@ class App extends Component {
       missions: [],
       followDrone: true,
       metric: true,
-      newImages: {
-        raw: [],
-        localized: [],
-        classified: []
-      }
+      photoFolder: photoFolder,
+      rawImages: [],
+      segmentedImages: []
     };
   }
 
@@ -129,26 +129,26 @@ class App extends Component {
       this.setState({drone_ping_ms: data.ms});
     });
 
-    this.socket.on("on_telemetry", telemetry => {
-      let newState = {
-        telemetry: telemetry.telemetry
-      }
-      if (telemetry.mission !== this.state.drone_mission_base64) {
-        newState.drone_mission_base64 = telemetry.mission;
-      }
-      telemetry = telemetry.telemetry;
-      if (telemetry.status && telemetry.status.state) {
-        newState.droneState = this.convertToTitleText(telemetry.status.state);
-      }
-
-      this.setState(newState);
-    });
-
-    this.socket.on("added_images", data => {
-      this.setState({newImages: data});
-    });
-
     this.socket.on("initial_data", data => {
+      let rawImages = []
+      for (let id of data.all_images.raw) {
+        rawImages.push({
+          id: id,
+          src: '/'+photoFolder+'/' + id + '.JPG'
+        });
+      }
+      let segmentedImages = []
+      for (let id of data.all_images.localized) {
+        segmentedImages.push({
+          id: id,
+          src: '/'+photoFolder+'/' + id + '.JPG'
+        });
+      }
+      this.setState({
+        rawImages: rawImages,
+        segmentedImages: segmentedImages
+      });
+
       if (data.drone_connected) {
         this.setState({droneState: "Drone Connected!"});
       }
@@ -165,6 +165,37 @@ class App extends Component {
 
         console.log("MISSION DATA!!!");
       }
+    });
+
+    this.socket.on("on_telemetry", telemetry => {
+      let newState = {
+        telemetry: telemetry.telemetry
+      }
+      if (telemetry.mission !== this.state.drone_mission_base64) {
+        newState.drone_mission_base64 = telemetry.mission;
+      }
+      telemetry = telemetry.telemetry;
+      if (telemetry.status && telemetry.status.state) {
+        newState.droneState = this.convertToTitleText(telemetry.status.state);
+      }
+
+      this.setState(newState);
+    });
+
+    this.socket.on("added_images", data => {
+      for (let id of data.raw) {
+        this.state.rawImages.push({
+          id: id,
+          src: '/'+photoFolder+'/' + id + '.JPG'
+        });
+      }
+      for (let id of data.localized) {
+        this.state.segmentedImages.push({
+          id: id,
+          src: '/'+photoFolder+'/' + id + '.JPG'
+        });
+      }
+      this.setState({});
     });
 
     this.socket.on("interop_data", data => {
