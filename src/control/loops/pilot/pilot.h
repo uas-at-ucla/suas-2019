@@ -31,7 +31,9 @@ namespace pilot {
 
 struct PilotOutput {
   Vector3D flight_velocities;
+  float yaw;
   bool bomb_drop;
+  bool alarm;
 };
 
 class Pilot {
@@ -42,7 +44,7 @@ class Pilot {
   PilotOutput Calculate(Position3D position, ::Eigen::Vector3d velocity);
   void PreprocessorThread();
   void SetMission(::lib::mission_manager::Mission mission);
-  Vector3D VelocityNavigator();
+  PilotOutput VelocityNavigator();
   bool MetGoal();
 
   void Quit() { run_ = false; }
