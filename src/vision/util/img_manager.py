@@ -8,7 +8,7 @@ import time
 from pathlib import PurePosixPath, PureWindowsPath
 
 sys.dont_write_bytecode = True
-sys.path.insert(0, '../../../lib')
+sys.path.insert(0, '../../lib')
 import process_manager
 
 
@@ -40,7 +40,7 @@ class ImgManager:
     def gen_id():
         nid = base64.urlsafe_b64encode(uuid.uuid4().bytes).decode('utf-8')[:-2]
         if nid[0] == '-':
-            nid[0] = '0'
+            nid = '0' + nid[1:]
         return nid
 
     def get_prop(self, img_id, prop, attempts=1):
@@ -55,7 +55,8 @@ class ImgManager:
                 return json.load(f)[prop]
         except OSError as err:
             if attempts <= 0 or self.master:
-                raise err  # retrieval failed twice in a row!
+                print('prop retrieval failed twice in a row!')
+                return None
             self._update_props(img_id)
             return self.get_prop(img_id, prop, attempts - 1)  # try again
         except KeyError as err:
@@ -70,55 +71,59 @@ class ImgManager:
             data[prop] = val
             with open(filename, 'w') as f:
                 json.dump(data, f)
+            return (prop, val)
         except OSError as err:
             if attempts <= 0 or self.master:
-                raise err  # retrieval failed twice in a row!
+                print('prop retrieval failed twice in a row!')
+                return None
             self._update_props(img_id)
             return self.set_prop(img_id, prop, val, attempts - 1)
 
     def _retrieve_img(self, img_id):
-        if 0 != processes.spawn_process_wait_for_code(
+        if 0 != self.procs.spawn_process_wait_for_code(
                 'rsync -vz --progress -e "ssh -p ' +
                 str(self.truth_src['port']) + '" "' + self.truth_src['user'] +
                 '@' + self.truth_src['addr'] + ':' + str(self.remote_dir /
                                                          (img_id + '.jpg')) +
                 '" ' + os.path.join(self.dir, img_id + '.jpg')):
-            # TODO handle download failure
-            pass
+            pass # Do nothing on download failure
 
     def _update_props(self, img_id):
-        if 0 != processes.spawn_process_wait_for_code(
+        if 0 != self.procs.spawn_process_wait_for_code(
                 'rsync -vz --progress -e "ssh -p ' +
                 str(self.truth_src['port']) + '" "' + self.truth_src['user'] +
                 '@' + self.truth_src['addr'] + ':' + str(self.remote_dir /
                                                          (img_id + '.json')) +
                 '" ' + os.path.join(self.dir, img_id + '.json.tmp')):
-            # TODO handle download failure
-            pass
-        else:
+            pass # Do nothing on download failure
+        else: # update image
             img_inc_path = os.path.join(self.dir, img_id)
             org_data = None
             data = None
+
+            # Read the original data
             try:
                 with open(img_inc_path + '.json', 'r') as f:
                     org_data = json.load(f)
             except OSError:
                 org_data = {}
 
+            # Read the new data
             try:
                 with open(img_inc_path + '.json.tmp', 'r') as f:
                     data = json.load(f)
+                os.remove(img_inc_path + '.json.tmp')
             except OSError:
                 # This should never happen; download failure is handled earlier
                 pass
 
+            # Append/Overwrite the old data with the new data
             new_data = dict(org_data, **data)
             try:
                 with open(img_inc_path + '.json', 'w') as f:
                     json.dump(new_data, f)
             except OSError:
-                # TODO handle OSError
-                pass
+                pass # Do nothing on OSError
 
     def get_img(self, img_id, attempts=1):
         # check local dir first
@@ -128,7 +133,7 @@ class ImgManager:
                 return cv2.imread(os.path.join(self.dir, f))
 
         # not in local dir, retrieve from original source of truth
-        if master:
+        if self.master:
             return None
         else:
             self._retrieve_img(img_id)
@@ -144,13 +149,13 @@ class ImgManager:
             cv2.imwrite(img_inc_path + '.jpg', img)
         except FileExistsError as err:
             if attempts <= 0:
-                raise err  # what are the chances of two collisions in a row?
+                print('what are the chances of two collisions in a row?')
+                return
             # try again with a random image
             process_image(json, attempts - 1)
             return
         except OSError:
-            # TODO handle OSError
-            pass
+            pass # Do nothing on OSError
 
     def create_new_img(self,
                        img,
@@ -175,7 +180,8 @@ class ImgManager:
             return img_info['id']
         except FileExistsError as err:
             if attempts <= 0:
-                raise err  # what are the chances of two collisions in a row?
+                print('what are the chances of two collisions in a row?')
+                return
             # try again with a random image
             return self.create_new_img(
                 img,
@@ -184,5 +190,4 @@ class ImgManager:
                 other=other,
                 attempts=attempts - 1)
         except OSError:
-            # TODO handle OSError
-            pass
+            pass # Do nothing on OS error
