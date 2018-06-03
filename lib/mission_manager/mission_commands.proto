@@ -32,6 +32,8 @@ message OffAxisCommand {
   required Position2D subject_location = 2;
 }
 
+
+// Primitive commands.
 message NothingCommand {}
 
 message SleepCommand {
@@ -46,6 +48,12 @@ message GotoCommand {
 message GotoRawCommand {
   required Position3D goal = 1;
   required bool come_to_stop = 2;
+}
+
+message TriggerBombDropCommand {
+}
+
+message TriggerAlarmCommand {
 }
 
 message Command {
@@ -68,6 +76,8 @@ message Command {
     SleepCommand SleepCommand = 7;
     GotoCommand GotoCommand = 8;
     GotoRawCommand GotoRawCommand = 9;
+    TriggerBombDropCommand TriggerBombDropCommand = 10;
+    TriggerAlarmCommand TriggerAlarmCommand = 11;
   }
 }
 
