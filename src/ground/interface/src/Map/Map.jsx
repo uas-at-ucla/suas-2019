@@ -670,7 +670,7 @@ class Map extends Component {
         longitude: lng,
         altitude: alt
       },
-      comeToStop: true
+      comeToStop: false
     });
     command.name = name;
     command.mission_point = mission_point;
