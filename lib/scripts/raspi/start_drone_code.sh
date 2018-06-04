@@ -10,6 +10,7 @@ killall screen
 killall mavproxy.py
 killall gphotofs
 killall gphoto
+killall tag_photos.sh
 
 # Clean up shared memory when restarting AOS core message queues.
 ipcrm --all
@@ -22,3 +23,4 @@ screen -d -m /home/pi/suas_2018_deploy/executables/flight_loop &
 screen -d -m /home/pi/suas_2018_deploy/executables/io &
 screen -d -m /home/pi/suas_2018_deploy/executables/ground_communicator &
 screen -d -m /home/pi/suas_2018_deploy/executables/log_writer &
+screen -d -m /home/pi/suas_2018_deploy/scripts/tag_photos.sh &
