@@ -15,3 +15,5 @@ socketIO-client==0.7.2
 numpy==1.13.1
 empy==3.3.2
 toml==0.9.4
+eventlet==0.23.0
+protobuf==3.5.2.post1

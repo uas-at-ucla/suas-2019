@@ -56,7 +56,7 @@ def run_install(args):
         print("ERROR: Must be sudo to run install script.")
         sys.exit(1)
 
-    processes.spawn_process("sudo tools/installation/install.sh")
+    processes.spawn_process("sudo bash tools/installation/install.sh")
     processes.wait_for_complete()
 
 
