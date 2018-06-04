@@ -76,6 +76,8 @@ queue_group FlightLoopQueue {
     float velocity_y;
     float velocity_z;
 
+    float yaw;
+
     float gimbal_angle;
     bool bomb_drop;
     bool alarm;

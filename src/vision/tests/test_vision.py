@@ -1,4 +1,5 @@
 import signal
+import json
 import socketIO_client
 import argparse
 import threading
@@ -6,6 +7,7 @@ import time
 import os
 import sys
 import unittest
+import xml.etree.ElementTree
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir('..')
@@ -87,6 +89,13 @@ def make_listener(name):
         print('{}: {}'.format(name, args))
     return listener
 
+letter_correct = 0
+shape_correct = 0
+total = 0
+total_size = 0
+done_emitting = False
+
+
 def create_mock_listeners():
     socket = socketIO.SocketIO('0.0.0.0', 8099)
     for name in MOCK_RECEIVERS:
@@ -130,5 +139,34 @@ if __name__ == '__main__':
     elif args.type == 'send':
         with socketIO_client.SocketIO('0.0.0.0', 8099) as socket:
             socket.emit('process_image', {'file_path': args.target})
+    elif args.type == 'evaluate':
+        with socketIO_client.SocketIO('0.0.0.0', 8099) as socket:
+            def check_img(*js):
+                img_id = js[0]['img_id']
+                with open(os.path.join('./data_local', img_id + '.json')) as f:
+                    data = json.load(f)
+                    root = xml.etree.ElementTree.parse(os.path.join(args.target, data['parent_img_id'] + '.xml')).getroot()
+                    real_shape = root[4][0].text
+                    real_letter = root[5].text
+
+                    global total
+                    global letter_correct
+                    global shape_correct
+                    total += 1
+                    if data['letter'] == real_letter:
+                        letter_correct += 1
+                    if data['shape'] == real_shape:
+                        shape_correct += 1
+
+                print('Total: {}    Letters: {}     Shapes: {}'.format(total, letter_correct, shape_correct))
+                if done_emitting and total == total_size:
+                    pass
+
+            socket.on('image_processed', check_img)
+            for img_path in os.listdir(args.target):
+                img_split = img_path.split('.')
+                if img_split[1] == 'jpg':
+                    socket.emit('process_image', {'file_path': os.path.join(args.target, img_path), 'img_id': img_split[0]})
+            socket.wait()
     elif args.type == 'manual':
         sample_manual_request(args)
