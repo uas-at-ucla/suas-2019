@@ -13,7 +13,10 @@ class Images extends Component {
       currentPhoto: null,
       allImages: [],
       photo_lat: null,
-      photo_lon: null
+      photo_lon: null,
+      startImageIndex: 0,
+      endImageIndex: 100
+
     }
     Object.keys(this.images).map((photo) => {
       this.state.allImages.push(photo);
@@ -27,6 +30,10 @@ class Images extends Component {
           <div className="col-md-4 col-sm-4 col-xs-4 text-center"
                id="raw-images">
             <h3>Raw Images</h3>
+            <div className="row">
+              <button onClick={this.gotoNextPage.bind(this)}>Next Page</button>
+              <button onClick={this.gotoPrevPage.bind(this)}>Prev Page</button>
+            </div>
             <div id="Raw-Images-List">
               {this.renderRawImages()}
               {
@@ -62,6 +69,21 @@ class Images extends Component {
     console.log(this.state.doubleClicked);
   }
 
+  gotoNextPage() {
+    if (this.state.allImages.length - this.state.startImageIndex > 100)
+      this.setState({
+        startImageIndex: this.state.startImageIndex + 100,
+        endImageIndex: this.state.endImageIndex + 100
+      });
+  }
+  gotoPrevPage() {
+    if (this.state.startImageIndex != 0)
+      this.setState({
+        startImageIndex: this.state.startImageIndex - 100,
+        endImageIndex: this.state.endImageIndex - 100
+      });
+  }
+
   // Import images from testPhotos folder
   importAll(r) {
     let images = {};
@@ -74,14 +96,19 @@ class Images extends Component {
   renderRawImages(myList) {
 
     //console.log("number of images: " + this.state.allImages.length);
-    return this.state.allImages.map((photo) => {
-      return (
-        <img className="surveyPhotoOdd"
-             id={photo} src={this.images[photo]}
-             onDoubleClick={() => this.photoshop(photo)}
-             onClick={()=>this.showPosition(photo)} />
-      );
-    })
+    return this.state.allImages
+      .slice(
+        this.state.startImageIndex,
+        Math.min(this.state.allImages.length, this.state.endImageIndex)
+      )
+      .map((photo) => {
+        return (
+          <img className="surveyPhotoOdd"
+               id={photo} src={this.images[photo]}
+               onDoubleClick={() => this.photoshop(photo)}
+               onClick={()=>this.showPosition(photo)} />
+        );
+      })
   }
 
   photoshop = (photo) => {
