@@ -92,6 +92,8 @@ if __name__ == '__main__':
                     "/home/pi/suas_2018_deploy/scripts/.")
     upload_to_drone('lib/scripts/take_photos_continuously.sh',
                     "/home/pi/suas_2018_deploy/scripts/.")
+    upload_to_drone('lib/scripts/tag_photos.sh',
+                    "/home/pi/suas_2018_deploy/scripts/.")
 
     upload_bin_to_drone('aos/linux_code/core',
                         "/home/pi/suas_2018_deploy/executables/aos_core")
@@ -124,6 +126,7 @@ if __name__ == '__main__':
             '-not -path \\"/home/pi/suas_2018_deploy/scripts/run_mavproxy.sh\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/scripts/download_photos.sh\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/scripts/take_photos_continuously.sh\\" ' + \
+            '-not -path \\"/home/pi/suas_2018_deploy/scripts/tag_photos.sh\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/executables/aos_core\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/executables/flight_loop\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/executables/io\\" ' + \
