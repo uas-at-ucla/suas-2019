@@ -64,6 +64,8 @@ void FlightLoop::DumpSensors() {
         << ::src::control::loops::flight_loop_queue.sensors->altitude
         << " RelativeAltitude: "
         << ::src::control::loops::flight_loop_queue.sensors->relative_altitude
+        << " Heading: "
+        << ::src::control::loops::flight_loop_queue.sensors->heading
         << " AccelX: "
         << ::src::control::loops::flight_loop_queue.sensors->accelerometer_x
         << " AccelY: "
