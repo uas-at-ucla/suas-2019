@@ -17,9 +17,15 @@ export default class ModalComponent extends React.Component {
             img_width: img.naturalWidth,
             img_height: img.naturalHeight
         };
-        this.toggle = this.toggle.bind(this);
+        this.close = this.close.bind(this);
         this.send_manual = this.send_manual.bind(this);
         this.send_manual_test = this.send_manual_test.bind(this);
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (nextProps.doubleClick !== this.props.doubleClick) {
+            this.setState({display: true});
+        }
     }
 
     componentWillMount() {
@@ -43,10 +49,8 @@ export default class ModalComponent extends React.Component {
         });
     }
 
-    toggle() {
-        this.setState({
-            display: !this.state.display
-        });
+    close() {
+        this.setState({display: false});
     }
 
     send_manual_test() {
@@ -68,6 +72,7 @@ export default class ModalComponent extends React.Component {
                 }]
             }
         });
+        this.props.socketEmit('cropped', img_id);
     }
     
     markCoords() {
@@ -89,7 +94,7 @@ export default class ModalComponent extends React.Component {
                         <ModalFooter>
                             <img className="resize" onClick={this.markCoords.bind(this)} onMouseMove={this._onMouseMove.bind(this)} src={this.props.image.src}/>
                         </ModalFooter>
-                        <Button color="danger" onClick={this.toggle}>Close</Button>
+                        <Button color="danger" onClick={this.close}>Close</Button>
                     </ModalBody>
                 </Modal>
             </div> 
