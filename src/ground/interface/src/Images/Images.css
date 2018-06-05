@@ -39,7 +39,6 @@
 
 .surveyPhotoEven
 {
-    height: 75px;
     width: 100px;
     position: relative;
     bottom: 0%;
@@ -49,7 +48,6 @@
 }
 .surveyPhotoOdd
 {
-    height: 75px;
     width: 100px;
     position: relative;
     top: 0%;
