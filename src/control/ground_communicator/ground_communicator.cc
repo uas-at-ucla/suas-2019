@@ -117,7 +117,8 @@ void connect() { socketio_ground_communicator->ConnectToGround(); }
 MissionReceiver::MissionReceiver()
     : phased_loop_(std::chrono::milliseconds(200),
                    std::chrono::milliseconds(0)),
-      running_(false) {
+      running_(false),
+      last_serial_telemetry_sent_(0) {
   socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
@@ -137,6 +138,12 @@ void MissionReceiver::ConnectToGround() {
 }
 
 void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
+  double current_time =
+      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+          ::std::chrono::system_clock::now().time_since_epoch())
+          .count() *
+      1e-9;
+
   sio::message::ptr all_data = sio::object_message::create();
 
   auto sensors = &::src::control::loops::flight_loop_queue.sensors;
@@ -163,6 +170,19 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
   std::map<std::string, sio::message::ptr>* goal_map = &goal_object->get_map();
   std::map<std::string, sio::message::ptr>* output_map =
       &output_object->get_map();
+
+  if(current_time - last_serial_telemetry_sent_ > 0.1) {
+    // Time to send another serial telemetry message.
+    ::std::cout << "SENDING SERIAL\n";
+    ::lib::serial_comms::SerialCommsMessage message;
+    message.set_latitude(5);
+    message.set_longitude(10);
+    message.set_altitude(15);
+
+    serial_comms_bridge_.SendData(message);
+
+    last_serial_telemetry_sent_ = current_time;
+  }
 
   bool send_sensors;
   bool send_status;
