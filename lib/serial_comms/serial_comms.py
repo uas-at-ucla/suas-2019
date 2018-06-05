@@ -40,7 +40,6 @@ class GroundSerialComms:
         while not self.stopped:
             buf = ""
             while True:
-                time.sleep(0.001)
                 try:
                     oneByte = self.ser.read(1)
                 except:
@@ -49,7 +48,7 @@ class GroundSerialComms:
                 if oneByte == b"\r":
                     break
                 else:
-                    buf += oneByte.decode("ascii")
+                    buf += oneByte
 
             self.parse_message(buf)
 
@@ -71,8 +70,7 @@ class GroundSerialComms:
         proto_msg = serial_comms_message_proto.SerialCommsMessage()
 
         try:
-            proto_msg.ParseFromString(protobuf_encoded \
-                    .decode('base64'))
+            proto_msg.ParseFromString(protobuf_encoded)
         except:
             print("INVALID MESSAGE")
             return
