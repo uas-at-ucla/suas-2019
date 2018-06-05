@@ -4,6 +4,7 @@ import signal
 import time
 import json
 import threading
+import argparse
 from flask import Flask, render_template, request
 import flask_socketio, socketIO_client
 
@@ -40,7 +41,7 @@ moving_obstacles = None
 
 commands = []
 
-image_folder = "./interface/public/testPhotos/"
+image_folder = "testPhotos/"
 all_images = {
     'raw': ['00019', 'flappy'],
     'localized': ['00019cropped'],
@@ -201,8 +202,6 @@ def send_cropped_images(data):
                 room='frontend')
         except:
             print "Invalid Object Data!!!"
-
-
 
 
 @ground_socketio_server.on('execute_commands')
@@ -463,8 +462,26 @@ def send_images_to_frontend():
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
-    processes.spawn_process("npm start --silent --prefix ./interface/", None,
-                            True, False)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--static', action="store_true")
+    options = parser.parse_args()
+
+    print ""
+
+    if options.static:
+        image_folder = './interface/build/' + image_folder
+        processes.spawn_process("python interface/serve_client.py", None,
+                                True, False)
+        print "Ground station at http://0.0.0.0:8080"
+        print "-----------------------------------------------------"
+        print "NOTE: Ensure that you ran: python interface/build.py"
+    else:
+        image_folder = './interface/public/' + image_folder
+        processes.spawn_process("npm start --silent --prefix ./interface/", None,
+                                True, False)
+        print "Ground station at http://localhost:3000"
+    print "-----------------------------------------------------"
+
 
     if AUTO_CONNECT_TO_INTEROP:
         t_connect = threading.Thread(target=auto_connect_to_interop)

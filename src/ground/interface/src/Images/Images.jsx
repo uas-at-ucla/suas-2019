@@ -96,7 +96,7 @@ class Images extends Component {
     } else if (this.props.appState.manualCroppedImageParents.find(el => el === this.props.appState.croppedImages[id])) {
       return {borderBottom: "4px solid rgba(255, 0, 0, 2)"};
     } else {
-      return {borderBottom: "1px solid rgba(81, 203, 238, 2)"};
+      return {};
     }
   }
 
@@ -106,7 +106,7 @@ class Images extends Component {
     } else if (this.props.appState.manualCroppedImageParents.find(el => el === id)) {
       return {borderBottom: "4px solid rgba(255, 0, 0, 2)"};
     } else {
-      return {borderBottom: "1px solid rgba(81, 203, 238, 2)"};
+      return {};
     }
   }
 
