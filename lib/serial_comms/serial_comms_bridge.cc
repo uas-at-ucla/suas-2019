@@ -4,7 +4,7 @@ namespace lib {
 namespace serial_comms {
 
 SerialCommsBridge::SerialCommsBridge()
-    : context_(1), socket_(context_, ZMQ_PAIR) {
+    : context_(1), socket_(context_, ZMQ_PUB) {
   socket_.connect("ipc:///tmp/serial_comms.ipc");
 }
 

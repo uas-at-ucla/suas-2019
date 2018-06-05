@@ -78,15 +78,16 @@ class GroundSerialComms:
         print(proto_msg.latitude)
 
     def send_protobuf(self, proto_msg):
-        protobuf_encoded = proto_msg.SerializeToString() \
-                .encode('base64')
+        proto_msg.unix_timestamp = time.time()
+
+        protobuf_encoded = proto_msg.SerializeToString()
         checksum = hashlib.sha224(protobuf_encoded) \
                 .hexdigest()
 
         message = checksum + "##" + protobuf_encoded + "\r"
         print("SENDING " + str(message))
 
-        self.ser.write(message.encode())
+        self.ser.write(message)
 
     def send_message(self, latitude, longitude, altitude):
         proto_msg = serial_comms_message_proto.SerialCommsMessage()
@@ -117,7 +118,8 @@ def run_sender(args):
 
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    socket.bind ("ipc:///tmp/serial_comms.ipc")
+    socket.bind("ipc:///tmp/serial_comms.ipc")
+    socket.setsockopt(zmq.SUBSCRIBE, "")
 
     while True:
         time.sleep(0.2)
@@ -131,7 +133,7 @@ def run_sender(args):
             print("INVALID MESSAGE")
             continue
 
-        ground_serial_comms.send_message(proto_msg)
+        ground_serial_comms.send_protobuf(proto_msg)
 
 def run_receiver(args):
     print("Running serial receiver...")
