@@ -87,7 +87,6 @@ class GroundSerialComms:
                 .hexdigest()
 
         message = checksum + "##" + protobuf_encoded + "\r"
-        print("SENDING " + str(message))
 
         self.ser.write(message)
 
