@@ -58,8 +58,6 @@ class GroundSerialComms:
 
         checksum = raw_message[0:224 / 4]
         protobuf_encoded = raw_message[224 / 4 + 2:]
-        print(protobuf_encoded)
-        print(checksum)
         calculated_checksum = hashlib.sha224(protobuf_encoded) \
                 .hexdigest()
 
@@ -85,7 +83,6 @@ class GroundSerialComms:
                 .hexdigest()
 
         message = checksum + "##" + protobuf_encoded + "\r"
-        print("SENDING " + str(message))
 
         self.ser.write(message)
 
