@@ -6,6 +6,7 @@ import json
 import threading
 from flask import Flask, render_template, request
 import flask_socketio, socketIO_client
+import base64
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
@@ -65,7 +66,7 @@ def connect(room):
     global drone_ip
 
     flask_socketio.join_room(room)
-    print(room + " connected! (ip: " + request.remote_addr + ")")
+    print((room + " connected! (ip: " + request.remote_addr + ")"))
 
     if room == 'frontend':
         data = None
@@ -186,10 +187,10 @@ def telemetry(received_telemetry):
     passed_loops = received_telemetry['loop_index'] - drone_loop_num;
 
     if passed_messages > 1:
-        print "Lost " + str(passed_messages - 1) + " telemetry messages!"
+        print("Lost " + str(passed_messages - 1) + " telemetry messages!")
 
     if passed_loops - passed_messages > 0:
-        print "Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!"
+        print("Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!")
 
     
     telemetry_num = received_telemetry['message_index']
@@ -334,7 +335,7 @@ def interop_data_to_obstacles_proto(data):
         proto_obstacle.location.latitude = obstacle['latitude']
         proto_obstacle.location.longitude = obstacle['longitude']
 
-    return obstacles.SerializeToString().encode('base64')
+    return base64.b64encode(obstacles.SerializeToString())
 
 
 def ping_drone():
