@@ -40,6 +40,7 @@ moving_obstacles = None
 
 commands = []
 
+image_folder = "./interface/public/testPhotos/"
 all_images = {
     'raw': ['00019', 'flappy'],
     'localized': ['00019cropped'],
@@ -175,10 +176,33 @@ def send_cropped_images(image_id):
 
 @ground_socketio_server.on('classified')
 def send_cropped_images(data):
-    manual_classified_images.append(data)
-    # TODO: submit to interop
-    ground_socketio_server.emit('classified_image', data, \
-        room='frontend')
+    if interop_client is not None:
+        try:
+            obj = data['object']
+            odlc = interop.Odlc(
+                type=obj['type'], \
+                latitude=obj['latitude'], \
+                longitude=obj['longitude'], \
+                orientation=obj['orientation'], \
+                shape=obj['shape'], \
+                background_color=obj['background_color'], \
+                alphanumeric=obj['alphanumeric'], \
+                alphanumeric_color=obj['alphanumeric_color'], \
+                autonomous=False \
+            )
+            odlc_id = interop_client.post_odlc(odlc).result().id
+            print odlc_id
+            with open(image_folder + data['id'] + '.JPG', 'rb') as f:
+                image_data = f.read()
+            interop_client.post_odlc_image(odlc_id, image_data).result()
+
+            manual_classified_images.append(data)
+            ground_socketio_server.emit('classified_image', data, \
+                room='frontend')
+        except:
+            print "Invalid Object Data!!!"
+
+
 
 
 @ground_socketio_server.on('execute_commands')
