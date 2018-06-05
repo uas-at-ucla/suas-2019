@@ -508,7 +508,7 @@ def calculate_target_coordinates(target_pos_pixel,
             pixel_to_sensor_ratio += sensor_dim / pixel_dim
     pixel_to_sensor_ratio /= 2
 
-    scaling_ratio = altitude * 1000 / focal_length * pixel_to_sensor_ratio
+    scaling_ratio = altitude / focal_length * pixel_to_sensor_ratio
     parent_img_center = tuple(int(component / 2)
                               for component in parent_img_dimensions_pixel)
     target_vec = np.fromiter(
