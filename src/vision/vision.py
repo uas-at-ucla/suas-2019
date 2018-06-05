@@ -15,6 +15,7 @@ import json as json_module
 import hashlib
 import base64
 import sqlite3
+import numpy as np
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
@@ -43,6 +44,9 @@ import ntpath  # finding the name of a file (windows compatible)
 sys.path.insert(0, './util')
 from util.img_manager import ImgManager
 
+# Constants ####################################################################
+
+R_EARTH = 6.371e6 # meters (avg radius if earth were a sphere)
 
 # Defaults #####################################################################
 
@@ -50,6 +54,10 @@ from util.img_manager import ImgManager
 DEFAULT_DATA_DIR = os.path.abspath('data_local')
 print('cwd: ' + os.getcwd())
 print('dir: ' + DEFAULT_DATA_DIR)
+
+# Camera Defaults
+CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9) # mm
+LENS_FOCAL_LENGTH = 18 # mm
 
 # Server defaults
 DRONE_USER = 'benlimpa'
@@ -462,6 +470,62 @@ def manual_request_done(json):
 @vision_socketio_server.on('get_all_images')
 def return_all_images(json):
     server_task_queue.put({'type': 'retrieve_records'})
+
+@vision_socketio_server.on('calc_target_coords')
+def call_calc_target_coords(json):
+    lat, lng = calculate_target_coordinates(
+        target_pos_pixel=json['target_pixel_pos'],
+        parent_img_real_coords=json['parent_img_real_coords'],
+        parent_img_dimensions_pixel=json['parent_img_dimensions'],
+        altitude=json['altitude'],
+        heading=json['heading'])
+    vision_socketio_server.emit('found_target_coords', {'lat': lat, 'lng': lng})
+
+def calculate_target_coordinates(target_pos_pixel,
+                                 parent_img_real_coords,
+                                 parent_img_dimensions_pixel,
+                                 altitude,
+                                 heading,
+                                 focal_length=LENS_FOCAL_LENGTH,
+                                 sensor_dimensions=CAMERA_SENSOR_DIMENSIONS):
+    """ Calculate the coordinates of a target in an image.
+
+    Arguments:
+    target_pos_pixel -- (pixels) the tuple(x, y) position of the target (top-left origin)
+    parent_img_real_coords -- (ISO 6709, degrees) the (lat, lng) position of the center of the image
+    parent_img_dimensions_pixel -- (pixels) the dimensions of the image
+    altitude -- (m) the altitude when the image was taken
+    heading -- (CCW degrees) the direction of the top of the picture
+    sensor_dimensions -- (mm) the dimensions of the sensor !!! ratio must match image !!!
+    focal_length -- (mm) the focal_length of the lens
+    """
+    #yapf: disable
+
+    # get the average of ratio from the two dimensions
+    pixel_to_sensor_ratio = 0
+    for pixel_dim in parent_img_dimensions_pixel:
+        for sensor_dim in sensor_dimensions:
+            pixel_to_sensor_ratio += sensor_dim / pixel_dim
+    pixel_to_sensor_ratio /= 2
+
+    scaling_ratio = altitude * 1000 / focal_length * pixel_to_sensor_ratio
+    parent_img_center = tuple(int(component / 2)
+                              for component in parent_img_dimensions_pixel)
+    target_vec = np.fromiter(
+        (scaling_ratio * (parent_comp - target_comp)
+         for parent_comp in parent_img_center
+         for target_comp in target_pos_pixel),
+        dtype=np.float64)
+    rotation_matrix = np.array([[math.cos(heading), -math.sin(heading)],
+                                [math.sin(heading),  math.cos(heading)]])
+    #yapf: enable
+    target_vec = rotation_matrix @ target_vec
+    new_lat = parent_img_real_coords[0] + (-target_vec[1] / R_EARTH) * 180 / math.pi
+    # this is an approximation assuming the latitude remains constant
+    # (or is very small compared to the radius of the earth)
+    new_lng = parent_img_real_coords[1] +
+                (target_vec[0] / (R_EARTH / math.cos(new_lat))) * 180 / math.pi
+    return (new_lat, new_lng)
 
 
 # TODO handle autodownloading images as needed
