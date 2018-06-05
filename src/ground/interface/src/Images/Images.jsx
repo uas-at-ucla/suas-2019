@@ -13,7 +13,7 @@ class Images extends Component {
       currentPhoto: null,
       allImages: [],
       photo_lat: null,
-      photo_lon: null
+      photo_lon: null,
     }
     Object.keys(this.images).map((photo) => {
       this.state.allImages.push(photo);
@@ -69,15 +69,14 @@ class Images extends Component {
     return images;
   }
 
-  images = this.importAll(require.context('../../public/testPhotos', false, /\.(png|jpe?g|svg)$/));
+  images = this.importAll(require.context('../../public/testPhotos', false, /\.(png|jpe?g|svg)|JPE?G$/));
+  /* images = this.importAll(require.context('../../public/testPhotos', false, /\.(png|jpe?g|svg)/));*/
 
   renderRawImages(myList) {
-
-    //console.log("number of images: " + this.state.allImages.length);
     return this.state.allImages.map((photo) => {
       return (
-        <img className="surveyPhotoOdd"
-             id={photo} src={this.images[photo]}
+        <img className="individual-raw-photo"
+             key={photo} src={this.images[photo]}
              onDoubleClick={() => this.photoshop(photo)}
              onClick={()=>this.showPosition(photo)} />
       );
@@ -93,16 +92,18 @@ class Images extends Component {
   }
 
   showPosition(photo) {
-    // todo: highlight the border of selected photo
     let photo_name = photo.slice(0, photo.length-4);
     fetch('/testPhotos/' + photo_name + '.json')
       .then(res => res.json())
-      .then(location_data => {
+      .catch(error => console.log("No JSON file exists!"))
+      .then(response => {
         this.setState({
-          photo_lat: location_data.location.lat,
-          photo_lon: location_data.location.lon
+          photo_lat: response.location.lat,
+          photo_lon: response.location.lon
         });
-      });
+      })
+      .catch(error => console.log("Fetch request failed."))
+
   }
 
   submitToInterop = () => {
