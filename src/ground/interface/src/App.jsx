@@ -144,16 +144,20 @@ class App extends Component {
       for (let id of data.all_images.localized) {
         fetch('/'+photoFolder+'/' + id + '.json')
           .then(res => res.json())
+          .catch(error => console.log("No JSON file exists!"))
           .then(data => {
             console.log(data)
             let croppedImages = Object.assign({}, this.state.croppedImages);
             croppedImages[id] = data.parent_img_id;
             this.setState({croppedImages: croppedImages});
-          });
+          })
+          .catch(error => console.log("Fetch request failed."));
         segmentedImages.push({
           id: id,
           src: '/'+photoFolder+'/' + id + '.JPG'
-        });
+        })
+
+
       }
       this.setState({
         rawImages: rawImages,
