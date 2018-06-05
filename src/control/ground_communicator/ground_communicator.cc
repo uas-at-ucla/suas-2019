@@ -138,6 +138,7 @@ void MissionReceiver::ConnectToGround() {
 }
 
 void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
+
   double current_time =
       ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
           ::std::chrono::system_clock::now().time_since_epoch())
@@ -170,19 +171,6 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
   std::map<std::string, sio::message::ptr>* goal_map = &goal_object->get_map();
   std::map<std::string, sio::message::ptr>* output_map =
       &output_object->get_map();
-
-  if(current_time - last_serial_telemetry_sent_ > 0.1) {
-    // Time to send another serial telemetry message.
-    ::std::cout << "SENDING SERIAL\n";
-    ::lib::serial_comms::SerialCommsMessage message;
-    message.set_latitude(5);
-    message.set_longitude(10);
-    message.set_altitude(15);
-
-    serial_comms_bridge_.SendData(message);
-
-    last_serial_telemetry_sent_ = current_time;
-  }
 
   bool send_sensors;
   bool send_status;
@@ -268,6 +256,18 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
 
     (*sensors_map)["autopilot_state"] =
         sio::string_message::create(autopilot_state_string);
+
+    if(current_time - last_serial_telemetry_sent_ > 0.5) {
+      // Time to send another serial telemetry message.
+      ::lib::serial_comms::SerialCommsMessage message;
+      message.set_latitude((*sensors)->latitude);
+      message.set_longitude((*sensors)->longitude);
+      message.set_altitude((*sensors)->relative_altitude);
+
+      serial_comms_bridge_.SendData(message);
+
+      last_serial_telemetry_sent_ = current_time;
+    }
   }
 
   if (status->get()) {
