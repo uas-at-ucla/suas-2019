@@ -42,7 +42,7 @@ commands = []
 
 all_images = {
     'raw': ['00019', 'flappy'],
-    'localized': ['00019'],
+    'localized': ['00019cropped'],
     'classified': []
 }
 new_images = {
@@ -51,6 +51,7 @@ new_images = {
     'classified': []
 }
 manual_cropped_images = [] # list of ids of raw images that were manually cropped
+manual_classified_images = [] # list of objects containing id: "id" and object: {latitude, etc.}
 
 telemetry_num = 0
 drone_loop_num = 0
@@ -93,6 +94,8 @@ def connect(room):
             data['drone_connected'] = True
 
         data['all_images'] = all_images
+        data['manual_cropped_images'] = manual_cropped_images
+        data['manual_classified_images'] = manual_classified_images
 
         flask_socketio.emit('initial_data', data)
 
@@ -156,9 +159,25 @@ def send_ping_result(data):
     flask_socketio.emit('drone_ping', data, \
         room='frontend')
 
+
 @ground_socketio_server.on('added_images')
 def send_added_images(data):
     flask_socketio.emit('added_images', data, \
+        room='frontend')
+
+
+@ground_socketio_server.on('cropped')
+def send_cropped_images(image_id):
+    manual_cropped_images.append(image_id)
+    ground_socketio_server.emit('cropped_image', image_id, \
+        room='frontend')
+
+
+@ground_socketio_server.on('classified')
+def send_cropped_images(data):
+    manual_classified_images.append(data)
+    # TODO: submit to interop
+    ground_socketio_server.emit('classified_image', data, \
         room='frontend')
 
 

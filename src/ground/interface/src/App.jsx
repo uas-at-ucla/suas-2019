@@ -30,7 +30,10 @@ class App extends Component {
       metric: true,
       photoFolder: photoFolder,
       rawImages: [],
-      segmentedImages: []
+      segmentedImages: [],
+      croppedImages: {},
+      manualCroppedImageParents: [],
+      manualClassifiedImages: []
     };
   }
 
@@ -139,6 +142,14 @@ class App extends Component {
       }
       let segmentedImages = []
       for (let id of data.all_images.localized) {
+        fetch('/'+photoFolder+'/' + id + '.json')
+          .then(res => res.json())
+          .then(data => {
+            console.log(data)
+            let croppedImages = Object.assign({}, this.state.croppedImages);
+            croppedImages[id] = data.parent_img_id;
+            this.setState({croppedImages: croppedImages});
+          });
         segmentedImages.push({
           id: id,
           src: '/'+photoFolder+'/' + id + '.JPG'
@@ -146,7 +157,9 @@ class App extends Component {
       }
       this.setState({
         rawImages: rawImages,
-        segmentedImages: segmentedImages
+        segmentedImages: segmentedImages,
+        manualClassifiedImages: data.manual_classified_images,
+        manualCroppedImageParents: data.manual_cropped_images
       });
 
       if (data.drone_connected) {
@@ -190,12 +203,32 @@ class App extends Component {
         });
       }
       for (let id of data.localized) {
+        fetch('/'+photoFolder+'/' + id + '.json')
+          .then(res => res.json())
+          .then(data => {
+            let croppedImages = Object.assign({}, this.state.croppedImages);
+            croppedImages[id] = data.parent_img_id;
+            this.setState({croppedImages: croppedImages});
+          });
+
         this.state.segmentedImages.push({
           id: id,
           src: '/'+photoFolder+'/' + id + '.JPG'
         });
       }
       this.setState({});
+    });
+
+    this.socket.on("cropped_image", id => {
+      let manualCroppedImageParents = this.state.manualCroppedImageParents.slice()
+      manualCroppedImageParents.push(id);
+      this.setState({manualCroppedImageParents: manualCroppedImageParents});
+    });
+
+    this.socket.on("classified_image", data => {
+      let manualClassifiedImages = this.state.manualClassifiedImages.slice()
+      manualClassifiedImages.push(data);
+      this.setState({manualClassifiedImages: manualClassifiedImages});
     });
 
     this.socket.on("interop_data", data => {
