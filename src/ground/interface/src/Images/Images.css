@@ -37,38 +37,14 @@
     width: 525px;
 }
 
-.surveyPhotoEven
-{
-    width: 100px;
-    position: relative;
-    bottom: 0%;
-    box-shadow: 0 0 5px rgba(81, 203, 238, 1)!important;
-    padding: 3px 0px 3px 3px;
-    margin: 5px;
-}
-.surveyPhotoOdd
-{
+.individual-raw-photo {
+    height: 75px;
     width: 100px;
     position: relative;
     top: 0%;
     box-shadow: 0 0 5px rgba(81, 203, 238, 1)!important;
     padding: 3px 0px 3px 3px;
     margin: 5px;
-}
-
-#ImageOptions
-{
-    z-index: 100!important;
-    position: absolute;
-    bottom: 175px;
-    -webkit-box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
-    -moz-box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
-    box-shadow: 0px 2px 10px 0px rgba(0, 0, 0, 0.7);
-    background-color: rgba(0, 0, 0, 0.7);
-    border-radius: 5px;
-    left:5px;
-
-
 }
 
 #actionBar
@@ -83,7 +59,6 @@
     border-radius: 5px;
     left: 50%;
     transform: translate(-50%, -50%);
-
 }
 
 .actionBtn, .actionBtn:hover, .actionBtn:visited

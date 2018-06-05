@@ -87,8 +87,8 @@ class Images extends Component {
             </div> {/*raw-page-progress*/}
             <div id="Raw-Images-List">
               {this.renderRawImages()}
-              {this.state.currentPhoto ? 
-                <ModalComponent image={this.state.currentPhoto} 
+              {this.state.currentPhoto ?
+                <ModalComponent image={this.state.currentPhoto}
                                 doubleClick={this.state.doubleClickRaw}
                                 socketEmit={this.props.socketEmit}/> : null
               }
@@ -98,8 +98,8 @@ class Images extends Component {
             <h3>Segmented Images</h3>
             <div id="Segmented-Images-List">
               {this.renderSegmentedImages()}
-              {this.state.currentCroppedPhoto ? 
-                <Classify image={this.state.currentCroppedPhoto} 
+              {this.state.currentCroppedPhoto ?
+                <Classify image={this.state.currentCroppedPhoto}
                           doubleClick={this.state.doubleClickCropped}
                           socketEmit={this.props.socketEmit}
                           object={this.state.submittedObject}/> : null
@@ -146,7 +146,7 @@ class Images extends Component {
         Math.min(this.props.appState.rawImages.length, this.state.endImageIndex)
       ).map((photo, index) => {
       return (
-        <img className="surveyPhotoOdd"
+        <img className="individual-raw-photo"
              key={index}
              id={photo.id} src={photo.src}
              onDoubleClick={() => this.photoshop(photo)}
@@ -210,16 +210,18 @@ class Images extends Component {
   }
 
   showPosition(photo) {
-    // todo: highlight the border of selected photo
     let photo_name = photo.id;
     fetch('/'+this.props.appState.photoFolder+'/' + photo_name + '.json')
       .then(res => res.json())
-      .then(location_data => {
+      .catch(error => console.log("No JSON file exists!"))
+      .then(response => {
         this.setState({
-          photo_lat: location_data.location.lat,
-          photo_lon: location_data.location.lon
+          photo_lat: response.location.lat,
+          photo_lon: response.location.lon
         });
-      });
+      })
+      .catch(error => console.log("Fetch request failed."))
+
   }
 }
 
