@@ -3,9 +3,8 @@ import './Images.css';
 import logo from '../graphics/vector_logo.svg';
 import Position from './Position';
 import ModalComponent from './Modal';
+import { PageHeader, ProgressBar } from 'react-bootstrap';
 import Classify from './Classify'
-
-import { PageHeader } from 'react-bootstrap';
 
 class Images extends Component {
   constructor (props) {
@@ -14,8 +13,15 @@ class Images extends Component {
       currentPhoto: null,
       currentCroppedPhoto: null,
       photo_lat: null,
-      photo_lon: null
+      photo_lon: null,
+      startImageIndex: 0,
+      endImageIndex: 100
     }
+  }
+
+  onImageIndexChange(event) {
+      const name = event.target.name;
+      this.setState({[name]: event.target.value});
   }
 
   render() {
@@ -25,6 +31,60 @@ class Images extends Component {
           <div className="col-md-4 col-sm-4 col-xs-4 text-center"
                id="raw-images">
             <h3>Raw Images</h3>
+            <div className="row" id="raw-page-controls">
+              <div className="input-group input-group-sm col">
+                <div className="input-group-prepend">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={this.gotoPrevPage.bind(this)}
+                  >
+                    -100
+                  </button>
+                </div>
+                <input
+                  name="startImageIndex"
+                  className="form-control"
+                  type="number"
+                  onChange={this.onImageIndexChange.bind(this)}
+                  value={this.state.startImageIndex}
+                />
+                <div className="input-group-prepend input-group-append">
+                  <span className="input-group-text">to</span>
+                </div>
+                <input
+                  name="endImageIndex"
+                  className="form-control"
+                  type="number"
+                  onChange={this.onImageIndexChange.bind(this)}
+                  value={this.state.endImageIndex}
+                />
+                <div className="input-group-append">
+                  <button
+                    type="button"
+                    className="btn btn-outline-secondary"
+                    onClick={this.gotoNextPage.bind(this)}
+                  >
+                    +100
+                  </button>
+                </div>
+              </div>
+            </div> {/*raw-page-controls*/}
+            <div style={{marginTop: '3%'}} className="row" id="raw-page-progress">
+              <div className="col-1">
+                <span style={{float: 'left'}} className="badge">0</span>
+              </div>
+              <div className="col">
+                <ProgressBar>
+                  <ProgressBar style={{backgroundColor: '#e9ecef'}} now={this.state.startImageIndex/this.props.appState.rawImages.length*100} key={1} />
+                  <ProgressBar striped bsStyle="info" now={(this.state.endImageIndex - this.state.startImageIndex)/this.props.appState.rawImages.length*100} key={2} />
+                  <ProgressBar style={{backgroundColor: '#e9ecef'}} now={(this.props.appState.rawImages.length - this.state.endImageIndex)/this.props.appState.rawImages.length*100} key={3} />
+                </ProgressBar>
+              </div>
+              <div style={{marginLeft: '1.5%'}} className="col-1">
+                <span style={{float: 'right'}} className="badge">{this.props.appState.rawImages.length}</span>
+              </div>
+            </div> {/*raw-page-progress*/}
             <div id="Raw-Images-List">
               {this.renderRawImages()}
               {this.state.currentPhoto ? 
@@ -32,8 +92,8 @@ class Images extends Component {
                                 doubleClick={this.state.doubleClickRaw}
                                 socketEmit={this.props.socketEmit}/> : null
               }
-            </div>
-          </div>
+            </div> {/*raw-images-list*/}
+          </div> {/*raw-images*/}
           <div className="col-md-4 col-sm-4 col-xs-4 text-center">
             <h3>Segmented Images</h3>
             <div id="Segmented-Images-List">
@@ -59,13 +119,32 @@ class Images extends Component {
           <button className="actionBtn" id="SubmitBtn" onClick={this.submitToInterop}>Submit</button>
         </div>
       </div>
-
     );
+  }
+
+  gotoNextPage() {
+    if (parseInt(this.props.appState.rawImages.length) - parseInt(this.state.startImageIndex) > 100)
+      this.setState({
+        startImageIndex: parseInt(this.state.startImageIndex) + 100,
+        endImageIndex: parseInt(this.state.endImageIndex) + 100
+      });
+  }
+
+  gotoPrevPage() {
+    if (parseInt(this.state.startImageIndex) != 0)
+      this.setState({
+        startImageIndex: parseInt(this.state.startImageIndex) - 100,
+        endImageIndex: parseInt(this.state.endImageIndex) - 100
+      });
   }
 
   renderRawImages() {
     //console.log("number of images: " + this.props.appState.rawImages.length);
-    return this.props.appState.rawImages.map((photo, index) => {
+    return this.props.appState.rawImages
+      .slice(
+        this.state.startImageIndex,
+        Math.min(this.props.appState.rawImages.length, this.state.endImageIndex)
+      ).map((photo, index) => {
       return (
         <img className="surveyPhotoOdd"
              key={index}
