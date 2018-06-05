@@ -46,7 +46,6 @@
     box-shadow: 0 0 5px rgba(81, 203, 238, 1)!important;
     padding: 3px 0px 3px 3px;
     margin: 5px;
-    border: 1px solid rgba(81, 203, 238, 1);
 }
 .surveyPhotoOdd
 {
@@ -57,7 +56,6 @@
     box-shadow: 0 0 5px rgba(81, 203, 238, 1)!important;
     padding: 3px 0px 3px 3px;
     margin: 5px;
-    border: 1px solid rgba(81, 203, 238, 1);
 }
 
 #ImageOptions
