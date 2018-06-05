@@ -75,6 +75,9 @@ export default class Classify extends React.Component {
         let object = {}
         for (let key of object_keys) {
             object[key] = this.state[key];
+            if (key === "latitude" || key === "longitude") {
+                object[key] = Number(object[key]);
+            }
         }
         this.props.socketEmit("classified", {
             id: this.props.image.id,
