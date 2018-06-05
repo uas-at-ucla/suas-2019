@@ -520,11 +520,12 @@ def calculate_target_coordinates(target_pos_pixel,
                                 [math.sin(heading),  math.cos(heading)]])
     #yapf: enable
     target_vec = rotation_matrix @ target_vec
-    new_lat = parent_img_real_coords[0] + (-target_vec[1] / R_EARTH) * 180 / math.pi
+    new_lat = parent_img_real_coords[0] + (
+        -target_vec[1] / R_EARTH) * 180 / math.pi
     # this is an approximation assuming the latitude remains constant
-    # (or is very small compared to the radius of the earth)
-    new_lng = parent_img_real_coords[1] +
-                (target_vec[0] / (R_EARTH / math.cos(new_lat))) * 180 / math.pi
+    # or is very small compared to the radius of the earth
+    new_lng = parent_img_real_coords[1] + (
+        target_vec[0] / (R_EARTH / math.cos(new_lat))) * 180 / math.pi
     return (new_lat, new_lng)
 
 
