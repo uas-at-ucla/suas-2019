@@ -42,6 +42,7 @@ class GroundSerialComms:
         self.read_thread.start()
 
     def read_data(self):
+        time.sleep(0.001)
         while not self.stopped:
             buf = ""
             while True:
@@ -63,6 +64,7 @@ class GroundSerialComms:
 
         checksum = raw_message[0:224 / 4]
         protobuf_encoded = raw_message[224 / 4 + 2:]
+
         calculated_checksum = hashlib.sha224(protobuf_encoded) \
                 .hexdigest()
 
