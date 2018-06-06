@@ -18,10 +18,15 @@ RRTAvoidance::RRTAvoidance()
 }
 
 ::std::vector<Position3D> RRTAvoidance::Process(
-    Position3D start, Position3D end, ::std::vector<Obstacle> obstacles) {
+    Position3D start, Position3D end,
+    ::lib::mission_manager::Obstacles obstacles) {
+  if(start.latitude == end.latitude && start.longitude == end.longitude) {
+    return ::std::vector<Position3D>();
+  }
+
   birrt_.Reset();
 
-  int rows = 2 + obstacles.size();
+  int rows = 2 + obstacles.static_obstacles_size();
 
   ::Eigen::MatrixXd m(rows, 3);
 
@@ -35,18 +40,26 @@ RRTAvoidance::RRTAvoidance()
   m(1, 1) = end.longitude;
   m(1, 2) = 0;
   for (int i = 2; i < rows; i++) {
-    m(i, 0) = obstacles.at(i - 2).position.latitude;
-    m(i, 1) = obstacles.at(i - 2).position.longitude;
-    m(i, 2) = obstacles.at(i - 2).radius * 1.3;
+    m(i, 0) = obstacles.static_obstacles(i - 2).location().latitude();
+    m(i, 1) = obstacles.static_obstacles(i - 2).location().longitude();
+    m(i, 2) = obstacles.static_obstacles(i - 2).cylinder_radius() * 1.3;
+
+    double lat_diff = m(i, 0) - m(0, 0);
+    double long_diff = m(i, 1) - m(0, 1);
+    double dist_to_center = sqrt(lat_diff * lat_diff + long_diff * long_diff);
+    double coordinate_to_meter = GetDistance2D({0, 0, 0}, {1, 0, 0});
+
+    if (dist_to_center * coordinate_to_meter < 1.2 * m(i, 2)) {
+      double multiplication_factor = (1.4 * m(i, 2)) / (dist_to_center * coordinate_to_meter);
+      m(0, 0) = m(i, 0) - lat_diff * multiplication_factor;
+      m(0, 1) = m(i, 1) - long_diff * multiplication_factor;
+    }
   }
-  //::std::cout << m << ::std::endl;
 
   // Shift everything so that the drone position at the origin.
   ::Eigen::MatrixXd m_trans(rows, 3);
   m_trans = m.row(0).replicate(rows, 1);
   m -= m_trans;
-
-  //::std::cout << m << ::std::endl;
 
   // Make the start->end points exist in the first quadrant.
   ::Eigen::MatrixXd reflection_m = ::Eigen::MatrixXd::Identity(3, 3);
@@ -83,13 +96,14 @@ RRTAvoidance::RRTAvoidance()
 
   ::std::vector<double> obs_x, obs_y;
 
-  // Draw obstacles as circles on the obstacle grid.
-  for(int y = 0;y < kDimension;y++) {
-    for(int x = 0;x < kDimension;x++) {
+  // Reset obstacle grid.
+  for (int y = 0; y < kDimension; y++) {
+    for (int x = 0; x < kDimension; x++) {
       state_space_->obstacleGrid().obstacleAt(::Eigen::Vector2i(x, y)) = false;
     }
   }
 
+  // Draw obstacles as circles on the obstacle grid.
   for (int i = 2; i < rows; i++) {
     int obstacle_radius = m(i, 2);
     for (int offset_x = -obstacle_radius; offset_x <= obstacle_radius;
@@ -100,10 +114,9 @@ RRTAvoidance::RRTAvoidance()
         int x = m(i, 0) + offset_x;
         int y = m(i, 1) + offset_y;
 
-        if (x < 0 || x >= kDimension | y < 0 || y >= kDimension) {
+        if (x < 0 || x >= kDimension || y < 0 || y >= kDimension) {
           continue;
         }
-
         state_space_->obstacleGrid().obstacleAt(::Eigen::Vector2i(x, y)) = true;
 
         obs_x.push_back(x);

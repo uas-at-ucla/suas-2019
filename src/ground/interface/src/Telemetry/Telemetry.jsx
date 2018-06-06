@@ -13,15 +13,24 @@ class Telemetry extends Component {
 
     if (this.telemetry) {
       this.telemetryText = {
-        speed:
+        speed_metric:
+          this.round(
+            this.telemetry.sensors["gps_ground_speed"],
+            1
+          ) + " m/s",
+        speed_imperial:
           this.round(
             this.telemetry.sensors["gps_ground_speed"] *
               METERS_PER_SECOND_TO_MPH,
             1
-          ) + "mph",
-        altitude:
+          ) + " mph",
+        altitude_metric:
           this.round(this.telemetry.sensors["relative_altitude"], 1) +
           " meters",
+        altitude_imperial:
+          this.round(this.telemetry.sensors["relative_altitude"]
+           / METERS_PER_FOOT, 1) +
+          " feet",
         position:
           this.round(this.telemetry.sensors["latitude"], 7) +
           ", " +
@@ -55,6 +64,7 @@ class Telemetry extends Component {
     if (
       this.telemetry &&
       this.props.homeState.mission &&
+      this.props.homeState.mission.fly_zones &&
       this.props.homeState.mission.fly_zones[0]
     ) {
       var groundAlt =
@@ -77,7 +87,8 @@ class Telemetry extends Component {
             margin: "auto"
           }}
         >
-          {this.round(boundaryAlt, 1)}m
+          <span className="metric">{this.round(boundaryAlt, 1)}m</span>
+          <span className="imperial">{this.round(boundaryAlt/METERS_PER_FOOT, 0)}ft</span>
         </p>
       );
     }
@@ -86,13 +97,24 @@ class Telemetry extends Component {
       <div className="Telemetry">
         <div className="card text-white" id="telemetryNumbers">
           <div id="full_state">
-            <span id="armed_indicator">{this.props.appState.droneState}</span>
+            <span id="armed_indicator">{this.props.appState.droneState} </span>
+            <span id="ping"
+              style={{
+                backgroundColor: this.pingColor()
+              }}
+            >
+              {this.props.appState.drone_ping_ms === null ? "!!!" : Number(this.props.appState.drone_ping_ms).toFixed(1)+"ms"}
+            </span>
           </div>
           <table>
+            <col width="1%"/>
             <tbody>
               <tr id="telemetry_important">
                 <td>Speed</td>
-                <td id="telemetry_speed">{this.telemetryText.speed}</td>
+                <td id="telemetry_speed">
+                  <span class="metric">{this.telemetryText.speed_metric}</span>
+                  <span class="imperial">{this.telemetryText.speed_imperial}</span>
+                </td>
               </tr>
               <tr>
                 <td>Position</td>
@@ -104,7 +126,10 @@ class Telemetry extends Component {
               </tr>
               <tr>
                 <td>Altitude</td>
-                <td id="telemetry_altitude">{this.telemetryText.altitude}</td>
+                <td id="telemetry_altitude">
+                  <span class="metric">{this.telemetryText.altitude_metric}</span>
+                  <span class="imperial">{this.telemetryText.altitude_imperial}</span>
+                </td>
               </tr>
               <tr>
                 <td>Satellite Count</td>
@@ -125,9 +150,15 @@ class Telemetry extends Component {
         </div>
 
         <div className="card text-white" id="altimeter">
-          <p id="altimeterMaxAlt">{MAX_ALTITUDE}m</p>
+          <p id="altimeterMaxAlt">
+            <span className="metric">{MAX_ALTITUDE}m</span>
+            <span className="imperial">{this.round(MAX_ALTITUDE/METERS_PER_FOOT, 0)}ft</span>
+          </p>
           {boundaryAltLine}
-          <p id="altimeterMinAlt">0m</p>
+          <p id="altimeterMinAlt">
+            <span className="metric">0m</span>
+            <span className="imperial">0ft</span>
+          </p>
           <div
             id="altimeterAltitudeIndicator"
             style={{
@@ -144,6 +175,44 @@ class Telemetry extends Component {
   round(value, precision) {
     var multiplier = Math.pow(10, precision || 0);
     return Math.round(value * multiplier) / multiplier;
+  }
+
+  pingColor() {
+    let ms = this.props.appState.drone_ping_ms;
+    if (ms === null) {
+      return "rgba(255, 0, 0, 1)";
+    } else {
+      let max_ping = 100;
+      let hue = (1 - Math.min(ms, max_ping)/max_ping) / 3;
+      let rgb = this.HSVtoRGB(hue, 1, 1);
+      return "rgba("+rgb.r+","+rgb.g+","+rgb.b+", 0.5)";
+    }
+  }
+
+  // From https://stackoverflow.com/questions/17242144/javascript-convert-hsb-hsv-color-to-rgb-accurately
+  HSVtoRGB(h, s, v) {
+    var r, g, b, i, f, p, q, t;
+    if (arguments.length === 1) {
+        s = h.s, v = h.v, h = h.h;
+    }
+    i = Math.floor(h * 6);
+    f = h * 6 - i;
+    p = v * (1 - s);
+    q = v * (1 - f * s);
+    t = v * (1 - (1 - f) * s);
+    switch (i % 6) {
+        case 0: r = v, g = t, b = p; break;
+        case 1: r = q, g = v, b = p; break;
+        case 2: r = p, g = v, b = t; break;
+        case 3: r = p, g = q, b = v; break;
+        case 4: r = t, g = p, b = v; break;
+        case 5: r = v, g = p, b = q; break;
+    }
+    return {
+        r: Math.round(r * 255),
+        g: Math.round(g * 255),
+        b: Math.round(b * 255)
+    };
   }
 }
 

@@ -13,17 +13,25 @@ import process_manager
 processes = process_manager.ProcessManager()
 
 UAS_AT_UCLA_TEXT = '\033[94m' + \
-' ___  ___  ________  ___       ________      ___  ___  ________  ________\n' + \
-'|\  \|\  \|\   ____\|\  \     |\   __  \    |\  \|\  \|\   __  \|\   ____\ \n' + \
-'\ \  \\\\\  \ \  \___|\ \  \    \ \  \|\  \   \ \  \\\\\  \ \  \|\  \ \  \___|_\n' + \
-' \ \  \\\\\  \ \  \    \ \  \    \ \   __  \   \ \  \\\\\  \ \   __  \ \_____  \ \n' + \
-'  \ \  \\\\\  \ \  \____\ \  \____\ \  \ \  \   \ \  \\\\\  \ \  \ \  \|____|\  \ \n' + \
-'   \ \_______\ \_______\ \_______\ \__\ \__\   \ \_______\ \__\ \__\____\_\  \ \n' + \
-'    \|_______|\|_______|\|_______|\|__|\|__|    \|_______|\|__|\|__|\_________\ \n' + \
-'                                                                   \|_________| \n' + \
-'\n' + \
-'#################################### do #######################################\n' + \
+'       _   _   _    ____      ____    _   _  ____ _        _\n' + \
+'      | | | | / \\  / ___|    / __ \\  | | | |/ ___| |      / \\\n' + \
+'      | | | |/ _ \\ \\___ \\   / / _` | | | | | |   | |     / _ \\\n' + \
+'      | |_| / ___ \\ ___) | | | (_| | | |_| | |___| |___ / ___ \\\n' + \
+'       \___/_/   \\_\\____/   \\ \\__,_|  \\___/ \\____|_____/_/   \\_\\\n' + \
+'                             \\____/\n' + \
 '\033[0m'
+####UAS_AT_UCLA_TEXT = '\033[94m' + \
+####' ___  ___  ________  ___       ________      ___  ___  ________  ________\n' + \
+####'|\  \|\  \|\   ____\|\  \     |\   __  \    |\  \|\  \|\   __  \|\   ____\ \n' + \
+####'\ \  \\\\\  \ \  \___|\ \  \    \ \  \|\  \   \ \  \\\\\  \ \  \|\  \ \  \___|_\n' + \
+####' \ \  \\\\\  \ \  \    \ \  \    \ \   __  \   \ \  \\\\\  \ \   __  \ \_____  \ \n' + \
+####'  \ \  \\\\\  \ \  \____\ \  \____\ \  \ \  \   \ \  \\\\\  \ \  \ \  \|____|\  \ \n' + \
+####'   \ \_______\ \_______\ \_______\ \__\ \__\   \ \_______\ \__\ \__\____\_\  \ \n' + \
+####'    \|_______|\|_______|\|_______|\|__|\|__|    \|_______|\|__|\|__|\_________\ \n' + \
+####'                                                                   \|_________| \n' + \
+####'\n' + \
+####'#################################### do #######################################\n' + \
+####'\033[0m'
 
 
 def signal_received(signal, frame):
@@ -48,7 +56,7 @@ def run_install(args):
         print("ERROR: Must be sudo to run install script.")
         sys.exit(1)
 
-    processes.spawn_process("sudo tools/installation/install.sh")
+    processes.spawn_process("sudo bash tools/installation/install.sh")
     processes.wait_for_complete()
 
 
@@ -84,10 +92,8 @@ def run_build(args):
 
 
 def run_simulate(args):
-    processes.spawn_process("bazel build //src/...")
-    processes.wait_for_complete()
-    processes.spawn_process("bazel build @PX4_sitl//:jmavsim")
-    processes.wait_for_complete()
+    run_and_die_if_error("bazel build //src/...")
+    run_and_die_if_error("bazel build @PX4_sitl//:jmavsim")
 
     # Initialize shared memory for queues.
     processes.spawn_process("ipcrm --all", None, True, args.verbose)
@@ -97,14 +103,18 @@ def run_simulate(args):
                             None, True, args.verbose)
 
     # Give aos core some time to run.
-    time.sleep(0.5)
+    time.sleep(1.0)
 
     # Simulator and port forwarder.
-    processes.spawn_process(
-        "socat pty,link=/tmp/virtualcom0,raw udp4-listen:14540", None, True,
-        args.verbose)
     processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
                             None, True, args.verbose)
+    processes.spawn_process("mavproxy.py " \
+            "--mav20 " \
+            "--state-basedir=/tmp/ " \
+            "--master=0.0.0.0:14540 " \
+            "--out=udp:0.0.0.0:8083 " \
+            "--out=udp:0.0.0.0:8085 ", \
+            None, True, False)
 
     # Log writer.
     processes.spawn_process("./bazel-out/k8-fastbuild/bin/lib/logger/" \
@@ -113,22 +123,27 @@ def run_simulate(args):
     # Drone control code.
     processes.spawn_process(
             "./bazel-out/k8-fastbuild/bin/src/control/ground_communicator/" \
-                    "ground_communicator", None, True, True)
+                    "ground_communicator", None, True, args.verbose)
     processes.spawn_process("./bazel-out/k8-fastbuild/bin/src/control/io/io",
-                            None, True, args.verbose)
+                            None, True, True)
     processes.spawn_process(
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop", None,
         True, args.verbose)
 
     # Ground server and interface.
-    processes.spawn_process("python ./src/ground/ground.py", None, True, True)
+    processes.spawn_process("python ./src/ground/ground.py", None, True, args.verbose)
     processes.wait_for_complete()
 
 
 def run_ground(args):
     # Ground server and interface.
-    processes.spawn_process("python ./src/ground/ground.py", None, True,
-                            args.verbose)
+    if args.device is not None:
+        processes.spawn_process("python ./src/ground/ground.py --device " \
+                + args.device, None, True, args.verbose)
+    else:
+        processes.spawn_process("python ./src/ground/ground.py", None, True, \
+                args.verbose)
+
     processes.wait_for_complete()
 
 
@@ -162,6 +177,8 @@ if __name__ == '__main__':
     ground_parser = subparsers.add_parser('ground', help='ground help')
     ground_parser.add_argument(
         '--verbose', action='store_true', help='verbose help')
+    ground_parser.add_argument(
+        '--device', action='store', help='device help', required=False)
     ground_parser.set_defaults(func=run_ground)
 
     build_parser = subparsers.add_parser('build', help='build help')
