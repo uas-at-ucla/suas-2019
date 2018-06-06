@@ -47,7 +47,7 @@ void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
   sp.yaw_rate = yaw_rate;
 }
 
-AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
+AutopilotInterface::AutopilotInterface()
     : write_tid_(0),
       reading_status_(0),
       writing_status_(0),
@@ -168,8 +168,7 @@ void AutopilotInterface::start() {
   }
 
   // Wait for initial position ned
-  while (not(current_messages.time_stamps.local_position_ned &&
-             current_messages.time_stamps.attitude)) {
+  while (not(current_messages.time_stamps.local_position_ned)) {
     if (time_to_exit_) return;
     usleep(1e6 / 2);
   }
