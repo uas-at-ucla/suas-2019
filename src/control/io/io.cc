@@ -223,7 +223,7 @@ void AutopilotOutputWriter::Write() {
 
   int gimbal_angle =
       1000 +
-      ::src::control::loops::flight_loop_queue.output->gimbal_angle / 90 * 500;
+      ::src::control::loops::flight_loop_queue.output->gimbal_angle * 1000;
   set_servo_pulsewidth(pigpio_, 24, gimbal_angle);
 #endif
 
