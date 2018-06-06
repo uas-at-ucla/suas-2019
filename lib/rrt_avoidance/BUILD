@@ -10,10 +10,10 @@ cc_library(
   ]),
   deps = [
     ':rrt_avoidance_tools',
+    '//lib/mission_manager:mission_commands_cpp',
 
     '@eigen',
     '@gtest//:googletest',
-    '@matplotlibcpp//:matplotlibcpp',
   ],
   copts = [
     '-Wno-unused-variable',
@@ -74,7 +74,6 @@ cc_library(
     '@boost//:algorithm',
     '@flann//:flann',
     '@lz4//:lz4',
-    '@matplotlibcpp//:matplotlibcpp',
   ],
   copts = [
     '-Wno-unused-variable',

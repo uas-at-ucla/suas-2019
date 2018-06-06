@@ -1,6 +1,7 @@
 #include "io.h"
 
 #include <iostream>
+#include <limits>
 
 #include "lib/logger/log_sender.h"
 
@@ -15,9 +16,8 @@ void quit_handler(int sig) {
 
   try {
     copter_io_quit->handle_quit(sig);
-  } catch (int error) {}
-
-  exit(0);
+  } catch (int error) {
+  }
 }
 
 IO::IO()
@@ -31,7 +31,6 @@ IO::IO()
   copter_io_quit = &copter_io_;
   io_quit = this;
   signal(SIGINT, quit_handler);
-  signal(SIGTERM, quit_handler);
 }
 
 void IO::Run() {
@@ -42,12 +41,7 @@ void IO::Run() {
   ::std::thread autopilot_output_writer_thread(
       ::std::ref(autopilot_output_writer_));
 
-  // Wait forever.
-  select(0, nullptr, nullptr, nullptr, nullptr);
-
-  autopilot_sensor_reader_.Quit();
   autopilot_sensor_reader_thread.join();
-  autopilot_output_writer_.Quit();
   autopilot_output_writer_thread.join();
 
   copter_io_.stop();
@@ -55,12 +49,14 @@ void IO::Run() {
 
 void IO::Quit() {
   run_ = false;
+  autopilot_sensor_reader_.Quit();
   autopilot_output_writer_.Quit();
 }
 
 AutopilotSensorReader::AutopilotSensorReader(
     autopilot_interface::AutopilotInterface *copter_io)
-    : copter_io_(copter_io) {
+    : copter_io_(copter_io),
+      last_gps_(-::std::numeric_limits<double>::infinity()) {
   last_timestamps_.reset_timestamps();
 }
 
@@ -69,9 +65,12 @@ void AutopilotSensorReader::RunIteration() {
   autopilot_interface::TimeStamps current_timestamps =
       copter_io_->current_messages.time_stamps;
 
-  if (!(current_timestamps.global_position_int -
-        last_timestamps_.global_position_int)) {
-    return;
+  if (current_timestamps.global_position_int -
+      last_timestamps_.global_position_int) {
+    last_gps_ = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+                    ::std::chrono::system_clock::now().time_since_epoch())
+                    .count() *
+                1e-9;
   }
 
   last_timestamps_ = current_timestamps;
@@ -86,7 +85,9 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->latitude = static_cast<double>(gps.lat) / 1e7;
   flight_loop_sensors_message->longitude = static_cast<double>(gps.lon) / 1e7;
   flight_loop_sensors_message->altitude = static_cast<float>(gps.alt) / 1e3;
-  flight_loop_sensors_message->heading = static_cast<float>(gps.hdg) / 1e2;
+
+  flight_loop_sensors_message->heading =
+      static_cast<float>(copter_io_->current_messages.vfr_hud.heading);
 
   flight_loop_sensors_message->relative_altitude =
       static_cast<float>(gps.relative_alt) / 1e3;
@@ -119,6 +120,7 @@ void AutopilotSensorReader::RunIteration() {
   flight_loop_sensors_message->relative_pressure = imu.diff_pressure;
   flight_loop_sensors_message->pressure_altitude = imu.pressure_alt;
   flight_loop_sensors_message->temperature = imu.temperature;
+  flight_loop_sensors_message->last_gps = last_gps_;
 
   // Battery data.
   mavlink_sys_status_t sys_status = copter_io_->current_messages.sys_status;
@@ -131,6 +133,31 @@ void AutopilotSensorReader::RunIteration() {
   mavlink_heartbeat_t heartbeat = copter_io_->current_messages.heartbeat;
   flight_loop_sensors_message->armed = !!(heartbeat.base_mode >> 7);
 
+  AutopilotState autopilot_state = UNKNOWN;
+
+  switch (heartbeat.custom_mode) {
+    case 0b00000010000001000000000000000000:
+      autopilot_state = TAKEOFF;
+      break;
+    case 0b00000100000001000000000000000000:
+    case 0b00000011000001000000000000000000:
+      autopilot_state = HOLD;
+      break;
+    case 0b00000000000001100000000000000000:
+      autopilot_state = OFFBOARD;
+      break;
+    case 0b00000101000001000000000000000000:
+      autopilot_state = RTL;
+      break;
+    case 0b00000110000001000000000000000000:
+      autopilot_state = LAND;
+      break;
+    default:
+      autopilot_state = UNKNOWN;
+  }
+
+  flight_loop_sensors_message->autopilot_state = autopilot_state;
+
   flight_loop_sensors_message.Send();
 }
 
@@ -138,68 +165,147 @@ AutopilotOutputWriter::AutopilotOutputWriter(
     autopilot_interface::AutopilotInterface *copter_io)
     : copter_io_(copter_io) {
 #ifdef UAS_AT_UCLA_DEPLOYMENT
+  // Alarm IO setup.
   wiringPiSetup();
   pinMode(kAlarmGPIOPin, OUTPUT);
+
+  // Gimbal IO setup.
+  pigpio_ = pigpio_start(0, 0);
+  set_mode(pigpio_, 23, PI_OUTPUT);
+  set_mode(pigpio_, 24, PI_OUTPUT);
 #endif
 }
 
 void AutopilotOutputWriter::Read() {
-  ::src::control::loops::flight_loop_queue.output.FetchAnother();
-  ::src::control::loops::flight_loop_queue.sensors.FetchAnother();
+  ::src::control::loops::flight_loop_queue.output.FetchLatest();
+  ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
+  ::src::control::loops::flight_loop_queue.goal.FetchLatest();
 }
 
 void AutopilotOutputWriter::Write() {
-  if (::src::control::loops::flight_loop_queue.output->velocity_control) {
-    mavlink_set_position_target_local_ned_t sp;
-
-    autopilot_interface::set_velocity(
-        ::src::control::loops::flight_loop_queue.output->velocity_x,
-        ::src::control::loops::flight_loop_queue.output->velocity_y,
-        ::src::control::loops::flight_loop_queue.output->velocity_z, sp);
-
-    copter_io_->update_setpoint(sp);
+  if (!::src::control::loops::flight_loop_queue.output.get() ||
+      !::src::control::loops::flight_loop_queue.sensors.get()) {
+    return;
   }
 
-  if (::src::control::loops::flight_loop_queue.output->arm) {
-    copter_io_->Arm();
+  if (::src::control::loops::flight_loop_queue.output->dslr) {
+    dslr_interface_.TakePhotos();
   }
 
-  if (::src::control::loops::flight_loop_queue.output->disarm) {
-    copter_io_->Disarm();
-  }
+  double current_time =
+      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+          ::std::chrono::system_clock::now().time_since_epoch())
+          .count() *
+      1e-9;
 
-  if (::src::control::loops::flight_loop_queue.output->takeoff) {
-    copter_io_->Takeoff();
-  }
+  mavlink_set_position_target_local_ned_t sp;
 
-  if (::src::control::loops::flight_loop_queue.output->velocity_control) {
-    // TODO(comran): Check altitude is above normal (on restarts).
-    copter_io_->Offboard();
-  }
+  autopilot_interface::set_velocity(
+      ::src::control::loops::flight_loop_queue.output->velocity_x,
+      ::src::control::loops::flight_loop_queue.output->velocity_y,
+      ::src::control::loops::flight_loop_queue.output->velocity_z, sp);
 
-  if (::src::control::loops::flight_loop_queue.output->land) {
-    copter_io_->Land();
-  }
+  autopilot_interface::set_yaw(::src::control::loops::flight_loop_queue.output->yaw, sp);
 
-  if (::src::control::loops::flight_loop_queue.output->throttle_cut) {
-    copter_io_->FlightTermination();
-  }
+
+  copter_io_->update_setpoint(sp);
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-  digitalWrite(
-      kAlarmGPIOPin,
-      ::src::control::loops::flight_loop_queue.output->alarm ? HIGH : LOW);
+  digitalWrite(kAlarmGPIOPin,
+               ::src::control::loops::flight_loop_queue.output->alarm
+                   ? HIGH
+                   : LOW);
+
+  int bomb_drop_signal =
+      ::src::control::loops::flight_loop_queue.output->bomb_drop ? 1000 : 1600;
+
+  set_servo_pulsewidth(pigpio_, 23, bomb_drop_signal);
+
+  int gimbal_angle =
+      1000 +
+      ::src::control::loops::flight_loop_queue.output->gimbal_angle * 1000;
+  set_servo_pulsewidth(pigpio_, 24, gimbal_angle);
 #endif
+
+  if (::src::control::loops::flight_loop_queue.output->trigger_takeoff + 0.05 >
+      current_time) {
+    if (!did_takeoff_) {
+      did_takeoff_ = true;
+      copter_io_->Takeoff();
+    }
+  } else {
+    did_takeoff_ = false;
+  }
+
+  if (::src::control::loops::flight_loop_queue.output->trigger_hold + 0.05 >
+      current_time) {
+    if (!did_hold_) {
+      did_hold_ = true;
+      copter_io_->Hold();
+    }
+  } else {
+    did_hold_ = false;
+  }
+
+  if (::src::control::loops::flight_loop_queue.output->trigger_offboard + 0.05 >
+      current_time) {
+    if (!did_offboard_) {
+      did_offboard_ = true;
+      copter_io_->Offboard();
+    }
+  } else {
+    did_offboard_ = false;
+  }
+
+  if (::src::control::loops::flight_loop_queue.output->trigger_rtl + 0.05 >
+      current_time) {
+    if (!did_rtl_) {
+      did_rtl_ = true;
+      copter_io_->ReturnToLaunch();
+    }
+  } else {
+    did_rtl_ = false;
+  }
+
+  if (::src::control::loops::flight_loop_queue.output->trigger_land + 0.05 >
+      current_time) {
+    if (!did_land_) {
+      did_land_ = true;
+      copter_io_->Land();
+    }
+  } else {
+    did_land_ = false;
+  }
+
+  if (::src::control::loops::flight_loop_queue.output->trigger_arm + 0.05 >
+      current_time) {
+    if (!did_arm_) {
+      did_arm_ = true;
+      copter_io_->Arm();
+    }
+  } else {
+    did_arm_ = false;
+  }
+
+  if (::src::control::loops::flight_loop_queue.output->trigger_disarm + 0.05 >
+      current_time) {
+    if (!did_disarm_) {
+      did_disarm_ = true;
+      copter_io_->Disarm();
+    }
+  } else {
+    did_disarm_ = false;
+  }
 }
 
 void AutopilotOutputWriter::Stop() {
-  // No recent output queue messages received, so land drone.
-  copter_io_->Land();
-
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Don't leave the alarm on after quitting code.
   digitalWrite(kAlarmGPIOPin, LOW);
 #endif
+
+  // No recent output queue messages received, so land drone.
+  dslr_interface_.Quit();
 }
 
 }  // namespace io

@@ -2,14 +2,14 @@
 #define LIB_MISSION_MESSAGE_QUEUE_MISSION_MESSAGE_QUEUE_H_
 
 #include <unistd.h>
-#include <thread>
 #include <atomic>
 #include <functional>
+#include <thread>
 
 #include "zmq.hpp"
 
-#include "lib/mission_manager/mission_manager.h"
 #include "lib/mission_manager/mission_commands.pb.h"
+#include "lib/mission_manager/mission_manager.h"
 
 namespace lib {
 namespace mission_message_queue {
@@ -19,7 +19,8 @@ class MissionMessageQueueSender {
  public:
   MissionMessageQueueSender();
 
-  void SendMission(::lib::mission_manager::Mission mission_protobuf);
+  void SendData(::lib::mission_manager::GroundData ground_data);
+  ::lib::mission_manager::Mission GetMission();
 
  private:
   ::zmq::context_t context_;
@@ -33,9 +34,13 @@ class MissionMessageQueueReceiver {
   MissionMessageQueueReceiver();
   ~MissionMessageQueueReceiver();
 
+  void RunPreprocessor(Position3D position);
+  void SetObstacles(::lib::mission_manager::Obstacles obstacles);
+
   void Quit() { run_ = false; }
 
   ::lib::MissionManager *get_mission_manager() { return &mission_manager_; }
+  void SetMission(::lib::mission_manager::Mission mission);
 
  private:
   void ReceiveThread();

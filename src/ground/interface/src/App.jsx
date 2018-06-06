@@ -18,12 +18,14 @@ class App extends Component {
       optionSelected: "Control", // Default is Control
       droneState: "Offline",
       telemetry: null,
+      drone_ping_ms: null,
       interopBtnText: "Connect to Interop",
       interopBtnEnabled: true,
       moving_obstacles: [],
       stationary_obstacles: [],
       missions: [],
-      followDrone: true
+      followDrone: true,
+      metric: true
     };
   }
 
@@ -42,7 +44,7 @@ class App extends Component {
       case "Control":
       default:
         return <Home appState={this.state} socketEmit={this.socketEmit}
-                     setAppState={this.setAppState}/>;
+                     setAppState={this.setAppState} socketOn={this.socketOn} />;
     }
   }
 
@@ -52,14 +54,16 @@ class App extends Component {
 
   render() {
     return (
-      <div className="App">
-        <img
-          id="logo"
-          src={logo}
-          width="380px"
-          onClick={this.followDrone}
-          alt="UAS"
-        />
+      <div className={`App ${this.state.metric ? "metric_container" : "imperial_container"}`}>
+        {this.state.optionSelected !== "Images" ?
+          <img
+            id="logo"
+            src={logo}
+            width="380px"
+            onClick={this.followDrone}
+            alt="UAS"
+          /> : null
+        }
         <Navbar
           appState={this.state}
           setAppState={this.setAppState}
@@ -76,16 +80,19 @@ class App extends Component {
     }
   }
 
-  componentDidMount() {
+  componentWillMount() {
     const SOCKET_DOMAIN = document.domain; // Gets domain from browser
     const SOCKET_PORT = 8081;
 
     const SOCKET_ADDRESS = "http://" + SOCKET_DOMAIN + ":" + SOCKET_PORT;
 
     this.socket = io.connect(SOCKET_ADDRESS);
+  }
 
+  componentDidMount() {
     this.socket.on("connect", () => {
       console.log("Connected to ground interface feeder!");
+      this.socket.emit("join_room", "frontend");
 
       this.setState({
         droneState: "Ground Online",
@@ -101,23 +108,34 @@ class App extends Component {
 
     this.socket.on("drone_connected", () => {
       this.setState({
-        droneState: "Starting Up Drone...",
+        droneState: "Drone Connected!",
       });
     });
 
     this.socket.on("drone_disconnected", () => {
       this.setState({
         droneState: "Drone Disconnected!",
+        telemetry: null,
+        drone_mission_base64: null
       });
+    });
+
+    this.socket.on("drone_ping", (data) => {
+      this.setState({drone_ping_ms: data.ms});
     });
 
     this.socket.on("on_telemetry", telemetry => {
       let newState = {
-        telemetry: telemetry
+        telemetry: telemetry.telemetry
       }
+      if (telemetry.mission !== this.state.drone_mission_base64) {
+        newState.drone_mission_base64 = telemetry.mission;
+      }
+      telemetry = telemetry.telemetry;
       if (telemetry.status && telemetry.status.state) {
-        newState.droneState = this.convertToTitleText(telemetry.status.state)
+        newState.droneState = this.convertToTitleText(telemetry.status.state);
       }
+
       this.setState(newState);
     });
 
@@ -128,6 +146,10 @@ class App extends Component {
     });
 
     this.socket.on("initial_data", data => {
+      if (data.drone_connected) {
+        this.setState({droneState: "Drone Connected!"});
+      }
+
       if (data.interop_disconnected) {
         this.receivedInteropStatus(false);
       } else {
@@ -160,6 +182,10 @@ class App extends Component {
     }
   };
 
+  socketOn = (message, func) => {
+    this.socket.on(message, func);
+  };
+
   receivedInteropStatus(is_interop_connected) {
     if (is_interop_connected) {
       let new_state = {
@@ -175,7 +201,10 @@ class App extends Component {
     } else {
       this.setState({
         interopBtnText: "Cannot Connect to Interop Server!",
-        interopBtnEnabled: true
+        interopBtnEnabled: true,
+        stationary_obstacles: [],
+        moving_obstacles: [],
+        missions: []
       });
       setTimeout(
         () =>

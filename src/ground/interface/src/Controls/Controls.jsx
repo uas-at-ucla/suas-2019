@@ -1,76 +1,224 @@
 import React, { Component } from 'react';
 import './Controls.css';
+import PromptButton from '../PromptButton/PromptButton';
 
 class Controls extends Component {
+
+  keymap = {
+    'KeyZ': 'run_mission_btn',
+    'KeyX': 'pause_mission_btn',
+    'KeyC': 'alarm_btn',
+    'KeyV': 'bomb_drop_btn',
+    'KeyB': 'dslr_btn',
+    'KeyD': 'arm_btn',
+    'KeyF': 'disarm_btn',
+    'KeyG': 'take_off_btn',
+    'KeyH': 'hold_btn',
+    'KeyJ': 'offboard_btn',
+    'KeyK': 'rtl_btn',
+    'KeyL': 'land_btn'
+  }
+
+  componentDidMount() {
+    document.addEventListener("keypress", (e) => {
+      if (e.altKey && e.shiftKey && e.ctrlKey && this.keymap[e.code]) {
+        let button = this.refs[this.keymap[e.code]];
+        button.click();
+        if (button.tagName === 'BUTTON') {
+          this.refs[this.keymap[e.code]].focus();
+        }
+      }
+    });
+  }
+
   render() {
     return (
       <div id="controls" className="text-white">
         <div id="normalControls" className="card">
           <button
-            className="btn btn-outline-success"
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.status.state == "IN_AIR"
+                ? 'btn btn-success'
+                : 'btn btn-outline-secondary'
+            }
             onClick={this.sendRunMissionCommand}
+            id="run_mission_btn"
+            ref="run_mission_btn"
           >
-            Run Mission
+            Run Mission (Z)
           </button>
 
           <button
             className="btn btn-outline-secondary"
-            onClick={this.sendLandCommand}
+            onClick={() => this.setDroneState('PAUSE')}
+            id="pause_mission_btn"
+            ref="pause_mission_btn"
           >
-            Land
+            Pause (X)
+          </button>
+
+          <button
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.output.alarm
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('ALARM')}
+            id="alarm_btn"
+            ref="alarm_btn"
+          >
+            Beepy (C)
+          </button>
+
+          <button
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.output.bomb_drop
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('BOMB_DROP')}
+            id="bomb_drop_btn"
+            ref="bomb_drop_btn"
+          >
+            Droppy (V)
+          </button>
+
+          <button
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.output.dslr
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('DSLR')}
+            id="dslr_btn"
+            ref="dslr_btn"
+          >
+            DSLR (B)
           </button>
         </div>
 
-        <div id="emergencyControls" className="card">
-          <button
-            className="btn btn-outline-warning"
-            onClick={this.sendFailsafeCommand}
+        <div id="stateControls" className="card">
+          <PromptButton
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.armed
+                ? 'btn btn-success'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('ARM')}
+            id="arm_btn"
+            ref="arm_btn"
           >
-            Failsafe Land
+            Arm (D)
+          </PromptButton>
+
+          <PromptButton
+            className={
+              this.props.appState.telemetry !== null &&
+              !this.props.appState.telemetry.sensors.armed
+                ? 'btn btn-danger'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('DISARM')}
+            id="disarm_btn"
+            ref="disarm_btn"
+          >
+            Disarm (F)
+          </PromptButton>
+
+          <button
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.autopilot_state === "TAKEOFF"
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('TAKEOFF')}
+            id="take_off_btn"
+            ref="take_off_btn"
+          >
+            Take Off (G)
           </button>
 
           <button
-            className="btn btn-outline-danger"
-            onClick={this.sendThrottleCutCommand}
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.autopilot_state === "HOLD"
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('HOLD')}
+            id="hold_btn"
+            ref="hold_btn"
           >
-            Throttle Cut
+            Hold (H)
+          </button>
+
+          <button
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.autopilot_state === "OFFBOARD"
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('OFFBOARD')}
+            id="offboard_btn"
+            ref="offboard_btn"
+          >
+            Offboard (J)
+          </button>
+
+          <button
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.autopilot_state === "RTL"
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('RTL')}
+            id="rtl_btn"
+            ref="rtl_btn"
+          >
+            RTL (K)
+          </button>
+
+          <button
+            className={
+              this.props.appState.telemetry !== null &&
+              this.props.appState.telemetry.sensors.autopilot_state === "LAND"
+                ? 'btn btn-primary'
+                : 'btn btn-outline-secondary'
+            }
+            onClick={() => this.setDroneState('LAND')}
+            id="land_btn"
+            ref="land_btn"
+          >
+            Land (L)
           </button>
         </div>
       </div>
     );
   }
 
+  setDroneState(state) {
+    const command = {
+      state: state
+    };
+
+    this.props.socketEmit('set_state', command);
+  }
+
   sendRunMissionCommand = () => {
-    const serialized_mission = this.props.homeState.get_mission();
+    const serialized_mission = this.props.getMission();
 
     this.props.socketEmit(
       'execute_commands',
       this.bin2string(serialized_mission)
     );
-  };
-
-  sendLandCommand = () => {
-    const command = {
-      state: 'LAND'
-    };
-
-    this.props.socketEmit('set_state', command);
-  };
-
-  sendFailsafeCommand = () => {
-    const command = {
-      state: 'FAILSAFE'
-    };
-
-    this.props.socketEmit('set_state', command);
-  };
-
-  sendThrottleCutCommand = () => {
-    const command = {
-      state: 'THROTTLE CUT'
-    };
-
-    this.props.socketEmit('set_state', command);
   };
 
   bin2string(arrayBuffer) {
@@ -103,7 +251,7 @@ class Controls extends Component {
     }
 
     // Deal with the remaining bytes and padding
-    if (byteRemainder == 1) {
+    if (byteRemainder === 1) {
       chunk = bytes[mainLength];
 
       a = (chunk & 252) >> 2; // 252 = (2^6 - 1) << 2
@@ -112,7 +260,7 @@ class Controls extends Component {
       b = (chunk & 3) << 4; // 3   = 2^2 - 1
 
       base64 += encodings[a] + encodings[b] + '==';
-    } else if (byteRemainder == 2) {
+    } else if (byteRemainder === 2) {
       chunk = (bytes[mainLength] << 8) | bytes[mainLength + 1];
 
       a = (chunk & 64512) >> 10; // 64512 = (2^6 - 1) << 10

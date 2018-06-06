@@ -17,45 +17,37 @@ class Settings extends Component {
   renderIPAddress() {
     return (
       <div className="ip_address">
-        <div className="row">
-          <div className="text-right col-md-3 offset-md-3">
-            <span className={`label ${this.state.interopSuccess ? "label-success" : "label-warning"}`}>
-              Connected to: {this.state.ip_address[0] + "." + this.state.ip_address[1] + "." + this.state.ip_address[2] +
-                             "." + this.state.ip_address[3] + ":" + this.state.ip_address[4]}</span>
-          </div>
-      </div>
+        <div>
+          <span className={`label ${this.state.interopSuccess ? "label-success" : "label-warning"}`}>
+            Connected to: {this.state.ip_address[0] + "." + this.state.ip_address[1] + "." + this.state.ip_address[2] +
+                           "." + this.state.ip_address[3] + ":" + this.state.ip_address[4]}</span>
+        </div>
         <form onSubmit={this.interopButtonPressed}>
-          <div className="row">
-            <div className="col-md-2 offset-md-4">
-              <div className="row">
-                <input type="text" ref="quad_one"
-                       placeholder={this.state.ip_address[0]}>
-                </input>
-                <p>.</p>
-                <input type="text" ref="quad_two"
-                       placeholder={this.state.ip_address[1]}>
-                </input>
-                <p>.</p>
-                <input type="text" ref="quad_three"
-                       placeholder={this.state.ip_address[2]}>
-                </input>
-                <p>.</p>
-                <input type="text" ref="quad_four"
-                       placeholder={this.state.ip_address[3]}>
-                </input>
-                <p>:</p>
-                <input type="text" ref="port"
-                       placeholder={this.state.ip_address[4]}>
-                </input>
-              </div>
-            </div>
-            <div className="text-left col-md-4">
-              <button className={`btn btn-sm align-middle btn-outline-dark ${
-              !this.props.appState.interopBtnEnabled ? "disabled" : null}`}
-                      id="interop_btn">
-                {this.props.appState.interopBtnText}
-              </button>
-            </div>
+          <div>
+            <input type="text" ref="quad_one"
+                   placeholder={this.state.ip_address[0]}>
+            </input>
+            .
+            <input type="text" ref="quad_two"
+                   placeholder={this.state.ip_address[1]}>
+            </input>
+            .
+            <input type="text" ref="quad_three"
+                   placeholder={this.state.ip_address[2]}>
+            </input>
+            .
+            <input type="text" ref="quad_four"
+                   placeholder={this.state.ip_address[3]}>
+            </input>
+            :
+            <input type="text" ref="port"
+                   placeholder={this.state.ip_address[4]}>
+            </input>
+            <button className={`btn btn-sm align-middle btn-outline-dark ${
+            !this.props.appState.interopBtnEnabled ? "disabled" : null}`}
+                    id="interop_btn">
+              {this.props.appState.interopBtnText}
+            </button>
           </div>
         </form>
       </div>
@@ -83,7 +75,19 @@ class Settings extends Component {
     this.props.setAppState({ interopBtnText: "Connecting..." });
     this.props.setAppState({ interopBtnEnabled: false });
     this.props.socketEmit("connect_to_interop", new_ip_address);
-  };
+  }
+
+  renderUnitsSetting() {
+    return (
+      <div>
+        <button className="btn btn-outline-dark"
+          onClick={() => this.props.setAppState({metric: !this.props.appState.metric})}
+        >
+          {this.props.appState.metric ? "Metric" : "Imperial"}
+        </button>
+      </div>
+    );
+  }
 
   render() {
     return (
@@ -91,7 +95,16 @@ class Settings extends Component {
         <div className="text-center">
           <h1>Settings</h1>
         </div>
-        {this.renderIPAddress()}
+        <div className="settings_body">
+          <div className="list-group">
+            <div className="list-group-item">
+              {this.renderIPAddress()}
+            </div>
+            <div className="list-group-item">
+              {this.renderUnitsSetting()}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
