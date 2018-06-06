@@ -257,12 +257,13 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
     (*sensors_map)["autopilot_state"] =
         sio::string_message::create(autopilot_state_string);
 
-    if(current_time - last_serial_telemetry_sent_ > 0.5) {
+    if(current_time - last_serial_telemetry_sent_ > 0.3) {
       // Time to send another serial telemetry message.
       ::lib::serial_comms::SerialCommsMessage message;
       message.set_latitude((*sensors)->latitude);
       message.set_longitude((*sensors)->longitude);
       message.set_altitude((*sensors)->relative_altitude);
+      message.set_heading((*sensors)->heading);
 
       serial_comms_bridge_.SendData(message);
 

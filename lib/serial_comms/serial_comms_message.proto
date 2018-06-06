@@ -7,4 +7,5 @@ message SerialCommsMessage {
   required double latitude = 2;
   required double longitude = 3;
   required double altitude = 4;
+  required double heading = 5;
 }
