@@ -275,15 +275,15 @@ def got_serial_data(proto_msg):
     alt = proto_msg.altitude
     heading = proto_msg.heading
 
+    print("Latitude: " + str(proto_msg.latitude) \
+            + " Longitude: " + str(proto_msg.longitude) \
+            + " Altitude: " + str(proto_msg.altitude) \
+            + " Heading: " + str(proto_msg.heading))
+
     if all(val is not None for val in [lat, lng, alt, heading]):
         try:
             interop_telemetry = interop.Telemetry(lat, lng, alt, heading)
             interop_client.post_telemetry(interop_telemetry)
-
-            print("Latitude: " + str(proto_msg.latitude) \
-                    + " Longitude: " + str(proto_msg.longitude) \
-                    + " Altitude: " + str(proto_msg.altitude) \
-                    + " Heading: " + str(proto_msg.heading))
         except:
             print("ERROR sending serial data")
             interop_client = None
