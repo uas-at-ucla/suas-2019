@@ -86,7 +86,8 @@ mission2 = {
     ],
     'moving_obstacles': [
         { 
-            'radius': 300,
+            #'radius': 300,
+            'radius': 50,
             'speed_avg': 30,
             'waypoints': [
                 { 'latitude': 34.1721010377628, 'longitude': -118.47663327774046, 'altitude_msl': 100},
