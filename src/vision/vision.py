@@ -495,11 +495,14 @@ def calculate_target_coordinates(target_pos_pixel,
     parent_img_real_coords -- (ISO 6709, degrees) the (lat, lng) position of the center of the image
     parent_img_dimensions_pixel -- (pixels) the dimensions of the image
     altitude -- (m) the altitude when the image was taken
-    heading -- (CCW degrees) the direction of the top of the picture
+    heading -- (+CW degrees) the direction of the top of the picture
     sensor_dimensions -- (mm) the dimensions of the sensor !!! ratio must match image !!!
     focal_length -- (mm) the focal_length of the lens
     """
     #yapf: disable
+
+    # the algorithm assumes positive degrees are CCW but the heading is given with +CW
+    heading = -heading
 
     # get the average of ratio from the two dimensions
     pixel_to_sensor_ratio = 0
