@@ -1,4 +1,5 @@
 #include "loop_input_handler.h"
+#include <iostream>
 
 namespace src {
 namespace control {

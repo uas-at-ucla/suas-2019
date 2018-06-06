@@ -387,6 +387,7 @@ def ping_drone():
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
+    print(os.getcwd())
     parser = argparse.ArgumentParser()
     parser.add_argument(
         '--device', action='store', help='device help', required=False)
