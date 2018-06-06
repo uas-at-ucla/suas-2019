@@ -9,7 +9,10 @@ import argparse
 import zmq
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
-sys.path.insert(0, '../../lib')
+
+if os.uname()[4] != "armv7l":
+    sys.path.insert(0, '../../lib')
+
 import process_manager
 
 processes = process_manager.ProcessManager()
@@ -31,7 +34,9 @@ class GroundSerialComms:
 
         self.stopped = False
 
-    def run_reader(self):
+    def run_reader(self, callback):
+        self.read_callback = callback
+
         self.read_thread = \
                 threading.Thread(target=self.read_data)
         self.read_thread.start()
@@ -62,7 +67,7 @@ class GroundSerialComms:
                 .hexdigest()
 
         if checksum != calculated_checksum:
-            print("Checksum mismatch")
+            #print("Checksum mismatch")
             return
 
         proto_msg = serial_comms_message_proto.SerialCommsMessage()
@@ -73,7 +78,7 @@ class GroundSerialComms:
             print("INVALID MESSAGE")
             return
 
-        print(proto_msg.latitude)
+        self.read_callback(proto_msg)
 
     def send_protobuf(self, proto_msg):
         proto_msg.unix_timestamp = time.time()
@@ -86,12 +91,13 @@ class GroundSerialComms:
 
         self.ser.write(message)
 
-    def send_message(self, latitude, longitude, altitude):
+    def send_message(self, latitude, longitude, altitude, heading):
         proto_msg = serial_comms_message_proto.SerialCommsMessage()
         proto_msg.unix_timestamp = time.time()
         proto_msg.latitude = latitude
         proto_msg.longitude = longitude
         proto_msg.altitude = altitude
+        proto_msg.heading = heading
 
         self.send_protobuf(proto_msg)
 
@@ -115,10 +121,13 @@ def run_sender(args):
 
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    socket.bind("ipc:///tmp/serial_comms.ipc")
     socket.setsockopt(zmq.SUBSCRIBE, "")
+    socket.bind("ipc:///tmp/serial_comms.ipc")
+    print("CREATED ZMQ")
 
-    while True:
+    time.sleep(1)
+
+    while ground_serial_comms.ser.isOpen():
         time.sleep(0.2)
         serialized_protobuf = socket.recv()
 
@@ -132,12 +141,21 @@ def run_sender(args):
 
         ground_serial_comms.send_protobuf(proto_msg)
 
+    print("EXIT")
+
+def print_received(proto_msg):
+    print("Latitude: " + str(proto_msg.latitude) \
+            + " Longitude: " + str(proto_msg.longitude) \
+            + " Altitude: " + str(proto_msg.altitude) \
+            + " Heading: " + str(proto_msg.heading))
+
+
 def run_receiver(args):
     print("Running serial receiver...")
 
     global ground_serial_comms
     ground_serial_comms = GroundSerialComms(args.device)
-    ground_serial_comms.run_reader()
+    ground_serial_comms.run_reader(print_received)
 
     # Receive forever.
     while True:
@@ -163,3 +181,4 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     args.func(args)
+

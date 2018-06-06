@@ -80,6 +80,8 @@ if __name__ == '__main__':
     run_cmd_on_drone('mkdir -p /home/pi/suas_2018_deploy/scripts')
     run_cmd_on_drone('mkdir -p /home/pi/suas_2018_deploy/executables')
     processes.wait_for_complete()
+    run_cmd_on_drone('mkdir -p /home/pi/suas_2018_deploy/scripts/serial_comms')
+    processes.wait_for_complete()
 
     # Upload the binaries to the drone.
     print_title("Uploading binaries to drone... ")
@@ -94,6 +96,14 @@ if __name__ == '__main__':
                     "/home/pi/suas_2018_deploy/scripts/.")
     upload_to_drone('lib/scripts/tag_photos.sh',
                     "/home/pi/suas_2018_deploy/scripts/.")
+    upload_to_drone('lib/serial_comms/serial_comms.py',
+                    "/home/pi/suas_2018_deploy/scripts/serial_comms/.")
+    upload_to_drone('lib/process_manager.py',
+                    "/home/pi/suas_2018_deploy/scripts/serial_comms/.")
+    upload_to_drone('lib/serial_comms/serial_comms_message.proto',
+                    "/home/pi/suas_2018_deploy/scripts/serial_comms/.")
+    upload_to_drone('lib/scripts/raspi/serial_comms_sender.sh',
+                    "/home/pi/suas_2018_deploy/scripts/serial_comms/.")
 
     upload_bin_to_drone('aos/linux_code/core',
                         "/home/pi/suas_2018_deploy/executables/aos_core")
@@ -117,6 +127,7 @@ if __name__ == '__main__':
             '-not -path \\"/home/pi/suas_2018_deploy\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/executables\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/scripts\\" ' + \
+            '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms\\" ' + \
             '-not -path \\"/home/pi/\.*\\" ' + \
             '-not -path \\"/home/pi/start.sh\\" ' + \
             '-not -path \\"/home/pi/logs/mavproxy/*\\" ' + \
@@ -127,6 +138,10 @@ if __name__ == '__main__':
             '-not -path \\"/home/pi/suas_2018_deploy/scripts/download_photos.sh\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/scripts/take_photos_continuously.sh\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/scripts/tag_photos.sh\\" ' + \
+            '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/serial_comms.py\\" ' + \
+            '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/serial_comms_sender.sh\\" ' + \
+            '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/process_manager.py\\" ' + \
+            '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/serial_comms_message.proto\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/executables/aos_core\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/executables/flight_loop\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/executables/io\\" ' + \
