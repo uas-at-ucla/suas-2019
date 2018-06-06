@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 ## Start timer of install script
 start=`date +%s`;
@@ -37,7 +37,7 @@ fi
 
 ## See if node version is 8.x -- If not, then update node
 version_node=$(node -v | grep -o "[0-9].[0-9].[0-9]" | grep -o "^[0-9]")
-if [ $version_node -gt 7 ]
+if [ "$version_node" -gt 7 ]
 then
     echo "Node.js is greater than version 7.0.0\n";
 else
@@ -47,7 +47,7 @@ else
         sudo apt-get install -qq curl;
         curl -sL https://deb.nodesource.com/setup_8.x | sudo -E bash -;
         sudo apt-get install -y nodejs;
-    elif [ $OS = "Darwin" ]
+    elif [ "$OS" = "Darwin" ]
     then
         echo "Installing Node.js...";
         brew install node;
@@ -74,11 +74,11 @@ echo "";
 # Install all Packages
 
 ## Check if all packages exist; if not, then install
-if [ $OS = "Linux" ]
+if [ "$OS" = "Linux" ]
 then
     echo "Checking all necessary packages..."
     echo "sudo apt-get install python3.5 python3-pip python-pip python3-dev build-essential\n"
-    sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential sl;
+    sudo apt-get install -qq python3.5 python3-pip python3-dev build-essential;
     sudo apt-get install -qq python-matplotlib python-numpy python2.7-dev sshpass;
 
     # Do Bazel stuff
@@ -87,13 +87,13 @@ then
     sudo apt-get -qq install libc++abi-dev;
     echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" | sudo tee /etc/apt/sources.list.d/bazel.list;
     curl https://bazel.build/bazel-release.pub.gpg | sudo apt-key add -
-    sudo apt-get update && sudo apt-get -y -qq install bazel clang-3.9 libc++-dev clang-format-3.5;
+    sudo apt-get update && sudo apt-get -y -qq install bazel clang-3.9 libc++-dev clang-format-3.9;
     sudo apt-get -y -qq install ruby;
 #   for i in $(seq 1 3);
 #   do
 #       sl;
 #   done
-elif [ $OS = "Darwin" ]
+elif [ "$OS" = "Darwin" ]
 then
     echo "Hi";
     ##### todo #####
@@ -103,7 +103,7 @@ fi
 
 ## See if pip version is 9.x -- If not, then update pip
 version_pip=$(pip -V | grep -o "[0-9].[0-9].[0-9]" | grep -o "^[0-9]")
-if [ $version_pip -gt 8 ]
+if [ "$version_pip" -gt 8 ]
 then
     echo "Pip is greater than version 8.0.0\n";
 else
@@ -119,13 +119,13 @@ sudo -H pip install -I -r pip_requirements.txt > /dev/null;
 echo "Python dependencies installed.\n"
 
 
-if [ $OS = "Linux" ]
+if [ "$OS" = "Linux" ]
 then
     echo "Installing jMAVSim dependencies..."
     sudo apt-get -y -qq install ant;
 fi
 
-if [ $OS = "Linux" ]
+if [ "$OS" = "Linux" ]
 then
     echo "Installing some more random stuff..."
     sudo apt-get -y -qq install libopencv-dev libeigen3-dev protobuf-compiler liblz4-dev;
@@ -137,7 +137,7 @@ fi
 ##########################################################################
 # Do Gazebo stuff
 
-if [ $OS = "Linux" ]
+if [ "$OS" = "Linux" ]
 then
     echo "Installing Gazebo dependencies..."
     sudo apt-get -y -qq install libgazebo7-dev

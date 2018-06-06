@@ -27,7 +27,7 @@ class Node {
  public:
   Node(const T& state, Node<T>* parent = nullptr, int dimensions = 2,
        std::function<void(T, double*)> TToArray = NULL)
-      : _parent(parent), _state(state), _vec(dimensions) {
+      : _vec(dimensions), _state(state), _parent(parent) {
     if (_parent) {
       _parent->_children.push_back(this);
     }
@@ -314,6 +314,7 @@ class Tree {
     flann::Matrix<double> dists(d.data(), query.rows, 1);
 
     int n = _kdtree.knnSearch(query, indices, dists, 1, flann::SearchParams());
+    (void)n;
 
     if (distanceOut) *distanceOut = _stateSpace->distance(state, best->state());
 

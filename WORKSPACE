@@ -43,6 +43,13 @@ new_git_repository(
 )
 
 new_git_repository(
+  name = 'mavlink_v2',
+  remote = 'https://github.com/mavlink/c_library_v2.git',
+  build_file = 'lib/third_party/mavlink_v2.BUILD',
+  commit = '748192f661d0df3763501cfc432861d981952921',
+)
+
+new_git_repository(
   name = 'libmavconn',
   remote = 'https://github.com/mavlink/mavros.git',
   build_file = 'lib/third_party/libmavconn.BUILD',
@@ -100,9 +107,9 @@ new_git_repository(
 
 new_git_repository(
   name = "matplotlibcpp",
-  commit = "b74e465baa1d448172406a8e5624010925117be2",
+  commit = "9523030a3dc11c05b6cc38743299e4453ec36458",
   build_file = "lib/third_party/matplotlibcpp.BUILD",
-  remote = "https://github.com/lava/matplotlib-cpp.git",
+  remote = "https://github.com/uas-at-ucla/matplotlib-cpp.git",
 )
 
 new_http_archive(
@@ -144,6 +151,34 @@ new_git_repository(
   commit = "93d41b2c0ecd0db7075e2386596ce39cb20546c9",
   remote = "https://github.com/gabime/spdlog.git",
   build_file = "lib/third_party/spdlog.BUILD",
+)
+
+new_git_repository(
+  name = "pigpio",
+  commit = "934874be2fa34a525beb33e8cb75e378df587860",
+  remote = "https://github.com/joan2937/pigpio.git",
+  build_file = "lib/third_party/pigpio.BUILD",
+)
+
+new_git_repository(
+  name = "libgphoto2",
+  commit = "a9f979459f0a64ff356318cd48b6f5b817850ec5",
+  remote = "https://github.com/uas-at-ucla/libgphoto2.git",
+  build_file = "lib/third_party/libgphoto2.BUILD",
+)
+
+new_git_repository(
+  name = "libexif",
+  commit = "3cc93d33d4cb11899b986cc15fa9e8ec9cc7a9a1",
+  remote = "https://github.com/libexif/libexif.git",
+  build_file = "lib/third_party/libexif.BUILD",
+)
+
+new_git_repository(
+  name = "gphoto2pp",
+  commit = "da6db6f79edc4291f7a5ff38d825b8f3102d6270",
+  remote = "https://github.com/maldworth/gphoto2pp.git",
+  build_file = "lib/third_party/gphoto2pp.BUILD",
 )
 
 new_local_repository(

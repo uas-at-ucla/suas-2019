@@ -4,7 +4,7 @@ namespace lib {
 namespace logger {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-const char* kLogFileLocation = "/home/pi/suas_2018_deploy/logs/suas_2018.csv";
+const char* kLogFileLocation = "/home/pi/logs/uas_at_ucla/suas_2018.csv";
 #else
 const char* kLogFileLocation = "/tmp/suas_2018.csv";
 #endif

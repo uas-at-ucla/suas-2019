@@ -1,34 +1,56 @@
 import React, { Component } from "react";
 import MissionPlanner from "./MissionPlanner";
 import MissionPlannerOverview from "./MissionPlannerOverview";
+import DroneCommands from "./DroneCommands";
 
 class Panel extends Component {
+
+  state = {commandView: 'plan'};
+
   render() {
-    let header = null;
-    if (this.props.title) {
-      header = (
-        <h4>
-          {this.props.title}
+    let header = (
+      <h4>
+        <span>
           <button
-            className="panel-expand"
-            data-toggle="modal"
-            data-target={`#${this.props.id}-modal`}
+            onClick={() => this.setState({commandView: 'plan'})}
+            className={`btn ${this.state.commandView !== 'plan' ? "btn-outline-secondary" : "btn-secondary"}`}
           >
-            <i className="fa fa-expand" aria-hidden="true" />
+            Plan
           </button>
-        </h4>
-      );
-    }
+          <button
+            onClick={() => this.setState({commandView: 'drone'})}
+            className={`btn ${this.state.commandView !== 'drone' ? "btn-outline-secondary" : "btn-secondary"}`}
+          >
+            Drone
+          </button>
+        </span>
+        <button
+          className="panel-expand"
+          data-toggle="modal"
+          data-target={`#${this.props.id}-modal`}
+        >
+          <i className="fa fa-expand" aria-hidden="true" />
+        </button>
+      </h4>
+    );
 
     return (
       <div className="Panel" id={this.props.id}>
         <div className="card text-white">
           <div className="card-body">
             {header}
-            <MissionPlannerOverview
-              homeState={this.props.homeState}
-              setHomeState={this.props.setHomeState}
-            />
+            {this.state.commandView === 'plan' ?
+              <MissionPlannerOverview
+                homeState={this.props.homeState}
+                setHomeState={this.props.setHomeState}
+                commandTypes={this.props.commandTypes}
+              /> :
+              <DroneCommands
+                homeState={this.props.homeState}
+                setHomeState={this.props.setHomeState}
+                commandTypes={this.props.commandTypes}
+              />
+            }
           </div>
         </div>
 
@@ -47,6 +69,8 @@ class Panel extends Component {
                   setHomeState={this.props.setHomeState}
                   makeCommand={this.props.makeCommand}
                   commandTypes={this.props.commandTypes}
+                  getCommandPosKey={this.props.getCommandPosKey}
+                  socketEmit={this.props.socketEmit}
                 />
               </div>
             </div>
