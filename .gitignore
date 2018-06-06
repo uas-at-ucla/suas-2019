@@ -2,6 +2,9 @@
 *.pyc
 *.swp
 *.pickle
+mav.parm
+mav.tlog
+mav.tlog.raw
 /bazel-*
 /tools/build/bazel-*
 package-lock.json
@@ -27,3 +30,4 @@ core
 
 /src/ground/client/build_commit.txt
 src/ground/client/build
+/downloaded

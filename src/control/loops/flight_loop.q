@@ -40,6 +40,10 @@ queue_group FlightLoopQueue {
 
     bool armed;
     int32_t autopilot_state;
+
+    int32_t state;
+
+    double last_gps;
   };
 
   message Status {
@@ -53,6 +57,18 @@ queue_group FlightLoopQueue {
 
     bool trigger_failsafe;
     bool trigger_throttle_cut;
+
+    double trigger_takeoff;
+    double trigger_hold;
+    double trigger_offboard;
+    double trigger_rtl;
+    double trigger_land;
+    double trigger_arm;
+    double trigger_disarm;
+
+    double trigger_alarm;
+    double trigger_bomb_drop;
+    double trigger_dslr;
   };
 
   message Output {
@@ -60,14 +76,20 @@ queue_group FlightLoopQueue {
     float velocity_y;
     float velocity_z;
 
-    bool velocity_control;
-    bool arm;
-    bool disarm;
-    bool takeoff;
-    bool land;
-    bool throttle_cut;
+    float yaw;
 
+    float gimbal_angle;
+    bool bomb_drop;
     bool alarm;
+    bool dslr;
+
+    double trigger_takeoff;
+    double trigger_hold;
+    double trigger_offboard;
+    double trigger_rtl;
+    double trigger_land;
+    double trigger_arm;
+    double trigger_disarm;
   };
 
   queue Dummy dummy;
