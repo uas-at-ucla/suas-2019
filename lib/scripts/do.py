@@ -137,8 +137,13 @@ def run_simulate(args):
 
 def run_ground(args):
     # Ground server and interface.
-    processes.spawn_process("python ./src/ground/ground.py", None, True,
-                            args.verbose)
+    if args.device is not None:
+        processes.spawn_process("python ./src/ground/ground.py --device " \
+                + args.device, None, True, args.verbose)
+    else:
+        processes.spawn_process("python ./src/ground/ground.py", None, True, \
+                args.verbose)
+
     processes.wait_for_complete()
 
 
@@ -172,6 +177,8 @@ if __name__ == '__main__':
     ground_parser = subparsers.add_parser('ground', help='ground help')
     ground_parser.add_argument(
         '--verbose', action='store_true', help='verbose help')
+    ground_parser.add_argument(
+        '--device', action='store', help='device help', required=False)
     ground_parser.set_defaults(func=run_ground)
 
     build_parser = subparsers.add_parser('build', help='build help')
