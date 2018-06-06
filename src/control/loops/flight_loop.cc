@@ -64,6 +64,8 @@ void FlightLoop::DumpSensors() {
         << ::src::control::loops::flight_loop_queue.sensors->altitude
         << " RelativeAltitude: "
         << ::src::control::loops::flight_loop_queue.sensors->relative_altitude
+        << " Heading: "
+        << ::src::control::loops::flight_loop_queue.sensors->heading
         << " AccelX: "
         << ::src::control::loops::flight_loop_queue.sensors->accelerometer_x
         << " AccelY: "
@@ -137,7 +139,7 @@ void FlightLoop::RunIteration() {
 
   auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
 
-  output->gimbal_angle = -45;
+  output->gimbal_angle = 0.15;
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
