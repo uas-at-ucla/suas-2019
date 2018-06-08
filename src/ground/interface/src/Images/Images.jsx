@@ -31,6 +31,11 @@ class Images extends Component {
       this.setState({[name]: event.target.value});
   }
 
+  onImageIndexChange(event) {
+      const name = event.target.name;
+      this.setState({[name]: event.target.value});
+  }
+
   render() {
     return (
       <div className="Images">

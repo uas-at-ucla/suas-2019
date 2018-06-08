@@ -43,7 +43,7 @@ export default class Classify extends React.Component {
             newState.display = true;
             newState.submitted = nextProps.submitted;
         }
-        if (nextProps.object) {
+        if (nextProps.object !== this.props.object) {
             for (let key in nextProps.object) {
                 newState[key] = nextProps.object[key];
             }
