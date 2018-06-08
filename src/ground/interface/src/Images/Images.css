@@ -74,3 +74,8 @@
 #raw-images {
     padding-bottom: 200px;
 }
+
+.image_color_key span {
+    margin-right: 5px;
+    padding: 2px;
+}
