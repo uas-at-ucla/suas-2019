@@ -201,10 +201,10 @@ def telemetry(received_telemetry):
     if passed_loops - passed_messages > 0:
         print("Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!")
 
-    
+
     telemetry_num = received_telemetry['message_index']
     drone_loop_num = received_telemetry['loop_index']
-    
+
     global interop_client
 
     sensors = received_telemetry['telemetry']['sensors']
