@@ -1,4 +1,5 @@
 .DS_STORE
+*.JPG
 *.pyc
 *.swp
 *.pickle
