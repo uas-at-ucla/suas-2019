@@ -6,6 +6,13 @@ import ModalComponent from './Modal';
 import { PageHeader, ProgressBar } from 'react-bootstrap';
 import Classify from './Classify'
 
+const colorKey = {
+  manualCrop:     "rgba(255, 0,   0,   1)",
+  manualClassify: "rgba(0,   255, 0,   1)",
+  autoCrop:       "rgba(255, 127, 0,   1)",
+  autoClassify:   "rgba(0,   255, 255, 1)"
+}
+
 class Images extends Component {
   constructor (props) {
     super(props);
@@ -27,6 +34,12 @@ class Images extends Component {
   render() {
     return (
       <div className="Images">
+        <div class="image_color_key">
+          <span style={{backgroundColor: colorKey.manualCrop}}>Manual-Cropped</span>
+          <span style={{backgroundColor: colorKey.manualClassify}}>Manual-Classified</span>
+          <span style={{backgroundColor: colorKey.autoCrop}}>Auto-Cropped</span>
+          <span style={{backgroundColor: colorKey.autoClassify}}>Auto-Classified</span>
+        </div>
         <div className="row">
           <div className="col-md-4 col-sm-4 col-xs-4 text-center"
                id="raw-images">
@@ -102,7 +115,8 @@ class Images extends Component {
                 <Classify image={this.state.currentCroppedPhoto}
                           doubleClick={this.state.doubleClickCropped}
                           socketEmit={this.props.socketEmit}
-                          object={this.state.submittedObject}/> : null
+                          object={this.state.classifiedObject}
+                          submitted={this.state.objectSubmitted}/> : null
               }
             </div>
           </div>
@@ -113,11 +127,12 @@ class Images extends Component {
           </div>
         </div>
 
-        <div id="actionBar">
-          {/*This must select all segmented images  */}
+        {/*<div id="actionBar">
+          {//This must select all segmented images
+          }
           <button className="actionBtn" id="SelectAllBtn" onClick={this.selectAllBtn}>Select All</button>
           <button className="actionBtn" id="SubmitBtn" onClick={this.submitToInterop}>Submit</button>
-        </div>
+        </div>*/}
       </div>
     );
   }
@@ -170,23 +185,43 @@ class Images extends Component {
   }
 
   segmentedImageStyle(id) {
-    if (this.props.appState.manualClassifiedImages.find(el => el.id === id)) {
-      return {borderBottom: "4px solid rgba(0, 255, 0, 2)"};
-    } else if (this.props.appState.manualCroppedImageParents.find(el => el === this.props.appState.croppedImages[id])) {
-      return {borderBottom: "4px solid rgba(255, 0, 0, 2)"};
+    let style = {};
+
+    if (this.props.appState.manualCroppedImageParents.find(el => el === this.props.appState.croppedImages[id])) {
+      style.borderBottom = "4px solid " + colorKey.manualCrop;
     } else {
-      return {};
+      style.borderTop = "4px solid " + colorKey.autoCrop;
     }
+
+    if (this.props.appState.manualClassifiedImages.find(el => el.id === id)) {
+      style.borderBottom = "4px solid " + colorKey.manualClassify;
+    }
+
+    if (this.props.appState.autoClassifiedImages.find(el => el === id)) {
+      style.borderTop = "4px solid " + colorKey.autoClassify;
+    }
+
+    return style;
   }
 
   rawImageStyle(id) {
-    if (this.props.appState.manualClassifiedImages.find(el => this.props.appState.croppedImages[el.id] === id)) {
-      return {borderBottom: "4px solid rgba(0, 255, 0, 2)"};
-    } else if (this.props.appState.manualCroppedImageParents.find(el => el === id)) {
-      return {borderBottom: "4px solid rgba(255, 0, 0, 2)"};
-    } else {
-      return {};
+    let style = {};
+
+    if (this.props.appState.manualCroppedImageParents.find(el => el === id)) {
+      style.borderBottom = "4px solid " + colorKey.manualCrop;
+    } else if (Object.keys(this.props.appState.croppedImages).find(el => this.props.appState.croppedImages[el] === id)) {
+      style.borderTop = "4px solid " + colorKey.autoCrop;
     }
+
+    if (this.props.appState.manualClassifiedImages.find(el => this.props.appState.croppedImages[el.id] === id)) {
+      style.borderBottom = "4px solid " + colorKey.manualClassify;
+    }
+
+    if (this.props.appState.autoClassifiedImages.find(el => this.props.appState.croppedImages[el] === id)) {
+      style.borderTop = "4px solid " + colorKey.autoClassify;
+    }
+
+    return style;
   }
 
   photoshop = (photo) => {
@@ -198,14 +233,35 @@ class Images extends Component {
 
   classify = (photo) => {
     let object = null;
+    let submitted = false;
     let classified = this.props.appState.manualClassifiedImages.find(el => el.id === photo.id);
     if (classified) {
       object = classified.object;
+      submitted = true;
+    } else {
+      fetch('/'+this.props.appState.photoFolder+'/' + photo.id + '.json')
+        .then(res => res.json())
+        .catch(error => console.log("No JSON file exists!"))
+        .then(response => {
+          let auto_object = {};
+          auto_object.latitude = response.location.lat || 0;
+          auto_object.longitude = response.location.lng || 0;
+          auto_object.shape = response.target_shape || "";
+          auto_object.background_color = response.target_color || "";
+          auto_object.alphanumeric = response.letter || "";
+          auto_object.alphanumeric_color = response.letter_color || "";
+          auto_object.orientation = response.orientation || "";
+          this.setState({
+            classifiedObject: auto_object,
+          });
+        })
+        .catch(error => console.log("Fetch request failed."))
     }
     this.setState({
       doubleClickCropped: {},
       currentCroppedPhoto: photo,
-      submittedObject: object
+      classifiedObject: object,
+      objectSubmitted: submitted
     });
   }
 
@@ -217,11 +273,10 @@ class Images extends Component {
       .then(response => {
         this.setState({
           photo_lat: response.location.lat,
-          photo_lon: response.location.lon
+          photo_lon: response.location.lng
         });
       })
       .catch(error => console.log("Fetch request failed."))
-
   }
 }
 
