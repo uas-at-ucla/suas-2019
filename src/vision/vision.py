@@ -119,6 +119,7 @@ taken_auctions = {}
 img_count = 0
 hasher = hashlib.blake2b()
 server_img_manager = None
+server_data_dir = None
 
 
 class ServerWorker(threading.Thread):
@@ -170,7 +171,7 @@ class ServerWorker(threading.Thread):
                     with sql_connection:
                         for img_type in ('raw', 'localized', 'classified'):
                             sql_cursor.execute("select ImageID from Images where Type=?", (img_type,))
-                            all_images[img_type] = sql_cursor.fetchall()
+                            all_images[img_type] = [row[0] for row in sql_cursor.fetchall()]
                     vision_socketio_server.emit('all_images', all_images)
 
                 # check on the progress of an auction
@@ -228,9 +229,10 @@ class ServerWorker(threading.Thread):
                     })
             except queue.Empty:
                 continue
+        else:
+            sql_connection.close()
 
     def join(self, timeout=None):
-        self.sql_connection.close()
         self.stop_req.set()
         super().join(timeout)
 
@@ -276,7 +278,7 @@ def process_image(json, attempts=1):
         manual_id = False
 
     # TODO custom data dir
-    img_inc_path = os.path.join(DEFAULT_DATA_DIR, img_info['id'])
+    img_inc_path = os.path.join(server_data_dir, img_info['id'])
 
     try:
         with open(img_inc_path + '.json', 'x') as f:
@@ -395,7 +397,7 @@ def download_snipped(json):
             'user': SNIPPER_USER,
             'addr': SNIPPER_IP,
             'img_remote_src': os.path.join(download_dir, img_id + '.jpg'),
-            'img_local_dest': os.path.join(DEFAULT_DATA_DIR, img_id + '.jpg')
+            'img_local_dest': os.path.join(server_data_dir, img_id + '.jpg')
         }
     })
     server_task_queue.put({
@@ -410,7 +412,7 @@ def download_snipped(json):
             'user': SNIPPER_USER,
             'addr': SNIPPER_IP,
             'img_remote_src': os.path.join(download_dir, img_id + '.json'),
-            'img_local_dest': os.path.join(DEFAULT_DATA_DIR, img_id + '.json')
+            'img_local_dest': os.path.join(server_data_dir, img_id + '.json')
         }
     })
     server_task_queue.put({
@@ -468,7 +470,9 @@ def manual_request_done(json):
     vision_socketio_server.emit('manual_request_done', json)
 
 @vision_socketio_server.on('get_all_images')
-def return_all_images(json):
+def return_all_images():
+    if verbose:
+        print('Someone asked for a list of all images!')
     server_task_queue.put({'type': 'retrieve_records'})
 
 @vision_socketio_server.on('calc_target_coords')
@@ -543,6 +547,8 @@ def calculate_target_coordinates(target_pos_pixel,
 
 
 def server_worker(args):
+    global server_data_dir
+    server_data_dir = args.data_dir
     # setup the database:
     global server_img_manager
     # TODO Server should not be using a client img_manager
