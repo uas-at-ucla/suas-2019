@@ -47,6 +47,7 @@ ground_serial_comms = None
 
 commands = []
 
+IMAGE_FOLDER = 'testPhotos'
 image_folder = "testPhotos/"
 all_images = {
     'raw': ['00019', 'flappy'],
@@ -201,7 +202,7 @@ def send_cropped_images(data):
                 autonomous=False \
             )
             odlc_id = interop_client.post_odlc(odlc).result().id
-            print "Object " + str(odlc_id) + " submitted"
+            print("Object " + str(odlc_id) + " submitted")
             with open(image_folder + data['id'] + '.JPG', 'rb') as f:
                 image_data = f.read()
             interop_client.post_odlc_image(odlc_id, image_data).result()
@@ -210,7 +211,7 @@ def send_cropped_images(data):
             ground_socketio_server.emit('classified_image', data, \
                 room='frontend')
         except:
-            print "Invalid Object Data!!!"
+            print("Invalid Object Data!!!")
 
 
 @ground_socketio_server.on('execute_commands')
@@ -256,10 +257,10 @@ def telemetry(received_telemetry):
     passed_loops = received_telemetry['loop_index'] - drone_loop_num
 
     if passed_messages > 1:
-        print("Lost " + str(passed_messages - 1) + " telemetry messages!")
+        print(("Lost " + str(passed_messages - 1) + " telemetry messages!"))
 
     if passed_loops - passed_messages > 0:
-        print("Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!")
+        print(("Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!"))
 
     
     telemetry_num = received_telemetry['message_index']
@@ -336,10 +337,10 @@ def got_serial_data(proto_msg):
     alt = proto_msg.altitude
     heading = proto_msg.heading
 
-    print("Latitude: " + str(proto_msg.latitude) \
+    print(("Latitude: " + str(proto_msg.latitude) \
             + " Longitude: " + str(proto_msg.longitude) \
             + " Altitude: " + str(proto_msg.altitude) \
-            + " Heading: " + str(proto_msg.heading))
+            + " Heading: " + str(proto_msg.heading)))
 
     if all(val is not None for val in [lat, lng, alt, heading]):
         try:
@@ -475,7 +476,7 @@ def new_classified(*args):
                 autonomous=True \
             )
             odlc_id = interop_client.post_odlc(odlc).result().id
-            print "Object " + str(odlc_id) + " submitted"
+            print("Object " + str(odlc_id) + " submitted")
             with open(image_folder + data['id'] + '.JPG', 'rb') as f:
                 image_data = f.read()
             interop_client.post_odlc_image(odlc_id, image_data).result()
@@ -486,16 +487,20 @@ def new_classified(*args):
 
             new_images['classified'].append(args[0])
         except:
-            print "Invalid Object Data!!!"
+            print("Invalid Object Data!!!")
 
 
-def images_backend_connected():
-    images_client.emit('get_all_images')
+#def images_backend_connected():
+#    images_client.emit('get_all_images')
 
 
 def connect_to_images_backend():
     images_client = socketIO_client.SocketIO('0.0.0.0', 8099)
-    images_client.on('connect', images_backend_connected)
+
+    # This action must be called manually since it connects
+    # before the function is bound to the connect event
+    images_client.emit('get_all_images')
+    #images_client.on('connect', images_backend_connected)
     images_client.on('all_images', get_all_images)
     images_client.on('new_raw', new_raw)
     images_client.on('new_localized', new_localized)
@@ -524,28 +529,46 @@ if __name__ == '__main__':
     parser.add_argument('--static', action="store_true")
     parser.add_argument(
         '--device', action='store', help='device help', required=False)
+    parser.add_argument('--run-vision', action="store_true", dest="run_vision_srv")
+    parser.add_argument(
+        '--vision-clients',
+        metavar='CLIENT_NAMES',
+        type=str,
+        nargs='+',
+        dest='clients',
+        choices=('rsync', 'yolo', 'snipper',
+                 'classifier_shape', 'classifier_letter'),
+        default=[])
     args = parser.parse_args()
 
-    print ""
+    print("")
 
     if args.static:
         image_folder = './interface/build/' + image_folder
         processes.spawn_process("python interface/serve_client.py", None,
                                 True, False)
-        print "Ground station at http://0.0.0.0:8080"
-        print "-----------------------------------------------------"
-        print "NOTE: Ensure that you ran: python interface/build.py"
+        print("Ground station at http://0.0.0.0:8080")
+        print("-----------------------------------------------------")
+        print("NOTE: Ensure that you ran: python interface/build.py")
     else:
         image_folder = './interface/public/' + image_folder
         processes.spawn_process("npm start --silent --prefix ./interface/", None,
                                 True, False)
-        print "Ground station at http://localhost:3000"
-    print "-----------------------------------------------------"
+        print("Ground station at http://localhost:3000")
+    print("-----------------------------------------------------")
 
     if args.device is not None:
-        print("Using serial device " + args.device)
+        print(("Using serial device " + args.device))
         ground_serial_comms = serial_comms.GroundSerialComms(args.device)
         ground_serial_comms.run_reader(got_serial_data)
+
+    if args.run_vision_srv:
+        processes.spawn_process("python3 ../vision/vision.py --verbose --data-dir ../ground/interface/public/{folder} server".format(folder=IMAGE_FOLDER))
+        for client in args.clients:
+            if client.split('_')[0] == 'classifier':
+                processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/interface/public/{folder} client classifier {client}'.format(client=client.split('_'[1], folder=IMAGE_FOLDER)))
+            else:
+                processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/interface/public/{folder} client {client}'.format(client=client, folder=IMAGE_FOLDER))
 
     if AUTO_CONNECT_TO_INTEROP:
         t_connect = threading.Thread(target=auto_connect_to_interop)
