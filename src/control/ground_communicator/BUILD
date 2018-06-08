@@ -23,6 +23,7 @@ cc_library(
     '//src/control/io:io_lib',
     '//lib/mission_message_queue:mission_message_queue',
     '//lib/logger:log_sender',
+    '//lib/serial_comms:serial_comms_bridge',
     '//aos/linux_code:init',
     "@socketio_client_cpp//:socketio_client_cpp",
     "@cppzmq//:cppzmq",
