@@ -192,7 +192,7 @@ def send_cropped_images(data):
                 autonomous=False \
             )
             odlc_id = interop_client.post_odlc(odlc).result().id
-            print odlc_id
+            print "Object " + odlc_id + " submitted"
             with open(image_folder + data['id'] + '.JPG', 'rb') as f:
                 image_data = f.read()
             interop_client.post_odlc_image(odlc_id, image_data).result()
@@ -428,7 +428,34 @@ def new_localized(*args):
 
 
 def new_classified(*args):
-    new_images['classified'].append(args[0])
+    if interop_client is not None:
+        try:
+            with open(image_folder + data['id'] + '.json') as f:
+                obj = json.load(f)
+            odlc = interop.Odlc(
+                type="standard", \
+                latitude=obj['location']['lat'], \
+                longitude=obj['location']['lng'], \
+                orientation=obj['orientation'], \
+                shape=obj['target_shape'], \
+                background_color=obj['target_color'], \
+                alphanumeric=obj['letter'], \
+                alphanumeric_color=obj['letter_color'], \
+                autonomous=True \
+            )
+            odlc_id = interop_client.post_odlc(odlc).result().id
+            print "Object " + odlc_id + " submitted"
+            with open(image_folder + data['id'] + '.JPG', 'rb') as f:
+                image_data = f.read()
+            interop_client.post_odlc_image(odlc_id, image_data).result()
+
+            manual_classified_images.append(data)
+            ground_socketio_server.emit('classified_image', data, \
+                room='frontend')
+
+            new_images['classified'].append(args[0])
+        except:
+            print "Invalid Object Data!!!"
 
 
 def images_backend_connected():

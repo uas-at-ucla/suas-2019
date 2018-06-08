@@ -28,28 +28,27 @@ export default class Classify extends React.Component {
             "alphanumeric_color": ""
         };
         if (props.object) {
-            for (let key of object_keys) {
+            for (let key in props.object) {
                 this.state[key] = props.object[key];
             }
-            this.state.submitted = true;
         }
+        this.state.submitted = props.submitted;
         this.close = this.close.bind(this);
         this.submit_to_interop = this.submit_to_interop.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
+        let newState = {};
         if (nextProps.doubleClick !== this.props.doubleClick) {
-            let newState = {display: true};
-            if (nextProps.object) {
-                for (let key of object_keys) {
-                    newState[key] = nextProps.object[key];
-                }
-                newState.submitted = true;
-            } else {
-                newState.submitted = false;
-            }
-            this.setState(newState);
+            newState.display = true;
+            newState.submitted = nextProps.submitted;
         }
+        if (nextProps.object) {
+            for (let key in nextProps.object) {
+                newState[key] = nextProps.object[key];
+            }
+        }
+        this.setState(newState);
     }
 
     _onMouseMove(e) {

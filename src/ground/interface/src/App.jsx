@@ -31,6 +31,7 @@ class App extends Component {
       photoFolder: photoFolder,
       rawImages: [],
       segmentedImages: [],
+      autoClassifiedImages: [],
       croppedImages: {},
       manualCroppedImageParents: [],
       manualClassifiedImages: []
@@ -145,10 +146,10 @@ class App extends Component {
         fetch('/'+photoFolder+'/' + id + '.json')
           .then(res => res.json())
           .catch(error => console.log("No JSON file exists!"))
-          .then(data => {
-            console.log(data)
+          .then(json_data => {
+            console.log(json_data)
             let croppedImages = Object.assign({}, this.state.croppedImages);
-            croppedImages[id] = data.parent_img_id;
+            croppedImages[id] = json_data.parent_img_id;
             this.setState({croppedImages: croppedImages});
           })
           .catch(error => console.log("Fetch request failed."));
@@ -156,12 +157,15 @@ class App extends Component {
           id: id,
           src: '/'+photoFolder+'/' + id + '.JPG'
         })
-
-
+      }
+      let autoClassifiedImages = []
+      for (let id of data.all_images.classified) {
+        autoClassifiedImages.push(id);
       }
       this.setState({
         rawImages: rawImages,
         segmentedImages: segmentedImages,
+        autoClassifiedImages: autoClassifiedImages,
         manualClassifiedImages: data.manual_classified_images,
         manualCroppedImageParents: data.manual_cropped_images
       });
@@ -209,16 +213,21 @@ class App extends Component {
       for (let id of data.localized) {
         fetch('/'+photoFolder+'/' + id + '.json')
           .then(res => res.json())
-          .then(data => {
+          .catch(error => console.log("No JSON file exists!"))
+          .then(json_data => {
             let croppedImages = Object.assign({}, this.state.croppedImages);
-            croppedImages[id] = data.parent_img_id;
+            croppedImages[id] = json_data.parent_img_id;
             this.setState({croppedImages: croppedImages});
-          });
+          })
+          .catch(error => console.log("Fetch request failed."));
 
         this.state.segmentedImages.push({
           id: id,
           src: '/'+photoFolder+'/' + id + '.JPG'
         });
+      }
+      for (let id of data.classified) {
+        this.state.autoClassifiedImages.push(id);
       }
       this.setState({});
     });
