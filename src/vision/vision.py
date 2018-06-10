@@ -129,12 +129,14 @@ class ServerWorker(threading.Thread):
         self.stop_req = threading.Event()  # listen for a stop request
 
     def run(self):
-        sql_connection = sqlite3.connect('image_types.db')
+        sql_connection = sqlite3.connect('image_info.db')
         sql_cursor = sql_connection.cursor()
         with sql_connection:
             sql_cursor.execute('create table if not exists Images (ImageID text, Type text)')
 
         while not self.stop_req.isSet():  # Exit run if stop was requested
+            # query drone for images
+            # TODO
             try:
                 # Try to get an item from the queue
                 # blocking: true; timeout: 0.05
@@ -159,10 +161,12 @@ class ServerWorker(threading.Thread):
                 #     'type': 'retrieve_records'
                 # }
 
-                if task['type'] == 'add_record':
+                task_type = task['type']
+
+                if task_type == 'add_record':
                     with sql_connection:
                         sql_cursor.execute(task['sql_statement'])
-                if task['type'] == 'retrieve_records':
+                elif task_type == 'retrieve_records':
                     all_images = {
                         'raw': None,
                         'localized': None,
@@ -174,8 +178,48 @@ class ServerWorker(threading.Thread):
                             all_images[img_type] = [row[0] for row in sql_cursor.fetchall()]
                     vision_socketio_server.emit('all_images', all_images)
 
+                elif task_type == 'filter_and_snip':
+                    results = task['yolo_results']
+                    img_id = task['img_id']
+                    filtered_results = []
+                    with sql_connection:
+                        real_coords = (server_img_manager.get_prop(img_id, 'lat'),
+                                       server_img_manager.get_prop(img_id, 'lat'))
+                        img_dimensions = (server_img_manager.get_prop(img_id, 'width_px'),
+                                          server_img_manager.get_prop(img_id, 'height_px'))
+                        altitude = server_img_manager.get_prop(img_id, 'altitude')
+                        heading = server_img_manager.get_prop(img_id, 'heading')
+                        for result in results:
+                            target_pos = (result['bottomright']['x'] - result['topleft']['x'],
+                                          result['bottomright']['y'] - result['topleft']['y'])
+
+                            lat, lng = calculate_target_coordinates(
+                                    target_pos_pixel=center_pos,
+                                    parent_img_real_coords=real_coords,
+                                    parent_img_dimensions_pixel=img_dimensions,
+                                    altitude=altitude, heading=heading)
+                            # This will select any target within ~15m square of
+                            # (lat, lng) at the latitude of the Andrews Airfoce Base
+                            sql_cursor.execute(
+                                    "select ImageID from Locations where (Lat between ? and ?) and (Lng between ? and ?)",
+                                    (lat-0.01, lat+0.01, lng-0.01, lng+0.01))
+                            if sql_cursor.fetchone() is not None:
+                                sql_cursor.execute("insert into Locations values (?, ?, ?)",
+                                        (img_id, lat, lng))
+                                filtered_results.append(result)
+                    if len(filtered_results) > 0:
+                        server_task_queue.put({
+                                'type': 'auction',
+                                'event_name': 'snip',
+                                'args': {
+                                    'img_id': task['img_id'],
+                                    'yolo_results': filtered_results
+                                }
+                            })
+
+
                 # check on the progress of an auction
-                elif task['type'] == 'timeout':
+                elif task_type == 'timeout':
                     if (time.time() -
                             task['time_began']) >= DEFAULT_AUCTION_TIMEOUT:
                         auction = active_auctions[task['auction_id']]
@@ -206,7 +250,7 @@ class ServerWorker(threading.Thread):
                         self.in_q.put(task)
 
                 # create a new auction
-                elif task['type'] == 'auction':
+                elif task_type == 'auction':
                     # generate a random auction id
                     auction_id = str(uuid.uuid4())
 
@@ -355,13 +399,18 @@ def snip_img(json):
     if verbose:
         print('Yolo finished; running snipper')
     server_task_queue.put({
-        'type': 'auction',
-        'event_name': 'snip',
-        'args': {
-            'img_id': json['img_id'],
-            'yolo_results': json['results']
-        }
+        'type': 'filter_and_snip',
+        'img_id': json['img_id'],
+        'yolo_results': json['results']
     })
+    #server_task_queue.put({
+    #    'type': 'auction',
+    #    'event_name': 'snip',
+    #    'args': {
+    #        'img_id': json['img_id'],
+    #        'yolo_results': json['results']
+    #    }
+    #})
 
 
 # Step 4 - run shape classification on each target
