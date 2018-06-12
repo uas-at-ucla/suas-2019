@@ -362,8 +362,8 @@ def process_image(json, attempts=1):
             }],
             'user': DRONE_USER,
             'addr': DRONE_IP,
-            'img_remote_src': json['file_path'],
-            'img_local_dest': img_inc_path + '.jpg'
+            'img_remote_src': [json['file_path']],
+            'img_local_dest': [img_inc_path + '.jpg']
         }
     })
     server_task_queue.put({
@@ -420,7 +420,7 @@ def download_snipped(json):
     img_id = json['img_id']
     download_dir = json['download_dir']
     print("Telling rsync client to download snipped image")
-    # WARNING do not combine these using a for loop, otherwise duplicate next tasks will be sent
+    # WARNING: this auctions must occur as one event to prevent duplicate next calls
     server_task_queue.put({
         'type': 'auction',
         'event_name': 'rsync',
@@ -445,23 +445,8 @@ def download_snipped(json):
             ],
             'user': SNIPPER_USER,
             'addr': SNIPPER_IP,
-            'img_remote_src': os.path.join(download_dir, img_id + '.jpg'),
-            'img_local_dest': os.path.join(server_data_dir, img_id + '.jpg')
-        }
-    })
-    server_task_queue.put({
-        'type': 'auction',
-        'event_name': 'rsync',
-        'args': {
-            'prev': {
-                'event_name': 'snipped',
-                'json': json
-            },
-            'next': [],
-            'user': SNIPPER_USER,
-            'addr': SNIPPER_IP,
-            'img_remote_src': os.path.join(download_dir, img_id + '.json'),
-            'img_local_dest': os.path.join(server_data_dir, img_id + '.json')
+            'img_remote_src': [os.path.join(download_dir, img_id + ext) for ext in ('.jpg', '.json')],
+            'img_local_dest': [os.path.join(server_data_dir, img_id + ext) for ext in ('.jpg', '.json')]
         }
     })
     server_task_queue.put({
@@ -721,11 +706,15 @@ class RsyncWorker(ClientWorker):
             print('Called rsync with args: <' + '> <'.join(map(str, task)) +
                   '>')
 
-        if 0 == processes.spawn_process_wait_for_code(
-                'rsync -vz --progress -e "ssh -p 22" "' + task_args['user'] +
-                '@' + task_args['addr'] + ':' + task_args['img_remote_src'] +
-                '" ' + task_args['img_local_dest']):
-            self._emit(task, 
+        success = True
+        for remote in task_args['img_remote_src']:
+            for local in task_args['img_local_dest']:
+                if 0 != processes.spawn_process_wait_for_code(
+                        'rsync -vz --progress -e "ssh -p 22" "' + task_args['user'] +
+                        '@' + task_args['addr'] + ':' + remote + '" ' + local):
+                    success = False
+        if success:
+            self._emit(task,
                 'download_complete', {
                     'saved_path': task_args['img_local_dest'],
                     'next': task_args['next']
