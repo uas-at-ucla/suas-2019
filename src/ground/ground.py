@@ -537,7 +537,7 @@ if __name__ == '__main__':
         dest='clients',
         choices=('rsync', 'yolo', 'snipper',
                  'classifier_shape', 'classifier_letter'),
-        default=[])
+        default=['rsync', 'yolo', 'snipper', 'classifier_shape', 'classifier_letter'])
     args = parser.parse_args()
 
     print("")
