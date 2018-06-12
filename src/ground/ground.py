@@ -4,17 +4,23 @@ import signal
 import time
 import json
 import threading
+import argparse
 from flask import Flask, render_template, request
 import flask_socketio, socketIO_client
+import base64
 
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
+dir_path = os.path.dirname(os.path.realpath(__file__))
+os.chdir(dir_path)
 sys.dont_write_bytecode = True
 sys.path.insert(0, 'interop/client')
-sys.path.insert(0, '../../lib')
+sys.path.insert(1, '../../lib/serial_comms')
+sys.path.insert(2, '../../lib')
 import process_manager
 import interop
+import serial_comms
+os.chdir(dir_path)
 
-sys.path.insert(0, './tools')
+sys.path.insert(3, './tools')
 
 METERS_PER_FOOT = 0.3048
 
@@ -37,6 +43,7 @@ interop_client = None
 missions = None
 stationary_obstacles = None
 moving_obstacles = None
+ground_serial_comms = None
 
 commands = []
 
@@ -47,12 +54,15 @@ processes = process_manager.ProcessManager()
 processes.run_command("protoc -I. --proto_path=../../lib/mission_manager/ " \
     + "--python_out=/tmp/ " \
     + "../../lib/mission_manager/mission_commands.proto")
-sys.path.insert(0, '/tmp')
+
+sys.path.insert(4, '/tmp')
 import mission_commands_pb2 as proto
 
 
 def signal_received(signal, frame):
     # Shutdown all the spawned processes and exit cleanly.
+    if ground_serial_comms != None:
+        ground_serial_comms.close()
     processes.killall()
     stopped = True
     sys.exit(0)
@@ -65,7 +75,7 @@ def connect(room):
     global drone_ip
 
     flask_socketio.join_room(room)
-    print(room + " connected! (ip: " + request.remote_addr + ")")
+    print((room + " connected! (ip: " + request.remote_addr + ")"))
 
     if room == 'frontend':
         data = None
@@ -186,10 +196,10 @@ def telemetry(received_telemetry):
     passed_loops = received_telemetry['loop_index'] - drone_loop_num;
 
     if passed_messages > 1:
-        print "Lost " + str(passed_messages - 1) + " telemetry messages!"
+        print("Lost " + str(passed_messages - 1) + " telemetry messages!")
 
     if passed_loops - passed_messages > 0:
-        print "Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!"
+        print("Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!")
 
     
     telemetry_num = received_telemetry['message_index']
@@ -258,6 +268,28 @@ def auto_connect_to_interop():
             print(e)
             print('Waiting for Interop Server...')
             time.sleep(1)
+
+def got_serial_data(proto_msg):
+    global interop_client
+    lat = proto_msg.latitude
+    lng = proto_msg.longitude
+    alt = proto_msg.altitude
+    heading = proto_msg.heading
+
+    print("Latitude: " + str(proto_msg.latitude) \
+            + " Longitude: " + str(proto_msg.longitude) \
+            + " Altitude: " + str(proto_msg.altitude) \
+            + " Heading: " + str(proto_msg.heading))
+
+    if all(val is not None for val in [lat, lng, alt, heading]):
+        try:
+            interop_telemetry = interop.Telemetry(lat, lng, alt, heading)
+            interop_client.post_telemetry(interop_telemetry)
+        except:
+            print("ERROR sending serial data")
+            interop_client = None
+
+
 
 
 def refresh_interop_data():
@@ -334,7 +366,7 @@ def interop_data_to_obstacles_proto(data):
         proto_obstacle.location.latitude = obstacle['latitude']
         proto_obstacle.location.longitude = obstacle['longitude']
 
-    return obstacles.SerializeToString().encode('base64')
+    return base64.b64encode(obstacles.SerializeToString())
 
 
 def ping_drone():
@@ -355,8 +387,18 @@ def ping_drone():
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
-    processes.spawn_process("npm start --silent --prefix ./interface/", None,
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        '--device', action='store', help='device help', required=False)
+    args = parser.parse_args()
+
+    processes.spawn_process("npm start --prefix ./interface/", None,
                             True, False)
+
+    if args.device is not None:
+        print("Using serial device " + args.device)
+        ground_serial_comms = serial_comms.GroundSerialComms(args.device)
+        ground_serial_comms.run_reader(got_serial_data)
 
     if AUTO_CONNECT_TO_INTEROP:
         t_connect = threading.Thread(target=auto_connect_to_interop)
