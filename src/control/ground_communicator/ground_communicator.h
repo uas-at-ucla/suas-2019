@@ -19,6 +19,7 @@
 #include "src/control/io/io.h"
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/logger/log_sender.h"
+#include "lib/serial_comms/serial_comms_bridge.h"
 
 namespace src {
 namespace control {
@@ -67,6 +68,9 @@ class MissionReceiver {
   ::aos::time::PhasedLoop phased_loop_;
 
   ::std::atomic<bool> running_;
+
+  double last_serial_telemetry_sent_;
+  ::lib::serial_comms::SerialCommsBridge serial_comms_bridge_;
 
   void SendTelemetry(int loop_index, int message_index);
 };
