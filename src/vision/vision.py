@@ -91,6 +91,8 @@ DEFAULT_YOLO_THRESH = 0.0012
 processes = process_manager.ProcessManager()
 c_workers = []
 s_worker = None
+img_query_worker = None
+img_query_worker_stop = threading.Event()
 
 verbose = False
 
@@ -102,6 +104,9 @@ def signal_received(signal, frame):
     # Ask the workers to join us in death
     if s_worker is not None:
         s_worker.join()
+    if img_query_worker is not None:
+        img_query_worker_stop.set()
+        img_query_worker.join()
     for worker in c_workers:
         worker.join()
     sys.exit(0)
@@ -133,6 +138,7 @@ class ServerWorker(threading.Thread):
         sql_cursor = sql_connection.cursor()
         with sql_connection:
             sql_cursor.execute('create table if not exists Images (ImageID text, Type text)')
+            sql_cursor.execute('create table if not exists Locations (ImageID text, Lat real, Lng real)')
 
         while not self.stop_req.isSet():  # Exit run if stop was requested
             # query drone for images
@@ -382,10 +388,11 @@ def syncronize_img_info(img_id, new_info_file):
             data = json_module.load(f)
     except OSError:
         pass # fail silently
-    server_img_manager.set_prop(img_id, 'time_gen', data[time])
-    server_img_manager.set_prop(img_id, 'lat': data[latitude])
-    server_img_manager.set_prop(img_id, 'lng': data[longitude])
-    server_img_manager.set_prop(img_id, 'heading': data[heading])
+    server_img_manager.set_prop(img_id, 'time_gen', data['time'])
+    server_img_manager.set_prop(img_id, 'lat': data['latitude'])
+    server_img_manager.set_prop(img_id, 'lng': data['longitude'])
+    server_img_manager.set_prop(img_id, 'heading': data['heading'])
+    server_img_manager.set_prop(img_id, 'altitude': data['altitude'])
 
     server_task_queue.put((2, {
         'type': 'auction',
@@ -602,10 +609,47 @@ def calculate_target_coordinates(target_pos_pixel,
 #    # TODO handle download failure
 #    pass
 
+def query_for_imgs(database_file, stop, drone_user, drone_ip, folder, server_port, interval=10, remote_encoding='utf-8'):
+    # open database
+    # TODO decide whether to use a database
+    #conn = sqlite3.connect(database_file)
+    #cursor = conn.cursor()
+    #with conn:
+    #    cursor.execute('create table if not exists Downloaded (Filename text)')
+
+    client = socketIO_client.SocketIO('0.0.0.0', server_port)
+    downloaded_files = set()
+    while not stop.is_set(): # stop running when told to do so
+        try:
+            # get a listing of all the files in the folder
+            # throws TimeoutExpired if timeout (interval in secs) runs out
+            result = subprocess.run(['ssh', drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)], timeout=interval, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+
+            # throws CalledProcessError is something went wrong with ssh
+            result.check_returncode()
+
+            # group(1) as to not include the newline
+            # append a newline to the end in case the result does not terminate with one
+            # also check extension to include only json files (since those are created
+            # after the JPG)
+            new_items = set(item.group(1) for item in re.finditer('(.+)\n', result.stdout.decode('utf-8')+'\n') if item.group(1).split('.')[1] == 'json' and item.group(1) not in downloaded_files)
+            downloaded_files |= new_items
+
+            for item in new_items:
+                client.emit('process_image', {'img_path': os.path.join(folder, item.split('.')[0] + '.JPG'), 'info_path': os.path.join(folder, item.split('.')[0] + '.json')})
+
+        except subprocess.CalledProcessError:
+            time.sleep(interval) # wait the interval before trying again
+        except subprocess.TimeoutExpired:
+            continue # already waited the interval with the timeout
+
 
 def server_worker(args):
     global server_data_dir
     server_data_dir = args.data_dir
+    # setup worker to query the drone for images
+    img_query_worker = threading.Thread(target=query_for_imgs, args=('img_dl_history.db', img_query_worker_stop))
+    img_query_worker.start()
     # setup the database:
     global server_img_manager
     # TODO Server should not be using a client img_manager
