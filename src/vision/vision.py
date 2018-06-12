@@ -354,16 +354,17 @@ def process_image(json, attempts=1):
                 'event_name': 'process_image',
                 'json': json
             },
-            'next': [{
-                'event_name': 'yolo',
-                'json': {
-                    'img_id': img_info['id']
-                }
-            }],
+            'next': {
+                'func': 'syncronize_img_info',
+                'args': (
+                    img_info['id'],
+                    img_inc_path + '-drone.json'
+                )
+            },
             'user': DRONE_USER,
             'addr': DRONE_IP,
-            'img_remote_src': [json['file_path']],
-            'img_local_dest': [img_inc_path + '.jpg']
+            'img_remote_src': [json['img_path'], json['info_path']],
+            'img_local_dest': [img_inc_path + '.jpg', img_inc_path + '-drone.json']
         }
     })
     server_task_queue.put({
@@ -374,20 +375,39 @@ def process_image(json, attempts=1):
     global img_count
     img_count += 1
 
+def syncronize_img_info(img_id, new_info_file):
+    data = None
+    try:
+        with open(new_info_file, 'r') as f:
+            data = json_module.load(f)
+    except OSError:
+        pass # fail silently
+    server_img_manager.set_prop(img_id, 'time_gen', data[time])
+    server_img_manager.set_prop(img_id, 'lat': data[latitude])
+    server_img_manager.set_prop(img_id, 'lng': data[longitude])
+    server_img_manager.set_prop(img_id, 'heading': data[heading])
+
+    server_task_queue.put({
+        'type': 'auction',
+        'event_name': 'yolo',
+        'args': {
+            'img_id': img_info['id']
+        }
+    })
+
+
 # Intermediate step
 @vision_socketio_server.on('download_complete')
 def call_next(json):
-    next_tasks = json['next']
-    global verbose
-    if verbose:
-        print("Download Complete; Next Up: " + str([next_task['event_name'] for next_task in next_tasks]))
-    for next_task in next_tasks:
+    globals()[json['next']['func']](*json['next']['args'])
+
+def do_auction(*auctions):
+    for auction in auctions:
         server_task_queue.put({
             'type': 'auction',
-            'event_name': next_task['event_name'],
-            'args': next_task['json']
+            'event_name': auction['event_name'],
+            'args': auction['json']
         })
-
 
 # Step 2 - find the targets in the image (yolo)
 
@@ -429,20 +449,23 @@ def download_snipped(json):
                 'event_name': 'snipped',
                 'json': json
             },
-            'next': [
-                {
-                    'event_name': 'classify_shape',
-                    'json': {
-                        'img_id': json['img_id']
+            'next': {
+                'func': 'do_auction',
+                'args': (
+                    {
+                        'event_name': 'classify_shape',
+                        'json': {
+                            'img_id': json['img_id']
+                        }
+                    },
+                    {
+                        'event_name': 'classify_letter',
+                        'json': {
+                            'img_id': json['img_id']
+                        }
                     }
-                },
-                {
-                    'event_name': 'classify_letter',
-                    'json': {
-                        'img_id': json['img_id']
-                    }
-                }
-            ],
+                )
+            },
             'user': SNIPPER_USER,
             'addr': SNIPPER_IP,
             'img_remote_src': [os.path.join(download_dir, img_id + ext) for ext in ('.jpg', '.json')],
