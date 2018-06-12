@@ -47,8 +47,7 @@ ground_serial_comms = None
 
 commands = []
 
-IMAGE_FOLDER = 'testPhotos'
-image_folder = "testPhotos/"
+image_folder = "testPhotos"
 all_images = {
     'raw': ['00019', 'flappy'],
     'localized': ['00019cropped'],
@@ -203,7 +202,7 @@ def send_cropped_images(data):
             )
             odlc_id = interop_client.post_odlc(odlc).result().id
             print("Object " + str(odlc_id) + " submitted")
-            with open(image_folder + data['id'] + '.JPG', 'rb') as f:
+            with open('./' + image_folder + '/' + data['id'] + '.JPG', 'rb') as f:
                 image_data = f.read()
             interop_client.post_odlc_image(odlc_id, image_data).result()
 
@@ -462,7 +461,7 @@ def new_localized(*args):
 def new_classified(*args):
     if interop_client is not None:
         try:
-            with open(image_folder + data['id'] + '.json') as f:
+            with open('./' + image_folder + '/' + data['id'] + '.json') as f:
                 obj = json.load(f)
             odlc = interop.Odlc(
                 type="standard", \
@@ -477,7 +476,7 @@ def new_classified(*args):
             )
             odlc_id = interop_client.post_odlc(odlc).result().id
             print("Object " + str(odlc_id) + " submitted")
-            with open(image_folder + data['id'] + '.JPG', 'rb') as f:
+            with open('./' + image_folder + '/' + data['id'] + '.JPG', 'rb') as f:
                 image_data = f.read()
             interop_client.post_odlc_image(odlc_id, image_data).result()
 
@@ -544,14 +543,14 @@ if __name__ == '__main__':
     print("")
 
     if args.static:
-        image_folder = './interface/build/' + image_folder
+        image_folder = 'interface/build/' + image_folder
         processes.spawn_process("python interface/serve_client.py", None,
                                 True, False)
         print("Ground station at http://0.0.0.0:8080")
         print("-----------------------------------------------------")
         print("NOTE: Ensure that you ran: python interface/build.py")
     else:
-        image_folder = './interface/public/' + image_folder
+        image_folder = 'interface/public/' + image_folder
         processes.spawn_process("npm start --silent --prefix ./interface/", None,
                                 True, False)
         print("Ground station at http://localhost:3000")
@@ -563,12 +562,12 @@ if __name__ == '__main__':
         ground_serial_comms.run_reader(got_serial_data)
 
     if args.run_vision_srv:
-        processes.spawn_process("python3 ../vision/vision.py --verbose --data-dir ../ground/interface/public/{folder} server".format(folder=IMAGE_FOLDER))
+        processes.spawn_process("python3 ../vision/vision.py --verbose --data-dir ../ground/{folder} server".format(folder=image_folder))
         for client in args.clients:
             if client.split('_')[0] == 'classifier':
-                processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/interface/public/{folder} client classifier {client}'.format(client=client.split('_'[1], folder=IMAGE_FOLDER)))
+                processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/{folder} client classifier {client}'.format(client=client.split('_'[1], folder=image_folder)))
             else:
-                processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/interface/public/{folder} client {client}'.format(client=client, folder=IMAGE_FOLDER))
+                processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/{folder} client {client}'.format(client=client, folder=image_folder))
 
     if AUTO_CONNECT_TO_INTEROP:
         t_connect = threading.Thread(target=auto_connect_to_interop)
