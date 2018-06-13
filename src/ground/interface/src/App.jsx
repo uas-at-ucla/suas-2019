@@ -138,7 +138,7 @@ class App extends Component {
       for (let id of data.all_images.raw) {
         rawImages.push({
           id: id,
-          src: '/'+photoFolder+'/' + id + '.JPG'
+          src: '/'+photoFolder+'/' + id + '.jpg'
         });
       }
       let segmentedImages = []
@@ -155,7 +155,7 @@ class App extends Component {
           .catch(error => console.log("Fetch request failed."));
         segmentedImages.push({
           id: id,
-          src: '/'+photoFolder+'/' + id + '.JPG'
+          src: '/'+photoFolder+'/' + id + '.jpg'
         })
       }
       let autoClassifiedImages = []
@@ -207,7 +207,7 @@ class App extends Component {
       for (let id of data.raw) {
         this.state.rawImages.push({
           id: id,
-          src: '/'+photoFolder+'/' + id + '.JPG'
+          src: '/'+photoFolder+'/' + id + '.jpg'
         });
       }
       for (let id of data.localized) {
@@ -223,7 +223,7 @@ class App extends Component {
 
         this.state.segmentedImages.push({
           id: id,
-          src: '/'+photoFolder+'/' + id + '.JPG'
+          src: '/'+photoFolder+'/' + id + '.jpg'
         });
       }
       for (let id of data.classified) {

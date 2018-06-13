@@ -205,7 +205,7 @@ def send_cropped_images(data):
             )
             odlc_id = interop_client.post_odlc(odlc).result().id
             print("Object " + str(odlc_id) + " submitted")
-            with open('./' + image_folder + '/' + data['id'] + '.JPG', 'rb') as f:
+            with open('./' + image_folder + '/' + data['id'] + '.jpg', 'rb') as f:
                 image_data = f.read()
             interop_client.post_odlc_image(odlc_id, image_data).result()
 
@@ -461,8 +461,7 @@ def new_localized(*args):
     new_images['localized'].append(args[0])
 
 def new_manual_cropped(*args):
-    print("manual cropped " + str(args[0]))
-    new_images['localized'].append(args[0])
+    new_images['localized'].append(args[0]['img_id'])
 
 
 def new_classified(*args):
@@ -483,7 +482,7 @@ def new_classified(*args):
             )
             odlc_id = interop_client.post_odlc(odlc).result().id
             print("Object " + str(odlc_id) + " submitted")
-            with open('./' + image_folder + '/' + data['id'] + '.JPG', 'rb') as f:
+            with open('./' + image_folder + '/' + data['id'] + '.jpg', 'rb') as f:
                 image_data = f.read()
             interop_client.post_odlc_image(odlc_id, image_data).result()
 
