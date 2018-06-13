@@ -1,4 +1,7 @@
 #!/bin/python3
+# import eventlet
+# eventlet.monkey_patch()
+
 import os
 import sys
 import signal
@@ -460,7 +463,7 @@ def manual_request_done(json):
     vision_socketio_server.emit('manual_request_done', json)
 
 @vision_socketio_server.on('get_all_images')
-def return_all_images(json):
+def return_all_images():
     server_task_queue.put({'type': 'retrieve_records'})
 
 

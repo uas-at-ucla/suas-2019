@@ -1,3 +1,6 @@
+# import eventlet
+# eventlet.monkey_patch()
+
 import os
 import sys
 import signal
@@ -457,6 +460,10 @@ def new_raw(*args):
 def new_localized(*args):
     new_images['localized'].append(args[0])
 
+def new_manual_cropped(*args):
+    print("manual cropped " + str(args[0]))
+    new_images['localized'].append(args[0])
+
 
 def new_classified(*args):
     if interop_client is not None:
@@ -502,6 +509,7 @@ def connect_to_images_backend():
     #images_client.on('connect', images_backend_connected)
     images_client.on('all_images', get_all_images)
     images_client.on('new_raw', new_raw)
+    images_client.on('manual_request_done', new_manual_cropped)
     images_client.on('new_localized', new_localized)
     images_client.on('new_classified', new_classified)
     images_client.wait()
@@ -565,7 +573,7 @@ if __name__ == '__main__':
         processes.spawn_process("python3 ../vision/vision.py --verbose --data-dir ../ground/{folder} server".format(folder=image_folder))
         for client in args.clients:
             if client.split('_')[0] == 'classifier':
-                processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/{folder} client classifier {client}'.format(client=client.split('_'[1], folder=image_folder)))
+                processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/{folder} client classifier {client}'.format(client=client.split('_')[1], folder=image_folder))
             else:
                 processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/{folder} client {client}'.format(client=client, folder=image_folder))
 
