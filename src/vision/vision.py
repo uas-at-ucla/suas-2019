@@ -8,6 +8,15 @@ from flask import Flask, render_template
 import flask_socketio, socketIO_client
 import logging
 
+# Use this when python 3.7 comes around
+#from dataclasses import dataclass, field
+#from typing import Any
+#
+#@dataclass(order=True)
+#class PriorityItem:
+#    key: int
+#    item: Any=field(compare=false)
+
 # Server dependencies
 import time
 import uuid
@@ -16,6 +25,9 @@ import hashlib
 import base64
 import sqlite3
 import numpy as np
+import subprocess
+import re
+import math
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
@@ -66,6 +78,7 @@ DEFAULT_SRV_IP = '0.0.0.0'
 DEFAULT_SRV_PORT = 8099
 # TODO configure drone ip addr
 DRONE_IP = '0.0.0.0'
+DRONE_FOLDER = ''
 YOLO_IP = '0.0.0.0'
 RSYNC_IP = '0.0.0.0'
 SNIPPER_IP = '0.0.0.0'
@@ -96,6 +109,19 @@ img_query_worker_stop = threading.Event()
 
 verbose = False
 
+# Utility Classes ##############################################################
+### Replace this with dataclasses when python 3.7 comes around
+
+class PriorityItem:
+    def __init__(self, priority, item):
+        self.priority = priority
+        self.item = item
+
+    def __eq__(self, other):
+        return self.priority == other.priority
+
+    def __lt__(self, other):
+        return self.priority < other.priority
 
 def signal_received(signal, frame):
     # Shutdown all the spawned processes and exit cleanly.
@@ -146,7 +172,7 @@ class ServerWorker(threading.Thread):
             try:
                 # Try to get an item from the queue
                 # blocking: true; timeout: 0.05
-                task = self.in_q.get(True, 0.05)[1]
+                task = self.in_q.get(True, 0.05).item
 
                 ############ Task Format #############
                 # task = {
@@ -196,11 +222,11 @@ class ServerWorker(threading.Thread):
                         altitude = server_img_manager.get_prop(img_id, 'altitude')
                         heading = server_img_manager.get_prop(img_id, 'heading')
                         for result in results:
-                            target_pos = (result['bottomright']['x'] - result['topleft']['x'],
-                                          result['bottomright']['y'] - result['topleft']['y'])
+                            target_pos = ((result['bottomright']['x'] - result['topleft']['x'])/2 + result['topleft']['x'],
+                                          (result['bottomright']['y'] - result['topleft']['y'])/2 + result['topleft']['y'])
 
                             lat, lng = calculate_target_coordinates(
-                                    target_pos_pixel=center_pos,
+                                    target_pos_pixel=target_pos,
                                     parent_img_real_coords=real_coords,
                                     parent_img_dimensions_pixel=img_dimensions,
                                     altitude=altitude, heading=heading)
@@ -209,12 +235,12 @@ class ServerWorker(threading.Thread):
                             sql_cursor.execute(
                                     "select ImageID from Locations where (Lat between ? and ?) and (Lng between ? and ?)",
                                     (lat-0.01, lat+0.01, lng-0.01, lng+0.01))
-                            if sql_cursor.fetchone() is not None:
+                            if sql_cursor.fetchone() is None:
                                 sql_cursor.execute("insert into Locations values (?, ?, ?)",
                                         (img_id, lat, lng))
                                 filtered_results.append(result)
                     if len(filtered_results) > 0:
-                        server_task_queue.put((2, {
+                        server_task_queue.put(PriorityItem(2, {
                             'type': 'auction',
                             'event_name': 'snip',
                             'args': {
@@ -233,7 +259,7 @@ class ServerWorker(threading.Thread):
                         # reset the timer if no bids have been made
                         if len(auction['bids']) == 0:
                             task['time_began'] = time.time()
-                            self.in_q.put((2, task))
+                            self.in_q.put(PriorityItem(2, task))
                         else:
                             # choose the lowest bidder
                             lowest_bid = auction['bids'][0]
@@ -253,7 +279,7 @@ class ServerWorker(threading.Thread):
                             # check on the progress of the task TODO
                     else:
                         # check again later since not enough time passed
-                        self.in_q.put((2, task))
+                        self.in_q.put(PriorityItem(2, task))
 
                 # create a new auction
                 elif task_type == 'auction':
@@ -272,7 +298,7 @@ class ServerWorker(threading.Thread):
                     }
 
                     # check in on this auction at a later time
-                    self.in_q.put((2,{
+                    self.in_q.put(PriorityItem(2,{
                         'type': 'timeout',
                         'time_began': time.time(),
                         'auction_id': auction_id
@@ -352,7 +378,7 @@ def process_image(json, attempts=1):
 
     # TODO keep track of how many times rsync failed
     print("Telling rsync client to download image")
-    server_task_queue.put((2, {
+    server_task_queue.put(PriorityItem(2, {
         'type': 'auction',
         'event_name': 'rsync',
         'args': {
@@ -373,7 +399,7 @@ def process_image(json, attempts=1):
             'img_local_dest': [img_inc_path + '.jpg', img_inc_path + '-drone.json']
             }
     }))
-    server_task_queue.put((1, {
+    server_task_queue.put(PriorityItem(1, {
         'type': 'add_record',
         'sql_statement': "insert into Images values ('{}','{}')".format(img_info['id'], 'raw')
     }))
@@ -388,17 +414,20 @@ def syncronize_img_info(img_id, new_info_file):
             data = json_module.load(f)
     except OSError:
         pass # fail silently
+    height, width, _ = server_img_manager.get_img(img_id).shape
+    server_img_manager.set_prop(img_id, 'width_px', width)
+    server_img_manager.set_prop(img_id, 'height_px', height)
     server_img_manager.set_prop(img_id, 'time_gen', data['time'])
-    server_img_manager.set_prop(img_id, 'lat': data['latitude'])
-    server_img_manager.set_prop(img_id, 'lng': data['longitude'])
-    server_img_manager.set_prop(img_id, 'heading': data['heading'])
-    server_img_manager.set_prop(img_id, 'altitude': data['altitude'])
+    server_img_manager.set_prop(img_id, 'lat', data['latitude'])
+    server_img_manager.set_prop(img_id, 'lng', data['longitude'])
+    server_img_manager.set_prop(img_id, 'heading', data['heading'])
+    server_img_manager.set_prop(img_id, 'altitude', data['altitude'])
 
-    server_task_queue.put((2, {
+    server_task_queue.put(PriorityItem(2, {
         'type': 'auction',
         'event_name': 'yolo',
         'args': {
-            'img_id': img_info['id']
+            'img_id': img_id
         }
     }))
 
@@ -406,11 +435,17 @@ def syncronize_img_info(img_id, new_info_file):
 # Intermediate step
 @vision_socketio_server.on('download_complete')
 def call_next(json):
+    if verbose:
+        print('calling {} with args:'.format(json['next']['func']))
+        for arg in json['next']['args']:
+            print(arg)
     globals()[json['next']['func']](*json['next']['args'])
 
 def do_auction(*auctions):
+    if verbose:
+        print('auctioning ' + str(auctions))
     for auction in auctions:
-        server_task_queue.put((2, {
+        server_task_queue.put(PriorityItem(2, {
             'type': 'auction',
             'event_name': auction['event_name'],
             'args': auction['json']
@@ -425,7 +460,7 @@ def snip_img(json):
     global verbose
     if verbose:
         print('Yolo finished; running snipper')
-    server_task_queue.put((2, {
+    server_task_queue.put(PriorityItem(2, {
         'type': 'filter_and_snip',
         'img_id': json['img_id'],
         'yolo_results': json['results']
@@ -448,7 +483,7 @@ def download_snipped(json):
     download_dir = json['download_dir']
     print("Telling rsync client to download snipped image")
     # WARNING: this auctions must occur as one event to prevent duplicate next calls
-    server_task_queue.put((2, {
+    server_task_queue.put(PriorityItem(2, {
         'type': 'auction',
         'event_name': 'rsync',
         'args': {
@@ -479,7 +514,7 @@ def download_snipped(json):
             'img_local_dest': [os.path.join(server_data_dir, img_id + ext) for ext in ('.jpg', '.json')]
         }
     }))
-    server_task_queue.put((1, {
+    server_task_queue.put(PriorityItem(1, {
         'type': 'add_record',
         'sql_statement': "insert into Images values ('{}', 'localized')".format(img_id)
     }))
@@ -513,7 +548,7 @@ def record_class(json):
         if server_img_manager.get_prop(img_id, check_class) is None:
             return
     # if it gets to this point without returning, then everything is done
-    server_task_queue.put((1, {
+    server_task_queue.put(PriorityItem(1, {
         'type': 'add_record',
         'sql_statement': "update Images set Type = 'classified' where ImageID='{}'".format(img_id)
     }))
@@ -523,7 +558,7 @@ def record_class(json):
 @vision_socketio_server.on('manual_request')
 def manual_request(json):
     json['args']['manual'] = True
-    server_task_queue.put((0, {
+    server_task_queue.put(PriorityItem(0, {
         'type': 'auction',
         'event_name': json['event_name'],
         'args': json['args']
@@ -537,7 +572,7 @@ def manual_request_done(json):
 def return_all_images():
     if verbose:
         print('Someone asked for a list of all images!')
-    server_task_queue.put((0, {'type': 'retrieve_records'}))
+    server_task_queue.put(PriorityItem(0, {'type': 'retrieve_records'}))
 
 @vision_socketio_server.on('calc_target_coords')
 def call_calc_target_coords(json):
@@ -579,10 +614,10 @@ def calculate_target_coordinates(target_pos_pixel,
     scaling_ratio = altitude / focal_length * pixel_to_sensor_ratio
     parent_img_center = tuple(int(component / 2)
                               for component in parent_img_dimensions_pixel)
-    target_vec = np.fromiter(
-        (scaling_ratio * (parent_comp - target_comp)
-         for parent_comp in parent_img_center
-         for target_comp in target_pos_pixel),
+    target_vec = np.array([
+        (scaling_ratio * (parent_img_center[0] - target_pos_pixel[0])),
+        (scaling_ratio * (parent_img_center[1] - target_pos_pixel[1]))
+        ],
         dtype=np.float64)
     rotation_matrix = np.array([[math.cos(heading), -math.sin(heading)],
                                 [math.sin(heading),  math.cos(heading)]])
@@ -632,7 +667,7 @@ def query_for_imgs(database_file, stop, drone_user, drone_ip, folder, server_por
             # append a newline to the end in case the result does not terminate with one
             # also check extension to include only json files (since those are created
             # after the JPG)
-            new_items = set(item.group(1) for item in re.finditer('(.+)\n', result.stdout.decode('utf-8')+'\n') if item.group(1).split('.')[1] == 'json' and item.group(1) not in downloaded_files)
+            new_items = set(item.group(1) for item in re.finditer('(.+)\n', result.stdout.decode('utf-8')+'\n') if '.' in item.group(1) and item.group(1).split('.')[1] == 'json' and item.group(1) not in downloaded_files)
             downloaded_files |= new_items
 
             for item in new_items:
@@ -648,7 +683,7 @@ def server_worker(args):
     global server_data_dir
     server_data_dir = args.data_dir
     # setup worker to query the drone for images
-    img_query_worker = threading.Thread(target=query_for_imgs, args=('img_dl_history.db', img_query_worker_stop))
+    img_query_worker = threading.Thread(target=query_for_imgs, args=('img_dl_history.db', img_query_worker_stop, DRONE_USER, DRONE_IP, DRONE_FOLDER, args.port))
     img_query_worker.start()
     # setup the database:
     global server_img_manager
@@ -774,12 +809,13 @@ class RsyncWorker(ClientWorker):
                   '>')
 
         success = True
-        for remote in task_args['img_remote_src']:
-            for local in task_args['img_local_dest']:
-                if 0 != processes.spawn_process_wait_for_code(
-                        'rsync -vz --progress -e "ssh -p 22" "' + task_args['user'] +
-                        '@' + task_args['addr'] + ':' + remote + '" ' + local):
-                    success = False
+        for i in range(len(task_args['img_remote_src'])):
+            remote = task_args['img_remote_src'][i]
+            local =task_args['img_local_dest'][i]
+            if 0 != processes.spawn_process_wait_for_code(
+                    'rsync -vz --progress -e "ssh -p 22" "' + task_args['user'] +
+                    '@' + task_args['addr'] + ':' + remote + '" ' + local):
+                success = False
         if success:
             self._emit(task,
                 'download_complete', {
