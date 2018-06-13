@@ -62,7 +62,7 @@ export default class ModalComponent extends React.Component {
     }
 
     send_manual(img_id, top_left, bottom_right) {
-        this.vision_socket.emit("manual_request", {
+        let json = {
             'event_name': 'snip',
             'args': {
                 'img_id': img_id,
@@ -71,8 +71,10 @@ export default class ModalComponent extends React.Component {
                     'bottomright':  {'x': bottom_right[0], 'y': bottom_right[1]}
                 }]
             }
-        });
+        }
+        this.vision_socket.emit("manual_request", json);
         this.props.socketEmit('cropped', img_id);
+        console.log(json)
     }
     
     markCoords() {

@@ -23,22 +23,22 @@ if __name__ == "__main__":
 
     build = False
 
-    git_status = processes.return_output("git status")
+    git_status = processes.return_output("git status").decode('utf-8')
     if "src/" in git_status or "public/" in git_status \
        or "package.json" in git_status:
-        print "React files have been modified. Building..."
+        print("React files have been modified. Building...")
         build = True
 
-    latest_commit = processes.return_output("git show")
+    latest_commit = processes.return_output("git show").decode('utf-8')
     latest_commit_id = latest_commit.split('\n')[0].split(' ')[1]
     if os.path.isfile("build_commit.txt"):
         with open("build_commit.txt") as file:
             build_commit_id = file.read()
             if latest_commit_id != build_commit_id:
-                print "Detected new commit. Building React App..."
+                print("Detected new commit. Building React App...")
                 build = True
     else:
-        print "Building React App..."
+        print("Building React App...")
         build = True
 
     if build:
@@ -47,4 +47,4 @@ if __name__ == "__main__":
             with open("build_commit.txt", 'w') as file:
                 file.write(latest_commit_id)
     else:
-        print "React build is up to date!"
+        print("React build is up to date!")
