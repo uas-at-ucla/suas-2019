@@ -75,25 +75,26 @@ class Map extends Component {
       styles: map_style
     });
 
-    this.gmap_cache = new GMapCache();
-    let this_local = this;
+    // this.gmap_cache = new GMapCache();
+    // let this_local = this;
 
-    this.map.mapTypes.set(
-      'offline_gmap',
-      new google.maps.ImageMapType({
-        getTileUrl: function(coord, zoom) {
-          return this_local.gmap_cache.checkTileInSprites(coord, zoom)
-            ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
-            : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
-        },
-        tileSize: new google.maps.Size(256, 256),
-        name: 'LocalMyGmap',
-        maxZoom: 21,
-        minZoom: 1
-      })
-    );
+    // this.map.mapTypes.set(
+    //   'offline_gmap',
+    //   new google.maps.ImageMapType({
+    //     getTileUrl: function(coord, zoom) {
+    //       return this_local.gmap_cache.checkTileInSprites(coord, zoom)
+    //         ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
+    //         : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
+    //     },
+    //     tileSize: new google.maps.Size(256, 256),
+    //     name: 'LocalMyGmap',
+    //     maxZoom: 21,
+    //     minZoom: 1
+    //   })
+    // );
+    // this.map.setMapTypeId('offline_gmap');
 
-    this.map.setMapTypeId('offline_gmap');
+    this.map.setMapTypeId('satellite');
 
     this.drone_marker_icon = {
       path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
