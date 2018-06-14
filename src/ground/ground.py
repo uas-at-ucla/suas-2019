@@ -322,7 +322,7 @@ def auto_connect_to_interop():
     interop_client = None
     for i in range(20):
         try:
-            if stopped:
+            if stopped or interop_client is not None:
                 break
             interop_client = interop.AsyncClient( \
                 url=interop_url, \
