@@ -54,10 +54,10 @@ class Map extends Component {
 
     // Default field to zoom into.
     let field = {
-      //lat: 38.145298,
-      //lng: -76.42861
-      lat: 34.175048,
-      lng: -118.48159
+      lat: 38.145298,
+      lng: -76.42861
+      // lat: 34.175048,
+      // lng: -118.48159
     };
 
     console.log(google);
