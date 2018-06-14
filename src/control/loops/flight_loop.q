@@ -44,6 +44,8 @@ queue_group FlightLoopQueue {
     int32_t state;
 
     double last_gps;
+
+    float throttle_rc_channel;
   };
 
   message Status {
@@ -75,6 +77,8 @@ queue_group FlightLoopQueue {
     float velocity_x;
     float velocity_y;
     float velocity_z;
+
+    bool should_send_offboard;
 
     float yaw;
 

@@ -34,7 +34,9 @@ FlightLoop::FlightLoop()
       did_alarm_(false),
       did_arm_(false),
       last_bomb_drop_(0),
-      last_dslr_(0) {
+      last_dslr_(0),
+      last_throttle_rc_channel_(0),
+      failsafe_sent_rtl_(false) {
   ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
   ::src::control::loops::flight_loop_queue.goal.FetchLatest();
   ::src::control::loops::flight_loop_queue.output.FetchLatest();
@@ -367,6 +369,32 @@ void FlightLoop::RunIteration() {
       last_dslr_, ::src::control::loops::flight_loop_queue.goal->trigger_dslr);
   if (last_dslr_ <= current_time && last_dslr_ + 15.0 > current_time) {
     output->dslr = true;
+  }
+
+  // Handle failsafe on throttle loss.
+  if(::src::control::loops::flight_loop_queue.sensors->throttle_rc_channel > 960) {
+    last_throttle_rc_channel_ = current_time;
+
+    // Reset failsafe triggers.
+    failsafe_sent_rtl_ = false;
+  }
+
+
+  output->should_send_offboard = current_time - last_throttle_rc_channel_ < 10;
+
+  if(current_time - last_throttle_rc_channel_ > 10 && !failsafe_sent_rtl_) {
+    output->trigger_rtl = current_time;
+
+    // Send alarms.
+    alarm_.AddAlert({0.10, 1.0});
+    alarm_.AddAlert({0.10, 1.0});
+    alarm_.AddAlert({0.10, 1.0});
+
+    failsafe_sent_rtl_ = true;
+  }
+
+  if(current_time - last_throttle_rc_channel_ > 60) {
+    output->trigger_disarm = current_time;
   }
 
   LOG_LINE("Flight loop iteration OUTPUT..."

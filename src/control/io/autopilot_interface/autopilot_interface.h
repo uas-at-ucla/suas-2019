@@ -49,6 +49,7 @@ struct TimeStamps {
   uint64_t highres_imu;
   uint64_t attitude;
   uint64_t vfr_hud;
+  uint64_t rc_channels;
 
   void reset_timestamps() {
     heartbeat = 0;
@@ -63,6 +64,7 @@ struct TimeStamps {
     highres_imu = 0;
     attitude = 0;
     vfr_hud = 0;
+    rc_channels = 0;
   }
 };
 
@@ -83,6 +85,7 @@ struct Mavlink_Messages {
   mavlink_attitude_t attitude;
   mavlink_vfr_hud_t vfr_hud;
   mavlink_actuator_control_target_t control_target;
+  mavlink_rc_channels_t rc_channels;
 
   TimeStamps time_stamps;
 
@@ -115,7 +118,8 @@ class AutopilotInterface {
   Mavlink_Messages current_messages;
   mavlink_set_position_target_local_ned_t initial_position;
 
-  void update_setpoint(mavlink_set_position_target_local_ned_t setpoint);
+  void update_setpoint(mavlink_set_position_target_local_ned_t setpoint,
+      bool should_send_offboard);
   void read_messages();
   void write_message(mavlink_message_t message);
 
@@ -130,6 +134,7 @@ class AutopilotInterface {
   ::mavconn::MAVConnInterface::Ptr pixhawk_;
 
   mavlink_set_position_target_local_ned_t current_setpoint;
+  bool should_send_offboard_;
 
   void write_thread(void);
 
