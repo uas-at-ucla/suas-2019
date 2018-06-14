@@ -8,7 +8,8 @@ class Settings extends Component {
       // Development interop-server
       //ip_address: [138, 68, 250, 14, 8000],
       // Localhost interop-server
-      ip_address: [138, 68, 250, 14, 8000, 'testuser', 'testpass'], // Set docker default
+      ip_address: [10, 10, 130, 10, 80, 'ucla', ''], // Set docker default
+      // ip_address: [138, 68, 250, 14, 8000, 'testuser', 'testpass'], // Set docker default
     };
     this.interopButtonPressed = this.interopButtonPressed.bind(this);
   }
@@ -41,12 +42,12 @@ class Settings extends Component {
             </div>
             <div>
               <input type="text" ref="username" 
-                     placeholder="testuser">
+                     placeholder="ucla">
               </input>
             </div>
             <div>
               <input type="password" ref="password"
-                     placeholder="testpass">
+                     placeholder="">
               </input>
             </div>
             <button className={`btn btn-sm align-middle btn-outline-dark ${
@@ -75,9 +76,9 @@ class Settings extends Component {
     var port = ( this.refs.port.value === "" ) ?
                     this.state.ip_address[4] : this.refs.port.value;
     var username = ( this.refs.username.value === "" ) ?
-                    'testuser' : this.refs.username.value;
+                    'ucla' : this.refs.username.value;
     var password = ( this.refs.password.value === "" ) ?
-                    'testpass' : this.refs.password.value;
+                    '' : this.refs.password.value;
 
     var new_ip_address = [ quad_one, quad_two, quad_three, quad_four, port, username, password ];
     this.setState({ip_address: new_ip_address});
