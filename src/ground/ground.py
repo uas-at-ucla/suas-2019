@@ -52,15 +52,19 @@ commands = []
 
 image_folder = "testPhotos"
 all_images = {
-    'raw': ['00019', 'flappy'],
-    'localized': ['00019cropped'],
+    'raw': [],
+    'localized': [],
     'classified': []
+
+    # 'raw': ['00019', 'flappy'],
+    # 'localized': ['00019cropped'],
 }
 new_images = {
     'raw': [],
     'localized': [],
     'classified': []
 }
+downloaded_images = [] # contains raw image ids that have completed download
 manual_cropped_images = [] # list of ids of raw images that were manually cropped
 manual_classified_images = [] # list of objects containing id: "id" and object: {latitude, etc.}
 
@@ -448,17 +452,22 @@ def ping_drone():
 
 
 def get_all_images(*args):
+    global downloaded_images
     new_images['raw'] = args[0]['raw']
+    downloaded_images = args[0]['raw'][:]
     new_images['localized'] = args[0]['localized']
     new_images['classified'] = args[0]['classified']
 
 
 def new_raw(*args):
-    new_images['raw'].append(args[0])
-    
+    new_images['raw'].append(args[0]['img_id'])
+
+def downloaded_raw(*args):
+    global downloaded_images
+    downloaded_images += args[0]
 
 def new_localized(*args):
-    new_images['localized'].append(args[0])
+    new_images['localized'].append(args[0]['img_id'])
 
 def new_manual_cropped(*args):
     new_images['localized'].append(args[0]['img_id'])
@@ -467,7 +476,8 @@ def new_manual_cropped(*args):
 def new_classified(*args):
     if interop_client is not None:
         try:
-            with open('./' + image_folder + '/' + data['id'] + '.json') as f:
+            img_id = args[0]['img_id']
+            with open('./' + image_folder + '/' + img_id + '.json') as f:
                 obj = json.load(f)
             odlc = interop.Odlc(
                 type="standard", \
@@ -482,15 +492,11 @@ def new_classified(*args):
             )
             odlc_id = interop_client.post_odlc(odlc).result().id
             print("Object " + str(odlc_id) + " submitted")
-            with open('./' + image_folder + '/' + data['id'] + '.jpg', 'rb') as f:
+            with open('./' + image_folder + '/' + img_id + '.jpg', 'rb') as f:
                 image_data = f.read()
             interop_client.post_odlc_image(odlc_id, image_data).result()
 
-            manual_classified_images.append(data)
-            ground_socketio_server.emit('classified_image', data, \
-                room='frontend')
-
-            new_images['classified'].append(args[0])
+            new_images['classified'].append(img_id)
         except:
             print("Invalid Object Data!!!")
 
@@ -511,6 +517,7 @@ def connect_to_images_backend():
     images_client.on('manual_request_done', new_manual_cropped)
     images_client.on('new_localized', new_localized)
     images_client.on('new_classified', new_classified)
+    images_client.on('download_complete', downloaded_raw)
     images_client.wait()
 
 
@@ -519,11 +526,20 @@ def send_images_to_frontend():
     while True:
         time.sleep(1.5)
         if len(new_images['raw']) or len(new_images['localized']) or len(new_images['classified']):
-            interface_client.emit('added_images', new_images)
-            all_images['raw'] +=  new_images['raw']
-            all_images['localized'] +=  new_images['localized']
-            all_images['classified'] +=  new_images['classified']
-            new_images['raw'] = []
+            new_available_images = {
+                'localized': new_images['localized'],
+                'classified': new_images['classified'],
+                'raw': []
+            }
+            for image_id in new_images['raw'][:]:
+                if image_id in downloaded_images:
+                    new_available_images['raw'].append(image_id)
+                    all_images['raw'].append(image_id)
+                    downloaded_images.remove(image_id)
+                    new_images['raw'].remove(image_id)
+            interface_client.emit('added_images', new_available_images)
+            all_images['localized'] += new_images['localized']
+            all_images['classified'] += new_images['classified']
             new_images['localized'] = []
             new_images['classified'] = []
 

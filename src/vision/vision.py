@@ -76,6 +76,7 @@ LENS_FOCAL_LENGTH = 18 # mm
 
 # Server defaults
 DRONE_USER = 'benlimpa'
+DRONE_PASS = 'placeholder'
 SECRET_KEY = 'flappy'
 DEFAULT_SRV_IP = '0.0.0.0'
 DEFAULT_SRV_PORT = 8099
@@ -166,6 +167,11 @@ class ServerWorker(threading.Thread):
         sql_connection = sqlite3.connect('image_info.db')
         sql_cursor = sql_connection.cursor()
         with sql_connection:
+            # testing
+            sql_cursor.execute('delete from Images')
+            sql_cursor.execute('delete from Locations')
+            # testing
+
             sql_cursor.execute('create table if not exists Images (ImageID text, Type text)')
             sql_cursor.execute('create table if not exists Locations (ImageID text, Lat real, Lng real)')
 
@@ -442,6 +448,7 @@ def call_next(json):
         print('calling {} with args:'.format(json['next']['func']))
         for arg in json['next']['args']:
             print(arg)
+    vision_socketio_server.emit('download_complete', json['next']['args'])
     globals()[json['next']['func']](*json['next']['args'])
 
 def do_auction(*auctions):
@@ -664,7 +671,7 @@ def query_for_imgs(database_file, stop, drone_user, drone_ip, folder, server_por
         try:
             # get a listing of all the files in the folder
             # throws TimeoutExpired if timeout (interval in secs) runs out
-            result = subprocess.run(['ssh', drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)], timeout=interval, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+            result = subprocess.run(['sshpass', '-p', DRONE_PASS, 'ssh', drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)], timeout=interval, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
 
             # throws CalledProcessError is something went wrong with ssh
             result.check_returncode()
@@ -819,7 +826,7 @@ class RsyncWorker(ClientWorker):
             remote = task_args['img_remote_src'][i]
             local =task_args['img_local_dest'][i]
             if 0 != processes.spawn_process_wait_for_code(
-                    'rsync -vz --progress -e "ssh -p 22" "' + task_args['user'] +
+                    'rsync -vz --progress -e "sshpass -p ' + DRONE_PASS + ' ssh -p 22" "' + task_args['user'] +
                     '@' + task_args['addr'] + ':' + remote + '" ' + local):
                 success = False
         if success:
