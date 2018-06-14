@@ -59,25 +59,26 @@ class Position extends Component {
       styles: map_style
     });
 
-    this.gmap_cache = new GMapCache();
-    let this_local = this;
+    // this.gmap_cache = new GMapCache();
+    // let this_local = this;
 
-    this.map_photo.mapTypes.set(
-      'offline_gmap',
-      new google.maps.ImageMapType({
-        getTileUrl: function(coord, zoom) {
-          return this_local.gmap_cache.checkTileInSprites(coord, zoom)
-               ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
-               : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
-        },
-        tileSize: new google.maps.Size(256, 256),
-        name: 'LocalMyGmap',
-        maxZoom: 21,
-        minZoom: 1
-      })
-    );
+    // this.map_photo.mapTypes.set(
+    //   'offline_gmap',
+    //   new google.maps.ImageMapType({
+    //     getTileUrl: function(coord, zoom) {
+    //       return this_local.gmap_cache.checkTileInSprites(coord, zoom)
+    //            ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
+    //            : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
+    //     },
+    //     tileSize: new google.maps.Size(256, 256),
+    //     name: 'LocalMyGmap',
+    //     maxZoom: 21,
+    //     minZoom: 1
+    //   })
+    // );
+    // this.map_photo.setMapTypeId('offline_gmap');
 
-    this.map_photo.setMapTypeId('offline_gmap');
+    this.map_photo.setMapTypeId('satellite');
 
     // Declare a single marker
     let placement = {
