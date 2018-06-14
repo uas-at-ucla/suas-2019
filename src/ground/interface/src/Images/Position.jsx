@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import GMapCache from '../Map/GMapCache';
 import map_style from '../Map/map_style.js';
 import './Position.css';
+import scriptLoader from 'react-async-script-loader';
 
 const google = window.google;
 var photo_position = null;
@@ -21,7 +22,23 @@ class Position extends Component {
     );
   }
 
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.isScriptLoaded && !this.props.isScriptLoaded) { // load finished
+      if (nextProps.isScriptLoadSucceed) {
+        this.initMap();
+      }
+    }
+  }
+
   componentDidMount() {
+    if (google.maps || (this.props.isScriptLoaded && this.props.isScriptLoadSucceed)) {
+      this.initMap();
+    }
+  }
+
+  initMap() {
+
     // Default field to zoom into.
     let field = {
       lat: INITIAL_LAT,
@@ -42,25 +59,26 @@ class Position extends Component {
       styles: map_style
     });
 
-    this.gmap_cache = new GMapCache();
-    let this_local = this;
+    // this.gmap_cache = new GMapCache();
+    // let this_local = this;
 
-    this.map_photo.mapTypes.set(
-      'offline_gmap',
-      new google.maps.ImageMapType({
-        getTileUrl: function(coord, zoom) {
-          return this_local.gmap_cache.checkTileInSprites(coord, zoom)
-               ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
-               : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
-        },
-        tileSize: new google.maps.Size(256, 256),
-        name: 'LocalMyGmap',
-        maxZoom: 21,
-        minZoom: 1
-      })
-    );
+    // this.map_photo.mapTypes.set(
+    //   'offline_gmap',
+    //   new google.maps.ImageMapType({
+    //     getTileUrl: function(coord, zoom) {
+    //       return this_local.gmap_cache.checkTileInSprites(coord, zoom)
+    //            ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
+    //            : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
+    //     },
+    //     tileSize: new google.maps.Size(256, 256),
+    //     name: 'LocalMyGmap',
+    //     maxZoom: 21,
+    //     minZoom: 1
+    //   })
+    // );
+    // this.map_photo.setMapTypeId('offline_gmap');
 
-    this.map_photo.setMapTypeId('offline_gmap');
+    this.map_photo.setMapTypeId('satellite');
 
     // Declare a single marker
     let placement = {
@@ -89,4 +107,6 @@ class Position extends Component {
   }
 }
 
-export default Position;
+export default scriptLoader(
+    ["https://maps.googleapis.com/maps/api/js?key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c&libraries=visualization"]
+)(Position)

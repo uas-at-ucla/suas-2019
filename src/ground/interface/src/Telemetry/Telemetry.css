@@ -30,6 +30,7 @@
 }
 
 #armed_indicator {
+  float: left;
   color: #e2c63b;
   font-weight: bold;
 }
