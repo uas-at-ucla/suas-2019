@@ -78,7 +78,7 @@ DEFAULT_SRV_IP = '0.0.0.0'
 DEFAULT_SRV_PORT = 8099
 # TODO configure drone ip addr
 DRONE_IP = '0.0.0.0'
-DRONE_FOLDER = ''
+DRONE_DIR = ''
 YOLO_IP = '0.0.0.0'
 RSYNC_IP = '0.0.0.0'
 SNIPPER_IP = '0.0.0.0'
@@ -686,7 +686,7 @@ def server_worker(args):
     global server_data_dir
     server_data_dir = args.data_dir
     # setup worker to query the drone for images
-    img_query_worker = threading.Thread(target=query_for_imgs, args=('img_dl_history.db', img_query_worker_stop, DRONE_USER, DRONE_IP, DRONE_FOLDER, args.port))
+    img_query_worker = threading.Thread(target=query_for_imgs, args=('img_dl_history.db', img_query_worker_stop, args.drone_user, args.drone_ip, args.drone_dir, args.port))
     img_query_worker.start()
     # setup the database:
     global server_img_manager
@@ -1092,6 +1092,18 @@ if __name__ == '__main__':
         dest='drone_user',
         default=DRONE_USER,
         help='specify username for drone companion computer')
+    server_parser.add_argument(
+        '--drone-ip',
+        action='store',
+        dest='drone_ip',
+        default=DRONE_IP,
+        help='specify ip address of the drone companion computer')
+    server_parser.add_argument(
+        '--drone-img-dir',
+        action='store',
+        dest='drone_dir',
+        default=DRONE_DIR,
+        help='specify the folder for the drone images and metadata')
     server_parser.set_defaults(func=server_worker)
 
     # Client Parsers ###################################################
