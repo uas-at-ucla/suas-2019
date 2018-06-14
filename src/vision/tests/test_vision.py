@@ -138,7 +138,7 @@ if __name__ == '__main__':
         create_mock_listeners()
     elif args.type == 'send':
         with socketIO_client.SocketIO('0.0.0.0', 8099) as socket:
-            socket.emit('process_image', {'file_path': args.target})
+            socket.emit('process_image', {'img_path': args.target, 'info_path': args.target.split('.')[0] + '.json'})
     elif args.type == 'evaluate':
         with socketIO_client.SocketIO('0.0.0.0', 8099) as socket:
             def check_img(*js):
