@@ -75,19 +75,19 @@ CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9) # mm
 LENS_FOCAL_LENGTH = 18 # mm
 
 # Server defaults
-DRONE_USER = 'benlimpa'
-DRONE_PASS = 'placeholder'
+DRONE_USER = 'pi'
+DRONE_PASS = 'raspberry'
 SECRET_KEY = 'flappy'
 DEFAULT_SRV_IP = '0.0.0.0'
 DEFAULT_SRV_PORT = 8099
 # TODO configure drone ip addr
-DRONE_IP = '0.0.0.0'
-DRONE_DIR = ''
+DRONE_IP = '192.168.1.21'
+DRONE_DIR = '/home/pi/pictures/suas_2018_dslr_mounted/store_00020001/DCIM/100CANON'
 YOLO_IP = '0.0.0.0'
 RSYNC_IP = '0.0.0.0'
 SNIPPER_IP = '0.0.0.0'
 CLASSIFIER_IP = '0.0.0.0'
-SNIPPER_USER = 'benlimpa'
+SNIPPER_USER = 'pi'
 
 # Client Defaults
 DEFAULT_VSN_USER = 'benlimpa'
