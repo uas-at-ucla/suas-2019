@@ -292,7 +292,7 @@ class Home extends Component {
 
       // add missing fields
       for(let field of this.command_types[type]) {
-        if (fields[field.name] === null) {
+        if (fields[field.name] == null) {
           fields[field.name] = defaults[type] ? defaults[type][field] || 
             this.add_field(type, field) : this.add_field(type, field);
         }

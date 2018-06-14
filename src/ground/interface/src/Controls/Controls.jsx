@@ -23,9 +23,11 @@ class Controls extends Component {
     document.addEventListener("keypress", (e) => {
       if (e.altKey && e.shiftKey && e.ctrlKey && this.keymap[e.code]) {
         let button = this.refs[this.keymap[e.code]];
-        button.click();
-        if (button.tagName === 'BUTTON') {
-          this.refs[this.keymap[e.code]].focus();
+        if (button) { // avoid occasional crash
+          button.click();
+          if (button.tagName === 'BUTTON') {
+            this.refs[this.keymap[e.code]].focus();
+          }
         }
       }
     });
