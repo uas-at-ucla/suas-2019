@@ -75,22 +75,22 @@ CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9) # mm
 LENS_FOCAL_LENGTH = 18 # mm
 
 # Server defaults
-DRONE_USER = 'benlimpa'
-DRONE_PASS = 'placeholder'
+DRONE_USER = 'pi'
+DRONE_PASS = 'raspberry'
 SECRET_KEY = 'flappy'
 DEFAULT_SRV_IP = '0.0.0.0'
 DEFAULT_SRV_PORT = 8099
 # TODO configure drone ip addr
-DRONE_IP = '0.0.0.0'
-DRONE_DIR = ''
+DRONE_IP = '192.168.2.20'
+DRONE_DIR = '/home/pi/pictures'
 YOLO_IP = '0.0.0.0'
 RSYNC_IP = '0.0.0.0'
 SNIPPER_IP = '0.0.0.0'
 CLASSIFIER_IP = '0.0.0.0'
-SNIPPER_USER = 'benlimpa'
+SNIPPER_USER = 'pi'
 
 # Client Defaults
-DEFAULT_VSN_USER = 'benlimpa'
+DEFAULT_VSN_USER = 'pi'
 DEFAULT_VSN_PORT = DEFAULT_SRV_PORT
 DEFAULT_SSH_PORT = 22
 DEFAULT_REMOTE_DIR = DEFAULT_DATA_DIR
