@@ -126,6 +126,11 @@ AutopilotInterface::AutopilotInterface()
 
         break;
 
+      case MAVLINK_MSG_ID_RC_CHANNELS:
+        mavlink_msg_rc_channels_decode(msg, &(current_messages.rc_channels));
+        current_messages.time_stamps.rc_channels = get_time_usec();
+        break;
+
       default:
         break;
     }
@@ -135,8 +140,11 @@ AutopilotInterface::AutopilotInterface()
 AutopilotInterface::~AutopilotInterface() {}
 
 void AutopilotInterface::update_setpoint(
-    mavlink_set_position_target_local_ned_t setpoint) {
+    mavlink_set_position_target_local_ned_t setpoint,
+    bool should_send_offboard) {
+
   current_setpoint = setpoint;
+  should_send_offboard_ = should_send_offboard;
 }
 
 void AutopilotInterface::write_message(mavlink_message_t message) {
@@ -146,6 +154,8 @@ void AutopilotInterface::write_message(mavlink_message_t message) {
 void AutopilotInterface::write_setpoint() {
   // pull from position target
   mavlink_set_position_target_local_ned_t sp = current_setpoint;
+
+  if(!should_send_offboard_) return;
 
   // double check some system parameters
   if (not sp.time_boot_ms) sp.time_boot_ms = (uint32_t)(get_time_usec() / 1e3);
@@ -384,6 +394,7 @@ void AutopilotInterface::set_message_period() {
       case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
       case MAVLINK_MSG_ID_HIGHRES_IMU:
       case MAVLINK_MSG_ID_ATTITUDE:
+      case MAVLINK_MSG_ID_RC_CHANNELS:
         interval = 1e6 / 25;
         valid = true;
         break;

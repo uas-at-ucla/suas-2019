@@ -131,7 +131,7 @@ MissionReceiver::MissionReceiver()
 
 void MissionReceiver::ConnectToGround() {
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-  client_.connect("http://192.168.2.20:8081");
+  client_.connect("http://192.168.1.10:8081");
 #else
   client_.connect("http://0.0.0.0:8081");
 #endif
