@@ -240,7 +240,7 @@ class ServerWorker(threading.Thread):
                     filtered_results = []
                     with sql_connection:
                         real_coords = (server_img_manager.get_prop(img_id, 'lat'),
-                                       server_img_manager.get_prop(img_id, 'lat'))
+                                       server_img_manager.get_prop(img_id, 'lng'))
                         img_dimensions = (server_img_manager.get_prop(img_id, 'width_px'),
                                           server_img_manager.get_prop(img_id, 'height_px'))
                         altitude = server_img_manager.get_prop(img_id, 'altitude')
