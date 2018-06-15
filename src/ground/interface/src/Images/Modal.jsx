@@ -25,6 +25,16 @@ export default class ModalComponent extends React.Component {
     componentWillReceiveProps(nextProps) {
         if (nextProps.doubleClick !== this.props.doubleClick) {
             this.setState({display: true});
+            setTimeout(() => {
+                const loaded_img = this.refs.loaded_img;
+                const img_canvas = this.refs.img_canvas;
+                img_canvas.width = loaded_img.naturalWidth;
+                img_canvas.height = loaded_img.naturalHeight;
+                const context = img_canvas.getContext("2d");
+                context.drawImage(loaded_img, 0, 0);
+                context.strokeStyle = "#ff0000";
+                context.lineWidth = 4;
+            }, 0);
         }
     }
 
@@ -45,6 +55,7 @@ export default class ModalComponent extends React.Component {
         loaded_img.onload = () => {
             context.drawImage(loaded_img, 0, 0);
             context.strokeStyle = "#ff0000";
+            context.lineWidth = 4;
         }
     }
 

@@ -277,8 +277,8 @@ class Images extends Component {
       .catch(error => console.log("No JSON file exists!"))
       .then(response => {
         this.setState({
-          photo_lat: response.location.lat,
-          photo_lon: response.location.lng
+          photo_lat: response.lat || response.location.lat,
+          photo_lon: response.lng || response.location.lng
         });
       })
       .catch(error => console.log("Fetch request failed."))

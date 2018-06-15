@@ -965,6 +965,25 @@ class SnipperWorker(ClientWorker):
         src_img_id = task[0]['img_id']
         yolo_results = task[0]['yolo_results']
 
+        if 'manual' in task[0] and task[0]['manual']:
+            real_coords = (self.manager.get_prop(src_img_id, 'lat'),
+                           self.manager.get_prop(src_img_id, 'lng'))
+            img_dimensions = (self.manager.get_prop(src_img_id, 'width_px'),
+                              self.manager.get_prop(src_img_id, 'height_px'))
+            altitude = self.manager.get_prop(src_img_id, 'altitude')
+            heading = self.manager.get_prop(src_img_id, 'heading')
+            for result in yolo_results:
+                target_pos = ((result['bottomright']['x'] - result['topleft']['x'])/2 + result['topleft']['x'],
+                              (result['bottomright']['y'] - result['topleft']['y'])/2 + result['topleft']['y'])
+
+                lat, lng = calculate_target_coordinates(
+                        target_pos_pixel=target_pos,
+                        parent_img_real_coords=real_coords,
+                        parent_img_dimensions_pixel=img_dimensions,
+                        altitude=altitude, heading=heading)
+
+                result['coords'] = {'lat': lat, 'lng': lng}
+
         src_img = self.manager.get_img(src_img_id)
 
         for result in yolo_results:
