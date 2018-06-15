@@ -996,6 +996,7 @@ class ShapeClassifierWorker(ClientWorker):
     #   }]
     def _do_work(self, task):
         img_id = task[0]['img_id']
+        self.manager.get_img(img_id)
         img = vision_classifier.shape_img(
             os.path.join(self.data_dir, img_id + '.jpg'))
 
@@ -1036,6 +1037,7 @@ class LetterClassifierWorker(ClientWorker):
     #   }]
     def _do_work(self, task):
         img_id = task[0]['img_id']
+        self.manager.get_img(img_id)
         img = vision_classifier.letter_img(
             os.path.join(self.data_dir, img_id + '.jpg'))
 
