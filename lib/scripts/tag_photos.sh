@@ -54,6 +54,12 @@ while true;do
 		RELATIVE_ALTITUDE=$(echo $LOG_LINE | sed -ne 's/.* RelativeAltitude: \(.*\) Heading: .*/\1/p')
 		HEADING=$(echo $LOG_LINE | sed -ne 's/.* Heading: \(.*\) AccelX: .*/\1/p')
 
+		LATITUDE=$(echo $LATITUDE | tr -d '+')
+		LONGITUDE=$(echo $LONGITUDE | tr -d '+')
+		RELATIVE_ALTITUDE=$(echo $RELATIVE_ALTITUDE | tr -d '+')
+		HEADING=$(echo $HEADING | tr -d '+')
+
+
 		if [ "$LATITUDE" = "" ];then
 			LATITUDE=0
 		fi
@@ -67,7 +73,7 @@ while true;do
 			HEADING=0
 		fi
 
-		JSON="{time: $TIME, file: $FILE, latitude: $LATITUDE, longitude: $LONGITUDE, relative_altitude: $RELATIVE_ALTITUDE, heading: $HEADING}"
+		JSON="{\"time\": $TIME, \"file\": \"$FILE\", \"latitude\": $LATITUDE, \"longitude\": $LONGITUDE, \"relative_altitude\": $RELATIVE_ALTITUDE, \"heading\": $HEADING}"
 
 		echo $JSON > $JSON_FILE
 	done
