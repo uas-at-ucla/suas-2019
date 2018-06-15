@@ -262,6 +262,7 @@ class ServerWorker(threading.Thread):
                             if sql_cursor.fetchone() is None:
                                 sql_cursor.execute("insert into Locations values (?, ?, ?)",
                                         (img_id, lat, lng))
+                                result['coords'] = {'lat': lat, 'lng': lng}
                                 filtered_results.append(result)
                     if len(filtered_results) > 0:
                         server_task_queue.put(PriorityItem(2, {
@@ -980,8 +981,8 @@ class SnipperWorker(ClientWorker):
                 other={
                     'parent_img_id': src_img_id,
                     'location': {
-                        'lat': None,
-                        'lng': None
+                        'lat': result['coords']['lat'],
+                        'lng': result['coords']['lng']
                     }
                 })
             if verbose:
@@ -1027,6 +1028,7 @@ class ShapeClassifierWorker(ClientWorker):
     #   }]
     def _do_work(self, task):
         img_id = task[0]['img_id']
+        self.manager.get_img(img_id)
         img = vision_classifier.shape_img(
             os.path.join(self.data_dir, img_id + '.jpg'))
 
@@ -1067,6 +1069,7 @@ class LetterClassifierWorker(ClientWorker):
     #   }]
     def _do_work(self, task):
         img_id = task[0]['img_id']
+        self.manager.get_img(img_id)
         img = vision_classifier.letter_img(
             os.path.join(self.data_dir, img_id + '.jpg'))
 
