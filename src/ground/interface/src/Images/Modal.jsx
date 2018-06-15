@@ -18,8 +18,8 @@ export default class ModalComponent extends React.Component {
             img_height: img.naturalHeight
         };
         this.close = this.close.bind(this);
-        this.send_manual = this.send_manual.bind(this);
-        this.send_manual_test = this.send_manual_test.bind(this);
+        this.sendCropRequest = this.sendCropRequest.bind(this);
+        this.cropTarget = this.cropTarget.bind(this);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -33,6 +33,19 @@ export default class ModalComponent extends React.Component {
         this.vision_socket.on("manual_request_done", data => {
             console.log(JSON.stringify(data));
         });
+    }
+
+    componentDidMount() {
+        const loaded_img = this.refs.loaded_img;
+        const img_canvas = this.refs.img_canvas;
+        img_canvas.width = loaded_img.naturalWidth;
+        img_canvas.height = loaded_img.naturalHeight;
+        const context = img_canvas.getContext("2d");
+
+        loaded_img.onload = () => {
+            context.drawImage(loaded_img, 0, 0);
+            context.strokeStyle = "#ff0000";
+        }
     }
 
     _onMouseMove(e) {
@@ -53,15 +66,15 @@ export default class ModalComponent extends React.Component {
         this.setState({display: false});
     }
 
-    send_manual_test() {
-        this.send_manual(
+    cropTarget() {
+        this.sendCropRequest(
           this.props.image.id,
           [this.state.img_x_1, this.state.img_y_1],
           [this.state.img_x_2, this.state.img_y_2]
         );
     }
 
-    send_manual(img_id, top_left, bottom_right) {
+    sendCropRequest(img_id, top_left, bottom_right) {
         let json = {
             'event_name': 'snip',
             'args': {
@@ -76,14 +89,55 @@ export default class ModalComponent extends React.Component {
         this.props.socketEmit('cropped', img_id);
         console.log(json)
     }
+
+    clearSelection() {
+        this.setState({
+          img_x_1: null,
+          img_y_1: null,
+          img_x_2: null,
+          img_y_2: null
+        })
+
+        const canvas = this.refs.img_canvas;
+        const context = canvas.getContext("2d");
+        context.drawImage(this.refs.loaded_img, 0, 0);
+    }
     
     markCoords() {
-        this.setState({
-          img_x_1: this.state.img_x_2,
-          img_y_1: this.state.img_y_2,
-          img_x_2: Math.trunc(this.state.cur_img_x),
-          img_y_2: Math.trunc(this.state.cur_img_y)
-        });
+        const new_x = Math.trunc(this.state.cur_img_x);
+        const new_y = Math.trunc(this.state.cur_img_y);
+        const canvas = this.refs.img_canvas;
+        const context = canvas.getContext("2d");
+
+
+        // No first top left coords -> just mark the top left corner
+        if (this.state.img_x_1 === null && this.state.img_y_1 === null) {
+            this.setState({
+              img_x_1: new_x,
+              img_y_1: new_y,
+            });
+
+            context.beginPath();
+            context.arc(new_x, new_y, 5, 0, 2*Math.PI);
+            context.stroke();
+        }
+        // no bottom right coords -> mark, and then draw the rectangle
+        else if (this.state.img_x_2 === null && this.state.img_y_2 === null) {
+            this.setState({
+              img_x_2: new_x,
+              img_y_2: new_y
+            });
+
+            context.beginPath();
+            context.arc(new_x, new_y, 5, 0, 2*Math.PI);
+            context.stroke();
+
+            context.strokeRect(this.state.img_x_1, this.state.img_y_1, new_x-this.state.img_x_1, new_y-this.state.img_y_1);
+        }
+        // all coords already selected -> clear selection
+        else {
+            this.clearSelection();
+        }
     }
 
     render() {
@@ -92,9 +146,10 @@ export default class ModalComponent extends React.Component {
                 <Modal isOpen={ this.state.display } size="lg">
                     <ModalHeader>Photoshop</ModalHeader>
                     <ModalBody>
-                        <Button onClick={this.send_manual_test}>Crop</Button>
+                        <Button onClick={this.cropTarget}>Crop</Button>
                         <ModalFooter>
-                            <img className="resize" onClick={this.markCoords.bind(this)} onMouseMove={this._onMouseMove.bind(this)} src={this.props.image.src}/>
+                            <canvas ref="img_canvas" className="resize" onClick={this.markCoords.bind(this)} onMouseMove={this._onMouseMove.bind(this)} onContextMenu={(e) => {e.preventDefault();this.clearSelection()}}/>
+                            <img ref="loaded_img" style={{display: 'none'}} src={this.props.image.src}/>
                         </ModalFooter>
                         <Button color="danger" onClick={this.close}>Close</Button>
                     </ModalBody>
