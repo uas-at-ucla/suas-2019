@@ -98,54 +98,99 @@ mission2 = {
 }
 
 mission2018competition = {
-    'altitude_msl_min': 0,
-    'altitude_msl_max' : 750, #feet
-    'boundary_pts' : [
-        { 'latitude': 38.13515833, 'longitude' : -76.08371944 },
-        { 'latitude': 38.151625, 'longitude' : -76.08423889},
-        { 'latitude': 38.15188889, 'longitude' : -76.08424444},
-        { 'latitude': 38.15059444, 'longitude' : -76.10202778},
-        { 'latitude': 38.13367778, 'longitude' : -76.08511944},
-        { 'latitude': 38.13355556, 'longitude' : -76.085725},
-        { 'latitude': 38.13492222, 'longitude' : -76.08541389},
-        { 'latitude': 38.13490833, 'longitude' : -76.08434722 },
-        { 'latitude': 38.13516389, 'longitude' : -76.08509444},
-        { 'latitude': 38.13542778, 'longitude' : -76.08509444},
-        { 'latitude': 38.13345833, 'longitude' : -76.08432222},
-        { 'latitude': 38.13501944, 'longitude' : -76.08498611},
-    ],
-    'search_grid_points': [
-        { 'latitude': 38.13482222, 'longitude' : -76.10054722},
-        { 'latitude': 38.13548333, 'longitude' : -76.08500833},
-        { 'latitude': 38.13570556, 'longitude' : -76.08463889},
-        { 'latitude': 38.13559167, 'longitude' : -76.08593056},
-        { 'latitude': 38.13548333, 'longitude' : -76.08470278},
-    ],
-    'waypoints': [
-        { 'latitude': 38.13420278, 'longitude' : -76.084675, 'altitude_msl' : 200 },
-        { 'latitude': 38.13533333, 'longitude' : -76.08503889, 'altitude_msl' : 300 },
-        { 'latitude': 38.15013333, 'longitude' : -76.08363333, 'altitude_msl' :  300},
-        { 'latitude': 38.13506111, 'longitude' : -76.08506389, 'altitude_msl' : 300},
-        { 'latitude': 38.1359, 'longitude' : -76.08341944, 'altitude_msl' : 400},
-        { 'latitude': 38.13545, 'longitude' : -76.08477222, 'altitude_msl' : 200}
-    ],
-    'emergent_object': { 'latitude': 38.145762, 'longitude' : -76.423065 }, #Not Modified
-    'off_axis_object' : { 'latitude': 38.147635, 'longitude' : -76.427249 }, #Not Modified
-    'home' : { 'latitude': 38.145323, 'longitude' : -76.428000 }, #Not Modified
-    'air_drop' : { 'latitude': 38.13473056, 'longitude' : -76.08470833},
-    'stationary_obstacles' : [                #Not Given yet
-        { 'latitude': 38.15079, 'longitude' : -76.43044, 'radius' : 100, 'height' : 100 }
-    ],
-    'moving_obstacles' : [
-        {
-            'radius': 300,
-            'speed_avg' : 30,
-            'waypoints' : [
-                { 'latitude': 38.15079, 'longitude' : -76.43044, 'altitude_msl' : 100},
-                { 'latitude': 38.14139, 'longitude' : -76.42709, 'altitude_msl' : 150 }
-            ]
-        }
+'altitude_msl_min': 0,
+'altitude_msl_max' : 750, #feet
+'boundary_pts' : [
+{ 'latitude': 38.14626944, 'longitude' :  -76.42816389},
+
+{ 'latitude': 38.151625, 'longitude' : -76.42868333},
+
+{ 'latitude': 38.15188889, 'longitude' : -76.43146667},
+
+{ 'latitude': 38.15059444, 'longitude' : -76.43536111},
+
+{ 'latitude': 38.14756667, 'longitude' : -76.43234167},
+
+{ 'latitude': 38.14466667, 'longitude' : -76.43294722},
+
+{ 'latitude': 38.14325556, 'longitude' : -76.43476667},
+
+{ 'latitude': 38.14046389, 'longitude' : -76.43263611},
+
+{ 'latitude': 38.14071944, 'longitude' : -76.42601389},
+
+{ 'latitude': 38.14376111, 'longitude' : -76.42120556},
+
+{ 'latitude': 38.14734722, 'longitude' : -76.42321111},
+
+{ 'latitude': 38.14613056, 'longitude' : -76.42665278},
+],
+    
+'search_grid_points': [
+
+{ 'latitude': 38.14315556, 'longitude' : -76.43388056},
+
+{ 'latitude': 38.14103889, 'longitude' : -76.43223056},
+
+{ 'latitude': 38.14126111, 'longitude' : -76.42630556},
+
+{ 'latitude': 38.143925, 'longitude' : -76.42204167},
+
+{ 'latitude': 38.14642778, 'longitude' : -76.42359167},
+                          
+],
+    
+'waypoints': [
+
+{ 'latitude': 38.14531389, 'longitude' : -76.42911944, 'altitude_msl' : 200},
+
+{ 'latitude': 38.14922222, 'longitude' : -76.42948333, 'altitude_msl' : 300},
+
+{ 'latitude': 38.15013333, 'longitude' : -76.43085556, 'altitude_msl' : 300},
+
+{ 'latitude': 38.14895, 'longitude' : -76.43228611, 'altitude_msl' : 300},
+
+{ 'latitude': 38.14701111, 'longitude' : -76.43064167, 'altitude_msl' : 400},
+
+{ 'latitude': 38.14378333, 'longitude' : -76.43199444, 'altitude_msl' : 200}
+                 
+],
+    
+'emergent_object': 
+{ 'latitude': 38.145762, 'longitude' : -76.423065 }, #Not Modified
+    
+'off_axis_object' : { 'latitude': 38.147635, 'longitude' : -76.427249 }, #Not Modified
+    
+'home' : { 'latitude': 38.145323, 'longitude' : -76.428000 }, #Not Modified
+    
+'air_drop' : { 'latitude': 38.14584167, 'longitude' : -76.426375},
+    
+'stationary_obstacles' : [                #Not Given yet
+
+{ 'latitude': 38.15079, 'longitude' : -76.43044, 'radius' : 100, 'height' : 100 }
+                             
+],
+    
+'moving_obstacles' : [
+                             
+    {
+                             
+    'radius': 300,
+                                 
+    'speed_avg' : 30,
+                                 
+    'waypoints' : [
+                             
+    { 'latitude': 38.15079, 'longitude' : -76.43044, 'altitude_msl' : 100},
+                             
+    { 'latitude': 38.14139, 'longitude' : -76.42709, 'altitude_msl' : 150 }
+                                               
     ]
+                             
+    }
+                         
+    ]
+
 }
 
 mission = mission2018competition
