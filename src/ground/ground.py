@@ -426,12 +426,13 @@ def interop_data_to_obstacles_proto(data):
 #           proto_obstacle.point.latitude = obstacle['latitude']
 #           proto_obstacle.point.longitude = obstacle['longitude']
 #           proto_obstacle.point.altitude = obstacle['altitude_msl']
-    for obstacle in object_to_dict(stationary_obstacles):
-        proto_obstacle = obstacles.static_obstacles.add()
-        proto_obstacle.cylinder_radius = obstacle['cylinder_radius'] \
-            * METERS_PER_FOOT
-        proto_obstacle.location.latitude = obstacle['latitude']
-        proto_obstacle.location.longitude = obstacle['longitude']
+    if stationary_obstacles is not None:
+        for obstacle in object_to_dict(stationary_obstacles):
+            proto_obstacle = obstacles.static_obstacles.add()
+            proto_obstacle.cylinder_radius = obstacle['cylinder_radius'] \
+                * METERS_PER_FOOT
+            proto_obstacle.location.latitude = obstacle['latitude']
+            proto_obstacle.location.longitude = obstacle['longitude']
 
     return base64.b64encode(obstacles.SerializeToString())
 
@@ -455,7 +456,7 @@ def get_all_images(*args):
     global downloaded_images
     new_images['raw'] = args[0]['raw']
     downloaded_images = args[0]['raw'][:]
-    new_images['localized'] = args[0]['localized']
+    new_images['localized'] = args[0]['localized'] + args[0]['classified']
     new_images['classified'] = args[0]['classified']
 
 
@@ -479,12 +480,19 @@ def new_classified(*args):
             img_id = args[0]['img_id']
             with open('./' + image_folder + '/' + img_id + '.json') as f:
                 obj = json.load(f)
+
+            # ensure key exists if attribute missing
+            img_keys = ['shape', 'letter', 'letter_color', 'target_color', 'orientation']
+            for img_key in img_keys:
+                if not img_key in obj:
+                    obj[img_key] = None
+
             odlc = interop.Odlc(
                 type="standard", \
                 latitude=obj['location']['lat'], \
                 longitude=obj['location']['lng'], \
                 orientation=obj['orientation'], \
-                shape=obj['target_shape'], \
+                shape=obj['shape'], \
                 background_color=obj['target_color'], \
                 alphanumeric=obj['letter'], \
                 alphanumeric_color=obj['letter_color'], \

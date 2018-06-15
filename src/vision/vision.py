@@ -66,7 +66,8 @@ R_EARTH = 6.371e6 # meters (avg radius if earth were a sphere)
 # Defaults #####################################################################
 
 # General Defaults
-DEFAULT_DATA_DIR = os.path.abspath('data_local')
+# DEFAULT_DATA_DIR = os.path.abspath('data_local')
+DEFAULT_DATA_DIR = '/Users/ryannemiroff/LocalDocuments/UAS/suas_2018/src/ground/interface/build/testPhotos'
 print('cwd: ' + os.getcwd())
 print('dir: ' + DEFAULT_DATA_DIR)
 
@@ -74,23 +75,38 @@ print('dir: ' + DEFAULT_DATA_DIR)
 CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9) # mm
 LENS_FOCAL_LENGTH = 18 # mm
 
+# LOCAL TESTING
+# # Server defaults
+# DRONE_USER = 'ryannemiroff'
+# DRONE_PASS = 'fill this in'
+# SECRET_KEY = 'flappy'
+# DEFAULT_SRV_IP = '127.0.0.1'
+# DEFAULT_SRV_PORT = 8099
+# DRONE_IP = '127.0.0.1'
+# DRONE_DIR = '/Users/ryannemiroff/Downloads/testingphotos'
+# SNIPPER_IP = '0.0.0.0'
+# SNIPPER_USER = 'ryannemiroff'
+# SNIPPER_PASS = 'fill this in'
+
 # Server defaults
 DRONE_USER = 'pi'
 DRONE_PASS = 'raspberry'
 SECRET_KEY = 'flappy'
 DEFAULT_SRV_IP = '0.0.0.0'
 DEFAULT_SRV_PORT = 8099
-# TODO configure drone ip addr
 DRONE_IP = '192.168.1.21'
 DRONE_DIR = '/home/pi/pictures/suas_2018_dslr_mounted/store_00020001/DCIM/100CANON'
-YOLO_IP = '0.0.0.0'
-RSYNC_IP = '0.0.0.0'
 SNIPPER_IP = '0.0.0.0'
-CLASSIFIER_IP = '0.0.0.0'
-SNIPPER_USER = 'pi'
+SNIPPER_USER = 'ryannemiroff'
+SNIPPER_PASS = 'fill this in'
+
+# YOLO_IP = '0.0.0.0' # Unused
+# RSYNC_IP = '0.0.0.0' # Unused
+# CLASSIFIER_IP = '0.0.0.0' # Unused
 
 # Client Defaults
-DEFAULT_VSN_USER = 'pi'
+DEFAULT_VSN_USER = 'ryannemiroff'
+DEFAULT_VSN_PASS = 'fill this in'
 DEFAULT_VSN_PORT = DEFAULT_SRV_PORT
 DEFAULT_SSH_PORT = 22
 DEFAULT_REMOTE_DIR = DEFAULT_DATA_DIR
@@ -155,7 +171,6 @@ img_count = 0
 hasher = hashlib.blake2b()
 server_img_manager = None
 server_data_dir = None
-
 
 class ServerWorker(threading.Thread):
     def __init__(self, in_q):  # accept args anyway even if not used
@@ -403,6 +418,7 @@ def process_image(json, attempts=1):
                     )
                 },
             'user': DRONE_USER,
+            'pass': DRONE_PASS,
             'addr': DRONE_IP,
             'img_remote_src': [json['img_path'], json['info_path']],
             'img_local_dest': [img_inc_path + '.jpg', img_inc_path + '-drone.json']
@@ -430,7 +446,7 @@ def syncronize_img_info(img_id, new_info_file):
     server_img_manager.set_prop(img_id, 'lat', data['latitude'])
     server_img_manager.set_prop(img_id, 'lng', data['longitude'])
     server_img_manager.set_prop(img_id, 'heading', data['heading'])
-    server_img_manager.set_prop(img_id, 'altitude', data['altitude'])
+    server_img_manager.set_prop(img_id, 'altitude', data['relative_altitude'])
 
     server_task_queue.put(PriorityItem(2, {
         'type': 'auction',
@@ -446,9 +462,11 @@ def syncronize_img_info(img_id, new_info_file):
 def call_next(json):
     if verbose:
         print('calling {} with args:'.format(json['next']['func']))
+        image_ids = []
         for arg in json['next']['args']:
             print(arg)
-    vision_socketio_server.emit('download_complete', json['next']['args'])
+    if json['next']['func'] == 'syncronize_img_info':
+        vision_socketio_server.emit('download_complete', [json['next']['args'][0]])
     globals()[json['next']['func']](*json['next']['args'])
 
 def do_auction(*auctions):
@@ -519,6 +537,7 @@ def download_snipped(json):
                 )
             },
             'user': SNIPPER_USER,
+            'pass': SNIPPER_PASS,
             'addr': SNIPPER_IP,
             'img_remote_src': [os.path.join(download_dir, img_id + ext) for ext in ('.jpg', '.json')],
             'img_local_dest': [os.path.join(server_data_dir, img_id + ext) for ext in ('.jpg', '.json')]
@@ -672,7 +691,7 @@ def query_for_imgs(database_file, stop, drone_user, drone_ip, folder, server_por
             # get a listing of all the files in the folder
             # throws TimeoutExpired if timeout (interval in secs) runs out
             result = subprocess.run(['sshpass', '-p', DRONE_PASS, 'ssh', drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)], timeout=interval, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
-
+            
             # throws CalledProcessError is something went wrong with ssh
             result.check_returncode()
 
@@ -761,6 +780,7 @@ class ClientWorker(threading.Thread):
         self.in_q = in_q  # input queue (queue.Queue)
         self.stop_req = threading.Event()  # listen for a stop request
         self.vsn_user = args.vsn_user
+        self.vsn_pass = args.vsn_pass
         self.vsn_addr = args.vsn_addr
         self.vsn_port = args.vsn_port
         self.ssh_port = args.ssh_port
@@ -770,6 +790,7 @@ class ClientWorker(threading.Thread):
         self.manager = ImgManager(
             args.data_dir, {
                 'user': args.vsn_user,
+                'pass': args.vsn_pass,
                 'addr': args.vsn_addr,
                 'port': args.ssh_port,
                 'remote_dir': args.remote_dir,
@@ -826,7 +847,7 @@ class RsyncWorker(ClientWorker):
             remote = task_args['img_remote_src'][i]
             local =task_args['img_local_dest'][i]
             if 0 != processes.spawn_process_wait_for_code(
-                    'rsync -vz --progress -e "sshpass -p ' + DRONE_PASS + ' ssh -p 22" "' + task_args['user'] +
+                    'rsync -vz --progress -e "sshpass -p ' + task_args['pass'] + ' ssh -p 22" "' + task_args['user'] +
                     '@' + task_args['addr'] + ':' + remote + '" ' + local):
                 success = False
         if success:
@@ -968,7 +989,7 @@ class SnipperWorker(ClientWorker):
 
             self._emit(task, 'snipped', {
                 'img_id': img_id,
-                'download_dir': self.data_dir
+                'download_dir': os.path.abspath(self.data_dir)
             })
 
     def get_event_name(self):
@@ -1149,6 +1170,12 @@ if __name__ == '__main__':
         dest='vsn_user',
         default=DEFAULT_VSN_USER,
         help='ssh user for rsync to the primary vision server')
+    client_parser.add_argument(
+        '--pass',
+        action='store',
+        dest='vsn_pass',
+        default=DEFAULT_VSN_PASS,
+        help='ssh password for rsync to the primary vision server')
     client_parser.add_argument(
         "--threads",
         action='store',

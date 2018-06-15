@@ -251,7 +251,7 @@ class Images extends Component {
           let auto_object = {};
           auto_object.latitude = response.location.lat || 0;
           auto_object.longitude = response.location.lng || 0;
-          auto_object.shape = response.target_shape || "";
+          auto_object.shape = response.shape || "";
           auto_object.background_color = response.target_color || "";
           auto_object.alphanumeric = response.letter || "";
           auto_object.alphanumeric_color = response.letter_color || "";
