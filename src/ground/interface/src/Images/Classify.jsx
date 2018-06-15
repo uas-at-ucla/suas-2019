@@ -91,6 +91,7 @@ export default class Classify extends React.Component {
                     <ModalHeader>Photoshop</ModalHeader>
                     <ModalBody>
                         <Button onClick={this.submit_to_interop} disabled={this.state.submitted}>Submit</Button>
+                        {this.props.appState.manualClassifiedImages.find(el => el.id === this.props.image.id) ? <span>Submitted!</span> : null}
                         <ModalFooter>
                             <img className="resize" src={this.props.image.src}/>
                             <div>

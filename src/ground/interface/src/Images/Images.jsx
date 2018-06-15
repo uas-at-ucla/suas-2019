@@ -121,7 +121,8 @@ class Images extends Component {
                           doubleClick={this.state.doubleClickCropped}
                           socketEmit={this.props.socketEmit}
                           object={this.state.classifiedObject}
-                          submitted={this.state.objectSubmitted}/> : null
+                          submitted={this.state.objectSubmitted}
+                          appState={this.props.appState}/> : null
               }
             </div>
           </div>
