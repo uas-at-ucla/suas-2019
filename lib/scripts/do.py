@@ -20,18 +20,6 @@ UAS_AT_UCLA_TEXT = '\033[94m' + \
 '       \___/_/   \\_\\____/   \\ \\__,_|  \\___/ \\____|_____/_/   \\_\\\n' + \
 '                             \\____/\n' + \
 '\033[0m'
-####UAS_AT_UCLA_TEXT = '\033[94m' + \
-####' ___  ___  ________  ___       ________      ___  ___  ________  ________\n' + \
-####'|\  \|\  \|\   ____\|\  \     |\   __  \    |\  \|\  \|\   __  \|\   ____\ \n' + \
-####'\ \  \\\\\  \ \  \___|\ \  \    \ \  \|\  \   \ \  \\\\\  \ \  \|\  \ \  \___|_\n' + \
-####' \ \  \\\\\  \ \  \    \ \  \    \ \   __  \   \ \  \\\\\  \ \   __  \ \_____  \ \n' + \
-####'  \ \  \\\\\  \ \  \____\ \  \____\ \  \ \  \   \ \  \\\\\  \ \  \ \  \|____|\  \ \n' + \
-####'   \ \_______\ \_______\ \_______\ \__\ \__\   \ \_______\ \__\ \__\____\_\  \ \n' + \
-####'    \|_______|\|_______|\|_______|\|__|\|__|    \|_______|\|__|\|__|\_________\ \n' + \
-####'                                                                   \|_________| \n' + \
-####'\n' + \
-####'#################################### do #######################################\n' + \
-####'\033[0m'
 
 
 def signal_received(signal, frame):
@@ -123,7 +111,7 @@ def run_simulate(args):
     # Drone control code.
     processes.spawn_process(
             "./bazel-out/k8-fastbuild/bin/src/control/ground_communicator/" \
-                    "ground_communicator", None, True, args.verbose)
+                    "ground_communicator", None, True, True)
     processes.spawn_process("./bazel-out/k8-fastbuild/bin/src/control/io/io",
                             None, True, True)
     processes.spawn_process(
@@ -131,18 +119,18 @@ def run_simulate(args):
         True, args.verbose)
 
     # Ground server and interface.
-    processes.spawn_process("python ./src/ground/ground.py", None, True, args.verbose)
+    processes.spawn_process("python3 ./src/ground/ground.py", None, True, True)
     processes.wait_for_complete()
 
 
 def run_ground(args):
     # Ground server and interface.
     if args.device is not None:
-        processes.spawn_process("python ./src/ground/ground.py --device " \
-                + args.device, None, True, args.verbose)
+        processes.spawn_process("python3 ./src/ground/ground.py --device " \
+                + args.device, None, True, True)
     else:
-        processes.spawn_process("python ./src/ground/ground.py", None, True, \
-                args.verbose)
+        processes.spawn_process("python3 ./src/ground/ground.py", None, True, \
+                True)
 
     processes.wait_for_complete()
 

@@ -1,3 +1,6 @@
+# import eventlet
+# eventlet.monkey_patch()
+
 import os
 import sys
 import signal
@@ -47,8 +50,26 @@ ground_serial_comms = None
 
 commands = []
 
-telemetry_num = 0;
-drone_loop_num = 0;
+image_folder = "testPhotos"
+all_images = {
+    'raw': [],
+    'localized': [],
+    'classified': []
+
+    # 'raw': ['00019', 'flappy'],
+    # 'localized': ['00019cropped'],
+}
+new_images = {
+    'raw': [],
+    'localized': [],
+    'classified': []
+}
+downloaded_images = [] # contains raw image ids that have completed download
+manual_cropped_images = [] # list of ids of raw images that were manually cropped
+manual_classified_images = [] # list of objects containing id: "id" and object: {latitude, etc.}
+
+telemetry_num = 0
+drone_loop_num = 0
 
 processes = process_manager.ProcessManager()
 processes.run_command("protoc -I. --proto_path=../../lib/mission_manager/ " \
@@ -90,11 +111,15 @@ def connect(room):
         if drone_sid:
             data['drone_connected'] = True
 
+        data['all_images'] = all_images
+        data['manual_cropped_images'] = manual_cropped_images
+        data['manual_classified_images'] = manual_classified_images
+
         flask_socketio.emit('initial_data', data)
 
     elif room == 'drone':
-        drone_sid = request.sid;
-        drone_ip = request.remote_addr;
+        drone_sid = request.sid
+        drone_ip = request.remote_addr
 
         data = object_to_dict({ \
             'stationary_obstacles': stationary_obstacles, \
@@ -119,8 +144,8 @@ def connect_to_interop(data):
 
     if USE_INTEROP:
         try:
-            interop_username = 'testuser'
-            interop_password = 'testpass'
+            interop_username = data[5]
+            interop_password = data[6]
             interop_url = 'http://' + str(data[0]) + '.' + str(data[1]) + \
             '.' + str(data[2]) + '.' + str(data[3]) + ':' + str(data[4])
             interop_client = interop.AsyncClient( \
@@ -151,6 +176,48 @@ def broadcast_interop_data(data):
 def send_ping_result(data):
     flask_socketio.emit('drone_ping', data, \
         room='frontend')
+
+
+@ground_socketio_server.on('added_images')
+def send_added_images(data):
+    flask_socketio.emit('added_images', data, \
+        room='frontend')
+
+
+@ground_socketio_server.on('cropped')
+def send_cropped_images(image_id):
+    manual_cropped_images.append(image_id)
+    ground_socketio_server.emit('cropped_image', image_id, \
+        room='frontend')
+
+
+@ground_socketio_server.on('classified')
+def send_cropped_images(data):
+    if interop_client is not None:
+        try:
+            obj = data['object']
+            odlc = interop.Odlc(
+                type=obj['type'], \
+                latitude=obj['latitude'], \
+                longitude=obj['longitude'], \
+                orientation=obj['orientation'], \
+                shape=obj['shape'], \
+                background_color=obj['background_color'], \
+                alphanumeric=obj['alphanumeric'], \
+                alphanumeric_color=obj['alphanumeric_color'], \
+                autonomous=False \
+            )
+            odlc_id = interop_client.post_odlc(odlc).result().id
+            print("Object " + str(odlc_id) + " submitted")
+            with open('./' + image_folder + '/' + data['id'] + '.jpg', 'rb') as f:
+                image_data = f.read()
+            interop_client.post_odlc_image(odlc_id, image_data).result()
+
+            manual_classified_images.append(data)
+            ground_socketio_server.emit('classified_image', data, \
+                room='frontend')
+        except:
+            print("Invalid Object Data!!!")
 
 
 @ground_socketio_server.on('execute_commands')
@@ -192,19 +259,19 @@ def interop_disconnected():
 def telemetry(received_telemetry):
     global telemetry_num
     global drone_loop_num
-    passed_messages = received_telemetry['message_index'] - telemetry_num;
-    passed_loops = received_telemetry['loop_index'] - drone_loop_num;
+    passed_messages = received_telemetry['message_index'] - telemetry_num
+    passed_loops = received_telemetry['loop_index'] - drone_loop_num
 
     if passed_messages > 1:
-        print("Lost " + str(passed_messages - 1) + " telemetry messages!")
+        print(("Lost " + str(passed_messages - 1) + " telemetry messages!"))
 
     if passed_loops - passed_messages > 0:
-        print("Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!")
+        print(("Drone skipped " + str(passed_loops - passed_messages) + " telemetry messages!"))
 
-    
+
     telemetry_num = received_telemetry['message_index']
     drone_loop_num = received_telemetry['loop_index']
-    
+
     global interop_client
 
     sensors = received_telemetry['telemetry']['sensors']
@@ -255,7 +322,7 @@ def auto_connect_to_interop():
     interop_client = None
     for i in range(20):
         try:
-            if stopped:
+            if stopped or interop_client is not None:
                 break
             interop_client = interop.AsyncClient( \
                 url=interop_url, \
@@ -276,10 +343,10 @@ def got_serial_data(proto_msg):
     alt = proto_msg.altitude
     heading = proto_msg.heading
 
-    print("Latitude: " + str(proto_msg.latitude) \
+    print(("Latitude: " + str(proto_msg.latitude) \
             + " Longitude: " + str(proto_msg.longitude) \
             + " Altitude: " + str(proto_msg.altitude) \
-            + " Heading: " + str(proto_msg.heading))
+            + " Heading: " + str(proto_msg.heading)))
 
     if all(val is not None for val in [lat, lng, alt, heading]):
         try:
@@ -359,12 +426,13 @@ def interop_data_to_obstacles_proto(data):
 #           proto_obstacle.point.latitude = obstacle['latitude']
 #           proto_obstacle.point.longitude = obstacle['longitude']
 #           proto_obstacle.point.altitude = obstacle['altitude_msl']
-    for obstacle in object_to_dict(stationary_obstacles):
-        proto_obstacle = obstacles.static_obstacles.add()
-        proto_obstacle.cylinder_radius = obstacle['cylinder_radius'] \
-            * METERS_PER_FOOT
-        proto_obstacle.location.latitude = obstacle['latitude']
-        proto_obstacle.location.longitude = obstacle['longitude']
+    if stationary_obstacles is not None:
+        for obstacle in object_to_dict(stationary_obstacles):
+            proto_obstacle = obstacles.static_obstacles.add()
+            proto_obstacle.cylinder_radius = obstacle['cylinder_radius'] \
+                * METERS_PER_FOOT
+            proto_obstacle.location.latitude = obstacle['latitude']
+            proto_obstacle.location.longitude = obstacle['longitude']
 
     return base64.b64encode(obstacles.SerializeToString())
 
@@ -379,26 +447,159 @@ def ping_drone():
             output = os.popen("ping -c 1 " + drone_ip).readlines()
             if len(output) >= 6:
                 ms = output[5].split('= ')[1].split('/')[0]
-                interface_client.emit('drone_ping', {'ms': ms});
+                interface_client.emit('drone_ping', {'ms': ms})
             else:
-                interface_client.emit('drone_ping', {'ms': None});
+                interface_client.emit('drone_ping', {'ms': None})
+
+
+def get_all_images(*args):
+    global downloaded_images
+    new_images['raw'] = args[0]['raw']
+    downloaded_images = args[0]['raw'][:]
+    new_images['localized'] = args[0]['localized'] + args[0]['classified']
+    new_images['classified'] = args[0]['classified']
+
+
+def new_raw(*args):
+    new_images['raw'].append(args[0]['img_id'])
+
+def downloaded_raw(*args):
+    global downloaded_images
+    downloaded_images += args[0]
+
+def new_localized(*args):
+    new_images['localized'].append(args[0]['img_id'])
+
+def new_manual_cropped(*args):
+    new_images['localized'].append(args[0]['img_id'])
+
+
+def new_classified(*args):
+    if interop_client is not None:
+        try:
+            img_id = args[0]['img_id']
+            with open('./' + image_folder + '/' + img_id + '.json') as f:
+                obj = json.load(f)
+
+            # ensure key exists if attribute missing
+            img_keys = ['shape', 'letter', 'letter_color', 'target_color', 'orientation']
+            for img_key in img_keys:
+                if not img_key in obj:
+                    obj[img_key] = None
+
+            odlc = interop.Odlc(
+                type="standard", \
+                latitude=obj['location']['lat'], \
+                longitude=obj['location']['lng'], \
+                orientation=obj['orientation'], \
+                shape=obj['shape'], \
+                background_color=obj['target_color'], \
+                alphanumeric=obj['letter'], \
+                alphanumeric_color=obj['letter_color'], \
+                autonomous=True \
+            )
+            odlc_id = interop_client.post_odlc(odlc).result().id
+            print("Object " + str(odlc_id) + " submitted")
+            with open('./' + image_folder + '/' + img_id + '.jpg', 'rb') as f:
+                image_data = f.read()
+            interop_client.post_odlc_image(odlc_id, image_data).result()
+
+            new_images['classified'].append(img_id)
+        except:
+            print("Invalid Object Data!!!")
+
+
+#def images_backend_connected():
+#    images_client.emit('get_all_images')
+
+
+def connect_to_images_backend():
+    images_client = socketIO_client.SocketIO('0.0.0.0', 8099)
+
+    # This action must be called manually since it connects
+    # before the function is bound to the connect event
+    images_client.emit('get_all_images')
+    #images_client.on('connect', images_backend_connected)
+    images_client.on('all_images', get_all_images)
+    images_client.on('new_raw', new_raw)
+    images_client.on('manual_request_done', new_manual_cropped)
+    images_client.on('new_localized', new_localized)
+    images_client.on('new_classified', new_classified)
+    images_client.on('download_complete', downloaded_raw)
+    images_client.wait()
+
+
+def send_images_to_frontend():
+    interface_client = socketIO_client.SocketIO('0.0.0.0', 8081)
+    while True:
+        time.sleep(1.5)
+        if len(new_images['raw']) or len(new_images['localized']) or len(new_images['classified']):
+            new_available_images = {
+                'localized': new_images['localized'],
+                'classified': new_images['classified'],
+                'raw': []
+            }
+            for image_id in new_images['raw'][:]:
+                if image_id in downloaded_images:
+                    new_available_images['raw'].append(image_id)
+                    all_images['raw'].append(image_id)
+                    downloaded_images.remove(image_id)
+                    new_images['raw'].remove(image_id)
+            interface_client.emit('added_images', new_available_images)
+            all_images['localized'] += new_images['localized']
+            all_images['classified'] += new_images['classified']
+            new_images['localized'] = []
+            new_images['classified'] = []
 
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
+    print(os.getcwd())
     parser = argparse.ArgumentParser()
+    parser.add_argument('--static', action="store_true")
     parser.add_argument(
         '--device', action='store', help='device help', required=False)
+    parser.add_argument('--run-vision', action="store_true", dest="run_vision_srv")
+    parser.add_argument(
+        '--vision-clients',
+        metavar='CLIENT_NAMES',
+        type=str,
+        nargs='+',
+        dest='clients',
+        choices=('rsync', 'yolo', 'snipper',
+                 'classifier_shape', 'classifier_letter'),
+        default=['rsync', 'yolo', 'snipper', 'classifier_shape', 'classifier_letter'])
     args = parser.parse_args()
 
-    processes.spawn_process("npm start --prefix ./interface/", None,
-                            True, False)
+    print("")
+
+    if args.static:
+        image_folder = 'interface/build/' + image_folder
+        processes.spawn_process("python interface/serve_client.py", None,
+                                True, False)
+        print("Ground station at http://0.0.0.0:8080")
+        print("-----------------------------------------------------")
+        print("NOTE: Ensure that you ran: python interface/build.py")
+    else:
+        image_folder = 'interface/public/' + image_folder
+        processes.spawn_process("npm start --silent --prefix ./interface/", None,
+                                True, False)
+        print("Ground station at http://localhost:3000")
+    print("-----------------------------------------------------")
 
     if args.device is not None:
-        print("Using serial device " + args.device)
+        print(("Using serial device " + args.device))
         ground_serial_comms = serial_comms.GroundSerialComms(args.device)
         ground_serial_comms.run_reader(got_serial_data)
+
+    if args.run_vision_srv:
+        processes.spawn_process("python3 ../vision/vision.py --verbose --data-dir ../ground/{folder} server".format(folder=image_folder))
+        for client in args.clients:
+            if client.split('_')[0] == 'classifier':
+                processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/{folder} client classifier {client}'.format(client=client.split('_')[1], folder=image_folder))
+            else:
+                processes.spawn_process('python3 ../vision/vision.py --verbose --data-dir ../ground/{folder} client {client}'.format(client=client, folder=image_folder))
 
     if AUTO_CONNECT_TO_INTEROP:
         t_connect = threading.Thread(target=auto_connect_to_interop)
@@ -418,5 +619,13 @@ if __name__ == '__main__':
     t_ping = threading.Thread(target=ping_drone)
     t_ping.daemon = True
     t_ping.start()
+
+    t_image_socket = threading.Thread(target=connect_to_images_backend)
+    t_image_socket.daemon = True
+    t_image_socket.start()
+
+    t_image_refresh = threading.Thread(target=send_images_to_frontend)
+    t_image_refresh.daemon = True
+    t_image_refresh.start()
 
     ground_socketio_server.run(app, '0.0.0.0', port=8081)

@@ -3,6 +3,7 @@ import ReactDOMServer from 'react-dom/server';
 import './Map.css';
 import GMapCache from './GMapCache.jsx';
 import map_style from './map_style.js';
+import scriptLoader from 'react-async-script-loader';
 
 const METERS_PER_FOOT = 0.3048;
 const google = window.google;
@@ -29,6 +30,12 @@ class Map extends Component {
   }
 
   componentWillReceiveProps(nextProps) {
+    if (nextProps.isScriptLoaded && !this.props.isScriptLoaded) { // load finished
+      if (nextProps.isScriptLoadSucceed) {
+        this.initMap();
+      }
+    }
+
     for (let item of this.whenStateChanges) {
       if (this.stateDidChange(nextProps, item.stateProp, item.key)) {
         item.func(nextProps);
@@ -37,16 +44,23 @@ class Map extends Component {
   }
 
   componentDidMount() {
+    if (google.maps || (this.props.isScriptLoaded && this.props.isScriptLoadSucceed)) {
+      this.initMap();
+    }
+  }
+
+  initMap() {
     this.last_commands = null;
 
     // Default field to zoom into.
     let field = {
-      //lat: 38.145298,
-      //lng: -76.42861
-      lat: 34.175048,
-      lng: -118.48159
+      lat: 38.145298,
+      lng: -76.42861
+      // lat: 34.175048,
+      // lng: -118.48159
     };
 
+    console.log(google);
     this.map = new google.maps.Map(this.refs.map, {
       center: field,
       zoom: 11,
@@ -64,22 +78,42 @@ class Map extends Component {
     this.gmap_cache = new GMapCache();
     let this_local = this;
 
-    this.map.mapTypes.set(
-      'offline_gmap',
-      new google.maps.ImageMapType({
-        getTileUrl: function(coord, zoom) {
-          return this_local.gmap_cache.checkTileInSprites(coord, zoom)
-            ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
-            : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
-        },
-        tileSize: new google.maps.Size(256, 256),
-        name: 'LocalMyGmap',
-        maxZoom: 21,
-        minZoom: 1
-      })
-    );
+//  this.map.mapTypes.set(
+//    'offline_gmap',
+//    new google.maps.ImageMapType({
+//      getTileUrl: function(coord, zoom) {
+//        return this_local.gmap_cache.checkTileInSprites(coord, zoom)
+//          ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
+//          : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
+//      },
+//      tileSize: new google.maps.Size(256, 256),
+//      name: 'LocalMyGmap',
+//      maxZoom: 21,
+//      minZoom: 1
+//    })
+//  );
 
-    this.map.setMapTypeId('offline_gmap');
+//  this.map.setMapTypeId('offline_gmap');
+    // this.gmap_cache = new GMapCache();
+    // let this_local = this;
+
+    // this.map.mapTypes.set(
+    //   'offline_gmap',
+    //   new google.maps.ImageMapType({
+    //     getTileUrl: function(coord, zoom) {
+    //       return this_local.gmap_cache.checkTileInSprites(coord, zoom)
+    //         ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
+    //         : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
+    //     },
+    //     tileSize: new google.maps.Size(256, 256),
+    //     name: 'LocalMyGmap',
+    //     maxZoom: 21,
+    //     minZoom: 1
+    //   })
+    // );
+    // this.map.setMapTypeId('offline_gmap');
+
+    this.map.setMapTypeId('satellite');
 
     this.drone_marker_icon = {
       path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
@@ -158,7 +192,7 @@ class Map extends Component {
     });
 
     this.map.addListener('dblclick', e => {
-      this.add_goto_command(e.latLng.lat(), e.latLng.lng(), 30);
+      this.add_goto_command(e.latLng.lat(), e.latLng.lng(), null);
     });
 
     this.registerStateDepFunction(
@@ -636,6 +670,20 @@ class Map extends Component {
   };
 
   add_goto_command(lat, lng, alt, name, mission_point, interop_object_name) {
+    //get recent altitude
+    if (alt == null) {
+      alt = 30
+      for (let i = this.props.homeState.commands.length-1; i >= 0; i--) {
+        let type = this.props.homeState.commands[i].type;
+        let fields = this.props.homeState.commands[i][type];
+        let pos = this.get_command_pos(fields, type);
+        if (pos && pos.altitude != null) {
+          alt = pos.altitude;
+          break;
+        }
+      }
+    }
+
     let command = this.props.makeCommand('GotoCommand', {
       goal: {
         latitude: lat,
@@ -1168,7 +1216,7 @@ class Map extends Component {
             this.add_goto_command(
               coords.lat,
               coords.lng,
-              coords.alt || 30,
+              coords.alt || null,
               title,
               mission_point,
               id
@@ -1432,4 +1480,6 @@ class Map extends Component {
   }
 }
 
-export default Map;
+export default scriptLoader(
+    ["https://maps.googleapis.com/maps/api/js?key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c&libraries=visualization"]
+)(Map)

@@ -21,11 +21,7 @@ void quit_handler(int sig) {
 }
 
 IO::IO()
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-    : copter_io_("/dev/ttyS0", 921600),
-#else
-    : copter_io_("/tmp/virtualcom0", 921600),
-#endif
+    : copter_io_(),
       autopilot_sensor_reader_(&copter_io_),
       autopilot_output_writer_(&copter_io_) {
   copter_io_quit = &copter_io_;
@@ -133,6 +129,10 @@ void AutopilotSensorReader::RunIteration() {
   mavlink_heartbeat_t heartbeat = copter_io_->current_messages.heartbeat;
   flight_loop_sensors_message->armed = !!(heartbeat.base_mode >> 7);
 
+  // Manual RC Channels.
+  mavlink_rc_channels_t rc_channels = copter_io_->current_messages.rc_channels;
+  flight_loop_sensors_message->throttle_rc_channel = rc_channels.chan3_raw;
+
   AutopilotState autopilot_state = UNKNOWN;
 
   switch (heartbeat.custom_mode) {
@@ -205,10 +205,11 @@ void AutopilotOutputWriter::Write() {
       ::src::control::loops::flight_loop_queue.output->velocity_y,
       ::src::control::loops::flight_loop_queue.output->velocity_z, sp);
 
-  autopilot_interface::set_yaw(::src::control::loops::flight_loop_queue.output->yaw, sp);
+  autopilot_interface::set_yaw(
+      ::src::control::loops::flight_loop_queue.output->yaw, sp);
 
-
-  copter_io_->update_setpoint(sp);
+  copter_io_->update_setpoint(sp,
+      ::src::control::loops::flight_loop_queue.output->should_send_offboard);
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   digitalWrite(kAlarmGPIOPin,

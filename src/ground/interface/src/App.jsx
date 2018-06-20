@@ -10,6 +10,8 @@ import Images from "./Images/Images";
 import Settings from "./Settings/Settings";
 import Training from "./Training/Training";
 
+const photoFolder = 'testPhotos'
+
 class App extends Component {
   constructor(props) {
     super(props);
@@ -25,7 +27,14 @@ class App extends Component {
       stationary_obstacles: [],
       missions: [],
       followDrone: true,
-      metric: true
+      metric: true,
+      photoFolder: photoFolder,
+      rawImages: [],
+      segmentedImages: [],
+      autoClassifiedImages: [],
+      croppedImages: {},
+      manualCroppedImageParents: [],
+      manualClassifiedImages: []
     };
   }
 
@@ -124,28 +133,43 @@ class App extends Component {
       this.setState({drone_ping_ms: data.ms});
     });
 
-    this.socket.on("on_telemetry", telemetry => {
-      let newState = {
-        telemetry: telemetry.telemetry
-      }
-      if (telemetry.mission !== this.state.drone_mission_base64) {
-        newState.drone_mission_base64 = telemetry.mission;
-      }
-      telemetry = telemetry.telemetry;
-      if (telemetry.status && telemetry.status.state) {
-        newState.droneState = this.convertToTitleText(telemetry.status.state);
-      }
-
-      this.setState(newState);
-    });
-
-    this.socket.on("image", data => {
-      this.setState({
-        testImage: data
-      });
-    });
-
     this.socket.on("initial_data", data => {
+      let rawImages = []
+      for (let id of data.all_images.raw) {
+        rawImages.push({
+          id: id,
+          src: '/'+photoFolder+'/' + id + '.jpg'
+        });
+      }
+      let segmentedImages = []
+      for (let id of data.all_images.localized) {
+        fetch('/'+photoFolder+'/' + id + '.json')
+          .then(res => res.json())
+          .catch(error => console.log("No JSON file exists!"))
+          .then(json_data => {
+            console.log(json_data)
+            let croppedImages = Object.assign({}, this.state.croppedImages);
+            croppedImages[id] = json_data.parent_img_id;
+            this.setState({croppedImages: croppedImages});
+          })
+          .catch(error => console.log("Fetch request failed."));
+        segmentedImages.push({
+          id: id,
+          src: '/'+photoFolder+'/' + id + '.jpg'
+        })
+      }
+      let autoClassifiedImages = []
+      for (let id of data.all_images.classified) {
+        autoClassifiedImages.push(id);
+      }
+      this.setState({
+        rawImages: rawImages,
+        segmentedImages: segmentedImages,
+        autoClassifiedImages: autoClassifiedImages,
+        manualClassifiedImages: data.manual_classified_images,
+        manualCroppedImageParents: data.manual_cropped_images
+      });
+
       if (data.drone_connected) {
         this.setState({droneState: "Drone Connected!"});
       }
@@ -162,6 +186,62 @@ class App extends Component {
 
         console.log("MISSION DATA!!!");
       }
+    });
+
+    this.socket.on("on_telemetry", telemetry => {
+      let newState = {
+        telemetry: telemetry.telemetry
+      }
+      if (telemetry.mission !== this.state.drone_mission_base64) {
+        newState.drone_mission_base64 = telemetry.mission;
+      }
+      telemetry = telemetry.telemetry;
+      if (telemetry.status && telemetry.status.state) {
+        newState.droneState = this.convertToTitleText(telemetry.status.state);
+      }
+
+      this.setState(newState);
+    });
+
+    this.socket.on("added_images", data => {
+      for (let id of data.raw) {
+        this.state.rawImages.push({
+          id: id,
+          src: '/'+photoFolder+'/' + id + '.jpg'
+        });
+      }
+      for (let id of data.localized) {
+        fetch('/'+photoFolder+'/' + id + '.json')
+          .then(res => res.json())
+          .catch(error => console.log("No JSON file exists!"))
+          .then(json_data => {
+            let croppedImages = Object.assign({}, this.state.croppedImages);
+            croppedImages[id] = json_data.parent_img_id;
+            this.setState({croppedImages: croppedImages});
+          })
+          .catch(error => console.log("Fetch request failed."));
+
+        this.state.segmentedImages.push({
+          id: id,
+          src: '/'+photoFolder+'/' + id + '.jpg'
+        });
+      }
+      for (let id of data.classified) {
+        this.state.autoClassifiedImages.push(id);
+      }
+      this.setState({});
+    });
+
+    this.socket.on("cropped_image", id => {
+      let manualCroppedImageParents = this.state.manualCroppedImageParents.slice()
+      manualCroppedImageParents.push(id);
+      this.setState({manualCroppedImageParents: manualCroppedImageParents});
+    });
+
+    this.socket.on("classified_image", data => {
+      let manualClassifiedImages = this.state.manualClassifiedImages.slice()
+      manualClassifiedImages.push(data);
+      this.setState({manualClassifiedImages: manualClassifiedImages});
     });
 
     this.socket.on("interop_data", data => {

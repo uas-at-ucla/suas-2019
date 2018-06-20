@@ -81,7 +81,7 @@ class ImgManager:
 
     def _retrieve_img(self, img_id):
         if 0 != self.procs.spawn_process_wait_for_code(
-                'rsync -vz --progress -e "ssh -p ' +
+                'rsync -vz --progress -e "sshpass -p ' + self.truth_src['pass'] + ' ssh -p ' +
                 str(self.truth_src['port']) + '" "' + self.truth_src['user'] +
                 '@' + self.truth_src['addr'] + ':' + str(self.remote_dir /
                                                          (img_id + '.jpg')) +
@@ -90,7 +90,7 @@ class ImgManager:
 
     def _update_props(self, img_id):
         if 0 != self.procs.spawn_process_wait_for_code(
-                'rsync -vz --progress -e "ssh -p ' +
+                'rsync -vz --progress -e "sshpass -p ' + self.truth_src['pass'] + ' ssh -p ' +
                 str(self.truth_src['port']) + '" "' + self.truth_src['user'] +
                 '@' + self.truth_src['addr'] + ':' + str(self.remote_dir /
                                                          (img_id + '.json')) +

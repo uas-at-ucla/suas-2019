@@ -7,8 +7,12 @@ import os
 import hashlib
 import argparse
 import zmq
+import array
+import base64
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
+
+kMessageDivideTag = "__UAS@UCLA__"
 
 if os.uname()[4] != "armv7l":
     sys.path.insert(0, '../../lib')
@@ -43,8 +47,10 @@ class GroundSerialComms:
 
     def read_data(self):
         time.sleep(0.001)
+
         while not self.stopped:
-            buf = ""
+            buf = str()
+
             while True:
                 try:
                     oneByte = self.ser.read(1)
@@ -54,7 +60,7 @@ class GroundSerialComms:
                 if oneByte == b"\r":
                     break
                 else:
-                    buf += oneByte
+                    buf += oneByte.decode('utf-8')
 
             self.parse_message(buf)
 
@@ -62,14 +68,17 @@ class GroundSerialComms:
         if len(raw_message) < 224 / 4:
             return
 
-        checksum = raw_message[0:224 / 4]
-        protobuf_encoded = raw_message[224 / 4 + 2:]
+        checksum = raw_message[0:int(224 / 4)]
+        protobuf_encoded = raw_message[int(224 / 4 + len(kMessageDivideTag)):]
+
+        protobuf_encoded = base64.b64decode(protobuf_encoded)
 
         calculated_checksum = hashlib.sha224(protobuf_encoded) \
                 .hexdigest()
 
+
         if checksum != calculated_checksum:
-            #print("Checksum mismatch")
+            print("Checksum mismatch")
             return
 
         proto_msg = serial_comms_message_proto.SerialCommsMessage()
@@ -86,12 +95,15 @@ class GroundSerialComms:
         proto_msg.unix_timestamp = time.time()
 
         protobuf_encoded = proto_msg.SerializeToString()
+
         checksum = hashlib.sha224(protobuf_encoded) \
                 .hexdigest()
 
-        message = checksum + "##" + protobuf_encoded + "\r"
+        protobuf_encoded = base64.b64encode(protobuf_encoded).decode("ascii")
 
-        self.ser.write(message)
+        message = checksum + kMessageDivideTag + protobuf_encoded + "\r"
+
+        self.ser.write(message.encode("ascii"))
 
     def send_message(self, latitude, longitude, altitude, heading):
         proto_msg = serial_comms_message_proto.SerialCommsMessage()
@@ -123,13 +135,13 @@ def run_sender(args):
 
     context = zmq.Context()
     socket = context.socket(zmq.SUB)
-    socket.setsockopt(zmq.SUBSCRIBE, "")
+    socket.setsockopt_string(zmq.SUBSCRIBE, "")
     socket.bind("ipc:///tmp/serial_comms.ipc")
     print("CREATED ZMQ")
 
     time.sleep(1)
 
-    while ground_serial_comms.ser.isOpen():
+    while True:
         time.sleep(0.2)
         serialized_protobuf = socket.recv()
 
@@ -183,4 +195,3 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     args.func(args)
-

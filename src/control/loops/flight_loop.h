@@ -82,6 +82,9 @@ class FlightLoop {
 
   double last_bomb_drop_;
   double last_dslr_;
+
+  double last_throttle_rc_channel_;
+  bool failsafe_sent_rtl_; 
 };
 
 const std::map<FlightLoop::State, std::string> state_string = {
