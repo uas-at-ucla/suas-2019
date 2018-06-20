@@ -21,11 +21,7 @@ void quit_handler(int sig) {
 }
 
 IO::IO()
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-    : copter_io_("/dev/ttyS0", 921600),
-#else
-    : copter_io_("/tmp/virtualcom0", 921600),
-#endif
+    : copter_io_(),
       autopilot_sensor_reader_(&copter_io_),
       autopilot_output_writer_(&copter_io_) {
   copter_io_quit = &copter_io_;
@@ -205,7 +201,8 @@ void AutopilotOutputWriter::Write() {
       ::src::control::loops::flight_loop_queue.output->velocity_y,
       ::src::control::loops::flight_loop_queue.output->velocity_z, sp);
 
-  autopilot_interface::set_yaw(::src::control::loops::flight_loop_queue.output->yaw, sp);
+  autopilot_interface::set_yaw(
+      ::src::control::loops::flight_loop_queue.output->yaw, sp);
 
 
   copter_io_->update_setpoint(sp);
