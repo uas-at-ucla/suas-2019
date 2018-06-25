@@ -20,19 +20,6 @@ UAS_AT_UCLA_TEXT = '\033[94m' + \
 '       \___/_/   \\_\\____/   \\ \\__,_|  \\___/ \\____|_____/_/   \\_\\\n' + \
 '                             \\____/\n' + \
 '\033[0m'
-####UAS_AT_UCLA_TEXT = '\033[94m' + \
-####' ___  ___  ________  ___       ________      ___  ___  ________  ________\n' + \
-####'|\  \|\  \|\   ____\|\  \     |\   __  \    |\  \|\  \|\   __  \|\   ____\ \n' + \
-####'\ \  \\\\\  \ \  \___|\ \  \    \ \  \|\  \   \ \  \\\\\  \ \  \|\  \ \  \___|_\n' + \
-####' \ \  \\\\\  \ \  \    \ \  \    \ \   __  \   \ \  \\\\\  \ \   __  \ \_____  \ \n' + \
-####'  \ \  \\\\\  \ \  \____\ \  \____\ \  \ \  \   \ \  \\\\\  \ \  \ \  \|____|\  \ \n' + \
-####'   \ \_______\ \_______\ \_______\ \__\ \__\   \ \_______\ \__\ \__\____\_\  \ \n' + \
-####'    \|_______|\|_______|\|_______|\|__|\|__|    \|_______|\|__|\|__|\_________\ \n' + \
-####'                                                                   \|_________| \n' + \
-####'\n' + \
-####'#################################### do #######################################\n' + \
-####'\033[0m'
-
 
 def signal_received(signal, frame):
     # Shutdown all the spawned processes and exit cleanly.
@@ -147,6 +134,14 @@ def run_ground(args):
     processes.wait_for_complete()
 
 
+def run_build_docker(args):
+    print("Building docker container for development environment.")
+    processes.spawn_process("docker build -t \"uas_at_ucla_build_env\" tools/docker", None, True, True)
+    processes.wait_for_complete()
+
+    processes.spawn_process("docker run -v \"$(pwd)\":/usr/src/app uas_at_ucla_build_env:latest bazel build //src/...", None, True, True)
+
+
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
@@ -183,6 +178,9 @@ if __name__ == '__main__':
 
     build_parser = subparsers.add_parser('build', help='build help')
     build_parser.set_defaults(func=run_build)
+
+    build_docker_parser = subparsers.add_parser('build_docker', help='build_docker help')
+    build_docker_parser.set_defaults(func=run_build_docker)
 
     args = parser.parse_args()
     args.func(args)
