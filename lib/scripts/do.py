@@ -80,7 +80,8 @@ def run_build(args):
 
 def run_simulate(args):
     run_and_die_if_error("bazel build //src/...")
-    run_and_die_if_error("bazel build @PX4_sitl//:jmavsim")
+    #run_and_die_if_error("bazel build @PX4_sitl//:jmavsim")
+    run_and_die_if_error("bazel build @PX4_sitl//:gazebo_visualize")
 
     # Initialize shared memory for queues.
     processes.spawn_process("ipcrm --all", None, True, args.verbose)
@@ -93,7 +94,7 @@ def run_simulate(args):
     time.sleep(1.0)
 
     # Simulator and port forwarder.
-    processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
+    processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:gazebo_visualize",
                             None, True, args.verbose)
     processes.spawn_process("mavproxy.py " \
             "--mav20 " \
