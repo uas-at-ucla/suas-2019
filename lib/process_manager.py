@@ -31,10 +31,18 @@ class ProcessManager:
         if track:
             self.procs.append(proc)
 
-    def spawn_process_wait_for_code(self, command):
-        proc = subprocess.Popen(command,
-                shell=True, \
-                preexec_fn=os.setsid)
+    def spawn_process_wait_for_code(self, command, show_output=True):
+        if show_output:
+            proc = subprocess.Popen(command,
+                    shell=True, \
+                    preexec_fn=os.setsid)
+        else:
+            devnull = open(os.devnull, 'wb')
+            proc = subprocess.Popen(command,
+                    shell=True, \
+                    preexec_fn=os.setsid, \
+                    stdout=devnull, \
+                    stderr=devnull)
         self.procs.append(proc)
 
         proc.communicate()

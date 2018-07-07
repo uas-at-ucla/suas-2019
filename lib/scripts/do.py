@@ -3,6 +3,7 @@ import sys
 import signal
 import time
 import argparse
+import textwrap
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir("../../")
@@ -12,13 +13,13 @@ import process_manager
 
 processes = process_manager.ProcessManager()
 
-UAS_AT_UCLA_TEXT = '\033[94m' + \
-'       _   _   _    ____      ____    _   _  ____ _        _\n' + \
-'      | | | | / \\  / ___|    / __ \\  | | | |/ ___| |      / \\\n' + \
-'      | | | |/ _ \\ \\___ \\   / / _` | | | | | |   | |     / _ \\\n' + \
-'      | |_| / ___ \\ ___) | | | (_| | | |_| | |___| |___ / ___ \\\n' + \
-'       \___/_/   \\_\\____/   \\ \\__,_|  \\___/ \\____|_____/_/   \\_\\\n' + \
-'                             \\____/\n' + \
+UAS_AT_UCLA_TEXT = '\033[96m' + \
+'####         _   _   _    ____      ____    _   _  ____ _        _          ####\n' + \
+'####        | | | | / \\  / ___|    / __ \\  | | | |/ ___| |      / \\         ####\n' + \
+'####        | | | |/ _ \\ \\___ \\   / / _` | | | | | |   | |     / _ \\        ####\n' + \
+'####        | |_| / ___ \\ ___) | | | (_| | | |_| | |___| |___ / ___ \\       ####\n' + \
+'####         \___/_/   \\_\\____/   \\ \\__,_|  \\___/ \\____|_____/_/   \\_\\      ####\n' + \
+'####                               \\____/\n' + \
 '\033[0m'
 
 def signal_received(signal, frame):
@@ -70,12 +71,107 @@ def run_travis(args):
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
 
 
+def print_update(message, msg_type="STATUS"):
+    SPLIT_SIZE = 65
+
+    msg_split = message.splitlines()
+
+    lines = list()
+    for line in msg_split:
+        lines.extend(textwrap.wrap(line, SPLIT_SIZE, break_long_words=False))
+
+    print("\n\n")
+    for i in range(0, len(lines) + 2):
+        if i > 0 and i < len(lines) + 1:
+            line = lines[len(lines) - i - 1]
+        else:
+            line = ""
+
+        other_stuff = (5 + len(line) + 5)
+        padding_left = (80 - other_stuff) / 2
+        padding_right = 80 - padding_left - other_stuff
+        print_line = ""
+
+        if msg_type is "STATUS":
+            print_line += "\033[94m"
+        if msg_type is "STATUS_LIGHT":
+            print_line += "\033[96m"
+        elif msg_type is "SUCCESS":
+            print_line += "\033[92m"
+        elif msg_type is "FAILURE":
+            print_line += "\033[91m"
+
+        print_line += "#### "
+        print_line += " " * padding_left
+        print_line += line
+        print_line += " " * padding_right
+        print_line += " ####\033[0m"
+
+        print(print_line)
+
+def run_cmd_exit_failure(cmd):
+    if processes.spawn_process_wait_for_code(cmd) > 0:
+        print_update("ERROR when running command: " + cmd, msg_type="FAILURE")
+        processes.killall()
+        sys.exit(1)
+
+def is_docker_running():
+    return processes.spawn_process_wait_for_code( \
+            "if [ -z $(docker ps --filter status=running " \
+                                "--format \"{{.ID}}\" --latest) ]; " \
+            "then exit 1; " \
+            "else exit 0; fi", show_output=False) == 0
+
+
+
 def run_build(args):
-    run_and_die_if_error("bazel build //src/...")
-    run_and_die_if_error("bazel build //lib/...")
-    run_and_die_if_error("bazel build //aos/linux_code:core")
-    run_and_die_if_error("bazel build --cpu=raspi //src/...")
-    run_and_die_if_error("bazel build --cpu=raspi //aos/linux_code:core")
+    # Start the UAS@UCLA software development docker image if it is not already
+    # running.
+    print_update("Going to build the code...")
+
+    if not is_docker_running():
+        print_update("Building UAS@UCLA software env docker...")
+        # Build the image for our docker environment.
+        processes.spawn_process("docker build -t uas-at-ucla_software " \
+                "tools/docker")
+        processes.wait_for_complete()
+
+        processes.spawn_process("docker run -it -d --rm " \
+                "-v $(pwd):/home/uas/code_env/ " \
+                "-v $(pwd)/tools/docker/cache/bazel:" \
+                    "/home/uas/.cache/bazel/_bazel_uas " \
+                "-p 14556:14556/udp " \
+                "--env=LOCAL_USER_ID=\"$(id -u)\" " \
+                "uas-at-ucla_software \"bazel | tail -f /dev/null\"")
+
+    while not is_docker_running():
+        time.sleep(0.25)
+
+    # Execute the build commands in the running docker image.
+    docker_prefix_cmd = "docker exec -it $(docker ps " \
+            "--filter status=running " \
+            "--format \"{{.ID}}\" " \
+            "--latest) "
+
+    print_update("Building src directory...")
+    run_cmd_exit_failure(docker_prefix_cmd + "bazel build //src/...")
+
+    print_update("\n\nBuilding lib directory...")
+    run_cmd_exit_failure(docker_prefix_cmd + "bazel build //lib/...")
+
+    print_update("\n\nBuilding shm core...")
+    run_cmd_exit_failure(docker_prefix_cmd + \
+            "bazel build //aos/linux_code:core")
+
+    print_update("\n\nBuilding src for raspi...")
+    run_cmd_exit_failure(docker_prefix_cmd + \
+            "bazel build --cpu=raspi //src/...")
+
+    print_update("\n\nBuilding shm core for raspi...")
+    run_cmd_exit_failure(docker_prefix_cmd + \
+            "bazel build --cpu=raspi //aos/linux_code:core")
+
+    print_update("\n\nBuild complete! LONG LIVE SPINNY  :^)", msg_type="SUCCESS")
 
 
 def run_simulate(args):
