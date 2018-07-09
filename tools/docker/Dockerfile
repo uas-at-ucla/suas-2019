@@ -102,7 +102,25 @@ USER uas
 RUN mkdir -p /home/uas/code_env
 ENV WORKSPACE /home/uas/code_env WORKDIR /home/uas/code_env
 
+WORKDIR /home/uas
+
+# Install mavlink-router
+RUN sudo apt install -y autoconf autoconf automake libtool make pkg-config check g++ librsync-dev libz-dev libssl-dev uthash-dev libyajl-dev
+RUN pip2.7 install --user future
+RUN git clone https://github.com/intel/mavlink-router.git
+WORKDIR /home/uas/mavlink-router
+RUN git submodule update --init --recursive
+RUN ./autogen.sh && ./configure CFLAGS='-g -O2' \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --libdir=/usr/lib64 \
+    --prefix=/usr
+RUN make
+RUN sudo make install
+
 WORKDIR /home/uas/code_env
+
+RUN rm -rf /home/uas/mavlink-router
 
 ENTRYPOINT bazel && sleep infinity
 
