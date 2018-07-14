@@ -18,6 +18,7 @@
 #include "aos/common/util/phased_loop.h"
 
 #include "lib/dslr_interface/dslr_interface.h"
+#include "lib/proto_comms/proto_comms.h"
 
 namespace src {
 namespace control {
@@ -48,6 +49,8 @@ class AutopilotSensorReader : public LoopInputHandler {
   autopilot_interface::TimeStamps last_timestamps_;
 
   double last_gps_;
+
+  ::lib::proto_comms::ProtoSender telemetry_sender_;
 };
 
 class AutopilotOutputWriter : public LoopOutputHandler {

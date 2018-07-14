@@ -56,7 +56,8 @@ void IO::Quit() {
 AutopilotSensorReader::AutopilotSensorReader(
     autopilot_interface::AutopilotInterface *copter_io)
     : copter_io_(copter_io),
-      last_gps_(-::std::numeric_limits<double>::infinity()) {
+      last_gps_(-::std::numeric_limits<double>::infinity()),
+      telemetry_sender_("ipc:///tmp/uasatucla_io.ipc") {
   last_timestamps_.reset_timestamps();
 }
 
