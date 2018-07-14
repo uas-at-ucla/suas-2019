@@ -28,6 +28,7 @@ cc_library(
     '//src/control/loops:flight_loop_queue',
     '//lib/logger:log_sender',
     '//lib/dslr_interface:dslr_interface',
+    '//lib/proto_comms:proto_comms',
     '//aos/linux_code:init',
     '//aos/common:scoped_fd',
     '//aos/common:time',
