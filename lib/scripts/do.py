@@ -168,7 +168,7 @@ def run_build(args=None, show_complete=True):
                 "tools/docker")
         processes.wait_for_complete()
 
-        processes.spawn_process("docker run -it -d --rm " \
+        print("docker run -it -d --rm " \
                 "-v $(pwd):/home/uas/code_env/ " \
                 "-v $(pwd)/tools/docker/cache/bazel:" \
                     "/home/uas/.cache/bazel/_bazel_uas " \
@@ -262,7 +262,7 @@ def run_simulate(args):
     run_cmd_exit_failure("tmux split-window -v -t uas_env")
     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
     run_cmd_exit_failure(docker_prefix_cmd + "ipcrm --all")
-    print(docker_prefix_cmd \
+    run_cmd_exit_failure(docker_prefix_cmd \
             + "./lib/scripts/bazel_run.sh //aos/linux_code:core", \
             show_output=True, \
             allow_input=False)
