@@ -1,5 +1,4 @@
-#ifndef LIB_SEMAPHORE_SEMAPHORE_H_
-#define LIB_SEMAPHORE_SEMAPHORE_H_
+#pragma once
 
 #include <mutex>
 #include <condition_variable>
@@ -14,11 +13,9 @@ class Semaphore {
   bool TryWait();
 
  private:
-  std::mutex mutex_;
-  std::condition_variable condition_;
+  ::std::mutex mutex_;
+  ::std::condition_variable condition_;
   unsigned long count_;
 };
 
 }  // namespace lib
-
-#endif  // LIB_SEMAPHORE_SEMAPHORE_H_

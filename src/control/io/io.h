@@ -3,22 +3,24 @@
 
 #include "src/control/io/autopilot_interface/autopilot_interface.h"
 
-#include "src/control/io/loop_output_handler.h"
 #include "src/control/io/loop_input_handler.h"
+#include "src/control/io/loop_output_handler.h"
 
 #include <atomic>
 #include <unistd.h>
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-#include <wiringPi.h>
 #include <pigpiod_if2.h>
+#include <wiringPi.h>
 #endif
 
-#include "src/control/loops/flight_loop.q.h"
 #include "aos/common/util/phased_loop.h"
+#include "src/control/loops/flight_loop.q.h"
 
 #include "lib/dslr_interface/dslr_interface.h"
+#include "lib/logger/log_sender.h"
 #include "lib/proto_comms/proto_comms.h"
+#include "src/control/control_messages.pb.h"
 
 namespace src {
 namespace control {
@@ -26,7 +28,7 @@ namespace io {
 namespace {
 const int kAlarmGPIOPin = 2;
 const int kGimbalGPIOPin = 18;
-}  // namespace
+} // namespace
 
 enum AutopilotState {
   UNKNOWN = 0,
@@ -96,8 +98,8 @@ class IO {
   AutopilotOutputWriter autopilot_output_writer_;
 };
 
-}  // namespace io
-}  // namespace control
-}  // namespace src
+} // namespace io
+} // namespace control
+} // namespace src
 
-#endif  // SPINNY_CONTROL_IO_IO_H_
+#endif // SPINNY_CONTROL_IO_IO_H_

@@ -8,8 +8,6 @@
 
 #include "zmq.hpp"
 
-#include "src/control/loops/flight_loop.q.h"
-
 namespace src {
 namespace control {
 namespace loops {
@@ -25,7 +23,6 @@ FlightLoop::FlightLoop()
       start_(std::chrono::system_clock::now()),
       takeoff_ticker_(0),
       verbose_(false),
-      count_(0),
       previous_flights_time_(0),
       current_flight_start_time_(0),
       alarm_(kFlightLoopFrequency),
@@ -34,93 +31,34 @@ FlightLoop::FlightLoop()
       did_alarm_(false),
       did_arm_(false),
       last_bomb_drop_(0),
-      last_dslr_(0) {
-  ::src::control::loops::flight_loop_queue.sensors.FetchLatest();
-  ::src::control::loops::flight_loop_queue.goal.FetchLatest();
-  ::src::control::loops::flight_loop_queue.output.FetchLatest();
+      last_dslr_(0),
+      telemetry_receiver_("ipc:///tmp/uasatucla_telemetry.ipc", 5),
+      goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", 5),
+      status_sender_("ipc:///tmp/uasatucla_status.ipc"),
+      output_sender_("ipc:///tmp/uasatucla_output.ipc") {
 }
 
 void FlightLoop::Iterate() { RunIteration(); }
 
-void FlightLoop::DumpSensorsPeriodic() {
-  if (!verbose_) return;
-
-  if (count_++ % 100) return;
-
-  DumpSensors();
-}
-
-void FlightLoop::DumpSensors() {
-  if (::src::control::loops::flight_loop_queue.sensors.get()) {
-    LOG_LINE(
-        "Flight loop iteration SENSORS..."
-        << " Armed:" << ::src::control::loops::flight_loop_queue.sensors->armed
-        << ::std::setprecision(12) << ::std::fixed << ::std::showpos
-        << " Latitude: "
-        << ::src::control::loops::flight_loop_queue.sensors->latitude
-        << " Longitude: "
-        << ::src::control::loops::flight_loop_queue.sensors->longitude
-        << " Altitude: "
-        << ::src::control::loops::flight_loop_queue.sensors->altitude
-        << " RelativeAltitude: "
-        << ::src::control::loops::flight_loop_queue.sensors->relative_altitude
-        << " Heading: "
-        << ::src::control::loops::flight_loop_queue.sensors->heading
-        << " AccelX: "
-        << ::src::control::loops::flight_loop_queue.sensors->accelerometer_x
-        << " AccelY: "
-        << ::src::control::loops::flight_loop_queue.sensors->accelerometer_y
-        << " AccelZ: "
-        << ::src::control::loops::flight_loop_queue.sensors->accelerometer_z
-        << " GyroX: "
-        << ::src::control::loops::flight_loop_queue.sensors->gyro_x
-        << " GyroY: "
-        << ::src::control::loops::flight_loop_queue.sensors->gyro_y
-        << " GyroZ: "
-        << ::src::control::loops::flight_loop_queue.sensors->gyro_z
-        << " AbsolutePressure: "
-        << ::src::control::loops::flight_loop_queue.sensors->absolute_pressure
-        << " RelativePressure: "
-        << ::src::control::loops::flight_loop_queue.sensors->relative_pressure
-        << " PressureAltitude: "
-        << ::src::control::loops::flight_loop_queue.sensors->pressure_altitude
-        << " Temperature: "
-        << ::src::control::loops::flight_loop_queue.sensors->temperature
-        << " BattVoltage: "
-        << ::src::control::loops::flight_loop_queue.sensors->battery_voltage
-        << " BattCurrent: "
-        << ::src::control::loops::flight_loop_queue.sensors->battery_current);
-  }
-
-  if (::src::control::loops::flight_loop_queue.goal.get()) {
-    LOG_LINE(
-        "Flight loop iteration GOAL... "
-        << " RunMission: "
-        << ::src::control::loops::flight_loop_queue.goal->run_mission
-        << " Failsafe: "
-        << ::src::control::loops::flight_loop_queue.goal->trigger_failsafe
-        << " ThrottleCut: "
-        << ::src::control::loops::flight_loop_queue.goal->trigger_throttle_cut);
-  }
-}
-
 void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 
 void FlightLoop::RunIteration() {
-  // TODO(comran): Are these two queues synced?
-  // TODO(comran): Check for stale queue messages.
-  ::src::control::loops::flight_loop_queue.sensors.FetchAnother();
-  ::src::control::loops::flight_loop_queue.goal.FetchLatest();
+  // Get latest telemetry.
+  ::src::control::Sensors telemetry;
+  {
+    ::std::string sensors_serialized = telemetry_receiver_.GetLatest();
 
-  if (!got_sensors_) {
-    // Send out an alarm chirp to signal that the drone loop is running
-    // successfully.
-    alarm_.AddAlert({0.01, 0.50});
+    if(sensors_serialized == "") {
+      ::std::cout << "NO SENSORS!\n";
+      return;
+    }
+
+    telemetry.ParseFromString(sensors_serialized);
   }
 
-  got_sensors_ = true;
+  ::src::control::loops::flight_loop_queue.goal.FetchLatest();
 
-  DumpSensors();
+  got_sensors_ = true;
 
   State next_state = state_;
 
@@ -138,8 +76,9 @@ void FlightLoop::RunIteration() {
   last_loop_ = current_time;
 
   auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
+  ::src::control::Output output = ::src::control::Output();
 
-  output->gimbal_angle = 0.15;
+  output.set_gimbal_angle(0.15);
 
   if (!::src::control::loops::flight_loop_queue.goal.get()) {
     ::std::cerr << "NO GOAL!\n";
