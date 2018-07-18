@@ -30,11 +30,12 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8
   | tee /etc/apt/sources.list.d/bazel.list
 
 RUN apt update
+RUN apt upgrade -y
 
 ### Install dependencies from apt
-RUN apt -t testing install -y python3.6
-RUN apt -t testing install -y python3.6-dev
-RUN apt -t testing install -y python3.6-distutils
+RUN apt install -y python3.7
+RUN apt install -y python3.7-dev
+RUN apt install -y python3.7-distutils
 
 RUN apt install -y ant
 RUN apt install -y bazel
