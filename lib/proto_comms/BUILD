@@ -10,6 +10,7 @@ cc_library(
   deps = [
     "@cppzmq//:cppzmq",
     "@com_google_protobuf//:protobuf",
+    "//lib/semaphore:semaphore",
   ],
 )
 

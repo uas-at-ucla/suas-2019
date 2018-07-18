@@ -3,8 +3,6 @@
 #include <iostream>
 #include <limits>
 
-#include "lib/logger/log_sender.h"
-
 namespace src {
 namespace control {
 namespace io {
@@ -57,12 +55,11 @@ AutopilotSensorReader::AutopilotSensorReader(
     autopilot_interface::AutopilotInterface *copter_io)
     : copter_io_(copter_io),
       last_gps_(-::std::numeric_limits<double>::infinity()),
-      telemetry_sender_("ipc:///tmp/uasatucla_io.ipc") {
+      telemetry_sender_("ipc:///tmp/uasatucla_telemetry.ipc") {
   last_timestamps_.reset_timestamps();
 }
 
 void AutopilotSensorReader::RunIteration() {
-  // TODO(comran): Fix partial queue writes.
   autopilot_interface::TimeStamps current_timestamps =
       copter_io_->current_messages.time_stamps;
 
@@ -76,90 +73,102 @@ void AutopilotSensorReader::RunIteration() {
 
   last_timestamps_ = current_timestamps;
 
-  auto flight_loop_sensors_message =
-      ::src::control::loops::flight_loop_queue.sensors.MakeMessage();
+  ::src::control::Sensors sensors = ::src::control::Sensors();
 
   // GPS data.
-  mavlink_global_position_int_t gps =
-      copter_io_->current_messages.global_position_int;
+  {
+    mavlink_global_position_int_t gps =
+        copter_io_->current_messages.global_position_int;
 
-  flight_loop_sensors_message->latitude = static_cast<double>(gps.lat) / 1e7;
-  flight_loop_sensors_message->longitude = static_cast<double>(gps.lon) / 1e7;
-  flight_loop_sensors_message->altitude = static_cast<float>(gps.alt) / 1e3;
+    sensors.set_latitude(static_cast<double>(gps.lat) / 1e7);
+    sensors.set_longitude(static_cast<double>(gps.lon) / 1e7);
+    sensors.set_altitude(static_cast<float>(gps.alt) / 1e3);
 
-  flight_loop_sensors_message->heading =
-      static_cast<float>(copter_io_->current_messages.vfr_hud.heading);
+    sensors.set_relative_altitude(static_cast<float>(gps.relative_alt) / 1e3);
 
-  flight_loop_sensors_message->relative_altitude =
-      static_cast<float>(gps.relative_alt) / 1e3;
-
-  flight_loop_sensors_message->velocity_x = static_cast<float>(gps.vx) / 1e2;
-  flight_loop_sensors_message->velocity_y = static_cast<float>(gps.vy) / 1e2;
-  flight_loop_sensors_message->velocity_z = static_cast<float>(gps.vz) / 1e2;
-
-  // GPS raw data.
-  mavlink_gps_raw_int_t gps_raw = copter_io_->current_messages.gps_raw_int;
-
-  flight_loop_sensors_message->gps_satellite_count = gps_raw.satellites_visible;
-  flight_loop_sensors_message->gps_eph = gps_raw.eph;
-  flight_loop_sensors_message->gps_epv = gps_raw.epv;
-  flight_loop_sensors_message->gps_ground_speed =
-      static_cast<float>(gps_raw.vel) / 1e2;
-
-  // IMU data.
-  mavlink_highres_imu_t imu = copter_io_->current_messages.highres_imu;
-
-  flight_loop_sensors_message->accelerometer_x = imu.xacc;
-  flight_loop_sensors_message->accelerometer_y = imu.yacc;
-  flight_loop_sensors_message->accelerometer_z = imu.zacc;
-
-  flight_loop_sensors_message->gyro_x = imu.xgyro;
-  flight_loop_sensors_message->gyro_y = imu.ygyro;
-  flight_loop_sensors_message->gyro_z = imu.zgyro;
-
-  flight_loop_sensors_message->absolute_pressure = imu.abs_pressure;
-  flight_loop_sensors_message->relative_pressure = imu.diff_pressure;
-  flight_loop_sensors_message->pressure_altitude = imu.pressure_alt;
-  flight_loop_sensors_message->temperature = imu.temperature;
-  flight_loop_sensors_message->last_gps = last_gps_;
-
-  // Battery data.
-  mavlink_sys_status_t sys_status = copter_io_->current_messages.sys_status;
-  flight_loop_sensors_message->battery_voltage =
-      static_cast<float>(sys_status.voltage_battery) / 1e3;
-  flight_loop_sensors_message->battery_current =
-      static_cast<float>(sys_status.current_battery) / 1e3;
-
-  // Armed?
-  mavlink_heartbeat_t heartbeat = copter_io_->current_messages.heartbeat;
-  flight_loop_sensors_message->armed = !!(heartbeat.base_mode >> 7);
-
-  AutopilotState autopilot_state = UNKNOWN;
-
-  switch (heartbeat.custom_mode) {
-    case 0b00000010000001000000000000000000:
-      autopilot_state = TAKEOFF;
-      break;
-    case 0b00000100000001000000000000000000:
-    case 0b00000011000001000000000000000000:
-      autopilot_state = HOLD;
-      break;
-    case 0b00000000000001100000000000000000:
-      autopilot_state = OFFBOARD;
-      break;
-    case 0b00000101000001000000000000000000:
-      autopilot_state = RTL;
-      break;
-    case 0b00000110000001000000000000000000:
-      autopilot_state = LAND;
-      break;
-    default:
-      autopilot_state = UNKNOWN;
+    sensors.set_velocity_x(static_cast<float>(gps.vx) / 1e2);
+    sensors.set_velocity_y(static_cast<float>(gps.vy) / 1e2);
+    sensors.set_velocity_z(static_cast<float>(gps.vz) / 1e2);
   }
 
-  flight_loop_sensors_message->autopilot_state = autopilot_state;
+  sensors.set_heading(
+      static_cast<float>(copter_io_->current_messages.vfr_hud.heading));
 
-  flight_loop_sensors_message.Send();
+  // GPS raw data.
+  {
+    mavlink_gps_raw_int_t gps_raw = copter_io_->current_messages.gps_raw_int;
+
+    sensors.set_gps_satellite_count(gps_raw.satellites_visible);
+    sensors.set_gps_eph(gps_raw.eph);
+    sensors.set_gps_epv(gps_raw.epv);
+    sensors.set_gps_ground_speed(static_cast<float>(gps_raw.vel) / 1e2);
+  }
+
+  // IMU data.
+  {
+    mavlink_highres_imu_t imu = copter_io_->current_messages.highres_imu;
+
+    sensors.set_accelerometer_x(imu.xacc);
+    sensors.set_accelerometer_y(imu.yacc);
+    sensors.set_accelerometer_z(imu.zacc);
+
+    sensors.set_gyro_x(imu.xgyro);
+    sensors.set_gyro_y(imu.ygyro);
+    sensors.set_gyro_z(imu.zgyro);
+
+    sensors.set_absolute_pressure(imu.abs_pressure);
+    sensors.set_relative_pressure(imu.diff_pressure);
+    sensors.set_pressure_altitude(imu.pressure_alt);
+    sensors.set_temperature(imu.temperature);
+  }
+
+  sensors.set_last_gps(last_gps_);
+
+  // Battery data.
+  {
+    mavlink_sys_status_t sys_status = copter_io_->current_messages.sys_status;
+
+    sensors.set_battery_voltage(static_cast<float>(sys_status.voltage_battery) /
+                                1e3);
+    sensors.set_battery_current(static_cast<float>(sys_status.current_battery) /
+                                1e3);
+  }
+
+  // Armed?
+  {
+    mavlink_heartbeat_t heartbeat = copter_io_->current_messages.heartbeat;
+    sensors.set_armed(!!(heartbeat.base_mode >> 7));
+
+    AutopilotState autopilot_state = UNKNOWN;
+
+    switch (heartbeat.custom_mode) {
+      case 0b00000010000001000000000000000000:
+        autopilot_state = TAKEOFF;
+        break;
+      case 0b00000100000001000000000000000000:
+      case 0b00000011000001000000000000000000:
+        autopilot_state = HOLD;
+        break;
+      case 0b00000000000001100000000000000000:
+        autopilot_state = OFFBOARD;
+        break;
+      case 0b00000101000001000000000000000000:
+        autopilot_state = RTL;
+        break;
+      case 0b00000110000001000000000000000000:
+        autopilot_state = LAND;
+        break;
+      default:
+        autopilot_state = UNKNOWN;
+    }
+
+    sensors.set_autopilot_state(autopilot_state);
+  }
+
+  // Serialize sensor protobuf and send it over ZMQ.
+  ::std::string sensors_serialized;
+  sensors.SerializeToString(&sensors_serialized);
+  telemetry_sender_.Send(sensors_serialized);
 }
 
 AutopilotOutputWriter::AutopilotOutputWriter(
@@ -206,16 +215,15 @@ void AutopilotOutputWriter::Write() {
       ::src::control::loops::flight_loop_queue.output->velocity_y,
       ::src::control::loops::flight_loop_queue.output->velocity_z, sp);
 
-  autopilot_interface::set_yaw(::src::control::loops::flight_loop_queue.output->yaw, sp);
-
+  autopilot_interface::set_yaw(
+      ::src::control::loops::flight_loop_queue.output->yaw, sp);
 
   copter_io_->update_setpoint(sp);
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   digitalWrite(kAlarmGPIOPin,
-               ::src::control::loops::flight_loop_queue.output->alarm
-                   ? HIGH
-                   : LOW);
+               ::src::control::loops::flight_loop_queue.output->alarm ? HIGH
+                                                                      : LOW);
 
   int bomb_drop_signal =
       ::src::control::loops::flight_loop_queue.output->bomb_drop ? 1000 : 1600;
@@ -309,6 +317,6 @@ void AutopilotOutputWriter::Stop() {
   dslr_interface_.Quit();
 }
 
-}  // namespace io
-}  // namespace control
-}  // namespace src
+} // namespace io
+} // namespace control
+} // namespace src

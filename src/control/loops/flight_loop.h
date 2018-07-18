@@ -7,8 +7,10 @@
 #include "aos/common/util/phased_loop.h"
 #include "aos/linux_code/init.h"
 
-#include "src/control/loops/flight_loop.q.h"
 #include "src/control/loops/pilot/pilot.h"
+#include "src/control/control_messages.pb.h"
+#include "lib/proto_comms/proto_comms.h"
+#include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/logger/log_sender.h"
 #include "lib/alarm/alarm.h"
@@ -47,10 +49,6 @@ class FlightLoop {
 
   State state() const { return state_; }
 
-  // Method to dump all the current sensors at the head of the message queue.
-  void DumpSensors();
-  void DumpSensorsPeriodic();
-
   void SetVerbose(bool verbose);
 
  private:
@@ -67,7 +65,6 @@ class FlightLoop {
 
   int takeoff_ticker_;
   bool verbose_;
-  int count_;
 
   void EndFlightTimer();
   int previous_flights_time_;
@@ -82,9 +79,14 @@ class FlightLoop {
 
   double last_bomb_drop_;
   double last_dslr_;
+
+  ::lib::proto_comms::ProtoReceiver telemetry_receiver_;
+  ::lib::proto_comms::ProtoReceiver goal_receiver_;
+  ::lib::proto_comms::ProtoSender status_sender_;
+  ::lib::proto_comms::ProtoSender output_sender_;
 };
 
-const std::map<FlightLoop::State, std::string> state_string = {
+const ::std::map<FlightLoop::State, ::std::string> state_string = {
   {FlightLoop::STANDBY, "STANDBY"},
   {FlightLoop::ARMING, "ARMING"},
   {FlightLoop::ARMED, "ARMED"},

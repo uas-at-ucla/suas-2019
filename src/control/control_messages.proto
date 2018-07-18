@@ -1,0 +1,89 @@
+syntax = "proto2";
+
+package src.control;
+
+message Sensors {
+  required double latitude                                                 = 1;
+  required double longitude                                                = 2;
+  required float altitude                                                  = 3;
+  required float relative_altitude                                         = 4;
+  required float heading                                                   = 5;
+                                                                          
+  required float velocity_x                                                = 6;
+  required float velocity_y                                                = 7;
+  required float velocity_z                                                = 8;
+                                                                          
+  required float gps_ground_speed                                          = 9;
+                                                                          
+  required int32 gps_satellite_count                                       = 10;
+  required int32 gps_eph                                                   = 11;
+  required int32 gps_epv                                                   = 12;
+                                                                          
+  required float accelerometer_x                                           = 13;
+  required float accelerometer_y                                           = 14;
+  required float accelerometer_z                                           = 15;
+                                                                          
+  required float gyro_x                                                    = 16;
+  required float gyro_y                                                    = 17;
+  required float gyro_z                                                    = 18;
+                                                                          
+  required float absolute_pressure                                         = 19;
+  required float relative_pressure                                         = 20;
+  required float pressure_altitude                                         = 21;
+  required float temperature                                               = 22;
+                                                                          
+  required float battery_voltage                                           = 23;
+  required float battery_current                                           = 24;
+                                                                          
+  required bool armed                                                      = 25;
+  required int32 autopilot_state                                           = 26;
+                                                                          
+  required int32 state                                                     = 27;
+                                                                          
+  required double last_gps                                                 = 28;
+}                                                                         
+                                                                          
+message Status {                                                          
+  required int32 state                                                     = 1;
+  required int32 flight_time                                               = 2;
+  required int32 current_command_index                                     = 3;
+}                                                                         
+                                                                          
+message Goal {                                                            
+  required bool run_mission                                                = 1;
+                                                                          
+  required bool trigger_failsafe                                           = 2;
+  required bool trigger_throttle_cut                                       = 3;
+                                                                          
+  required double trigger_takeoff                                          = 4;
+  required double trigger_hold                                             = 5;
+  required double trigger_offboard                                         = 6;
+  required double trigger_rtl                                              = 7;
+  required double trigger_land                                             = 8;
+  required double trigger_arm                                              = 9;
+  required double trigger_disarm                                           = 10;
+                                                                          
+  required double trigger_alarm                                            = 11;
+  required double trigger_bomb_drop                                        = 12;
+  required double trigger_dslr                                             = 13;
+}                                                                         
+                                                                          
+message Output {                                                          
+  required float velocity_x                                                = 1;
+  required float velocity_y                                                = 2;
+  required float velocity_z                                                = 3;
+  required float yaw_setpoint                                              = 4;
+                                                                          
+  required float gimbal_angle                                              = 5;
+  required bool bomb_drop                                                  = 6;
+  required bool alarm                                                      = 7;
+  required bool dslr                                                       = 8;
+                                                                          
+  required double trigger_takeoff                                          = 9;
+  required double trigger_hold                                             = 10;
+  required double trigger_offboard                                         = 11;
+  required double trigger_rtl                                              = 12;
+  required double trigger_land                                             = 13;
+  required double trigger_arm                                              = 14;
+  required double trigger_disarm                                           = 15;
+}
