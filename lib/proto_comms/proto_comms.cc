@@ -9,17 +9,21 @@ ProtoSender::ProtoSender(const char *bind_address)
   socket_.connect(bind_address);
 }
 
-void ProtoSender::Send(::zmq::message_t *message) {
-  socket_.send(*message);
+void ProtoSender::Send(::std::string message) {
+  ::zmq::message_t message_zmq(message.size());
+  memcpy((void *)message_zmq.data(), message.c_str(), message.size());
+  socket_.send(message_zmq);
 }
 
 // Receiver ////////////////////////////////////////////////////////////////////
 ProtoReceiver::ProtoReceiver(const char *bind_address, size_t max_size)
     : socket_(context_, ZMQ_SUB),
       thread_(&ProtoReceiver::ReceiveThread, this), max_size_(max_size) {
+
   socket_.bind(bind_address);
-  int linger = 0;
   socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
+
+  int linger = 0;
   socket_.setsockopt(ZMQ_LINGER, &linger, sizeof (linger));
 }
 
@@ -40,8 +44,6 @@ void ProtoReceiver::ReceiveThread() {
       ::std::string new_message_str(
           static_cast<char *>(new_message.data()), new_message.size());
 
-      ::std::cout << "GOT " << new_message_str << ::std::endl;
-
       received_messages_.push(new_message_str);
     } catch(zmq::error_t& e) {
       break;
@@ -51,8 +53,6 @@ void ProtoReceiver::ReceiveThread() {
       received_messages_.pop();
     }
   }
-
-  ::std::cout << "JOIN!\n";
 }
 
 ::std::string ProtoReceiver::GetLatest() {

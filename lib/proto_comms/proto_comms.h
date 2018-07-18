@@ -1,5 +1,4 @@
-#ifndef LIB_PROTO_COMMS_PROTO_COMMS_H_
-#define LIB_PROTO_COMMS_PROTO_COMMS_H_
+#pragma once
 
 #include <atomic>
 #include <functional>
@@ -10,6 +9,8 @@
 
 #include "zmq.hpp"
 
+#include "lib/proto_comms/proto_comms.h"
+
 namespace lib {
 namespace proto_comms {
 
@@ -17,7 +18,7 @@ class ProtoSender {
  public:
   ProtoSender(const char *bind_address);
 
-  void Send(::zmq::message_t *message);
+  void Send(::std::string message);
 
  private:
   ::zmq::context_t context_;
@@ -36,7 +37,7 @@ class ProtoReceiver {
 
  private:
   void ReceiveThread();
-
+  
   ::std::atomic<bool> run_{true};
 
   ::zmq::context_t context_;
@@ -50,5 +51,3 @@ class ProtoReceiver {
 
 } // namespace proto_comms
 } // namespace lib
-
-#endif // LIB_PROTO_COMMS_PROTO_COMMS_H_
