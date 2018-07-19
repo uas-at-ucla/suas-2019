@@ -173,7 +173,6 @@ def run_build(args=None, show_complete=True):
                 "-v $(pwd):/home/uas/code_env/ " \
                 "-v $(pwd)/tools/docker/cache/bazel:" \
                     "/home/uas/.cache/bazel/_bazel_uas " \
-                "-p 14556:14556/udp " \
                 "--name uas_env " \
                 "--env=LOCAL_USER_ID=\"$(id -u)\" " \
                 "uas-at-ucla_software \"bazel | tail -f /dev/null\"")
@@ -229,17 +228,16 @@ def run_simulate(args):
             "https://github.com/PX4/Firmware.git " \
             "tools/docker/cache/px4_firmware;fi")
 
-#   processes.spawn_process("docker run --rm -t " \
-#           "--env=LOCAL_USER_ID=\"$(id -u)\" " \
-#           "-v $(pwd)/tools/docker/cache/px4_firmware:/src/firmware/:rw " \
-#           "-v /tmp/.X11-unix:/tmp/.X11-unix:ro " \
-#           "-e DISPLAY=:0 "\
-#           "-p 14556:14556/udp " \
-#           "--name uas_sim " \
-#           "--network host " \
-#           "px4io/px4-dev-ros:2017-10-23 " \
-#           "/bin/sh -c \"cd /src/firmware;" \
-#           "HEADLESS=1 make posix_sitl_default gazebo\"", allow_input=False)
+    processes.spawn_process("docker run --rm -t " \
+            "--env=LOCAL_USER_ID=\"$(id -u)\" " \
+            "-v $(pwd)/tools/docker/cache/px4_firmware:/src/firmware/:rw " \
+            "-v /tmp/.X11-unix:/tmp/.X11-unix:ro " \
+            "-e DISPLAY=:0 "\
+            "--name uas_sim " \
+            "-p 14556:14556/udp " \
+            "px4io/px4-dev-ros:2017-10-23 " \
+            "/bin/sh -c \"cd /src/firmware;" \
+            "HEADLESS=1 make posix_sitl_default gazebo\"", allow_input=False)
 
     docker_prefix_cmd = "docker exec -t $(docker ps " \
             "--filter status=running " \
@@ -253,37 +251,52 @@ def run_simulate(args):
             "--format \\\"{{.ID}}\\\" " \
             "--latest) "
 
-    run_cmd_exit_failure("tmux start-server")
-    run_cmd_exit_failure("tmux kill-session -t uas_env")
-    run_cmd_exit_failure("tmux -2 new-session -d -s uas_env")
-    run_cmd_exit_failure("tmux split-window -h -t uas_env")
-    run_cmd_exit_failure("tmux split-window -v -t uas_env")
-    run_cmd_exit_failure("tmux split-window -v -t uas_env")
-    run_cmd_exit_failure("tmux select-pane -t uas_env -L")
-    run_cmd_exit_failure("tmux split-window -v -t uas_env")
-    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-    run_cmd_exit_failure(docker_prefix_cmd + "ipcrm --all")
-    run_cmd_exit_failure(docker_prefix_cmd \
-            + "./lib/scripts/bazel_run.sh //aos/linux_code:core", \
+#   run_cmd_exit_failure("tmux start-server")
+#   run_cmd_exit_failure("tmux kill-session -t uas_env")
+#   run_cmd_exit_failure("tmux -2 new-session -d -s uas_env")
+#   run_cmd_exit_failure("tmux split-window -h -t uas_env")
+#   run_cmd_exit_failure("tmux split-window -v -t uas_env")
+#   run_cmd_exit_failure("tmux split-window -v -t uas_env")
+#   run_cmd_exit_failure("tmux select-pane -t uas_env -L")
+#   run_cmd_exit_failure("tmux split-window -v -t uas_env")
+#   run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+#   run_cmd_exit_failure(docker_prefix_cmd + "ipcrm --all")
+
+    print(docker_prefix_cmd \
+            + "/home/uas/.local/bin/mavproxy.py --nowait --show-errors " \
+            "--master udpout:172.17.0.3:14557 " \
+            "--out udp:0.0.0.0:8084 " \
+            "--out udpbcast:172.17.0.2:8085 " \
+            "--non-interactive")#, \
+#           show_output=True, \
+#           allow_input=False)
+
+    processes.spawn_process(docker_prefix_cmd \
+            + "./lib/scripts/bazel_run.sh //src/control/io:io", \
             show_output=True, \
             allow_input=False)
 
-    run_cmd_exit_failure("tmux send-keys \"docker run --rm -t " \
-            "--env=LOCAL_USER_ID=\\\"$(id -u)\\\" " \
-            "-v $(pwd)/tools/docker/cache/px4_firmware:/src/firmware/:rw " \
-            "-v /tmp/.X11-unix:/tmp/.X11-unix:ro " \
-            "-e DISPLAY=:0 "\
-            "-p 14556:14556/udp " \
-            "--name uas_sim " \
-            "--network host " \
-            "px4io/px4-dev-ros:2017-10-23 " \
-            "/bin/sh -c \\\"cd /src/firmware;" \
-            "HEADLESS=1 make posix_sitl_default gazebo\\\"\" C-m")
+    processes.spawn_process(docker_prefix_cmd \
+            + "./lib/scripts/bazel_run.sh //src/control/loops:flight_loop", \
+            show_output=True, \
+            allow_input=False)
 
-    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+#   run_cmd_exit_failure("tmux send-keys \"docker run --rm -t " \
+#           "--env=LOCAL_USER_ID=\\\"$(id -u)\\\" " \
+#           "-v $(pwd)/tools/docker/cache/px4_firmware:/src/firmware/:rw " \
+#           "-v /tmp/.X11-unix:/tmp/.X11-unix:ro " \
+#           "-e DISPLAY=:0 "\
+#           "-p 14556:14556/udp " \
+#           "--name uas_sim " \
+#           "--network host " \
+#           "px4io/px4-dev-ros:2017-10-23 " \
+#           "/bin/sh -c \\\"cd /src/firmware;" \
+#           "HEADLESS=1 make posix_sitl_default gazebo\\\"\" C-m")
 
-    run_cmd_exit_failure("tmux send-keys \"" + docker_prefix_tmux_cmd \
-            + "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop\"")
+#   run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+
+#   run_cmd_exit_failure("tmux send-keys \"" + docker_prefix_tmux_cmd \
+#           + "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop\"")
 
     while True:
         time.sleep(1)
@@ -343,7 +356,7 @@ def run_ground(args):
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
-    #print(UAS_AT_UCLA_TEXT)
+    print(UAS_AT_UCLA_TEXT)
 
     parser = argparse.ArgumentParser()
 
