@@ -33,13 +33,25 @@ void FlightLoop::Iterate() { RunIteration(); }
 void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 
 void FlightLoop::RunIteration() {
+  const int iterations = phased_loop_.SleepUntilNext();
+  if (iterations < 0) {
+    std::cout << "SKIPPED ITERATIONS\n";
+  }
+
+  double current_time =
+      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+          ::std::chrono::system_clock::now().time_since_epoch())
+          .count() *
+      1e-9;
+
   // Get latest telemetry.
   ::src::control::Sensors sensors;
   {
     ::std::string sensors_serialized = telemetry_receiver_.GetLatest();
 
     if (sensors_serialized == "") {
-      ::std::cout << "NO SENSORS!\n";
+      ::std::cout << "NO SENSORS @ " << ::std::setprecision(20)
+        << current_time << "\n";
       return;
     }
 
@@ -61,12 +73,6 @@ void FlightLoop::RunIteration() {
 
   got_sensors_ = true;
   State next_state = state_;
-
-  double current_time =
-      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
-          ::std::chrono::system_clock::now().time_since_epoch())
-          .count() *
-      1e-9;
 
   LOG_LINE("Flight Loop dt: " << std::setprecision(14)
                               << current_time - last_loop_ - 0.01);
@@ -301,13 +307,8 @@ void FlightLoop::RunIteration() {
            << " State: " << status.state()
            << " FlightTime: " << status.flight_time()
            << " CurrentCommandIndex: " << status.current_command_index());
-
   //TODO(comran): Send status.
 
-  const int iterations = phased_loop_.SleepUntilNext();
-  if (iterations < 0) {
-    std::cout << "SKIPPED ITERATIONS\n";
-  }
 }
 
 void FlightLoop::EndFlightTimer() {

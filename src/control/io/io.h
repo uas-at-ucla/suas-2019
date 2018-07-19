@@ -7,6 +7,7 @@
 #include "src/control/io/loop_output_handler.h"
 
 #include <atomic>
+#include <iomanip>
 #include <unistd.h>
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
@@ -82,6 +83,8 @@ class AutopilotOutputWriter : public LoopOutputHandler {
   bool did_land_;
   bool did_arm_;
   bool did_disarm_;
+
+  ::lib::proto_comms::ProtoReceiver output_receiver_;
 };
 
 class IO {

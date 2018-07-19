@@ -15,10 +15,7 @@ TEST(ProtoCommsTest, SendReceiveTest) {
 
   usleep(1e6);
 
-  ::zmq::message_t message_zmq(4);
-  memcpy((void *)message_zmq.data(), "test", 4);
-
-  tx.Send(&message_zmq);
+  tx.Send("test");
   usleep(1e4);
   ::std::string latest = rx.GetLatest();
 
@@ -35,10 +32,7 @@ TEST(ProtoCommsTest, SendReceiveMultipleTest) {
     std::ostringstream s;
     s << "TEST" << i;
 
-    ::zmq::message_t message_zmq(s.str().size());
-    memcpy((void *)message_zmq.data(), s.str().c_str(), s.str().size());
-
-    tx.Send(&message_zmq);
+    tx.Send(s.str());
   }
 
   usleep(1e4);
