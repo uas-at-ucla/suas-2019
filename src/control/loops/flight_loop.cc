@@ -15,28 +15,18 @@ namespace loops {
 int kFlightLoopFrequency = 1e2;
 
 FlightLoop::FlightLoop()
-    : state_(STANDBY),
-      running_(false),
+    : state_(STANDBY), running_(false),
       phased_loop_(::std::chrono::milliseconds(
                        static_cast<int>(1e3 / kFlightLoopFrequency)),
                    ::std::chrono::milliseconds(0)),
-      start_(std::chrono::system_clock::now()),
-      takeoff_ticker_(0),
-      verbose_(false),
-      previous_flights_time_(0),
-      current_flight_start_time_(0),
-      alarm_(kFlightLoopFrequency),
-      got_sensors_(false),
-      last_loop_(0),
-      did_alarm_(false),
-      did_arm_(false),
-      last_bomb_drop_(0),
-      last_dslr_(0),
+      start_(std::chrono::system_clock::now()), takeoff_ticker_(0),
+      verbose_(false), previous_flights_time_(0), current_flight_start_time_(0),
+      alarm_(kFlightLoopFrequency), got_sensors_(false), last_loop_(0),
+      did_alarm_(false), did_arm_(false), last_bomb_drop_(0), last_dslr_(0),
       telemetry_receiver_("ipc:///tmp/uasatucla_telemetry.ipc", 5),
       goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", 5),
       status_sender_("ipc:///tmp/uasatucla_status.ipc"),
-      output_sender_("ipc:///tmp/uasatucla_output.ipc") {
-}
+      output_sender_("ipc:///tmp/uasatucla_output.ipc") {}
 
 void FlightLoop::Iterate() { RunIteration(); }
 
@@ -44,22 +34,32 @@ void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 
 void FlightLoop::RunIteration() {
   // Get latest telemetry.
-  ::src::control::Sensors telemetry;
+  ::src::control::Sensors sensors;
   {
     ::std::string sensors_serialized = telemetry_receiver_.GetLatest();
 
-    if(sensors_serialized == "") {
+    if (sensors_serialized == "") {
       ::std::cout << "NO SENSORS!\n";
       return;
     }
 
-    telemetry.ParseFromString(sensors_serialized);
+    sensors.ParseFromString(sensors_serialized);
   }
 
-  ::src::control::loops::flight_loop_queue.goal.FetchLatest();
+  // Get latest goal.
+  ::src::control::Goal goal;
+  {
+    ::std::string goal_serialized = goal_receiver_.GetLatest();
+
+    if (goal_serialized == "") {
+      ::std::cout << "NO GOAL!\n";
+      return;
+    }
+
+    goal.ParseFromString(goal_serialized);
+  }
 
   got_sensors_ = true;
-
   State next_state = state_;
 
   double current_time =
@@ -67,56 +67,39 @@ void FlightLoop::RunIteration() {
           ::std::chrono::system_clock::now().time_since_epoch())
           .count() *
       1e-9;
+
   LOG_LINE("Flight Loop dt: " << std::setprecision(14)
                               << current_time - last_loop_ - 0.01);
+
   if (current_time - last_loop_ > 0.01 + 0.002) {
     LOG_LINE("Flight LOOP RUNNING SLOW: dt: "
              << std::setprecision(14) << current_time - last_loop_ - 0.01);
   }
   last_loop_ = current_time;
 
-  auto output = ::src::control::loops::flight_loop_queue.output.MakeMessage();
   ::src::control::Output output = ::src::control::Output();
 
   output.set_gimbal_angle(0.15);
 
-  if (!::src::control::loops::flight_loop_queue.goal.get()) {
-    ::std::cerr << "NO GOAL!\n";
+  output.set_trigger_takeoff(goal.trigger_takeoff());
+  output.set_trigger_hold(goal.trigger_hold());
+  output.set_trigger_offboard(goal.trigger_offboard());
+  output.set_trigger_rtl(goal.trigger_rtl());
+  output.set_trigger_land(goal.trigger_land());
+  output.set_trigger_arm(goal.trigger_arm());
+  output.set_trigger_disarm(goal.trigger_disarm());
 
-    const int iterations = phased_loop_.SleepUntilNext();
-    if (iterations < 0) {
-      std::cout << "SKIPPED ITERATIONS\n";
-    }
-    return;
-  } else {
-    output->trigger_takeoff =
-        ::src::control::loops::flight_loop_queue.goal->trigger_takeoff;
-    output->trigger_hold =
-        ::src::control::loops::flight_loop_queue.goal->trigger_hold;
-    output->trigger_offboard =
-        ::src::control::loops::flight_loop_queue.goal->trigger_offboard;
-    output->trigger_rtl =
-        ::src::control::loops::flight_loop_queue.goal->trigger_rtl;
-    output->trigger_land =
-        ::src::control::loops::flight_loop_queue.goal->trigger_land;
-    output->trigger_arm =
-        ::src::control::loops::flight_loop_queue.goal->trigger_arm;
-    output->trigger_disarm =
-        ::src::control::loops::flight_loop_queue.goal->trigger_disarm;
-  }
-
-  if (::src::control::loops::flight_loop_queue.goal->trigger_failsafe) {
+  if (goal.trigger_failsafe()) {
     EndFlightTimer();
     next_state = FAILSAFE;
   }
 
-  if (::src::control::loops::flight_loop_queue.goal->trigger_throttle_cut) {
+  if (goal.trigger_throttle_cut()) {
     EndFlightTimer();
     next_state = FLIGHT_TERMINATION;
   }
 
-  if (::src::control::loops::flight_loop_queue.goal->trigger_alarm + 0.05 >
-      current_time) {
+  if (goal.trigger_alarm() + 0.05 > current_time) {
     if (!did_alarm_) {
       did_alarm_ = true;
       alarm_.AddAlert({0.30, 0.30});
@@ -127,155 +110,142 @@ void FlightLoop::RunIteration() {
   }
 
   // Check if the Pixhawk just got armed, and send out a chirp if it did.
-  if (::src::control::loops::flight_loop_queue.sensors->armed && !did_arm_) {
+  if (sensors.armed() && !did_arm_) {
     did_arm_ = true;
 
     alarm_.AddAlert({0.03, 0.25});
   }
 
-  if (!::src::control::loops::flight_loop_queue.sensors->armed) {
+  if (!sensors.armed()) {
     did_arm_ = false;
   }
 
   // Set defaults for all outputs.
-  output->velocity_x = 0;
-  output->velocity_y = 0;
-  output->velocity_z = 0;
-  output->yaw = 0;
+  output.set_velocity_x(0);
+  output.set_velocity_y(0);
+  output.set_velocity_z(0);
+  output.set_yaw_setpoint(0);
+  output.set_alarm(false);
 
-  output->alarm = false;
-
-  bool run_mission = ::src::control::loops::flight_loop_queue.goal->run_mission;
+  bool run_mission = goal.run_mission();
 
   switch (state_) {
-    case STANDBY:
-      if (run_mission) {
-        next_state = ARMING;
-      }
-      break;
+  case STANDBY:
+    if (run_mission) {
+      next_state = ARMING;
+    }
+    break;
 
-    case ARMING:
-      // Check if we have GPS.
-      if (::src::control::loops::flight_loop_queue.sensors->last_gps <
-          current_time - 0.5) {
-        LOG_LINE("can't arm; no GPS (last gps: "
-                 << ::src::control::loops::flight_loop_queue.sensors->last_gps
-                 << " current time: " << current_time);
+  case ARMING:
+    // Check if we have GPS.
+    if (sensors.last_gps() < current_time - 0.5) {
+      LOG_LINE("can't arm; no GPS (last gps: "
+               << sensors.last_gps() << " current time: " << current_time);
 
-        next_state = STANDBY;
-        break;
-      }
-
-      if (!run_mission) {
-        next_state = LANDING;
-        break;
-      }
-
-      if (::src::control::loops::flight_loop_queue.sensors->armed) {
-        next_state = ARMED;
-        break;
-      }
-      break;
-
-    case ARMED:
-      if (!run_mission) {
-        next_state = LANDING;
-        break;
-      }
-
-      if (!::src::control::loops::flight_loop_queue.sensors->armed) {
-        next_state = ARMING;
-        break;
-      }
-
-      current_flight_start_time_ =
-          std::chrono::duration_cast<std::chrono::milliseconds>(
-              std::chrono::system_clock::now().time_since_epoch())
-              .count();
-      next_state = TAKING_OFF;
-      break;
-
-    case TAKING_OFF:
-      if (!run_mission) {
-        takeoff_ticker_ = 0;
-        next_state = LANDING;
-        break;
-      }
-
-      if (!::src::control::loops::flight_loop_queue.sensors->armed) {
-        takeoff_ticker_ = 0;
-        next_state = ARMING;
-        break;
-      }
-
-      if (::src::control::loops::flight_loop_queue.sensors->relative_altitude <
-          0.3) {
-        takeoff_ticker_++;
-      }
-
-      if (::src::control::loops::flight_loop_queue.sensors->relative_altitude >
-          2.2) {
-        takeoff_ticker_ = 0;
-        next_state = IN_AIR;
-      }
-      break;
-
-    case IN_AIR: {
-      Position3D position = {
-          ::src::control::loops::flight_loop_queue.sensors->latitude,
-          ::src::control::loops::flight_loop_queue.sensors->longitude,
-          ::src::control::loops::flight_loop_queue.sensors->relative_altitude};
-
-      ::Eigen::Vector3d velocity(
-          ::src::control::loops::flight_loop_queue.sensors->velocity_x,
-          ::src::control::loops::flight_loop_queue.sensors->velocity_y,
-          ::src::control::loops::flight_loop_queue.sensors->velocity_z);
-
-      pilot::PilotOutput pilot_output =
-          pilot_.Calculate(position, velocity);
-
-      last_bomb_drop_ = pilot_output.bomb_drop ? current_time : last_bomb_drop_;
-
-      if(pilot_output.alarm) {
-        alarm_.AddAlert({5.0, 0.50});
-      }
-
-      output->velocity_x = pilot_output.flight_velocities.x;
-      output->velocity_y = pilot_output.flight_velocities.y;
-      output->velocity_z = pilot_output.flight_velocities.z;
-      output->yaw = pilot_output.yaw;
+      next_state = STANDBY;
       break;
     }
 
-    case LANDING:
-      if (!::src::control::loops::flight_loop_queue.sensors->armed) {
-        EndFlightTimer();
-        next_state = STANDBY;
-        break;
-      }
-
-      if (::src::control::loops::flight_loop_queue.goal->run_mission &&
-          ::src::control::loops::flight_loop_queue.sensors->relative_altitude >
-              5.0) {
-        next_state = IN_AIR;
-        break;
-      }
-
+    if (!run_mission) {
+      next_state = LANDING;
       break;
+    }
 
-    case FAILSAFE:
+    if (sensors.armed()) {
+      next_state = ARMED;
       break;
+    }
+    break;
 
-    case FLIGHT_TERMINATION:
+  case ARMED:
+    if (!run_mission) {
+      next_state = LANDING;
       break;
+    }
+
+    if (!sensors.armed()) {
+      next_state = ARMING;
+      break;
+    }
+
+    current_flight_start_time_ =
+        std::chrono::duration_cast<std::chrono::milliseconds>(
+            std::chrono::system_clock::now().time_since_epoch())
+            .count();
+    next_state = TAKING_OFF;
+    break;
+
+  case TAKING_OFF:
+    if (!run_mission) {
+      takeoff_ticker_ = 0;
+      next_state = LANDING;
+      break;
+    }
+
+    if (!sensors.armed()) {
+      takeoff_ticker_ = 0;
+      next_state = ARMING;
+      break;
+    }
+
+    if (sensors.relative_altitude() < 0.3) {
+      takeoff_ticker_++;
+    }
+
+    if (sensors.relative_altitude() > 2.2) {
+      takeoff_ticker_ = 0;
+      next_state = IN_AIR;
+    }
+    break;
+
+  case IN_AIR: {
+    Position3D position = {sensors.latitude(), sensors.longitude(),
+                           sensors.relative_altitude()};
+
+    ::Eigen::Vector3d velocity(sensors.velocity_x(), sensors.velocity_y(),
+                               sensors.velocity_z());
+
+    pilot::PilotOutput pilot_output = pilot_.Calculate(position, velocity);
+
+    last_bomb_drop_ = pilot_output.bomb_drop ? current_time : last_bomb_drop_;
+
+    if (pilot_output.alarm) {
+      alarm_.AddAlert({5.0, 0.50});
+    }
+
+    output.set_velocity_x(pilot_output.flight_velocities.x);
+    output.set_velocity_y(pilot_output.flight_velocities.y);
+    output.set_velocity_z(pilot_output.flight_velocities.z);
+    output.set_yaw_setpoint(pilot_output.yaw);
+    break;
+  }
+
+  case LANDING:
+    if (!sensors.armed()) {
+      EndFlightTimer();
+      next_state = STANDBY;
+      break;
+    }
+
+    if (goal.run_mission() && sensors.relative_altitude() > 5.0) {
+      next_state = IN_AIR;
+      break;
+    }
+
+    break;
+
+  case FAILSAFE:
+    break;
+
+  case FLIGHT_TERMINATION:
+    break;
   }
 
   // Land if the GPS data is old.
-  if (next_state == IN_AIR &&
-      ::src::control::loops::flight_loop_queue.sensors->last_gps <
+  if (next_state == IN_AIR && sensors.last_gps() <
           current_time - 0.5) {
     LOG_LINE("no GPS; landing (last gps: "
-             << ::src::control::loops::flight_loop_queue.sensors->last_gps
+             << sensors.last_gps()
              << " current time: " << current_time);
 
     next_state = LANDING;
@@ -288,53 +258,51 @@ void FlightLoop::RunIteration() {
 
   state_ = next_state;
 
-  output->alarm = alarm_.ShouldAlarm();
+  output.set_alarm(alarm_.ShouldAlarm());
 
   // Handle bomb drop.
   last_bomb_drop_ = ::std::max(
-      last_bomb_drop_,
-      ::src::control::loops::flight_loop_queue.goal->trigger_bomb_drop);
+      last_bomb_drop_, goal.trigger_bomb_drop());
 
-  output->bomb_drop = false;
+  output.set_bomb_drop(false);
   if (last_bomb_drop_ <= current_time && last_bomb_drop_ + 5.0 > current_time) {
-    output->bomb_drop = true;
+    output.set_bomb_drop(true);
   }
 
   // Handle dslr.
-  output->dslr = false;
+  output.set_dslr(false);
   last_dslr_ = ::std::max(
-      last_dslr_, ::src::control::loops::flight_loop_queue.goal->trigger_dslr);
+      last_dslr_, goal.trigger_dslr());
   if (last_dslr_ <= current_time && last_dslr_ + 15.0 > current_time) {
-    output->dslr = true;
+    output.set_dslr(true);
   }
 
   LOG_LINE("Flight loop iteration OUTPUT..."
-           << " VelocityX: " << output->velocity_x << " VelocityY: "
-           << output->velocity_y << " VelocityZ: " << output->velocity_z);
+           << " VelocityX: " << output.velocity_x() << " VelocityY: "
+           << output.velocity_y() << " VelocityZ: " << output.velocity_z());
 
-  output.Send();
+  //TODO(comran): Send output.
 
-  auto status = ::src::control::loops::flight_loop_queue.status.MakeMessage();
-  status->state = next_state;
-  status->current_command_index = 0;
+  ::src::control::Status status = ::src::control::Status();
+  status.set_state(next_state);
+  status.set_current_command_index(0);
 
   if (current_flight_start_time_ == 0) {
-    status->flight_time = previous_flights_time_;
+    status.set_flight_time(previous_flights_time_);
   } else {
-    status->flight_time =
-        previous_flights_time_ +
+    status.set_flight_time(previous_flights_time_ +
         (std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::system_clock::now().time_since_epoch())
              .count() -
-         current_flight_start_time_);
+         current_flight_start_time_));
   }
 
   LOG_LINE("Flight loop iteration STATUS... "
-           << " State: " << status->state
-           << " FlightTime: " << status->flight_time
-           << " CurrentCommandIndex: " << status->current_command_index);
+           << " State: " << status.state()
+           << " FlightTime: " << status.flight_time()
+           << " CurrentCommandIndex: " << status.current_command_index());
 
-  status.Send();
+  //TODO(comran): Send status.
 
   const int iterations = phased_loop_.SleepUntilNext();
   if (iterations < 0) {
@@ -361,6 +329,6 @@ void FlightLoop::Run() {
   }
 }
 
-}  // namespace loops
-}  // namespace control
-}  // namespace src
+} // namespace loops
+} // namespace control
+} // namespace src
