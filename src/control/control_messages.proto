@@ -38,8 +38,6 @@ message Sensors {
   required bool armed                                                      = 25;
   required int32 autopilot_state                                           = 26;
                                                                           
-  required int32 state                                                     = 27;
-                                                                          
   required double last_gps                                                 = 28;
 }                                                                         
                                                                           

@@ -119,10 +119,15 @@ RUN ./autogen.sh && ./configure CFLAGS='-g -O2' \
 RUN make
 RUN sudo make install
 
+RUN pip2.7 install --user mavproxy
+
 WORKDIR /home/uas/code_env
 
 RUN rm -rf /home/uas/mavlink-router
 
 ENTRYPOINT bazel && sleep infinity
+
+EXPOSE 8085/udp
+EXPOSE 8086/udp
 
 # NOTE: Make sure to run "xhost +" for gui.
