@@ -164,11 +164,12 @@ def run_build(args=None, show_complete=True):
     if not is_uasatucla_dev_env_running():
         print_update("Building UAS@UCLA software env docker...")
         # Build the image for our docker environment.
+        # Add --no-cache to avoid using cache.
         processes.spawn_process("docker build -t uas-at-ucla_software " \
                 "tools/docker")
         processes.wait_for_complete()
 
-        print("docker run -it -d --rm " \
+        run_cmd_exit_failure("docker run -it -d --rm " \
                 "-v $(pwd):/home/uas/code_env/ " \
                 "-v $(pwd)/tools/docker/cache/bazel:" \
                     "/home/uas/.cache/bazel/_bazel_uas " \
@@ -342,7 +343,7 @@ def run_ground(args):
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
-    print(UAS_AT_UCLA_TEXT)
+    #print(UAS_AT_UCLA_TEXT)
 
     parser = argparse.ArgumentParser()
 
