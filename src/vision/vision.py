@@ -158,13 +158,14 @@ server_data_dir = None
 
 
 class ServerWorker(threading.Thread):
-    def __init__(self, in_q):  # accept args anyway even if not used
+    def __init__(self, in_q, data_dir):  # accept args anyway even if not used
         super(ServerWorker, self).__init__()
         self.in_q = in_q  # input queue (queue.Queue)
+        self.data_dir = data_dir
         self.stop_req = threading.Event()  # listen for a stop request
 
     def run(self):
-        sql_connection = sqlite3.connect('image_info.db')
+        sql_connection = sqlite3.connect(os.path.join(self.data_dir, 'image_info.db'))
         sql_cursor = sql_connection.cursor()
         with sql_connection:
             # testing
@@ -705,7 +706,7 @@ def server_worker(args):
     global img_count
     img_count = len(os.listdir(args.data_dir))
     global s_worker
-    s_worker = ServerWorker(server_task_queue)
+    s_worker = ServerWorker(in_q=server_task_queue, data_dir=args.data_dir)
     s_worker.start()
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
     vision_socketio_server.run(socketio_app, '0.0.0.0', port=int(args.port), log_output=False)
