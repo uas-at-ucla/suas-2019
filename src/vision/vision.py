@@ -24,7 +24,7 @@ import process_manager
 
 # Yolo dependencies
 sys.path.insert(0, './localizer')
-from localizer.darkflow.net.build import TFNet  # yolo neural net
+from darkflow.net.build import TFNet  # yolo neural net
 import cv2  # reading images
 
 # Classification dependencies
