@@ -1,5 +1,4 @@
-#ifndef SPINNY_CONTROL_IO_IO_H_
-#define SPINNY_CONTROL_IO_IO_H_
+#pragma once
 
 #include "src/control/io/autopilot_interface/autopilot_interface.h"
 
@@ -21,7 +20,7 @@
 #include "lib/dslr_interface/dslr_interface.h"
 #include "lib/logger/log_sender.h"
 #include "lib/proto_comms/proto_comms.h"
-#include "src/control/control_messages.pb.h"
+#include "src/control/messages.pb.h"
 
 namespace src {
 namespace control {
@@ -104,5 +103,3 @@ class IO {
 } // namespace io
 } // namespace control
 } // namespace src
-
-#endif // SPINNY_CONTROL_IO_IO_H_

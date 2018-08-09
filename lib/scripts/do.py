@@ -73,12 +73,30 @@ def signal_received(signal, frame):
 
     status = "Signal received (" + str(signal) + ") - killing all spawned " \
             "processes\n"
+
     if processes.spawn_process_wait_for_code("docker kill $(docker ps " \
             "--filter status=running " \
             "--format \"{{.ID}}\" " \
             "--filter name=uas_sim " \
             "--latest)", show_output=False, allow_input=False) == 0:
         status += "Killed simulator (docker)\n"
+
+    if processes.spawn_process_wait_for_code( \
+            "tmux kill-session -t uas_env", \
+            show_output=False, allow_input=False) == 0:
+        status += "Killed tmux\n"
+
+    DOCKER_PREFIX_CMD = "docker exec -t $(docker ps " \
+            "--filter status=running " \
+            "--filter name=uas_env " \
+            "--format \"{{.ID}}\" " \
+            "--latest) "
+
+    if processes.spawn_process_wait_for_code( \
+            DOCKER_PREFIX_CMD + \
+            "bash lib/scripts/docker_exec_kill.sh", \
+            show_output=False, allow_input=False) == 0:
+        status += "Killed screen sessions within uas_env\n"
 
     status += processes.killall()
     print_update(status, "FAILURE")
@@ -165,44 +183,51 @@ def run_build(args=None, show_complete=True):
         print_update("Building UAS@UCLA software env docker...")
         # Build the image for our docker environment.
         # Add --no-cache to avoid using cache.
-        processes.spawn_process("docker build -t uas-at-ucla_software " \
+        run_cmd_exit_failure("docker build -t uas-at-ucla_software " \
                 "tools/docker")
-        processes.wait_for_complete()
 
-        run_cmd_exit_failure("docker run -it -d --rm " \
+        run_cmd_exit_failure("docker network create -d bridge uas_bridge " \
+                " > /dev/null || true")
+
+        run_cmd_exit_failure("docker run " \
+                "-it " \
+                "-d " \
+                "--rm " \
+                "--net uas_bridge " \
                 "-v $(pwd):/home/uas/code_env/ " \
                 "-v $(pwd)/tools/docker/cache/bazel:" \
                     "/home/uas/.cache/bazel/_bazel_uas " \
                 "--name uas_env " \
                 "--env=LOCAL_USER_ID=\"$(id -u)\" " \
-                "uas-at-ucla_software \"bazel | tail -f /dev/null\"")
+                "uas-at-ucla_software " \
+                "\"bazel | tail -f /dev/null\"")
 
     while not is_uasatucla_dev_env_running():
         time.sleep(0.25)
 
     # Execute the build commands in the running docker image.
-    docker_prefix_cmd = "docker exec -t $(docker ps " \
+    DOCKER_PREFIX_CMD = "docker exec -t $(docker ps " \
             "--filter status=running " \
             "--filter name=uas_env " \
             "--format \"{{.ID}}\" " \
             "--latest) "
 
     print_update("Building src directory...")
-    run_cmd_exit_failure(docker_prefix_cmd + "bazel build //src/...")
+    run_cmd_exit_failure(DOCKER_PREFIX_CMD + "bazel build //src/...")
 
     print_update("\n\nBuilding lib directory...")
-    run_cmd_exit_failure(docker_prefix_cmd + "bazel build //lib/...")
+    run_cmd_exit_failure(DOCKER_PREFIX_CMD + "bazel build //lib/...")
 
     print_update("\n\nBuilding shm core...")
-    run_cmd_exit_failure(docker_prefix_cmd + \
+    run_cmd_exit_failure(DOCKER_PREFIX_CMD + \
             "bazel build //aos/linux_code:core")
 
     print_update("\n\nBuilding src for raspi...")
-    run_cmd_exit_failure(docker_prefix_cmd + \
+    run_cmd_exit_failure(DOCKER_PREFIX_CMD + \
             "bazel build --cpu=raspi //src/...")
 
     print_update("\n\nBuilding shm core for raspi...")
-    run_cmd_exit_failure(docker_prefix_cmd + \
+    run_cmd_exit_failure(DOCKER_PREFIX_CMD + \
             "bazel build --cpu=raspi //aos/linux_code:core")
 
     if show_complete:
@@ -211,134 +236,149 @@ def run_build(args=None, show_complete=True):
 
 
 def run_simulate(args):
-    print_update("Building the code...")
-
-    run_build(show_complete=False)
-
-    print_update("Build complete! Starting simulator...")
-
-    kill_running_simulators()
-
-    print_update("Building UAS@UCLA software env docker...")
-
-    # Build the image for our docker environment.
-    processes.spawn_process("pwd")
-    run_cmd_exit_failure("if [ ! -d tools/docker/cache/px4_firmware ];" \
-            "then git clone " \
-            "https://github.com/PX4/Firmware.git " \
-            "tools/docker/cache/px4_firmware;fi")
-
-    processes.spawn_process("docker run --rm -t " \
-            "--env=LOCAL_USER_ID=\"$(id -u)\" " \
-            "-v $(pwd)/tools/docker/cache/px4_firmware:/src/firmware/:rw " \
-            "-v /tmp/.X11-unix:/tmp/.X11-unix:ro " \
-            "-e DISPLAY=:0 "\
-            "--name uas_sim " \
-            "-p 14556:14556/udp " \
-            "px4io/px4-dev-ros:2017-10-23 " \
-            "/bin/sh -c \"cd /src/firmware;" \
-            "HEADLESS=1 make posix_sitl_default gazebo\"", allow_input=False)
-
-    docker_prefix_cmd = "docker exec -t $(docker ps " \
+    DOCKER_PREFIX_CMD = "./lib/scripts/docker_exec.sh " \
+            "$(docker ps " \
             "--filter status=running " \
             "--filter name=uas_env " \
             "--format \"{{.ID}}\" " \
             "--latest) "
 
-    docker_prefix_tmux_cmd = "docker exec -t $(docker ps " \
-            "--filter status=running " \
-            "--filter name=uas_env " \
-            "--format \\\"{{.ID}}\\\" " \
-            "--latest) "
+    print_update("Building the code...")
+    run_build(show_complete=False)
 
-#   run_cmd_exit_failure("tmux start-server")
-#   run_cmd_exit_failure("tmux kill-session -t uas_env")
-#   run_cmd_exit_failure("tmux -2 new-session -d -s uas_env")
-#   run_cmd_exit_failure("tmux split-window -h -t uas_env")
-#   run_cmd_exit_failure("tmux split-window -v -t uas_env")
-#   run_cmd_exit_failure("tmux split-window -v -t uas_env")
-#   run_cmd_exit_failure("tmux select-pane -t uas_env -L")
-#   run_cmd_exit_failure("tmux split-window -v -t uas_env")
-#   run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-#   run_cmd_exit_failure(docker_prefix_cmd + "ipcrm --all")
+    print_update("Build complete! Starting simulator...")
+    kill_running_simulators()
 
-    print(docker_prefix_cmd \
-            + "/home/uas/.local/bin/mavproxy.py --nowait --show-errors " \
-            "--master udpout:172.17.0.3:14557 " \
-            "--out udp:0.0.0.0:8084 " \
-            "--out udpbcast:172.17.0.2:8085 " \
-            "--non-interactive")#, \
-#           show_output=True, \
-#           allow_input=False)
+    print_update("Building UAS@UCLA software env docker...")
 
-    processes.spawn_process(docker_prefix_cmd \
-            + "./lib/scripts/bazel_run.sh //src/control/io:io", \
-            show_output=True, \
-            allow_input=False)
+    # Build the image for our docker environment.
+    run_cmd_exit_failure(DOCKER_PREFIX_CMD + \
+            "git clone " \
+            "https://github.com/PX4/Firmware.git " \
+            "tools/docker/cache/px4_firmware || true")
 
-    processes.spawn_process(docker_prefix_cmd \
-            + "./lib/scripts/bazel_run.sh //src/control/loops:flight_loop", \
-            show_output=True, \
-            allow_input=False)
+    # Set up tmux panes.
+    run_cmd_exit_failure("tmux kill-session " \
+            "-t uas_env " \
+            "> /dev/null || true")
 
-#   run_cmd_exit_failure("tmux send-keys \"docker run --rm -t " \
-#           "--env=LOCAL_USER_ID=\\\"$(id -u)\\\" " \
-#           "-v $(pwd)/tools/docker/cache/px4_firmware:/src/firmware/:rw " \
-#           "-v /tmp/.X11-unix:/tmp/.X11-unix:ro " \
-#           "-e DISPLAY=:0 "\
-#           "-p 14556:14556/udp " \
-#           "--name uas_sim " \
-#           "--network host " \
-#           "px4io/px4-dev-ros:2017-10-23 " \
-#           "/bin/sh -c \\\"cd /src/firmware;" \
-#           "HEADLESS=1 make posix_sitl_default gazebo\\\"\" C-m")
+    run_cmd_exit_failure("tmux " \
+            "-2 " \
+            "new-session " \
+            "-d " \
+            "-s " \
+            "uas_env")
 
-#   run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+    run_cmd_exit_failure("tmux split-window " \
+            "-h " \
+            "-t " \
+            "uas_env")
 
-#   run_cmd_exit_failure("tmux send-keys \"" + docker_prefix_tmux_cmd \
-#           + "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop\"")
+    run_cmd_exit_failure("tmux split-window " \
+            "-v " \
+            "-t " \
+            "uas_env")
+
+    run_cmd_exit_failure("tmux split-window " \
+            "-v " \
+            "-t " \
+            "uas_env")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-L")
+
+    run_cmd_exit_failure("tmux split-window " \
+            "-v " \
+            "-t " \
+            "uas_env")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-U")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-U")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-U")
+
+    # Start the PX4 simulator docker image.
+    run_cmd_exit_failure("tmux send-keys \"" \
+            "docker run --rm -t " \
+            "--env=LOCAL_USER_ID=\\\"$(id -u)\\\" " \
+            "-v $(pwd)/tools/docker/cache/px4_firmware:/src/firmware/:rw " \
+            "-v /tmp/.X11-unix:/tmp/.X11-unix:ro " \
+            "-e DISPLAY=:0 "\
+            "--name uas_sim " \
+            "--net uas_bridge " \
+            "-p 14556:14556/udp " \
+            "px4io/px4-dev-ros:2017-10-23 " \
+            "/bin/sh -c \\\"cd /src/firmware;" \
+            "HEADLESS=1 make posix_sitl_default gazebo\\\"\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-U")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_PREFIX_CMD + \
+            "/home/uas/.local/bin/mavproxy.py " \
+            "--nowait " \
+            "--show-errors " \
+            "--master udpout:172.19.0.3:14557 " \
+            "--out udp:0.0.0.0:8084 --non-interactive\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-R")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-U")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-U")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_PREFIX_CMD + \
+            "bazel run //src/control/loops:flight_loop\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-D")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_PREFIX_CMD + \
+            "bazel run //src/control/io:io\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-D")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_PREFIX_CMD + \
+            "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_PREFIX_CMD + \
+            "bazel run //lib/logger:log_writer\" C-m")
 
     while True:
         time.sleep(1)
-
-    # Initialize shared memory for queues.
-    #processes.spawn_process("ipcrm --all", None, True, args.verbose)
-    #processes.wait_for_complete()
-
-    #processes.spawn_process("./lib/scripts/bazel_run.sh //aos/linux_code:core",
-    #                        None, True, args.verbose)
-
-    # Give aos core some time to run.
-    #time.sleep(1.0)
-
-    # Simulator and port forwarder.
-    #processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:gazebo_visualize",
-    #                        None, True, args.verbose)
-    #processes.spawn_process("mavproxy.py " \
-    #        "--mav20 " \
-    #        "--state-basedir=/tmp/ " \
-    #        "--master=0.0.0.0:14540 " \
-    #        "--out=udp:0.0.0.0:8083 " \
-    #        "--out=udp:0.0.0.0:8085 ", \
-    #        None, True, False)
-
-    # Log writer.
-    #processes.spawn_process("./bazel-out/k8-fastbuild/bin/lib/logger/" \
-    #        "log_writer");
-
-    # Drone control code.
-    #processes.spawn_process(
-    #        "./bazel-out/k8-fastbuild/bin/src/control/ground_communicator/" \
-    #                "ground_communicator", None, True, args.verbose)
-    #processes.spawn_process("./bazel-out/k8-fastbuild/bin/src/control/io/io",
-    #                        None, True, True)
-    #processes.spawn_process(
-    #    "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop", None,
-    #    True, args.verbose)
-
-    # Ground server and interface.
-    #processes.spawn_process("python ./src/ground/ground.py", None, True, args.verbose)
-    #processes.wait_for_complete()
 
 
 def run_ground(args):
@@ -351,6 +391,25 @@ def run_ground(args):
                 args.verbose)
 
     processes.wait_for_complete()
+
+
+def run_help(args):
+    print("./do.sh")
+    print("      > help")
+    print("      > build")
+    print("      > test")
+    print("        controls")
+    print("               > build")
+    print("               > test")
+    print("               > simulate")
+    print("")
+    print("        ground")
+    print("               > run")
+    print("               > test")
+    print("")
+    print("        vision")
+    print("               > test")
+    print("               > train")
 
 
 if __name__ == '__main__':
@@ -389,6 +448,9 @@ if __name__ == '__main__':
 
     build_parser = subparsers.add_parser('build', help='build help')
     build_parser.set_defaults(func=run_build)
+
+    help_parser = subparsers.add_parser('help')
+    help_parser.set_defaults(func=run_help)
 
     args = parser.parse_args()
     args.func(args)
