@@ -1,4 +1,3 @@
-#include <bitset>
 #include "ground_communicator.h"
 
 namespace src {
@@ -7,16 +6,15 @@ namespace ground_communicator {
 
 // Taken from here:
 // https://renenyffenegger.ch/notes/development/Base64/Encoding-and-decoding-base-64-with-cpp
-static const std::string base64_chars =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-    "abcdefghijklmnopqrstuvwxyz"
-    "0123456789+/";
+static const std::string base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                        "abcdefghijklmnopqrstuvwxyz"
+                                        "0123456789+/";
 
 static inline bool is_base64(unsigned char c) {
   return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
-std::string base64_decode(std::string const& encoded_string) {
+std::string base64_decode(std::string const &encoded_string) {
   int in_len = encoded_string.size();
   int i = 0;
   int j = 0;
@@ -38,13 +36,15 @@ std::string base64_decode(std::string const& encoded_string) {
           ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
       char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
 
-      for (i = 0; (i < 3); i++) ret += char_array_3[i];
+      for (i = 0; (i < 3); i++)
+        ret += char_array_3[i];
       i = 0;
     }
   }
 
   if (i) {
-    for (j = i; j < 4; j++) char_array_4[j] = 0;
+    for (j = i; j < 4; j++)
+      char_array_4[j] = 0;
 
     for (j = 0; j < 4; j++)
       char_array_4[j] = base64_chars.find(char_array_4[j]);
@@ -54,7 +54,8 @@ std::string base64_decode(std::string const& encoded_string) {
         ((char_array_4[1] & 0xf) << 4) + ((char_array_4[2] & 0x3c) >> 2);
     char_array_3[2] = ((char_array_4[2] & 0x3) << 6) + char_array_4[3];
 
-    for (j = 0; (j < i - 1); j++) ret += char_array_3[j];
+    for (j = 0; (j < i - 1); j++)
+      ret += char_array_3[j];
   }
 
   return ret;
@@ -66,7 +67,7 @@ std::string base64_decode(std::string const& encoded_string) {
 static const unsigned char base64_table[65] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
-std::string base64_encode(const unsigned char* src, size_t len) {
+std::string base64_encode(const unsigned char *src, size_t len) {
   unsigned char *out, *pos;
   const unsigned char *end, *in;
 
@@ -74,11 +75,12 @@ std::string base64_encode(const unsigned char* src, size_t len) {
 
   olen = 4 * ((len + 2) / 3); /* 3-byte blocks to 4-byte */
 
-  if (olen < len) return std::string(); /* integer overflow */
+  if (olen < len)
+    return std::string(); /* integer overflow */
 
   std::string outStr;
   outStr.resize(olen);
-  out = (unsigned char*)&outStr[0];
+  out = (unsigned char *)&outStr[0];
 
   end = src + len;
   in = src;
@@ -106,7 +108,7 @@ std::string base64_encode(const unsigned char* src, size_t len) {
   return outStr;
 }
 
-MissionReceiver* socketio_ground_communicator;
+MissionReceiver *socketio_ground_communicator;
 
 void on_connect() { socketio_ground_communicator->OnConnect(); }
 
@@ -117,8 +119,7 @@ void connect() { socketio_ground_communicator->ConnectToGround(); }
 MissionReceiver::MissionReceiver()
     : phased_loop_(std::chrono::milliseconds(200),
                    std::chrono::milliseconds(0)),
-      running_(false),
-      last_serial_telemetry_sent_(0) {
+      running_(false), last_serial_telemetry_sent_(0) {
   socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
@@ -164,12 +165,12 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
   sio::message::ptr goal_object = sio::object_message::create();
   sio::message::ptr output_object = sio::object_message::create();
 
-  std::map<std::string, sio::message::ptr>* sensors_map =
+  std::map<std::string, sio::message::ptr> *sensors_map =
       &sensors_object->get_map();
-  std::map<std::string, sio::message::ptr>* status_map =
+  std::map<std::string, sio::message::ptr> *status_map =
       &status_object->get_map();
-  std::map<std::string, sio::message::ptr>* goal_map = &goal_object->get_map();
-  std::map<std::string, sio::message::ptr>* output_map =
+  std::map<std::string, sio::message::ptr> *goal_map = &goal_object->get_map();
+  std::map<std::string, sio::message::ptr> *output_map =
       &output_object->get_map();
 
   bool send_sensors;
@@ -233,31 +234,31 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
     ::std::string autopilot_state_string;
 
     switch (autopilot_state) {
-      case ::src::control::io::AutopilotState::TAKEOFF:
-        autopilot_state_string = "TAKEOFF";
-        break;
-      case ::src::control::io::AutopilotState::HOLD:
-        autopilot_state_string = "HOLD";
-        break;
-      case ::src::control::io::AutopilotState::OFFBOARD:
-        autopilot_state_string = "OFFBOARD";
-        break;
-      case ::src::control::io::AutopilotState::RTL:
-        autopilot_state_string = "RTL";
-        break;
-      case ::src::control::io::AutopilotState::LAND:
-        autopilot_state_string = "LAND";
-        break;
-      case ::src::control::io::AutopilotState::UNKNOWN:
-      default:
-        autopilot_state_string = "UNKNOWN";
-        break;
+    case ::src::control::io::AutopilotState::TAKEOFF:
+      autopilot_state_string = "TAKEOFF";
+      break;
+    case ::src::control::io::AutopilotState::HOLD:
+      autopilot_state_string = "HOLD";
+      break;
+    case ::src::control::io::AutopilotState::OFFBOARD:
+      autopilot_state_string = "OFFBOARD";
+      break;
+    case ::src::control::io::AutopilotState::RTL:
+      autopilot_state_string = "RTL";
+      break;
+    case ::src::control::io::AutopilotState::LAND:
+      autopilot_state_string = "LAND";
+      break;
+    case ::src::control::io::AutopilotState::UNKNOWN:
+    default:
+      autopilot_state_string = "UNKNOWN";
+      break;
     }
 
     (*sensors_map)["autopilot_state"] =
         sio::string_message::create(autopilot_state_string);
 
-    if(current_time - last_serial_telemetry_sent_ > 0.3) {
+    if (current_time - last_serial_telemetry_sent_ > 0.3) {
       // Time to send another serial telemetry message.
       ::lib::serial_comms::SerialCommsMessage message;
       message.set_latitude((*sensors)->latitude);
@@ -307,10 +308,8 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
         sio::double_message::create((*output)->gimbal_angle);
     (*output_map)["bomb_drop"] =
         sio::bool_message::create((*output)->bomb_drop);
-    (*output_map)["alarm"] =
-        sio::bool_message::create((*output)->alarm);
-    (*output_map)["dslr"] =
-        sio::bool_message::create((*output)->dslr);
+    (*output_map)["alarm"] = sio::bool_message::create((*output)->alarm);
+    (*output_map)["dslr"] = sio::bool_message::create((*output)->dslr);
     //  (*output_map)["velocity_control"] =
     //      sio::bool_message::create((*output)->velocity_control);
     //  (*output_map)["arm"] = sio::bool_message::create((*output)->arm);
@@ -337,8 +336,8 @@ void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
       mission_message_queue_sender_.GetMission();
   ::std::string serialized_mission;
   mission.SerializeToString(&serialized_mission);
-  const unsigned char* serialized_mission_cstr =
-      reinterpret_cast<const unsigned char*>(serialized_mission.c_str());
+  const unsigned char *serialized_mission_cstr =
+      reinterpret_cast<const unsigned char *>(serialized_mission.c_str());
   ::std::string mission_base64 =
       base64_encode(serialized_mission_cstr, serialized_mission.length());
   all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
@@ -386,15 +385,14 @@ void MissionReceiver::OnConnect() {
   client_.socket()->on(
       "drone_execute_commands",
       sio::socket::event_listener_aux(
-          [&](std::string const& name, sio::message::ptr const& data,
-              bool isAck, sio::message::list& ack_resp) {
-
+          [&](std::string const &name, sio::message::ptr const &data,
+              bool isAck, sio::message::list &ack_resp) {
             (void)name;
             (void)isAck;
             (void)ack_resp;
 
             ::lib::mission_manager::GroundData ground_data;
-            ::lib::mission_manager::Mission* mission =
+            ::lib::mission_manager::Mission *mission =
                 new ::lib::mission_manager::Mission();
 
             ::std::string serialized_protobuf_mission = data->get_string();
@@ -413,15 +411,14 @@ void MissionReceiver::OnConnect() {
   client_.socket()->on(
       "interop_data",
       sio::socket::event_listener_aux(
-          [&](std::string const& name, sio::message::ptr const& data,
-              bool isAck, sio::message::list& ack_resp) {
-
+          [&](std::string const &name, sio::message::ptr const &data,
+              bool isAck, sio::message::list &ack_resp) {
             (void)name;
             (void)isAck;
             (void)ack_resp;
 
             ::lib::mission_manager::GroundData ground_data;
-            ::lib::mission_manager::Obstacles* obstacles =
+            ::lib::mission_manager::Obstacles *obstacles =
                 new ::lib::mission_manager::Obstacles();
 
             ::std::string serialized_protobuf_obstacles = data->get_string();
@@ -437,8 +434,8 @@ void MissionReceiver::OnConnect() {
   client_.socket()->on(
       "drone_set_state",
       sio::socket::event_listener_aux(
-          [&](std::string const& name, sio::message::ptr const& data,
-              bool isAck, sio::message::list& ack_resp) {
+          [&](std::string const &name, sio::message::ptr const &data,
+              bool isAck, sio::message::list &ack_resp) {
             (void)name;
             (void)isAck;
             (void)ack_resp;
@@ -480,14 +477,14 @@ void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
   flight_loop_goal_message->run_mission = false;
 
   switch (new_state) {
-    case STANDBY:
-      break;
+  case STANDBY:
+    break;
 
-    case RUN_MISSION:
-      flight_loop_goal_message->run_mission = true;
-      flight_loop_goal_message->trigger_failsafe = false;
-      flight_loop_goal_message->trigger_throttle_cut = false;
-      break;
+  case RUN_MISSION:
+    flight_loop_goal_message->run_mission = true;
+    flight_loop_goal_message->trigger_failsafe = false;
+    flight_loop_goal_message->trigger_throttle_cut = false;
+    break;
 
     //  case LAND:
     //    flight_loop_goal_message->run_mission = false;
@@ -495,67 +492,67 @@ void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
     //    flight_loop_goal_message->trigger_throttle_cut = false;
     //    break;
 
-    case FAILSAFE:
-      flight_loop_goal_message->run_mission = false;
-      flight_loop_goal_message->trigger_failsafe = true;
-      flight_loop_goal_message->trigger_throttle_cut = false;
-      break;
+  case FAILSAFE:
+    flight_loop_goal_message->run_mission = false;
+    flight_loop_goal_message->trigger_failsafe = true;
+    flight_loop_goal_message->trigger_throttle_cut = false;
+    break;
 
-    case THROTTLE_CUT:
-      flight_loop_goal_message->run_mission = false;
-      flight_loop_goal_message->trigger_failsafe = true;
-      flight_loop_goal_message->trigger_throttle_cut = true;
-      break;
+  case THROTTLE_CUT:
+    flight_loop_goal_message->run_mission = false;
+    flight_loop_goal_message->trigger_failsafe = true;
+    flight_loop_goal_message->trigger_throttle_cut = true;
+    break;
 
-    case TAKEOFF:
-      flight_loop_goal_message->trigger_takeoff = time;
-      LOG_LINE("GOT TAKEOFF @ TIME " << time);
-      break;
+  case TAKEOFF:
+    flight_loop_goal_message->trigger_takeoff = time;
+    LOG_LINE("GOT TAKEOFF @ TIME " << time);
+    break;
 
-    case HOLD:
-      flight_loop_goal_message->trigger_hold = time;
-      LOG_LINE("GOT HOLD @ TIME " << time);
-      break;
+  case HOLD:
+    flight_loop_goal_message->trigger_hold = time;
+    LOG_LINE("GOT HOLD @ TIME " << time);
+    break;
 
-    case OFFBOARD:
-      flight_loop_goal_message->trigger_offboard = time;
-      LOG_LINE("GOT OFFBOARD @ TIME " << time);
-      break;
+  case OFFBOARD:
+    flight_loop_goal_message->trigger_offboard = time;
+    LOG_LINE("GOT OFFBOARD @ TIME " << time);
+    break;
 
-    case RTL:
-      flight_loop_goal_message->trigger_rtl = time;
-      LOG_LINE("GOT RTL @ TIME " << time);
-      break;
+  case RTL:
+    flight_loop_goal_message->trigger_rtl = time;
+    LOG_LINE("GOT RTL @ TIME " << time);
+    break;
 
-    case LAND:
-      flight_loop_goal_message->trigger_land = time;
-      LOG_LINE("GOT LAND @ TIME " << time);
-      break;
+  case LAND:
+    flight_loop_goal_message->trigger_land = time;
+    LOG_LINE("GOT LAND @ TIME " << time);
+    break;
 
-    case ARM:
-      flight_loop_goal_message->trigger_arm = time;
-      LOG_LINE("GOT ARM @ TIME " << time);
-      break;
+  case ARM:
+    flight_loop_goal_message->trigger_arm = time;
+    LOG_LINE("GOT ARM @ TIME " << time);
+    break;
 
-    case DISARM:
-      flight_loop_goal_message->trigger_disarm = time;
-      LOG_LINE("GOT DISARM @ TIME " << time);
-      break;
+  case DISARM:
+    flight_loop_goal_message->trigger_disarm = time;
+    LOG_LINE("GOT DISARM @ TIME " << time);
+    break;
 
-    case ALARM:
-      flight_loop_goal_message->trigger_alarm = time;
-      LOG_LINE("GOT ALARM @ TIME " << time);
-      break;
+  case ALARM:
+    flight_loop_goal_message->trigger_alarm = time;
+    LOG_LINE("GOT ALARM @ TIME " << time);
+    break;
 
-    case BOMB_DROP:
-      flight_loop_goal_message->trigger_bomb_drop = time;
-      LOG_LINE("GOT BOMB DROP @ TIME " << time);
-      break;
+  case BOMB_DROP:
+    flight_loop_goal_message->trigger_bomb_drop = time;
+    LOG_LINE("GOT BOMB DROP @ TIME " << time);
+    break;
 
-    case DSLR:
-      flight_loop_goal_message->trigger_dslr = time;
-      LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
-      break;
+  case DSLR:
+    flight_loop_goal_message->trigger_dslr = time;
+    LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
+    break;
   }
 
   flight_loop_goal_message.Send();
@@ -629,6 +626,6 @@ MissionReceiver::GoalState MissionReceiver::GetState() {
   return state;
 }
 
-}  // namespace ground_communicator
-}  // namespace control
-}  // namespace src
+} // namespace ground_communicator
+} // namespace control
+} // namespace src

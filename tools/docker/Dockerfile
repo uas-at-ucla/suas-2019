@@ -95,6 +95,7 @@ RUN apt install -y libc6-dev-i386
 RUN apt install -y lib32z1-dev
 #RUN apt install -y lib32stdc++6
 RUN apt install -y tmux
+RUN apt install -y screen
 
 # User env setup.
 RUN mkdir /external_libs

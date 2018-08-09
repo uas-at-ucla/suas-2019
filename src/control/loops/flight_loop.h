@@ -7,13 +7,13 @@
 #include "aos/common/util/phased_loop.h"
 #include "aos/linux_code/init.h"
 
-#include "src/control/loops/pilot/pilot.h"
-#include "src/control/control_messages.pb.h"
-#include "lib/proto_comms/proto_comms.h"
+#include "lib/alarm/alarm.h"
+#include "lib/logger/log_sender.h"
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/physics_structs/physics_structs.h"
-#include "lib/logger/log_sender.h"
-#include "lib/alarm/alarm.h"
+#include "lib/proto_comms/proto_comms.h"
+#include "src/control/messages.pb.h"
+#include "src/control/loops/pilot/pilot.h"
 
 /*      ________  ________  ___  ________   ________       ___    ___
        |\   ____\|\   __  \|\  \|\   ___  \|\   ___  \    |\  \  /  /|
@@ -37,7 +37,7 @@ class FlightLoop {
 
   // Flight loop state machine states.
   enum State {
-    STANDBY = 0, 
+    STANDBY = 0,
     ARMING = 1,
     ARMED = 2,
     TAKING_OFF = 3,
@@ -87,18 +87,17 @@ class FlightLoop {
 };
 
 const ::std::map<FlightLoop::State, ::std::string> state_string = {
-  {FlightLoop::STANDBY, "STANDBY"},
-  {FlightLoop::ARMING, "ARMING"},
-  {FlightLoop::ARMED, "ARMED"},
-  {FlightLoop::TAKING_OFF, "TAKING_OFF"},
-  {FlightLoop::IN_AIR, "IN_AIR"},
-  {FlightLoop::LANDING, "LANDING"},
-  {FlightLoop::FAILSAFE, "FAILSAFE"},
-  {FlightLoop::FLIGHT_TERMINATION, "FLIGHT_TERMINATION"}
-};
+    {FlightLoop::STANDBY, "STANDBY"},
+    {FlightLoop::ARMING, "ARMING"},
+    {FlightLoop::ARMED, "ARMED"},
+    {FlightLoop::TAKING_OFF, "TAKING_OFF"},
+    {FlightLoop::IN_AIR, "IN_AIR"},
+    {FlightLoop::LANDING, "LANDING"},
+    {FlightLoop::FAILSAFE, "FAILSAFE"},
+    {FlightLoop::FLIGHT_TERMINATION, "FLIGHT_TERMINATION"}};
 
-}  // namespace loops
-}  // namespace control
-}  // namespace src
+} // namespace loops
+} // namespace control
+} // namespace src
 
-#endif  // SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_H_
+#endif // SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_H_
