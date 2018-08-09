@@ -1,9 +1,9 @@
 package(default_visibility = ['//visibility:public'])
 
 proto_library(
-  name = "control_messages",
+  name = "messages",
   srcs = [
-    "control_messages.proto",
+    "messages.proto",
   ],
   deps = [
     "@com_google_protobuf//:any_proto",
@@ -11,8 +11,8 @@ proto_library(
 )
 
 cc_proto_library(
-  name = "control_messages_cpp",
+  name = "messages_cpp",
   deps = [
-      ":control_messages",
+      ":messages",
   ],
 )

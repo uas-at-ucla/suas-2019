@@ -47,7 +47,7 @@ cc_library(
   deps = [
     ':flight_loop_queue',
     '//src/control/loops/pilot:pilot',
-    '//src/control:control_messages_cpp',
+    '//src/control:messages_cpp',
     '//lib/proto_comms:proto_comms',
     '//lib/physics_structs:physics_structs',
     '//lib/logger:log_sender',
