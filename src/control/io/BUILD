@@ -26,7 +26,7 @@ cc_library(
     ':loop_input_handler',
     '//src/control/io/autopilot_interface:autopilot_interface',
     '//src/control/loops:flight_loop_queue',
-    '//src/control:control_messages_cpp',
+    '//src/control:messages_cpp',
     '//lib/logger:log_sender',
     '//lib/dslr_interface:dslr_interface',
     '//lib/proto_comms:proto_comms',
