@@ -92,11 +92,11 @@ def signal_received(signal, frame):
             "--format \"{{.ID}}\" " \
             "--latest) "
 
-    if processes.spawn_process_wait_for_code( \
-            DOCKER_PREFIX_CMD + \
-            "bash lib/scripts/docker_exec_kill.sh", \
-            show_output=False, allow_input=False) == 0:
-        status += "Killed screen sessions within uas_env\n"
+#   if processes.spawn_process_wait_for_code( \
+#           DOCKER_PREFIX_CMD + \
+#           "./lib/scripts/docker_exec_kill.sh", \
+#           show_output=False, allow_input=False) == 0:
+#       status += "Killed screen sessions within uas_env\n"
 
     status += processes.killall()
     print_update(status, "FAILURE")
@@ -258,6 +258,8 @@ def run_simulate(args):
             "tools/docker/cache/px4_firmware || true")
 
     # Set up tmux panes.
+    run_cmd_exit_failure("tmux start-server ")
+
     run_cmd_exit_failure("tmux kill-session " \
             "-t uas_env " \
             "> /dev/null || true")
