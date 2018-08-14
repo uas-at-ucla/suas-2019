@@ -1,5 +1,4 @@
-#ifndef AOS_LINUX_CODE_IPC_LIB_SHARED_MEM_TYPES_H_
-#define AOS_LINUX_CODE_IPC_LIB_SHARED_MEM_TYPES_H_
+#pragma once
 
 #include <stddef.h>
 
@@ -61,4 +60,3 @@ struct aos_core {
 }
 #endif
 
-#endif  // AOS_LINUX_CODE_IPC_LIB_SHARED_MEM_TYPES_H_

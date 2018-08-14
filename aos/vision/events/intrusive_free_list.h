@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_EVENTS_INTRUSIVE_FREE_LIST_H_
-#define _AOS_VISION_EVENTS_INTRUSIVE_FREE_LIST_H_
+#pragma once
 
 namespace aos {
 namespace events {
@@ -78,4 +77,3 @@ class intrusive_free_list {
 }  // namespace events
 }  // namespace aos
 
-#endif  // _AOS_VISION_EVENTS_INTRUSIVE_FREE_LIST_H_

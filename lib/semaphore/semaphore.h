@@ -1,5 +1,4 @@
-#ifndef LIB_SEMAPHORE_SEMAPHORE_H_
-#define LIB_SEMAPHORE_SEMAPHORE_H_
+#pragma once
 
 #include <mutex>
 #include <condition_variable>
@@ -21,4 +20,3 @@ class Semaphore {
 
 }  // namespace lib
 
-#endif  // LIB_SEMAPHORE_SEMAPHORE_H_

@@ -1,5 +1,4 @@
-#ifndef AOS_VISION_EVENTS_EPOLL_EVENTS_H_
-#define AOS_VISION_EVENTS_EPOLL_EVENTS_H_
+#pragma once
 
 #include <limits.h>
 #include <stdint.h>
@@ -121,4 +120,3 @@ class EpollLoop {
 }  // namespace events
 }  // namespace aos
 
-#endif  // AOS_VISION_EVENTS_EPOLL_EVENTS_H_

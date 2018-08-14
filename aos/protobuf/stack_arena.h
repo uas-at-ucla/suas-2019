@@ -1,5 +1,5 @@
-#ifndef AOS_PROTOBUF_STACK_ARENA_H_
-#define AOS_PROTOBUF_STACK_ARENA_H_
+#pragma once
+
 #include "google/protobuf/arena.h"
 
 namespace aos {
@@ -49,4 +49,3 @@ class StackProtoArena {
 }  // namespace protobuf
 }  // namespace aos
 
-#endif  // AOS_PROTOBUF_STACK_ARENA_H_

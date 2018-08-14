@@ -1,5 +1,4 @@
-#ifndef AOS_TESTING_RANDOM_SEED_H_
-#define AOS_TESTING_RANDOM_SEED_H_
+#pragma once
 
 namespace aos {
 namespace testing {
@@ -12,4 +11,3 @@ int RandomSeed();
 }  // namespace testing
 }  // namespace aos
 
-#endif  // AOS_TESTING_RANDOM_SEED_H_

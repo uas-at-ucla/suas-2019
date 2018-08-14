@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_IMAGE_DEBUG_OVERLAY_H_
-#define _AOS_VISION_IMAGE_DEBUG_OVERLAY_H_
+#pragma once
 
 #include <string>
 #include <vector>
@@ -233,4 +232,3 @@ class CircleOverlay : public OverlayBase {
 }  // vision
 }  // aos
 
-#endif  // _AOS_VISION_IMAGE_DEBUG_OVERLAY_H_

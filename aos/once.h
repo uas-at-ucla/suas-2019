@@ -1,5 +1,4 @@
-#ifndef AOS_ONCE_H_
-#define AOS_ONCE_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -66,4 +65,3 @@ class Once {
 
 #include "aos/once-tmpl.h"
 
-#endif  // AOS_ONCE_H_

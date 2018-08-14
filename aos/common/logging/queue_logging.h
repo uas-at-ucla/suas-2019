@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_LOGGING_QUEUE_LOGGING_H_
-#define AOS_COMMON_LOGGING_QUEUE_LOGGING_H_
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,4 +39,3 @@ void DoLogStructTemplated(log_level level, const ::std::string &message,
 }  // namespace logging
 }  // namespace aos
 
-#endif  // AOS_COMMON_LOGGING_QUEUE_LOGGING_H_

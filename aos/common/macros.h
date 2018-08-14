@@ -1,5 +1,4 @@
-#ifndef _AOS_COMMON_MACROS_H_
-#define _AOS_COMMON_MACROS_H_
+#pragma once
 
 // This file has some common macros etc.
 
@@ -37,5 +36,3 @@
 #define GOOD_PRINTF_FORMAT_TYPE gnu_printf
 #endif
 #endif
-
-#endif  // _AOS_COMMON_MACROS_H_

@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_LIBC_AOS_STRSIGNAL_H_
-#define AOS_COMMON_LIBC_AOS_STRSIGNAL_H_
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -14,4 +13,3 @@ const char *aos_strsignal(int signal);
 }
 #endif
 
-#endif  // AOS_COMMON_LIBC_AOS_STRSIGNAL_H_

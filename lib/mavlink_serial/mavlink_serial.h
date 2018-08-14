@@ -1,5 +1,4 @@
-#ifndef LIB_SERIAL_SERIAL_PORT_H_
-#define LIB_SERIAL_SERIAL_PORT_H_
+#pragma once
 
 #include <fcntl.h>    // File control definitions
 #include <pthread.h>  // This uses POSIX Threads
@@ -74,4 +73,3 @@ class MavlinkSerial {
 }  // namespace mavlink_serial
 }  // namespace lib
 
-#endif  // LIB_SERIAL_SERIAL_PORT_H_

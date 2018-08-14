@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_OPTIONS_H_
-#define AOS_COMMON_UTIL_OPTIONS_H_
+#pragma once
 
 #include <sys/types.h>
 
@@ -89,4 +88,3 @@ class Options {
 
 }  // namespace options
 
-#endif  // AOS_COMMON_UTIL_OPTIONS_H_

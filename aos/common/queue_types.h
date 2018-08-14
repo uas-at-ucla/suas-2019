@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_QUEUE_TYPES_H_
-#define AOS_COMMON_QUEUE_TYPES_H_
+#pragma once
 
 #include <sys/types.h>
 #include <stdint.h>
@@ -145,4 +144,3 @@ void AddShm(uint32_t type_id);
 }  // namespace type_cache
 }  // namespace aos
 
-#endif  // AOS_COMMON_QUEUE_TYPES_H_

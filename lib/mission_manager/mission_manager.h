@@ -1,5 +1,4 @@
-#ifndef SPINNY_LIB_MISSION_MANAGER_MISSION_MANAGER_H_
-#define SPINNY_LIB_MISSION_MANAGER_MISSION_MANAGER_H_
+#pragma once
 
 #include <algorithm>
 #include <condition_variable>
@@ -51,4 +50,3 @@ class MissionManager {
 
 }  // namespace lib
 
-#endif  // SPINNY_LIB_MISSION_MANAGER_MISSION_MANAGER_H_

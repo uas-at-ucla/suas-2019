@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_THREAD_H_
-#define AOS_COMMON_UTIL_THREAD_H_
+#pragma once
 
 #include <functional>
 #include <atomic>
@@ -87,4 +86,3 @@ class FunctionThread : public Thread {
 }  // namespace util
 }  // namespace aos
 
-#endif  // AOS_COMMON_UTIL_THREAD_H_
