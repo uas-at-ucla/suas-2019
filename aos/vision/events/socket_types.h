@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_EVENTS_SOCKET_TYPES_H_
-#define _AOS_VISION_EVENTS_SOCKET_TYPES_H_
+#pragma once
 
 #include <poll.h>
 #include <stdint.h>
@@ -90,4 +89,3 @@ class DataSocket : public events::SocketConnection {
 }  // namespace events
 }  // namespace aos
 
-#endif  // _AOS_VISION_EVENTS_SOCKET_TYPES_H_

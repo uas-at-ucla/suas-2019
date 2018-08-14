@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_NETWORK_SEND_SOCKET_H_
-#define AOS_COMMON_NETWORK_SEND_SOCKET_H_
+#pragma once
 
 #include "aos/common/network/socket.h"
 
@@ -26,4 +25,3 @@ class SendSocket : public Socket {
 }  // namespace network
 }  // namespace aos
 
-#endif  // AOS_COMMON_NETWORK_SEND_SOCKET_H_

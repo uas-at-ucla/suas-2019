@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_GLOBAL_FACTORY_H_
-#define AOS_COMMON_UTIL_GLOBAL_FACTORY_H_
+#pragma once
 
 #include <functional>
 #include <memory>
@@ -90,4 +89,3 @@ class GlobalFactory {
 
 }  // namespace aos
 
-#endif  // AOS_COMMON_UTIL_GLOBAL_FACTORY_H_

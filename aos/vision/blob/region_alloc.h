@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_REGION_ALLOC_H_
-#define _AOS_VISION_REGION_ALLOC_H_
+#pragma once
 
 #include <stdint.h>
 #include <stdio.h>
@@ -57,4 +56,3 @@ class AnalysisAllocator {
 }  // namespace vision
 }  // namespace aos
 
-#endif  // _AOS_VISION_IMAGE_REGION_ALLOC_H_

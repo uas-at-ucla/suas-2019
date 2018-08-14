@@ -1,5 +1,4 @@
-#ifndef SPINNY_CONTROL_IO_IO_H_
-#define SPINNY_CONTROL_IO_IO_H_
+#pragma once
 
 #include "src/control/io/autopilot_interface/autopilot_interface.h"
 
@@ -97,4 +96,3 @@ class IO {
 }  // namespace control
 }  // namespace src
 
-#endif  // SPINNY_CONTROL_IO_IO_H_

@@ -1,5 +1,4 @@
-#ifndef AOS_VISION_DEBUG_DEBUG_WINDOW_H_
-#define AOS_VISION_DEBUG_DEBUG_WINDOW_H_
+#pragma once
 
 #include <cairo.h>
 #include <functional>
@@ -85,4 +84,3 @@ class DebugWindow {
 }  // namespace vision
 }  // namespace aos
 
-#endif  // AOS_VISION_DEBUG_DEBUG_WINDOW_H_

@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_RUN_COMMAND_H_
-#define AOS_COMMON_UTIL_RUN_COMMAND_H_
+#pragma once
 
 namespace aos {
 namespace util {
@@ -14,4 +13,3 @@ int RunCommand(const char *command);
 }  // namespace util
 }  // namespace aos
 
-#endif  // AOS_COMMON_UTIL_RUN_COMMAND_H_

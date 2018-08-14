@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_CONTROLS_POLYTOPE_H_
-#define AOS_COMMON_CONTROLS_POLYTOPE_H_
+#pragma once
 
 #include "Eigen/Dense"
 #include "third_party/cddlib/lib-src/setoper.h"
@@ -225,4 +224,3 @@ HPolytope<number_of_dimensions>::CalculateVertices(
 }  // namespace controls
 }  // namespace aos
 
-#endif  // AOS_COMMON_CONTROLS_POLYTOPE_H_

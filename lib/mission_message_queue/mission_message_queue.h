@@ -1,5 +1,4 @@
-#ifndef LIB_MISSION_MESSAGE_QUEUE_MISSION_MESSAGE_QUEUE_H_
-#define LIB_MISSION_MESSAGE_QUEUE_MISSION_MESSAGE_QUEUE_H_
+#pragma once
 
 #include <unistd.h>
 #include <atomic>
@@ -58,4 +57,3 @@ class MissionMessageQueueReceiver {
 }  // mission_message_queue
 }  // namespace lib
 
-#endif  // LIB_MISSION_MESSAGE_QUEUE_MISSION_MESSAGE_QUEUE_H_

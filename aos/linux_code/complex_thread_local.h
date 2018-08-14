@@ -1,5 +1,4 @@
-#ifndef AOS_LINUX_CODE_COMPLEX_THREAD_LOCAL_H_
-#define AOS_LINUX_CODE_COMPLEX_THREAD_LOCAL_H_
+#pragma once
 
 #include <assert.h>
 
@@ -128,4 +127,3 @@ __thread ComplexThreadLocalDestructor ComplexThreadLocal<T>::destructor;
 
 }  // namespace aos
 
-#endif  // AOS_LINUX_CODE_COMPLEX_THREAD_LOCAL_H_

@@ -1,5 +1,4 @@
-#ifndef _AOS_EVENTS_SIMULATED_EVENT_LOOP_H_
-#define _AOS_EVENTS_SIMULATED_EVENT_LOOP_H_
+#pragma once
 
 #include <map>
 #include <memory>
@@ -249,4 +248,3 @@ class SimulatedEventLoopFactory {
   ::std::map<::std::pair<::std::string, QueueTypeInfo>, SimulatedQueue> queues_;
 };
 }  // namespace aos
-#endif  //_AOS_EVENTS_TEST_EVENT_LOOP_H_

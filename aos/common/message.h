@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_MESSAGE_H_
-#define AOS_COMMON_MESSAGE_H_
+#pragma once
 
 #include "aos/common/time.h"
 
@@ -54,4 +53,3 @@ class MessageBuilder {
 
 }  // namespace aos
 
-#endif  // AOS_COMMON_MESSAGE_H_

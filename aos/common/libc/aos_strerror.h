@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_LIBC_AOS_STRERROR_H_
-#define AOS_COMMON_LIBC_AOS_STRERROR_H_
+#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,4 +19,3 @@ const char *aos_strerror(int error);
 }
 #endif
 
-#endif  // AOS_COMMON_LIBC_AOS_STRERROR_H_

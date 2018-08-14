@@ -1,5 +1,4 @@
-#ifndef AOS_VISION_BLOB_MOVE_SCALE_H_
-#define AOS_VISION_BLOB_MOVE_SCALE_H_
+#pragma once
 
 #include <limits>
 #include <vector>
@@ -25,4 +24,3 @@ RangeImage MoveScale(const RangeImage &img, int dx, int dy, int scale);
 }  // namespace vision
 }  // namespace aos
 
-#endif  // AOS_VISION_BLOB_MOVE_SCALE_H_

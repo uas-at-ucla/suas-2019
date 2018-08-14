@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_IMAGE_IMAGE_TYPES_H_
-#define _AOS_VISION_IMAGE_IMAGE_TYPES_H_
+#pragma once
 
 #include <stdint.h>
 #include <string.h>
@@ -109,4 +108,3 @@ using ImageValue = ValueArray2d<PixelRef>;
 }  // namespace vision
 }  // namespace aos
 
-#endif  // _AOS_VISION_IMAGE_IMAGE_TYPES_H_

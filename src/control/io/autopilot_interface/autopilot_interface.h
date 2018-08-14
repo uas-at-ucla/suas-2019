@@ -1,5 +1,4 @@
-#ifndef AUTOPILOT_INTERFACE_H_
-#define AUTOPILOT_INTERFACE_H_
+#pragma once
 
 #include "lib/mavconn_udp/interface.h"
 
@@ -150,4 +149,3 @@ class AutopilotInterface {
 }  // namespace control
 }  // namespace src
 
-#endif  // AUTOPILOT_INTERFACE_H_

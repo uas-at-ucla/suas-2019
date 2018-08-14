@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_LIBC_DIRNAME_H_
-#define AOS_COMMON_LIBC_DIRNAME_H_
+#pragma once
 
 #include <string>
 
@@ -12,4 +11,3 @@ namespace libc {
 }  // namespace libc
 }  // namespace aos
 
-#endif  // AOS_COMMON_LIBC_DIRNAME_H_

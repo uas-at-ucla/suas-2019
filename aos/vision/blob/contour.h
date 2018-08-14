@@ -1,5 +1,4 @@
-#ifndef _AOS_VIISON_BLOB_CONTOUR_H_
-#define _AOS_VIISON_BLOB_CONTOUR_H_
+#pragma once
 
 #include "aos/vision/blob/range_image.h"
 #include "aos/vision/blob/region_alloc.h"
@@ -37,4 +36,3 @@ ContourNode *RangeImgToContour(const RangeImage &rimg,
 }  // namespace vision
 }  // namespace aos
 
-#endif  //  _AOS_VIISON_BLOB_CONTOUR_H_

@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_LOGGING_CONTEXT_H_
-#define AOS_COMMON_LOGGING_CONTEXT_H_
+#pragma once
 
 #include <inttypes.h>
 #include <stddef.h>
@@ -81,4 +80,3 @@ struct Context {
 }  // namespace logging
 }  // namespace aos
 
-#endif  // AOS_COMMON_LOGGING_CONTEXT_H_

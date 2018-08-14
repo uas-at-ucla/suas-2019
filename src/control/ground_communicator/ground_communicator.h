@@ -1,5 +1,4 @@
-#ifndef SPINNY_CONTROL_MISSION_RECEIVER_MISSION_RECEIVER_H_
-#define SPINNY_CONTROL_MISSION_RECEIVER_MISSION_RECEIVER_H_
+#pragma once
 
 #include <iostream>
 #include <string>
@@ -82,4 +81,3 @@ void on_fail();
 }  // namespace control
 }  // namespace src
 
-#endif  // SPINNY_CONTROL_MISSION_RECEIVER_MISSION_RECEIVER_H_
