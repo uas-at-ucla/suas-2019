@@ -1,19 +1,13 @@
 #!/bin/bash
 
-function docker_cleanup {
-    docker exec $IMAGE bash -c "if [ -f $PIDFILE ]; then kill -TERM -\$(cat $PIDFILE); rm $PIDFILE; fi"
-}
-
 function docker_exec {
     IMAGE=$1
     PIDFILE=/tmp/docker-exec-$$
+    NAMEFILE=/tmp/docker-exec-$$-name
     shift
-    #trap 'kill $PID; docker_cleanup $IMAGE $PIDFILE' TERM INT
-    docker exec $IMAGE bash -c "echo \"\$\$\" > $PIDFILE; $*" &
+    docker exec $IMAGE bash -c "echo \"\$\$\" > $PIDFILE; echo \"$*\" > \"$NAMEFILE\"_name;$*" &
     PID=$!
-    #wait $PID
-    #trap - TERM INT HUP EXIT
-    #wait $PID
+    rm $PIDFILE
 }
 
 docker_exec "$@"
