@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_PRINT_FIELD_HELPERS_H_
-#define AOS_COMMON_PRINT_FIELD_HELPERS_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -38,4 +37,3 @@ inline bool PrintInteger(char *buf, T val, size_t *output) {
 
 }  // namespace aos
 
-#endif  // AOS_COMMON_PRINT_FIELD_HELPERS_H_

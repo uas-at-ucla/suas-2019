@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_BLOB_CODEC_H_
-#define _AOS_VISION_BLOB_CODEC_H_
+#pragma once
 
 #include <string>
 
@@ -48,4 +47,3 @@ const char *ParseBlobList(BlobList *blob_list, const char *data);
 }  // namespace vision
 }  // namespace aos
 
-#endif  // _AOS_VISION_BLOB_CODEC_H_

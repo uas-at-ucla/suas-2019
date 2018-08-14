@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_RING_BUFFER_H_
-#define AOS_COMMON_RING_BUFFER_H_
+#pragma once
 
 #include <array>
 
@@ -66,4 +65,3 @@ class RingBuffer {
 
 }  // namespace aos
 
-#endif  // AOS_COMMON_RING_BUFFER_H_

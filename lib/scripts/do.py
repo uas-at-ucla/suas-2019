@@ -132,6 +132,7 @@ def run_simulate(args):
 
     # Ground server and interface.
     processes.spawn_process("python ./src/ground/ground.py", None, True, args.verbose)
+    print("All Done...")
     processes.wait_for_complete()
 
 

@@ -1,5 +1,4 @@
-#ifndef AOS_VISION_COMP_GEO_SEGMENT_H_
-#define AOS_VISION_COMP_GEO_SEGMENT_H_
+#pragma once
 
 #include <cmath>
 
@@ -79,4 +78,3 @@ class Segment {
 }  // namespace vision
 }  // namespace aos
 
-#endif  // AOS_VISION_COMP_GEO_VECTOR_H_

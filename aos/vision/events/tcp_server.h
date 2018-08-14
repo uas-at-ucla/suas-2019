@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_EVENTS_TCP_SERVER_H_
-#define _AOS_VISION_EVENTS_TCP_SERVER_H_
+#pragma once
 
 #include "aos/vision/events/epoll_events.h"
 #include "aos/vision/events/intrusive_free_list.h"
@@ -74,4 +73,3 @@ class TCPServer : public TCPServerBase {
 }  // namespace events
 }  // namespace aos
 
-#endif  // _AOS_VISION_EVENTS_TCP_SERVER_H_

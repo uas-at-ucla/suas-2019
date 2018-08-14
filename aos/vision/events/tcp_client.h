@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_DEBUG_TCP_CLIENT_H_
-#define _AOS_VISION_DEBUG_TCP_CLIENT_H_
+#pragma once
 
 #include "aos/vision/events/epoll_events.h"
 
@@ -20,4 +19,3 @@ class TcpClient : public EpollEvent {
 }  // namespace events
 }  // namespace aos
 
-#endif  // _AOS_VISION_DEBUG_TCP_CLIENT_H_

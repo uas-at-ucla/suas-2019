@@ -1,3 +1,5 @@
+#pragma once
+
 #include <memory>
 
 #include "aos/atom_code/ipc_lib/queue.h"

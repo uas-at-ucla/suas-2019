@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_TIME_H_
-#define AOS_COMMON_TIME_H_
+#pragma once
 
 #include <stdint.h>
 #include <time.h>
@@ -99,4 +98,3 @@ void sleep_until(const ::aos::monotonic_clock::time_point &end_time);
 }  // namespace std
 
 
-#endif  // AOS_COMMON_TIME_H_

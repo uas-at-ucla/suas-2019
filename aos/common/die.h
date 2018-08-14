@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_DIE_H_
-#define AOS_COMMON_DIE_H_
+#pragma once
 
 #include <stdarg.h>
 
@@ -48,4 +47,3 @@ void SetDieTestMode(bool test_mode);
 
 }  // namespace aos
 
-#endif  // AOS_COMMON_DIE_H_

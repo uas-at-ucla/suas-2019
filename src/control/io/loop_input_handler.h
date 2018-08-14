@@ -1,5 +1,4 @@
-#ifndef SPINNY_CONTROL_IO_LOOP_INPUT_HANDLER_H_
-#define SPINNY_CONTROL_IO_LOOP_INPUT_HANDLER_H_
+#pragma once
 
 #include <atomic>
 
@@ -28,4 +27,3 @@ class LoopInputHandler {
 }  // namespace control
 }  // namespace src
 
-#endif  // SPINNY_CONTROL_IO_LOOP_INPUT_HANDLER_H_

@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_IMAGE_JPEGROUTINES_H_
-#define _AOS_VISION_IMAGE_JPEGROUTINES_H_
+#pragma once
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -33,4 +32,3 @@ inline bool DecodeJpeg(DataRef data, ImageValue *value) {
 }  // namespace vision
 }  // namespace aos
 
-#endif  // _AOS_VISION_IMAGE_JPEGROUTINES_H_

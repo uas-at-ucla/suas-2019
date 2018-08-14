@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_LOGGING_INTERFACE_H_
-#define AOS_COMMON_LOGGING_INTERFACE_H_
+#pragma once
 
 #include <stdarg.h>
 
@@ -125,4 +124,3 @@ void RunWithCurrentImplementation(
 }  // namespace logging
 }  // namespace aos
 
-#endif  // AOS_COMMON_LOGGING_INTERFACE_H_

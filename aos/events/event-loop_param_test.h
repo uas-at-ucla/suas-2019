@@ -1,5 +1,4 @@
-#ifndef _AOS_EVENTS_EVENT_LOOP_PARAM_TEST_H_
-#define _AOS_EVENTS_EVENT_LOOP_PARAM_TEST_H_
+#pragma once
 
 #include <vector>
 
@@ -32,4 +31,3 @@ class AbstractEventLoopTest
 }  // namespace testing
 }  // namespace aos
 
-#endif  // _AOS_EVENTS_EVENT_LOOP_PARAM_TEST_H_
