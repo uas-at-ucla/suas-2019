@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_LINKED_LIST_H_
-#define AOS_COMMON_UTIL_LINKED_LIST_H_
+#pragma once
 
 #include <functional>
 
@@ -110,4 +109,3 @@ struct LinkedListReference {
 }  // namespace util
 }  // namespace aos
 
-#endif  // AOS_COMMON_UTIL_LINKED_LIST_H_

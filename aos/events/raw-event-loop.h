@@ -1,5 +1,4 @@
-#ifndef _AOS_EVENTS_RAW_EVENT_LOOP_H_
-#define _AOS_EVENTS_RAW_EVENT_LOOP_H_
+#pragma once
 
 #include <atomic>
 #include <memory>
@@ -154,4 +153,3 @@ class RawEventLoop {
 
 }  // namespace aos
 
-#endif  // _AOS_EVENTS_RAW_EVENT_LOOP_H_

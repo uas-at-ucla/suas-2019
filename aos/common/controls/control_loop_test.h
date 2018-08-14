@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_CONTROLS_CONTROL_LOOP_TEST_H_
-#define AOS_COMMON_CONTROLS_CONTROL_LOOP_TEST_H_
+#pragma once
 
 #include "gtest/gtest.h"
 
@@ -67,4 +66,3 @@ class ControlLoopTest : public ::testing::Test {
 }  // namespace testing
 }  // namespace aos
 
-#endif  // AOS_COMMON_CONTROLS_CONTROL_LOOP_TEST_H_

@@ -1,3 +1,5 @@
+#pragma once
+
 #ifdef __VXWORKS__
 #include <taskLib.h>
 #else

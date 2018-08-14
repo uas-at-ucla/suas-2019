@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_LOGGING_PRINTF_FORMATS_H_
-#define AOS_COMMON_LOGGING_PRINTF_FORMATS_H_
+#pragma once
 
 #include "aos/common/macros.h"
 
@@ -25,4 +24,3 @@
 #define AOS_TIME_NSECONDS_DIGITS 6
 #define AOS_TIME_NSECONDS_DENOMINATOR 1000
 
-#endif  // AOS_COMMON_LOGGING_PRINTF_FORMATS_H_

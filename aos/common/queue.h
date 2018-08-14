@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_QUEUE_H_
-#define AOS_COMMON_QUEUE_H_
+#pragma once
 
 #include <assert.h>
 
@@ -225,4 +224,3 @@ class QueueGroup {
 
 #include "aos/linux_code/queue-tmpl.h"
 
-#endif  // AOS_COMMON_QUEUE_H_

@@ -1,5 +1,4 @@
-#ifndef SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_H_
-#define SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_H_
+#pragma once
 
 #include <atomic>
 
@@ -99,4 +98,3 @@ const std::map<FlightLoop::State, std::string> state_string = {
 }  // namespace control
 }  // namespace src
 
-#endif  // SPINNY_CONTROL_LOOPS_FLIGHT_LOOP_H_

@@ -1,3 +1,4 @@
+#pragma once
 
 #include <boost/functional/hash.hpp>
 #include <Eigen/Dense>

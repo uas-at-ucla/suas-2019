@@ -1,5 +1,4 @@
-#ifndef AOS_VISION_MATH_VECTOR_H_
-#define AOS_VISION_MATH_VECTOR_H_
+#pragma once
 
 #include <cmath>
 
@@ -208,4 +207,4 @@ inline Vector<Size> operator*(const double &lhs, Vector<Size> &rhs) {
 }  // namespace vision
 }  // namespace aos
 
-#endif  // AOS_VISION_MATH_VECTOR_H_
+#pragma once

@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_NETWORK_TEAM_NUMBER_H_
-#define AOS_COMMON_NETWORK_TEAM_NUMBER_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -26,4 +25,3 @@ int ParseTeamNumber(const std::string &hostname, uint16_t *teamnumber);
 }  // namespace network
 }  // namespace aos
 
-#endif  // AOS_COMMON_NETWORK_TEAM_NUMBER_H_

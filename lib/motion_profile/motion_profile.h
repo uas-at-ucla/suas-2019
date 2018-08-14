@@ -1,5 +1,4 @@
-#ifndef LIB_MOTION_PROFILE_MOTION_PROFILE_H_
-#define LIB_MOTION_PROFILE_MOTION_PROFILE_H_
+#pragma once
 
 #include <algorithm>
 #include <cmath>
@@ -34,4 +33,3 @@ class MotionProfile {
 }  // namespace motion_profile
 }  // namespace lib
 
-#endif  // LIB_MOTION_PROFILE_MOTION_PROFILE_H_

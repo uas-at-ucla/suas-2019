@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_DEATH_TEST_LOG_IMPLEMENTATION_H_
-#define AOS_COMMON_UTIL_DEATH_TEST_LOG_IMPLEMENTATION_H_
+#pragma once
 
 #include <stdlib.h>
 
@@ -24,4 +23,3 @@ class DeathTestLogImplementation : public logging::HandleMessageLogImplementatio
 }  // namespace util
 }  // namespace aos
 
-#endif  // AOS_COMMON_UTIL_DEATH_TEST_LOG_IMPLEMENTATION_H_

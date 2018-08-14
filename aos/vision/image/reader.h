@@ -1,5 +1,4 @@
-#ifndef AOS_VISION_IMAGE_READER_H_
-#define AOS_VISION_IMAGE_READER_H_
+#pragma once
 
 #include <inttypes.h>
 #include <functional>
@@ -65,4 +64,3 @@ class Reader {
 
 }  // namespace camera
 
-#endif  // AOS_VISION_IMAGE_READER_H_

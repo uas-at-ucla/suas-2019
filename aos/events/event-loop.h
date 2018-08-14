@@ -1,5 +1,4 @@
-#ifndef _AOS_EVENTS_EVENT_LOOP_H_
-#define _AOS_EVENTS_EVENT_LOOP_H_
+#pragma once
 
 #include <string>
 #include "aos/common/queue.h"
@@ -128,4 +127,3 @@ class EventLoop : public RawEventLoop {
 
 #include "aos/events/event-loop-tmpl.h"
 
-#endif  // _AOS_EVENTS_EVENT_LOOP_H

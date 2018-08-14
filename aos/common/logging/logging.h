@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_LOGGING_LOGGING_H_
-#define AOS_COMMON_LOGGING_LOGGING_H_
+#pragma once
 
 // This file contains the logging client interface. It works with both C and C++
 // code.
@@ -255,4 +254,3 @@ inline void CheckSyscallReturn(const char *syscall_string, int value) {
 
 #endif  // __cplusplus
 
-#endif

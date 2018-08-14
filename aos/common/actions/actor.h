@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_ACTIONS_ACTOR_H_
-#define AOS_COMMON_ACTIONS_ACTOR_H_
+#pragma once
 
 #include <stdio.h>
 #include <inttypes.h>
@@ -248,4 +247,4 @@ bool ActorBase<T>::ShouldCancel() {
 }  // namespace common
 }  // namespace aos
 
-#endif  // AOS_COMMON_ACTIONS_ACTOR_H_
+

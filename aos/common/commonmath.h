@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_MATH_H_
-#define AOS_COMMON_MATH_H_
+#pragma once
 
 #include <cmath>
 
@@ -40,4 +39,3 @@ static inline double Deadband(double value, const double deadband,
 }
 }  // namespace aos
 
-#endif  // AOS_COMMON_MATH_H_

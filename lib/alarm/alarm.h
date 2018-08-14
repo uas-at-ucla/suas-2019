@@ -1,5 +1,4 @@
-#ifndef LIB_ALARM_ALARM_H_
-#define LIB_ALARM_ALARM_H_
+#pragma once
 
 #include <queue>
 #include <vector>
@@ -27,4 +26,3 @@ class Alarm {
 }  // namespace alarm
 }  // namespace lib
 
-#endif  // LIB_ALARM_ALARM_H_
