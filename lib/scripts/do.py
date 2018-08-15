@@ -155,14 +155,6 @@ def run_cmd_exit_failure(cmd):
 
         sys.exit(1)
 
-def is_uasatucla_dev_env_running():
-    return processes.spawn_process_wait_for_code( \
-            "if [ -z $(docker ps --filter status=running " \
-                                "--format \"{{.ID}}\" --latest " \
-                                "--filter name=uas_env) ]; " \
-            "then exit 1; " \
-            "else exit 0; fi") == 0
-
 def kill_running_simulators():
     while processes.spawn_process_wait_for_code("docker kill $(docker ps " \
             "--filter status=running " \
@@ -175,35 +167,12 @@ def kill_running_simulators():
 
 
 def run_build(args=None, show_complete=True):
-    # Start the UAS@UCLA software development docker image if it is not already
-    # running.
     print_update("Going to build the code...")
 
-    if not is_uasatucla_dev_env_running():
-        print_update("Building UAS@UCLA software env docker...")
-        # Build the image for our docker environment.
-        # Add --no-cache to avoid using cache.
-        run_cmd_exit_failure("docker build -t uas-at-ucla_software " \
-                "tools/docker")
-
-        run_cmd_exit_failure("docker network create -d bridge uas_bridge " \
-                " > /dev/null || true")
-
-        run_cmd_exit_failure("docker run " \
-                "-it " \
-                "-d " \
-                "--rm " \
-                "--net uas_bridge " \
-                "-v $(pwd):/home/uas/code_env/ " \
-                "-v $(pwd)/tools/docker/cache/bazel:" \
-                    "/home/uas/.cache/bazel/_bazel_uas " \
-                "--name uas_env " \
-                "--env=LOCAL_USER_ID=\"$(id -u)\" " \
-                "uas-at-ucla_software " \
-                "\"bazel | tail -f /dev/null\"")
-
-    while not is_uasatucla_dev_env_running():
-        time.sleep(0.25)
+    # Start the UAS@UCLA software development docker image if it is not already
+    # running.
+    print_update("Bootstrapping UAS@UCLA environment...")
+    run_cmd_exit_failure("./lib/scripts/docker/run.sh")
 
     # Execute the build commands in the running docker image.
     DOCKER_PREFIX_CMD = "docker exec -t $(docker ps " \
