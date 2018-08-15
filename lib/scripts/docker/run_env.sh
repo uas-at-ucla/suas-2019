@@ -1,28 +1,32 @@
 #!/bin/bash
 
-UAS_ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
+unset UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER
+unset UAS_AT_UCLA_ENV_DOCKER_CONTAINER
+unset UAS_AT_UCLA_RUNNING_DOCKER_CONTAINERS
+
+UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
   --filter name=uas_env \
   --filter status=running \
-  --format "{{.ID}}" --latest\
+  --format "{{.ID}}" \
+  --latest \
   )
 
-if [ ! -z $UAS_ENV_DOCKER_RUNNING_CONTAINER ]
+if [ ! -z $UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER ]
 then
-  echo "UAS@UCLA docker environment already running!"
-  echo "Proceeding with existing docker container."
+  # Docker environment already running, so no need to start it.
   exit
 fi
 
-UAS_ENV_DOCKER_CONTAINER=$(docker ps \
+UAS_AT_UCLA_ENV_DOCKER_CONTAINER=$(docker ps \
   --filter name=uas_env \
   --format "{{.ID}}" \
   --latest
   )
 
-if [ ! -z $UAS_ENV_DOCKER_CONTAINER ]
+if [ ! -z $UAS_AT_UCLA_ENV_DOCKER_CONTAINER ]
 then
-  echo "Removing old container with ID $UAS_ENV_DOCKER_CONTAINER"
-  docker rm $UAS_ENV_DOCKER_CONTAINER
+  echo "Removing old container with ID $UAS_AT_UCLA_ENV_DOCKER_CONTAINER"
+  docker rm $UAS_AT_UCLA_ENV_DOCKER_CONTAINER
 fi
 
 
@@ -46,7 +50,6 @@ docker run \
   "bazel | sleep infinity"
 
 # Wait for docker container to start up.
-unset UAS_AT_UCLA_RUNNING_DOCKER_CONTAINERS
 while [ -z $UAS_AT_UCLA_RUNNING_DOCKER_CONTAINERS ]
 do
   UAS_AT_UCLA_RUNNING_DOCKER_CONTAINERS=$(docker ps \
