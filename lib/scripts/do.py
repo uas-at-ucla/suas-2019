@@ -27,6 +27,13 @@ UAS_AT_UCLA_TEXT = '\033[96m' + \
 '\033[0m'
 
 
+# Script locations.
+DOCKER_RUN_ENV_SCRIPT = "./lib/scripts/docker/run_env.sh "
+DOCKER_RUN_SIM_SCRIPT = "./lib/scripts/docker/run_sim.sh "
+DOCKER_EXEC_SCRIPT = "./lib/scripts/docker/exec.sh "
+DOCKER_EXEC_KILL_SCRIPT = "./lib/scripts/docker/exec_kill.sh "
+
+
 def print_update(message, msg_type="STATUS"):
     SPLIT_SIZE = 65
 
@@ -92,11 +99,8 @@ def signal_received(signal, frame):
             "--format \"{{.ID}}\" " \
             "--latest) "
 
-#   if processes.spawn_process_wait_for_code( \
-#           DOCKER_PREFIX_CMD + \
-#           "./lib/scripts/docker_exec_kill.sh", \
-#           show_output=False, allow_input=False) == 0:
-#       status += "Killed screen sessions within uas_env\n"
+    if processes.spawn_process_wait_for_code(DOCKER_EXEC_KILL_SCRIPT) == 0:
+        status += "Killed all spawned processes in docker image.\n"
 
     status += processes.killall()
     print_update(status, "FAILURE")
@@ -172,31 +176,25 @@ def run_build(args=None, show_complete=True):
     # Start the UAS@UCLA software development docker image if it is not already
     # running.
     print_update("Bootstrapping UAS@UCLA environment...")
-    run_cmd_exit_failure("./lib/scripts/docker/run.sh")
+    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
 
     # Execute the build commands in the running docker image.
-    DOCKER_PREFIX_CMD = "docker exec -t $(docker ps " \
-            "--filter status=running " \
-            "--filter name=uas_env " \
-            "--format \"{{.ID}}\" " \
-            "--latest) "
-
     print_update("Building src directory...")
-    run_cmd_exit_failure(DOCKER_PREFIX_CMD + "bazel build //src/...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "bazel build //src/...")
 
     print_update("\n\nBuilding lib directory...")
-    run_cmd_exit_failure(DOCKER_PREFIX_CMD + "bazel build //lib/...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "bazel build //lib/...")
 
     print_update("\n\nBuilding shm core...")
-    run_cmd_exit_failure(DOCKER_PREFIX_CMD + \
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
             "bazel build //aos/linux_code:core")
 
     print_update("\n\nBuilding src for raspi...")
-    run_cmd_exit_failure(DOCKER_PREFIX_CMD + \
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
             "bazel build --cpu=raspi //src/...")
 
     print_update("\n\nBuilding shm core for raspi...")
-    run_cmd_exit_failure(DOCKER_PREFIX_CMD + \
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
             "bazel build --cpu=raspi //aos/linux_code:core")
 
     if show_complete:
@@ -205,13 +203,6 @@ def run_build(args=None, show_complete=True):
 
 
 def run_simulate(args):
-    DOCKER_PREFIX_CMD = "./lib/scripts/docker_exec.sh " \
-            "$(docker ps " \
-            "--filter status=running " \
-            "--filter name=uas_env " \
-            "--format \"{{.ID}}\" " \
-            "--latest) "
-
     print_update("Building the code...")
     run_build(show_complete=False)
 
@@ -221,7 +212,7 @@ def run_simulate(args):
     print_update("Building UAS@UCLA software env docker...")
 
     # Build the image for our docker environment.
-    run_cmd_exit_failure(DOCKER_PREFIX_CMD + \
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
             "git clone " \
             "https://github.com/PX4/Firmware.git " \
             "tools/docker/cache/px4_firmware || true")
@@ -282,17 +273,7 @@ def run_simulate(args):
 
     # Start the PX4 simulator docker image.
     run_cmd_exit_failure("tmux send-keys \"" \
-            "docker run --rm -t " \
-            "--env=LOCAL_USER_ID=\\\"$(id -u)\\\" " \
-            "-v $(pwd)/tools/docker/cache/px4_firmware:/src/firmware/:rw " \
-            "-v /tmp/.X11-unix:/tmp/.X11-unix:ro " \
-            "-e DISPLAY=:0 "\
-            "--name uas_sim " \
-            "--net uas_bridge " \
-            "-p 14556:14556/udp " \
-            "px4io/px4-dev-ros:2017-10-23 " \
-            "/bin/sh -c \\\"cd /src/firmware;" \
-            "HEADLESS=1 make posix_sitl_default gazebo\\\"\" C-m")
+            + DOCKER_RUN_SIM_SCRIPT + "\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
             "-t " \
@@ -300,7 +281,7 @@ def run_simulate(args):
             "-U")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_PREFIX_CMD + \
+            DOCKER_EXEC_SCRIPT + \
             "/home/uas/.local/bin/mavproxy.py " \
             "--nowait " \
             "--show-errors " \
@@ -323,7 +304,7 @@ def run_simulate(args):
             "-U")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_PREFIX_CMD + \
+            DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/loops:flight_loop\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
@@ -332,7 +313,7 @@ def run_simulate(args):
             "-D")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_PREFIX_CMD + \
+            DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/io:io\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
@@ -341,11 +322,11 @@ def run_simulate(args):
             "-D")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_PREFIX_CMD + \
+            DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_PREFIX_CMD + \
+            DOCKER_EXEC_SCRIPT + \
             "bazel run //lib/logger:log_writer\" C-m")
 
     while True:
