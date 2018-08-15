@@ -6,10 +6,13 @@ addons:
       packages:
         - xvfb
 
+services:
+  - docker
+
 install:
   - export DISPLAY=':99.0'
   - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-  - sudo ./do.sh install
+  - sudo apt -y -qq install python
 
 script:
  - ./do.sh build
