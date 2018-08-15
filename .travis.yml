@@ -12,4 +12,4 @@ install:
   - sudo ./do.sh install
 
 script:
- - ./do.sh travis
+ - ./do.sh build
