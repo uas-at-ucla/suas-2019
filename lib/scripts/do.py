@@ -231,45 +231,14 @@ def run_simulate(args):
             "-s " \
             "uas_env")
 
-    run_cmd_exit_failure("tmux split-window " \
-            "-h " \
-            "-t " \
-            "uas_env")
-
-    run_cmd_exit_failure("tmux split-window " \
-            "-v " \
-            "-t " \
-            "uas_env")
-
-    run_cmd_exit_failure("tmux split-window " \
-            "-v " \
-            "-t " \
-            "uas_env")
-
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-L")
-
-    run_cmd_exit_failure("tmux split-window " \
-            "-v " \
-            "-t " \
-            "uas_env")
-
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-U")
-
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-U")
-
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-U")
+    run_cmd_exit_failure("tmux split-window -h -t uas_env")
+    run_cmd_exit_failure("tmux split-window -v -t uas_env")
+    run_cmd_exit_failure("tmux split-window -v -t uas_env")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -L")
+    run_cmd_exit_failure("tmux split-window -v -t uas_env")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
 
     # Start the PX4 simulator docker image.
     run_cmd_exit_failure("tmux send-keys \"" \
@@ -328,6 +297,10 @@ def run_simulate(args):
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
             "bazel run //lib/logger:log_writer\" C-m")
+
+    print_update("\n\nSimulation running! \n" \
+            "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
+            msg_type="SUCCESS")
 
     while True:
         time.sleep(1)
