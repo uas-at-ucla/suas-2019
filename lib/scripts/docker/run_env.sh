@@ -49,11 +49,14 @@ docker run \
   uas-at-ucla_software \
   "bazel | sleep infinity"
 
+echo "Started uas env docker image. Waiting for it to boot..."
+
 # Wait for docker container to start up.
 while [ -z $UAS_AT_UCLA_RUNNING_DOCKER_CONTAINERS ]
 do
   UAS_AT_UCLA_RUNNING_DOCKER_CONTAINERS=$(docker ps \
     --filter name=uas_env \
+    --filter status=running \
     --format "{{.ID}}" \
     --latest \
   )
