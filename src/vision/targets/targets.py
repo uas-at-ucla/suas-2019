@@ -1,4 +1,5 @@
 import abc
+import math
 from PIL import Image, ImageFont, ImageDraw
 
 # yapf: disable
@@ -113,4 +114,30 @@ class Cross(TargetGenerator):
              (int(size / 4), int(size / 4))],
             fill=color + (255, ))
 # yapf: enable
+
+class Polygon(TargetGenerator):
+    def _draw_polygon(self, context, size, color, n_sides):
+        verticies = [(int(size / 2), 0)] # the first point is always on the top edge
+        r = size / 2
+        d_angle = math.pi * 2 / n_sides
+        angle = math.pi / 2 + d_angle
+        for i in range(n_sides - 1):
+            x = math.cos(angle) * r + r
+            y = math.sin(angle) * -r + r
+            verticies += [(int(x), int(y))]
+            angle += d_angle
+        print('Creating polygon ' + str(n_sides) + ': ' + str(verticies))
+        context.polygon(verticies, fill=color + (255, ))
+
+class Pentagon(Polygon):
+    def _draw_shape(self, context, size, color):
+        self._draw_polygon(context, size, color, 5)
+
+class Hexagon(Polygon):
+    def _draw_shape(self, context, size, color):
+        self._draw_polygon(context, size, color, 6)
+
+class Heptagon(Polygon):
+    def _draw_shape(self, context, size, color):
+        self._draw_polygon(context, size, color, 7)
 
