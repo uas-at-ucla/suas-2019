@@ -60,9 +60,33 @@ class Circle(TargetGenerator):
         context.ellipse([(0, 0), (size, size)], fill=color + (255, ))
 
 
+class HalfCircle(TargetGenerator):
+    def _draw_shape(self, context, size, color):
+        context.pieslice(
+            [(0, int(size / 4)), (size, int(size * 5 / 4))],
+            180,
+            360,
+            fill=color + (255, ))
+
+
+class QuarterCircle(TargetGenerator):
+    def _draw_shape(self, context, size, color):
+        context.pieslice([(-size, 0), (size, size * 2)], 270, 360, fill=color + (255, ))
+
+
 class Rectangle(TargetGenerator):
     def _draw_shape(self, context, size, color):
         context.rectangle([(0, 0), (size, size)], fill=color + (255, ))
+
+
+# yapf: disable
+class Trapezoid(TargetGenerator):
+    def _draw_shape(self, context, size, color):
+        context.polygon([(int(size / 4), int(size / 4)),
+                         (int(size * 3 / 4), int(size / 4)),
+                         (size, int(size * 3 / 4)),
+                         (0, int(size * 3 / 4))], fill=color + (255, ))
+# yapf: enable
 
 
 class Triangle(TargetGenerator):
@@ -70,4 +94,23 @@ class Triangle(TargetGenerator):
         context.polygon(
             [(int(size / 2), 0), (size, size), (0, size)],
             fill=color + (255, ))
+
+# yapf: disable
+class Cross(TargetGenerator):
+    def _draw_shape(self, context, size, color):
+        context.polygon(
+            [(int(size / 4), 0),
+             (int(size * 3 / 4), 0),
+             (int(size * 3 / 4), int(size / 4)),
+             (size, int(size / 4)),
+             (size, int(size * 3 / 4)),
+             (int(size * 3 / 4), int(size * 3 / 4)),
+             (int(size * 3 / 4), size),
+             (int(size / 4), size),
+             (int(size / 4), int(size * 3 / 4)),
+             (0, int(size * 3 / 4)),
+             (0, int(size / 4)),
+             (int(size / 4), int(size / 4))],
+            fill=color + (255, ))
+# yapf: enable
 
