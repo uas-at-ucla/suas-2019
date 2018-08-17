@@ -49,7 +49,6 @@ sudo chmod -R 777 tools/docker/cache/bazel
 docker run \
   -it \
   -d \
-  --user $(id -u $USER) \
   --rm \
   --net uas_bridge \
   -v $(pwd):/home/uas/code_env/ \
