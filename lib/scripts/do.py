@@ -33,6 +33,8 @@ DOCKER_RUN_SIM_SCRIPT = "./lib/scripts/docker/run_sim.sh "
 DOCKER_EXEC_SCRIPT = "./lib/scripts/docker/exec.sh "
 DOCKER_EXEC_KILL_SCRIPT = "./lib/scripts/docker/exec_kill.sh "
 
+# Command chains.
+BAZEL_BUILD = "bazel build --noshow_progress "
 
 def print_update(message, msg_type="STATUS"):
     SPLIT_SIZE = 65
@@ -180,22 +182,22 @@ def run_build(args=None, show_complete=True):
 
     # Execute the build commands in the running docker image.
     print_update("Building src directory...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "bazel build //src/...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")
 
     print_update("\n\nBuilding lib directory...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "bazel build //lib/...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//lib/...")
 
     print_update("\n\nBuilding shm core...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
-            "bazel build //aos/linux_code:core")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD \
+            + "//aos/linux_code:core")
 
     print_update("\n\nBuilding src for raspi...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
-            "bazel build --cpu=raspi //src/...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
+            + BAZEL_BUILD + "--cpu=raspi //src/...")
 
     print_update("\n\nBuilding shm core for raspi...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
-            "bazel build --cpu=raspi //aos/linux_code:core")
+            + BAZEL_BUILD + "--cpu=raspi //aos/linux_code:core")
 
     if show_complete:
         print_update("\n\nBuild complete :^) LONG LIVE SPINNY!", \

@@ -72,7 +72,6 @@ toolchain {
 
   linker_flag: "-lstdc++"
   linker_flag: "-lc++"
-  compiler_flag: "-stdlib=libc++"
   compiler_flag: "-Wno-error=unused-command-line-argument"
   linker_flag: "-B/usr/bin/"
 
