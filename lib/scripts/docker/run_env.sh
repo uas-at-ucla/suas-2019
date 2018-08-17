@@ -42,14 +42,14 @@ fi
 docker network create -d bridge uas_bridge > /dev/null || true
 
 mkdir -p tools/docker/cache/bazel
-chown -R 1000 tools/docker/cache/bazel
-chmod -R 777 tools/docker/cache/bazel
+#chown -R 1000 tools/docker/cache/bazel
+#chmod -R 777 tools/docker/cache/bazel
 
 # Start docker container and let it run forever.
 docker run \
   -it \
   -d \
-  --privileged \
+  --user $(id -u $USER) \
   --rm \
   --net uas_bridge \
   -v $(pwd):/home/uas/code_env/ \
