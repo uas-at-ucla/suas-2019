@@ -42,8 +42,8 @@ fi
 docker network create -d bridge uas_bridge > /dev/null || true
 
 mkdir -p tools/docker/cache/bazel
-#chown -R 1000 tools/docker/cache/bazel
-#chmod -R 777 tools/docker/cache/bazel
+sudo chown -R 1000 tools/docker/cache/bazel
+sudo chmod -R 777 tools/docker/cache/bazel
 
 # Start docker container and let it run forever.
 docker run \
