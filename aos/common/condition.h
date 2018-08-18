@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_CONDITION_H_
-#define AOS_COMMON_CONDITION_H_
+#pragma once
 
 #include "aos/linux_code/ipc_lib/aos_sync.h"
 
@@ -80,4 +79,3 @@ class Condition {
 
 }  // namespace aos
 
-#endif  // AOS_COMMON_CONDITION_H_

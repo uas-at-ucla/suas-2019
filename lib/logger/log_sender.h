@@ -1,5 +1,4 @@
-#ifndef LIB_LOGGER_LOG_SENDER_H_
-#define LIB_LOGGER_LOG_SENDER_H_
+#pragma once
 
 #include <unistd.h>
 #include <atomic>
@@ -40,4 +39,3 @@ static LogSender* log_sender = new LogSender();
     ::lib::logger::log_sender->Log(__FILE__, __func__, __LINE__, __log_line); \
   } while (0)
 
-#endif  // LIB_LOGGER_LOG_SENDER_H_

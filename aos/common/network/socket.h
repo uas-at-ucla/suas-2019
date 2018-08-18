@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_NETWORK_SOCKET_H_
-#define AOS_COMMON_NETWORK_SOCKET_H_
+#pragma once
 
 #include <arpa/inet.h>
 #include <netinet/in.h>
@@ -50,4 +49,3 @@ class Socket {
 }  // namespace network
 }  // namespace aos
 
-#endif  // AOS_COMMON_NETWORK_SOCKET_H_

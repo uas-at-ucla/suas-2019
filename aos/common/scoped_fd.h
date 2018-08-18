@@ -1,5 +1,4 @@
-#ifndef _AOS_COMMON_SCOPED_FD_
-#define _AOS_COMMON_SCOPED_FD_
+#pragma once
 
 #include <unistd.h>
 
@@ -41,4 +40,3 @@ class ScopedFD {
 
 }  // namespace aos
 
-#endif  // _AOS_COMMON_SCOPED_FD_

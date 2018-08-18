@@ -1,5 +1,4 @@
-#ifndef AOS_LINUX_CODE_CAMREA_V4L2_H_
-#define AOS_LINUX_CODE_CAMREA_V4L2_H_
+#pragma once
 
 // This file handles including everything needed to use V4L2 and has some
 // utility functions.
@@ -21,4 +20,3 @@ static inline int xioctl(int fd, int request, void *arg) {
 
 }  // namespace camera
 
-#endif

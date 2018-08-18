@@ -1,5 +1,4 @@
-#ifndef _AOS_CORE_LIB_H_
-#define _AOS_CORE_LIB_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -30,4 +29,3 @@ static inline void *shm_malloc(size_t length) {
 }
 #endif  // __cplusplus
 
-#endif

@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_STRING_TO_NUM_H_
-#define AOS_COMMON_UTIL_STRING_TO_NUM_H_
+#pragma once
 
 #include <sstream>
 #include <string>
@@ -26,4 +25,3 @@ inline bool StringToNumber(const ::std::string &input, T *out_num) {
 }  // util
 }  // aos
 
-#endif

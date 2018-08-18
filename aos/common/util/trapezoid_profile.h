@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_TRAPEZOID_PROFILE_H_
-#define AOS_COMMON_UTIL_TRAPEZOID_PROFILE_H_
+#pragma once
 
 #include "Eigen/Dense"
 
@@ -66,4 +65,3 @@ class TrapezoidProfile {
 }  // namespace util
 }  // namespace aos
 
-#endif  // AOS_COMMON_UTIL_TRAPEZOID_PROFILE_H_

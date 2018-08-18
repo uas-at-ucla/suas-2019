@@ -1,5 +1,4 @@
-#ifndef AOS_LINUX_CODE_IPC_LIB_SYNC_H_
-#define AOS_LINUX_CODE_IPC_LIB_SYNC_H_
+#pragma once
 
 #include <stdlib.h>
 #include <signal.h>
@@ -183,4 +182,3 @@ bool HaveLockedMutexes();
 
 #endif  // __cplusplus
 
-#endif  // AOS_LINUX_CODE_IPC_LIB_SYNC_H_

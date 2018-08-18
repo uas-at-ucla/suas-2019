@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_BYTEORDER_H_
-#define AOS_COMMON_BYTEORDER_H_
+#pragma once
 
 #ifndef __VXWORKS__
 #include <endian.h> // endian(3)
@@ -198,4 +197,3 @@ static inline void to_network(const char *host, char *output) {
 
 } // namespace aos
 
-#endif
