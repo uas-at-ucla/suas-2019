@@ -20,7 +20,7 @@ function docker_exec {
     docker exec -t -u $(id -u) $UAS_AT_UCLA_IMAGE \
       bash -c "echo \"\$\$\" > \"$PIDFILE\".pid; echo \"$*\" > \"$NAMEFILE\".name;$*"
 
-    PID=$!
+    exit $?
 }
 
 docker_exec "$@"
