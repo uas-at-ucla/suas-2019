@@ -6,7 +6,7 @@ unset INSTALL_REQUIRED
 unset PLATFORM
 unset NEED_TO_INSTALL
 
-PACKAGES="docker python2.7 tmux"
+PACKAGES="docker python2.7 tmux git"
 MACOS_PACKAGES="brew docker-machine-nfs"
 INSTALL_REQUIRED="false"
 NEED_TO_INSTALL=""
@@ -16,6 +16,19 @@ PLATFORM=$(uname -s)
 function check_if_installed {
   which $1 > /dev/null 2>&1
   return $?
+}
+
+function install_package {
+  check_if_installed "$1"
+  if [ $? -ne 0 ]
+  then
+    if [ "$PLATFORM" == "Darwin" ]
+    then
+      brew install $1
+    else
+      sudo apt-get install -y $1
+    fi
+  fi
 }
 
 if [ "$EUID" == 0 ]
@@ -52,8 +65,6 @@ then
 fi
 
 echo "Need to install $NEED_TO_INSTALL"
-
-set -e
 
 if [ "$PLATFORM" == "Darwin" ]
 then
@@ -107,7 +118,7 @@ then
   fi
 fi
 
-check_if_installed "python2.7"
+check_if_installed "$1"
 if [ $? -ne 0 ]
 then
   if [ "$PLATFORM" == "Darwin" ]
@@ -118,15 +129,4 @@ then
   fi
 fi
 
-check_if_installed "tmux"
-if [ $? -ne 0 ]
-then
-  if [ "$PLATFORM" == "Darwin" ]
-  then
-    brew install tmux
-  else
-    sudo apt-get install -y tmux
-  fi
-fi
-
-set +e
+install_package "tmux git"
