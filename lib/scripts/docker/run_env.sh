@@ -42,21 +42,17 @@ fi
 docker network create -d bridge uas_bridge > /dev/null || true
 
 mkdir -p tools/docker/cache/bazel
-sudo chown -R 1000 tools/docker/cache/bazel
-sudo chmod -R 777 tools/docker/cache/bazel
 
 # Start docker container and let it run forever.
 docker run \
-  -it \
   -d \
   --rm \
   --net uas_bridge \
   -v $(pwd):/home/uas/code_env/ \
   -v $(pwd)/tools/docker/cache/bazel:/home/uas/.cache/bazel/_bazel_uas  \
   --name uas_env \
-  --env=LOCAL_USER_ID="$(id -u)" \
   uas-at-ucla_software \
-  "bazel | sleep infinity"
+  bash -c "sudo chown -R uas ~/.cache/bazel;bazel;sleep infinity"
 
 echo "Started uas env docker image. Waiting for it to boot..."
 
