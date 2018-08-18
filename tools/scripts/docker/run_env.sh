@@ -13,7 +13,8 @@ UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
 
 if [ ! -z $UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER ]
 then
-  # Docker environment already running, so no need to start it.
+  echo "Docker environment already running."
+
   exit
 fi
 
