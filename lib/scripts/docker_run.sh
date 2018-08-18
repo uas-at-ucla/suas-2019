@@ -1,4 +1,5 @@
 #!/bin/bash
+ exit 1
 
 UAS_ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
   --filter name=uas_env \
