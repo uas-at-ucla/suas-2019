@@ -177,7 +177,6 @@ def run_build(args=None, show_complete=True):
 
     print_update("Making sure all the necessary packages are installed.")
     run_install()
-    
 
     # Start the UAS@UCLA software development docker image if it is not already
     # running.
@@ -261,7 +260,8 @@ def run_simulate(args):
             "--nowait " \
             "--show-errors " \
             "--master udpout:172.19.0.3:14557 " \
-            "--out udp:0.0.0.0:8084 --non-interactive\" C-m")
+            "--out udp:0.0.0.0:8084 --non-interactive " \
+            "--baud 921600\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
             "-t " \
