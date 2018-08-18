@@ -46,7 +46,7 @@ mkdir -p tools/docker/cache/bazel
 # Start docker container and let it run forever.
 PLATFORM=$(uname -s)
 DOCKER_BUILD_CMD="chown -R uas /home/uas/.cache/bazel;sudo -u uas bash -c \"bazel;sleep infinity\""
-if [ $PLATFORM == "Darwin" ]
+if [ $PLATFORM == "Darwin" ] || [ $TRAVIS == "true" ]
 then
   DOCKER_BUILD_CMD="usermod -u $(id -u) uas;$DOCKER_BUILD_CMD"
 fi
