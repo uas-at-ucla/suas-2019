@@ -102,8 +102,6 @@ RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
 RUN pip2.7 install --upgrade pip                                            && \
     pip3.6 install --upgrade pip
 
-RUN pip2.7 install --user mavproxy
-
 # Set up workspace. ############################################################
 # Fix xlocale.h renamed to locale.h
 # https://bugs.launchpad.net/ubuntu/+source/libc++/+bug/1725858
@@ -122,7 +120,7 @@ ENV WORKSPACE /home/uas/code_env WORKDIR /home/uas/code_env
 
 WORKDIR /home/uas
 
-# Install mavlink-router. ######################################################
+# Install mavlink-router and mavproxy. #########################################
 RUN pip2.7 install --user future
 RUN git clone https://github.com/intel/mavlink-router.git
 WORKDIR /home/uas/mavlink-router
@@ -134,6 +132,8 @@ RUN ./autogen.sh && ./configure CFLAGS='-g -O2' \
     --prefix=/usr
 RUN make
 RUN sudo make install
+
+RUN pip2.7 install --user mavproxy
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
