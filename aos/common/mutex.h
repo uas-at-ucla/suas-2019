@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_MUTEX_H_
-#define AOS_COMMON_MUTEX_H_
+#pragma once
 
 #include "aos/common/macros.h"
 #include "aos/common/type_traits.h"
@@ -147,4 +146,3 @@ class IPCRecursiveMutexLocker {
 
 }  // namespace aos
 
-#endif  // AOS_COMMON_MUTEX_H_

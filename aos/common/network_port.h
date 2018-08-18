@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_NETWORK_PORT_H_
-#define AOS_COMMON_NETWORK_PORT_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -29,4 +28,3 @@ enum class NetworkAddress : uint8_t {
 
 }  // namespace aos
 
-#endif  // AOS_COMMON_NETWORK_PORT_H_

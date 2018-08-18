@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_SCOPED_PTR_H_
-#define AOS_COMMON_SCOPED_PTR_H_
+#pragma once
 
 #include "aos/common/macros.h"
 
@@ -40,4 +39,3 @@ class scoped_ptr {
 
 }  // namespace aos
 
-#endif  // AOS_COMMON_SCOPED_PTR_H_

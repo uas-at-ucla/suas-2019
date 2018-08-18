@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_INPUT_DRIVER_STATION_DATA_H_
-#define AOS_COMMON_INPUT_DRIVER_STATION_DATA_H_
+#pragma once
 
 // This file defines several types to support nicely looking at the data
 // received from the driver's station.
@@ -108,4 +107,3 @@ class Data {
 }  // namespace input
 }  // namespace aos
 
-#endif  // AOS_COMMON_INPUT_DRIVER_STATION_DATA_H_

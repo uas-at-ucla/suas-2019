@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_BLOB_FIND_BLOB_H_
-#define _AOS_VISION_BLOB_FIND_BLOB_H_
+#pragma once
 
 #include "aos/vision/blob/range_image.h"
 
@@ -13,4 +12,3 @@ BlobList FindBlobs(const RangeImage &rimg);
 }  // namespace vision
 }  // namespace aos
 
-#endif  // _AOS_VISION_BLOB_FIND_BLOB_H_

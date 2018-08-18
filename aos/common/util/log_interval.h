@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_LOG_INTERVAL_H_
-#define AOS_COMMON_UTIL_LOG_INTERVAL_H_
+#pragma once
 
 #include "aos/common/time.h"
 #include "aos/common/logging/logging.h"
@@ -94,4 +93,3 @@ class SimpleLogInterval {
 }  // namespace util
 }  // namespace aos
 
-#endif  // AOS_COMMON_UTIL_LOG_INTERVAL_H_

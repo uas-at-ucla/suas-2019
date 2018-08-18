@@ -1,5 +1,4 @@
-#ifndef AOS_TESTING_PREVENT_EXIT_H_
-#define AOS_TESTING_PREVENT_EXIT_H_
+#pragma once
 
 namespace aos {
 namespace testing {
@@ -13,4 +12,3 @@ void PreventExit();
 }  // namespace testing
 }  // namespace aos
 
-#endif  // AOS_TESTING_PREVENT_EXIT_H_

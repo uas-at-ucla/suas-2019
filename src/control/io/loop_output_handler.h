@@ -1,5 +1,4 @@
-#ifndef SPINNY_CONTROL_IO_LOOP_OUTPUT_HANDLER_H_
-#define SPINNY_CONTROL_IO_LOOP_OUTPUT_HANDLER_H_
+#pragma once
 
 #include <chrono>
 
@@ -79,4 +78,3 @@ class LoopOutputHandler {
 }  // namespace control
 }  // namespace src
 
-#endif  // SPINNY_CONTROL_IO_LOOP_OUTPUT_HANDLER_H_

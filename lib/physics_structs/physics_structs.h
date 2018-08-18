@@ -1,5 +1,4 @@
-#ifndef SPINNY_LIB_PHYSICS_STRUCTS_PHYSICS_STRUCTS
-#define SPINNY_LIB_PHYSICS_STRUCTS_PHYSICS_STRUCTS
+#pragma once
 
 #include <cmath>
 
@@ -38,4 +37,3 @@ Vector3D PointTowards(Position3D start, Position3D end);
 double GetMagnitude(Vector3D);
 
 
-#endif  // SPINNY_LIB_PHYSICS_STRUCTS_PHYSICS_STRUCTS

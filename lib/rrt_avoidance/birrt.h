@@ -1,5 +1,4 @@
-#ifndef SPINNY_LIB_RRT_AVOIDANCE_BIRRT_H_
-#define SPINNY_LIB_RRT_AVOIDANCE_BIRRT_H_
+#pragma once
 
 #include <limits.h>
 #include <Eigen/Dense>
@@ -127,4 +126,3 @@ class BiRRT {
 }  // namespace rrt_avoidance
 }  // namespace lib
 
-#endif  // SPINNY_LIB_RRT_AVOIDANCE_BIRRT_H_

@@ -1,5 +1,4 @@
-#ifndef SPINNY_LIB_RRT_AVOIDANCE_RRT_AVOIDANCE_H_
-#define SPINNY_LIB_RRT_AVOIDANCE_RRT_AVOIDANCE_H_
+#pragma once
 
 #include "lib/rrt_avoidance/birrt.h"
 #include "lib/rrt_avoidance/2dplane/2dplane.hpp"
@@ -25,4 +24,3 @@ class RRTAvoidance {
 }  // namespace rrt_avoidance
 }  // namespace lib
 
-#endif  // SPINNY_LIB_RRT_AVOIDANCE_RRT_AVOIDANCE_H_

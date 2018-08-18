@@ -1,5 +1,4 @@
-#ifndef AOS_VISION_BLOB_TEST_UTILS_H_
-#define AOS_VISION_BLOB_TEST_UTILS_H_
+#pragma once
 
 #include "aos/vision/blob/range_image.h"
 
@@ -21,4 +20,3 @@ RangeImage LoadFromTestData(int mini, const char *data);
 }  // namespace vision
 }  // namespace aos
 
-#endif  // AOS_VISION_BLOB_TEST_UTILS_H_

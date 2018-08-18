@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_TYPE_TRAITS_
-#define AOS_COMMON_TYPE_TRAITS_
+#pragma once
 
 #include <features.h>
 
@@ -43,4 +42,3 @@ struct shm_ok : public std::integral_constant<
 
 }  // namespace aos
 
-#endif

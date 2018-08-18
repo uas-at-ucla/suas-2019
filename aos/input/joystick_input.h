@@ -1,5 +1,4 @@
-#ifndef AOS_INPUT_JOYSTICK_INPUT_H_
-#define AOS_INPUT_JOYSTICK_INPUT_H_
+#pragma once
 
 #include <atomic>
 
@@ -35,4 +34,3 @@ class JoystickProxy {
 }  // namespace input
 }  // namespace aos
 
-#endif  // AOS_INPUT_JOYSTICK_INPUT_H_

@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_LOGGING_MATRIX_LOGGING_H_
-#define AOS_COMMON_LOGGING_MATRIX_LOGGING_H_
+#pragma once
 
 #include <string>
 #include <functional>
@@ -44,4 +43,3 @@ void DoLogMatrixTemplated(log_level level, const ::std::string &message,
 }  // namespace logging
 }  // namespace aos
 
-#endif  // AOS_COMMON_LOGGING_MATRIX_LOGGING_H_

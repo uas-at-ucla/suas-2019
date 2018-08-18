@@ -1,5 +1,4 @@
-#ifndef _SHARED_MEM_H_
-#define _SHARED_MEM_H_
+#pragma once
 
 #include <stddef.h>
 #include <unistd.h>
@@ -36,4 +35,3 @@ int aos_core_is_init(void);
 }
 #endif
 
-#endif

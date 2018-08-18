@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_IMAGE_IMAGE_STREAM_H_
-#define _AOS_VISION_IMAGE_IMAGE_STREAM_H_
+#pragma once
 
 #include "aos/vision/events/epoll_events.h"
 #include "aos/vision/image/camera_params.pb.h"
@@ -51,4 +50,3 @@ class ImageStreamEvent : public ::aos::events::EpollEvent {
 }  // namespace vision
 }  // namespace aos
 
-#endif  // _AOS_VISION_DEBUG_IMAGE_STREAM_H_

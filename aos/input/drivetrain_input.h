@@ -1,5 +1,4 @@
-#ifndef AOS_INPUT_DRIVETRAIN_INPUT_H_
-#define AOS_INPUT_DRIVETRAIN_INPUT_H_
+#pragma once
 
 #include <math.h>
 #include <stdio.h>
@@ -154,4 +153,3 @@ class XboxDrivetrainInputReader : public DrivetrainInputReader {
 }  // namespace input
 }  // namespace aos
 
-#endif  // AOS_INPUT_DRIVETRAIN_INPUT_H_

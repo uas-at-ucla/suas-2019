@@ -1,5 +1,4 @@
-#ifndef LIB_PID_PID_H_
-#define LIB_PID_PID_H_
+#pragma once
 
 #include <cmath>
 #include <iostream>
@@ -33,4 +32,3 @@ private:
 } // namespace pid
 } // namespace lib
 
-#endif // LIB_PID_PID_H_
