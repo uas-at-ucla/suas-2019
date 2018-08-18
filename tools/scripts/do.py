@@ -28,10 +28,10 @@ UAS_AT_UCLA_TEXT = '\033[96m' + \
 
 
 # Script locations.
-DOCKER_RUN_ENV_SCRIPT = "./lib/scripts/docker/run_env.sh "
-DOCKER_RUN_SIM_SCRIPT = "./lib/scripts/docker/run_sim.sh "
-DOCKER_EXEC_SCRIPT = "./lib/scripts/docker/exec.sh "
-DOCKER_EXEC_KILL_SCRIPT = "./lib/scripts/docker/exec_kill.sh "
+DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/docker/run_env.sh "
+DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/docker/run_sim.sh "
+DOCKER_EXEC_SCRIPT      = "./tools/scripts/docker/exec.sh "
+DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/docker/exec_kill.sh "
 
 # Command chains.
 if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
@@ -125,11 +125,7 @@ def run_deploy(args):
 
 
 def run_install(args):
-    if os.getuid() != 0:
-        print("ERROR: Must be sudo to run install script.")
-        sys.exit(1)
-
-    processes.spawn_process("sudo bash tools/installation/install.sh")
+    processes.spawn_process("bash ./tools/scripts/install.sh")
     processes.wait_for_complete()
 
 
