@@ -13,10 +13,9 @@ class Semaphore {
   bool TryWait();
 
  private:
-  std::mutex mutex_;
-  std::condition_variable condition_;
+  ::std::mutex mutex_;
+  ::std::condition_variable condition_;
   unsigned long count_;
 };
 
 }  // namespace lib
-
