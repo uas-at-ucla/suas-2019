@@ -13,7 +13,8 @@ UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
 
 if [ ! -z $UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER ]
 then
-  # Docker environment already running, so no need to start it.
+  echo "Docker environment already running."
+
   exit
 fi
 
@@ -46,7 +47,7 @@ mkdir -p tools/docker/cache/bazel
 # Start docker container and let it run forever.
 PLATFORM=$(uname -s)
 DOCKER_BUILD_CMD="chown -R uas /home/uas/.cache/bazel;sudo -u uas bash -c \"bazel;sleep infinity\""
-if [ $PLATFORM == "Darwin" ] || [ $TRAVIS == "true" ]
+if [ "$PLATFORM" == "Darwin" -o "$TRAVIS" == "true" ]
 then
   DOCKER_BUILD_CMD="usermod -u $(id -u) uas;$DOCKER_BUILD_CMD"
 fi
