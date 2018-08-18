@@ -13,28 +13,69 @@ class ProcessManager:
         self.procs = list()
 
     def spawn_process(self, command, rel_cwd=None, track=True, \
-            show_output=True):
+            show_output=True, allow_input=True):
         cwd = self.get_cwd(rel_cwd)
+        devnull = open(os.devnull, 'wb')
+
         if show_output:
-            proc = subprocess.Popen(command,
-                    shell=True, \
-                    preexec_fn=os.setsid, \
-                    cwd=cwd)
+            if allow_input:
+                proc = subprocess.Popen(command,
+                        shell=True, \
+                        preexec_fn=os.setsid, \
+                        cwd=cwd)
+            else:
+                proc = subprocess.Popen(command,
+                        shell=True, \
+                        preexec_fn=os.setsid, \
+                        cwd=cwd, \
+                        stdin=devnull)
         else:
-            devnull = open(os.devnull, 'wb')
-            proc = subprocess.Popen(command,
-                    shell=True, \
-                    preexec_fn=os.setsid, \
-                    cwd=cwd,
-                    stdout=devnull,
-                    stderr=devnull)
+            if allow_input:
+                proc = subprocess.Popen(command,
+                        shell=True, \
+                        preexec_fn=os.setsid, \
+                        cwd=cwd,
+                        stdout=devnull,
+                        stderr=devnull)
+            else:
+                proc = subprocess.Popen(command,
+                        shell=True, \
+                        preexec_fn=os.setsid, \
+                        cwd=cwd, \
+                        stdin=devnull, \
+                        stdout=devnull, \
+                        stderr=devnull)
         if track:
             self.procs.append(proc)
 
-    def spawn_process_wait_for_code(self, command):
-        proc = subprocess.Popen(command,
-                shell=True, \
-                preexec_fn=os.setsid)
+    def spawn_process_wait_for_code(self, command, show_output=True, \
+            allow_input=True):
+        devnull = open(os.devnull, 'wb')
+
+        if show_output:
+            if allow_input:
+                proc = subprocess.Popen(command,
+                        shell=True, \
+                        preexec_fn=os.setsid)
+            else:
+                proc = subprocess.Popen(command,
+                        shell=True, \
+                        preexec_fn=os.setsid, \
+                        stdin=devnull)
+        else:
+            if allow_input:
+                proc = subprocess.Popen(command,
+                        shell=True, \
+                        preexec_fn=os.setsid, \
+                        stdout=devnull, \
+                        stderr=devnull)
+            else:
+                proc = subprocess.Popen(command,
+                        shell=True, \
+                        preexec_fn=os.setsid, \
+                        stdin=devnull, \
+                        stdout=devnull, \
+                        stderr=devnull)
         self.procs.append(proc)
 
         proc.communicate()
@@ -50,17 +91,31 @@ class ProcessManager:
                     break
 
     def killall(self):
+        killed_status = ""
+
         for proc in self.procs:
             # Continuously send interrupt signal until process exits.
+            start = time.time()
+
+            process_already_killed = False
+
             while True:
                 try:
                     os.killpg(os.getpgid(proc.pid), signal.SIGINT)
                 except:
+                    process_already_killed = True
                     pass
+
                 if proc.poll() == None:
                     time.sleep(0.1)
                 else:
                     break
+
+            if not process_already_killed:
+                killed_status += "Killed " + str(proc.pid) + " in " \
+                        + str(time.time() - start) + " seconds.\n"
+
+        return killed_status
 
     def run_command(self, command, rel_cwd=None):
         cwd = self.get_cwd(rel_cwd)

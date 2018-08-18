@@ -1,4 +1,4 @@
 #!/bin/sh
 
 cd "$(dirname "$0")";
-python ./lib/scripts/do.py $@
+python2.7 ./lib/scripts/do.py $@
