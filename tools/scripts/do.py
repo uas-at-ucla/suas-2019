@@ -28,10 +28,10 @@ UAS_AT_UCLA_TEXT = '\033[96m' + \
 
 
 # Script locations.
-DOCKER_RUN_ENV_SCRIPT = "./lib/scripts/docker/run_env.sh "
-DOCKER_RUN_SIM_SCRIPT = "./lib/scripts/docker/run_sim.sh "
-DOCKER_EXEC_SCRIPT = "./lib/scripts/docker/exec.sh "
-DOCKER_EXEC_KILL_SCRIPT = "./lib/scripts/docker/exec_kill.sh "
+DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/docker/run_env.sh "
+DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/docker/run_sim.sh "
+DOCKER_EXEC_SCRIPT      = "./tools/scripts/docker/exec.sh "
+DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/docker/exec_kill.sh "
 
 # Command chains.
 if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
@@ -124,12 +124,8 @@ def run_deploy(args):
     processes.wait_for_complete()
 
 
-def run_install(args):
-    if os.getuid() != 0:
-        print("ERROR: Must be sudo to run install script.")
-        sys.exit(1)
-
-    processes.spawn_process("sudo bash tools/installation/install.sh")
+def run_install(args=None):
+    processes.spawn_process("bash ./tools/scripts/install.sh")
     processes.wait_for_complete()
 
 
@@ -178,6 +174,10 @@ def kill_running_simulators():
 
 def run_build(args=None, show_complete=True):
     print_update("Going to build the code...")
+
+    print_update("Making sure all the necessary packages are installed.")
+    run_install()
+    
 
     # Start the UAS@UCLA software development docker image if it is not already
     # running.
