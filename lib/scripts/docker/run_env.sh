@@ -39,20 +39,28 @@ if [ $? -ne 0 ]; then
 fi
 
 # Create network for docker container to use.
-docker network create -d bridge uas_bridge > /dev/null || true
+docker network create -d bridge uas_bridge > /dev/null 2>&1 || true
 
 mkdir -p tools/docker/cache/bazel
 
 # Start docker container and let it run forever.
+PLATFORM=$(uname -s)
+DOCKER_BUILD_CMD="chown -R uas /home/uas/.cache/bazel;sudo -u uas bash -c \"bazel;sleep infinity\""
+if [ $PLATFORM == "Darwin" ]
+then
+  DOCKER_BUILD_CMD="usermod -u $(id -u) uas;$DOCKER_BUILD_CMD"
+fi
+
 docker run \
   -d \
   --rm \
   --net uas_bridge \
   -v $(pwd):/home/uas/code_env/ \
-  -v $(pwd)/tools/docker/cache/bazel:/home/uas/.cache/bazel/_bazel_uas  \
+  -v $(pwd)/tools/docker/cache/bazel:/home/uas/.cache/bazel  \
+  --dns 8.8.8.8 \
   --name uas_env \
   uas-at-ucla_software \
-  bash -c "sudo chown -R uas ~/.cache/bazel;bazel;sleep infinity"
+  bash -c "$DOCKER_BUILD_CMD"
 
 echo "Started uas env docker image. Waiting for it to boot..."
 
