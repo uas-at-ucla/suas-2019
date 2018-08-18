@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_STL_MUTEX_H_
-#define AOS_COMMON_STL_MUTEX_H_
+#pragma once
 
 #include <mutex>
 
@@ -141,4 +140,3 @@ typedef ::std::unique_lock<stl_recursive_mutex> recursive_unique_lock;
 
 }  // namespace aos
 
-#endif  // AOS_COMMON_STL_MUTEX_H_

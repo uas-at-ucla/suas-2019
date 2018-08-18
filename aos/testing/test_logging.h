@@ -1,5 +1,4 @@
-#ifndef AOS_TESTING_TEST_LOGGING_H_
-#define AOS_TESTING_TEST_LOGGING_H_
+#pragma once
 
 namespace aos {
 namespace testing {
@@ -24,4 +23,3 @@ void ForcePrintLogsDuringTests();
 }  // namespace testing
 }  // namespace aos
 
-#endif  // AOS_TESTING_TEST_LOGGING_H_

@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_CONTROLS_REPLAY_CONTROL_LOOP_H_
-#define AOS_COMMON_CONTROLS_REPLAY_CONTROL_LOOP_H_
+#pragma once
 
 #include <fcntl.h>
 
@@ -189,4 +188,3 @@ void ControlLoopReplayer<T>::DoProcessFile() {
 }  // namespace controls
 }  // namespace aos
 
-#endif  // AOS_COMMON_CONTROLS_REPLAY_CONTROL_LOOP_H_

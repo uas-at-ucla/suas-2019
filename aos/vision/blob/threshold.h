@@ -1,5 +1,4 @@
-#ifndef _AOS_VIISON_BLOB_THRESHOLD_H_
-#define _AOS_VIISON_BLOB_THRESHOLD_H_
+#pragma once
 
 #include "aos/vision/blob/range_image.h"
 #include "aos/vision/image/image_types.h"
@@ -37,4 +36,3 @@ RangeImage DoThreshold(const ImagePtr &img, ThresholdFn &&fn) {
 }  // namespace vision
 }  // namespace aos
 
-#endif  //  _AOS_VIISON_BLOB_THRESHOLD_H_

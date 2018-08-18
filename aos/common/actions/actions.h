@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_ACTIONS_ACTIONS_H_
-#define AOS_COMMON_ACTIONS_ACTIONS_H_
+#pragma once
 
 #include <inttypes.h>
 #include <sys/types.h>
@@ -355,4 +354,4 @@ void TypedAction<T>::DoStart() {
 }  // namespace common
 }  // namespace aos
 
-#endif  // AOS_COMMON_ACTIONS_ACTIONS_H_
+

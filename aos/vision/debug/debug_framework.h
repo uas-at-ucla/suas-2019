@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_DEBUG_DEBUG_FRAMEWORK_H_
-#define _AOS_VISION_DEBUG_DEBUG_FRAMEWORK_H_
+#pragma once
 
 #include "aos/common/util/global_factory.h"
 #include "aos/vision/blob/range_image.h"
@@ -103,4 +102,3 @@ void DebugFrameworkMain(int argc, char **argv, FilterHarness *filter,
 }  // namespace vision
 }  // namespace aos
 
-#endif  // _AOS_VISION_DEBUG_DEBUG_FRAMEWORK_H_

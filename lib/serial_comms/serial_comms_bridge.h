@@ -1,5 +1,4 @@
-#ifndef LIB_SERIAL_COMMS_SERIAL_COMMS_BRIDGE_H_
-#define LIB_SERIAL_COMMS_SERIAL_COMMS_BRIDGE_H_
+#pragma once
 
 #include <unistd.h>
 #include <atomic>
@@ -27,4 +26,3 @@ class SerialCommsBridge {
 }  // namespace serial_comms
 }  // namespace lib
 
-#endif  // LIB_SERIAL_COMMS_SERIAL_COMMS_BRIDGE_H_

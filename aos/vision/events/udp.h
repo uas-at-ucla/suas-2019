@@ -1,5 +1,4 @@
-#ifndef AOS_VISION_EVENTS_UDP_H_
-#define AOS_VISION_EVENTS_UDP_H_
+#pragma once
 
 #include <arpa/inet.h>
 #include <math.h>
@@ -49,4 +48,3 @@ class RXUdpSocket {
 }  // namespace events
 }  // namespace aos
 
-#endif  // AOS_VISION_EVENTS_UDP_H_

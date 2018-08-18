@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_BLOB_HIERARCHICAL_CONTOUR_MERGE_H_
-#define _AOS_VISION_BLOB_HIERARCHICAL_CONTOUR_MERGE_H_
+#pragma once
 
 #include <vector>
 
@@ -22,4 +21,3 @@ void HierarchicalMerge(ContourNode *stval, std::vector<FittedLine> *fit_lines,
 }  // namespace vision
 }  // namespace aos
 
-#endif  // _AOS_VISION_BLOB_HIERARCHICAL_CONTOUR_MERGE_H_
