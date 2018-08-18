@@ -6,7 +6,7 @@ mav.parm
 mav.tlog
 mav.tlog.raw
 /bazel-*
-/tools/build/bazel-*
+/tools/build_output/bazel-*
 package-lock.json
 **/node_modules
 core

@@ -8,10 +8,11 @@
 FROM debian:stretch
 
 # Install compilation and testing dependencies #################################
-RUN apt update
-RUN apt install -y curl
-RUN apt install -y gnupg
+RUN apt update     -qq                                                      && \
+    apt install -y -qq curl                                                 && \
+    apt install -y -qq gnupg
 
+# Add apt repositories containing required packages. ###########################
 RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
   "deb-src http://deb.debian.org/debian buster main\n\n" \
   "deb http://deb.debian.org/debian buster-updates main contrib non-free\n" \
@@ -20,74 +21,90 @@ RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
   "deb-src http://deb.debian.org/debian sid main" > \
   /etc/apt/sources.list
 
-### Add external repos
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN echo "deb http://deb.debian.org/debian testing main" \
   | tee /etc/apt/sources.list.d/python3_6.list
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt stable jdk1.8" \
-  | tee /etc/apt/sources.list.d/bazel.list
+RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
+  "stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 
-RUN apt update
-RUN apt upgrade -y
+RUN apt update     -qq                                                      && \
+    apt upgrade -y -qq
 
-### Install dependencies from apt
-RUN apt install -y python3.7
-RUN apt install -y python3.7-dev
-RUN apt install -y python3.7-distutils
+# Install apt dependencies. ####################################################
+RUN apt install -y -qq                                                         \
+  ant                                                                          \
+  autoconf                                                                     \
+  autoconf                                                                     \
+  automake                                                                     \
+  bazel                                                                        \
+  bmon                                                                         \
+  build-essential                                                              \
+  ca-certificates-java                                                         \
+  check                                                                        \
+  clang-3.9                                                                    \
+  clang-format-3.9                                                             \
+  cmake                                                                        \
+  g++                                                                          \
+  git                                                                          \
+  gphoto2                                                                      \
+  gphotofs                                                                     \
+  htop                                                                         \
+  libc++-dev                                                                   \
+  libc++abi-dev                                                                \
+  lib32z1-dev                                                                  \
+  libc6-dev-i386                                                               \
+  librsync-dev                                                                 \
+  libssl-dev                                                                   \
+  lsb-release                                                                  \
+  libtool                                                                      \
+  libyajl-dev                                                                  \
+  libz-dev                                                                     \
+  make                                                                         \
+  nodejs                                                                       \
+  openjdk-10-jdk                                                               \
+  pkg-config                                                                   \
+  protobuf-compiler                                                            \
+  python2.7                                                                    \
+  python2.7-lib                                                                \
+  python2.7-dev                                                                \
+  python3.7                                                                    \
+  python3.7-dev                                                                \
+  python3.7-distutils                                                          \
+  python-empy                                                                  \
+  python-jinja2                                                                \
+  ruby                                                                         \
+  screen                                                                       \
+  sudo                                                                         \
+  tmux                                                                         \
+  uthash-dev                                                                   \
+  vim
 
-RUN apt install -y ant
-RUN apt install -y bazel
-RUN apt install -y bmon
-RUN apt install -y build-essential
-RUN apt install -y ca-certificates-java
-RUN apt install -y clang-3.9
-RUN apt install -y clang-format-3.9
-RUN apt install -y cmake
-RUN apt install -y git
-RUN apt install -y gphoto2
-RUN apt install -y gphotofs
-RUN apt install -y htop
-RUN apt install -y libc++-dev
-RUN apt install -y libc++abi-dev
-RUN apt install -y lib32z1-dev
-RUN apt install -y libc6-dev-i386
-RUN apt install -y libssl-dev
-RUN apt install -y lsb-release
-RUN apt install -y nodejs
-RUN apt install -y openjdk-10-jdk
-RUN apt install -y protobuf-compiler
-RUN apt install -y python2.7
-RUN apt install -y python2.7-lib
-RUN apt install -y python2.7-dev
-RUN apt install -y python-empy
-RUN apt install -y python-jinja2
-RUN apt install -y ruby
-RUN apt install -y screen
-RUN apt install -y sudo
-RUN apt install -y tmux
-RUN apt install -y vim
-#RUN apt install -y libgazebo7-dev
-#RUN apt install -y libopencv-dev
-#RUN apt install -y libeigen3-dev
-#RUN apt install -y liblz4-dev
-#RUN apt install -y lib32stdc++6
+# May need these dependencies later:
+# libgazebo7-dev
+# libopencv-dev
+# libeigen3-dev
+# liblz4-dev
+# lib32stdc++6
 
-RUN apt upgrade -y
+RUN apt upgrade -y -qq
 
-# Fix git certificate bug with open JDK
-RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' /etc/java-10-openjdk/security/java.security
+# Fix git certificate bug with open JDK. #######################################
+RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
+  /etc/java-10-openjdk/security/java.security
 RUN rm /etc/ssl/certs/java/cacerts
 RUN update-ca-certificates -f
 
-# Install pip
+# Install pip and python dependencies. #########################################
 RUN curl https://bootstrap.pypa.io/get-pip.py | python2.7
 RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
-RUN pip2.7 install --upgrade pip
-RUN pip3.6 install --upgrade pip
+RUN pip2.7 install --upgrade pip                                            && \
+    pip3.6 install --upgrade pip
 
-# Set up workspace
+RUN pip2.7 install --user mavproxy
+
+# Set up workspace. ############################################################
 # Fix xlocale.h renamed to locale.h
 # https://bugs.launchpad.net/ubuntu/+source/libc++/+bug/1725858
 RUN ln -s /usr/include/locale.h /usr/include/xlocale.h
@@ -96,7 +113,7 @@ RUN useradd -ms /bin/bash uas
 RUN echo "%sudo  ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 RUN usermod -a -G sudo uas
 
-# User env setup.
+# User env setup. ##############################################################
 RUN mkdir /external_libs
 
 USER uas
@@ -105,8 +122,7 @@ ENV WORKSPACE /home/uas/code_env WORKDIR /home/uas/code_env
 
 WORKDIR /home/uas
 
-# Install mavlink-router
-RUN sudo apt install -y autoconf autoconf automake libtool make pkg-config check g++ librsync-dev libz-dev libssl-dev uthash-dev libyajl-dev
+# Install mavlink-router. ######################################################
 RUN pip2.7 install --user future
 RUN git clone https://github.com/intel/mavlink-router.git
 WORKDIR /home/uas/mavlink-router
@@ -119,8 +135,7 @@ RUN ./autogen.sh && ./configure CFLAGS='-g -O2' \
 RUN make
 RUN sudo make install
 
-RUN pip2.7 install --user mavproxy
-
+# Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
 
 RUN rm -rf /home/uas/mavlink-router
