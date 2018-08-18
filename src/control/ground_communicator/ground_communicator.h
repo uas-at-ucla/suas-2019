@@ -1,25 +1,25 @@
-#ifndef SPINNY_CONTROL_MISSION_RECEIVER_MISSION_RECEIVER_H_
-#define SPINNY_CONTROL_MISSION_RECEIVER_MISSION_RECEIVER_H_
+#pragma once
 
-#include <iostream>
-#include <string>
-#include <vector>
 #include <atomic>
-#include <mutex>
-#include <thread>
-#include <map>
+#include <bitset>
 #include <iomanip>
+#include <iostream>
+#include <map>
+#include <mutex>
+#include <string>
+#include <thread>
+#include <vector>
 
-#include "sio_socket.h"
 #include "sio_client.h"
+#include "sio_socket.h"
 #include "zmq.hpp"
 
-#include "src/control/loops/flight_loop.q.h"
-#include "src/control/loops/flight_loop.h"
-#include "src/control/io/io.h"
-#include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/logger/log_sender.h"
 #include "lib/serial_comms/serial_comms_bridge.h"
+#include "src/control/io/io.h"
+#include "src/control/loops/flight_loop.h"
+#include "src/control/loops/flight_loop.q.h"
+#include "src/control/messages.pb.h"
 
 namespace src {
 namespace control {
@@ -78,8 +78,6 @@ class MissionReceiver {
 void on_connect();
 void on_fail();
 
-}  // namespace ground_communicator
-}  // namespace control
-}  // namespace src
-
-#endif  // SPINNY_CONTROL_MISSION_RECEIVER_MISSION_RECEIVER_H_
+} // namespace ground_communicator
+} // namespace control
+} // namespace src

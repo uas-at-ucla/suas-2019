@@ -3,6 +3,7 @@ import sys
 import signal
 import time
 import argparse
+import textwrap
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir("../../")
@@ -12,31 +13,99 @@ import process_manager
 
 processes = process_manager.ProcessManager()
 
-UAS_AT_UCLA_TEXT = '\033[94m' + \
-'       _   _   _    ____      ____    _   _  ____ _        _\n' + \
-'      | | | | / \\  / ___|    / __ \\  | | | |/ ___| |      / \\\n' + \
-'      | | | |/ _ \\ \\___ \\   / / _` | | | | | |   | |     / _ \\\n' + \
-'      | |_| / ___ \\ ___) | | | (_| | | |_| | |___| |___ / ___ \\\n' + \
-'       \___/_/   \\_\\____/   \\ \\__,_|  \\___/ \\____|_____/_/   \\_\\\n' + \
-'                             \\____/\n' + \
+UAS_AT_UCLA_TEXT = '\033[96m' + \
+'################################################################################\n' + \
+'####                                                                        ####\n' + \
+'####         _   _   _    ____      ____    _   _  ____ _        _          ####\n' + \
+'####        | | | | / \\  / ___|    / __ \\  | | | |/ ___| |      / \\         ####\n' + \
+'####        | | | |/ _ \\ \\___ \\   / / _` | | | | | |   | |     / _ \\        ####\n' + \
+'####        | |_| / ___ \\ ___) | | | (_| | | |_| | |___| |___ / ___ \\       ####\n' + \
+'####         \___/_/   \\_\\____/   \\ \\__,_|  \\___/ \\____|_____/_/   \\_\\      ####\n' + \
+'####                               \\____/                                   ####\n' + \
+'####                                                                        ####\n' + \
+'################################################################################\n' + \
 '\033[0m'
-####UAS_AT_UCLA_TEXT = '\033[94m' + \
-####' ___  ___  ________  ___       ________      ___  ___  ________  ________\n' + \
-####'|\  \|\  \|\   ____\|\  \     |\   __  \    |\  \|\  \|\   __  \|\   ____\ \n' + \
-####'\ \  \\\\\  \ \  \___|\ \  \    \ \  \|\  \   \ \  \\\\\  \ \  \|\  \ \  \___|_\n' + \
-####' \ \  \\\\\  \ \  \    \ \  \    \ \   __  \   \ \  \\\\\  \ \   __  \ \_____  \ \n' + \
-####'  \ \  \\\\\  \ \  \____\ \  \____\ \  \ \  \   \ \  \\\\\  \ \  \ \  \|____|\  \ \n' + \
-####'   \ \_______\ \_______\ \_______\ \__\ \__\   \ \_______\ \__\ \__\____\_\  \ \n' + \
-####'    \|_______|\|_______|\|_______|\|__|\|__|    \|_______|\|__|\|__|\_________\ \n' + \
-####'                                                                   \|_________| \n' + \
-####'\n' + \
-####'#################################### do #######################################\n' + \
-####'\033[0m'
+
+
+# Script locations.
+DOCKER_RUN_ENV_SCRIPT = "./lib/scripts/docker/run_env.sh "
+DOCKER_RUN_SIM_SCRIPT = "./lib/scripts/docker/run_sim.sh "
+DOCKER_EXEC_SCRIPT = "./lib/scripts/docker/exec.sh "
+DOCKER_EXEC_KILL_SCRIPT = "./lib/scripts/docker/exec_kill.sh "
+
+# Command chains.
+BAZEL_BUILD = "bazel build --noshow_progress "
+
+def print_update(message, msg_type="STATUS"):
+    SPLIT_SIZE = 65
+
+    msg_split = message.splitlines()
+
+    lines = list()
+    for line in msg_split:
+        lines.extend(textwrap.wrap(line, SPLIT_SIZE, break_long_words=False))
+
+    print("\n")
+    for i in range(0, len(lines) + 2):
+        if i > 0 and i < len(lines) + 1:
+            line = lines[i - 1]
+        else:
+            line = ""
+
+        other_stuff = (5 + len(line) + 5)
+        padding_left = (80 - other_stuff) / 2
+        padding_right = 80 - padding_left - other_stuff
+        print_line = ""
+
+        if msg_type is "STATUS":
+            print_line += "\033[94m"
+        if msg_type is "STATUS_LIGHT":
+            print_line += "\033[96m"
+        elif msg_type is "SUCCESS":
+            print_line += "\033[92m"
+        elif msg_type is "FAILURE":
+            print_line += "\033[91m"
+
+        print_line += "#### "
+        print_line += " " * padding_left
+        print_line += line
+        print_line += " " * padding_right
+        print_line += " ####\033[0m"
+
+        print(print_line)
 
 
 def signal_received(signal, frame):
     # Shutdown all the spawned processes and exit cleanly.
-    processes.killall()
+
+    print_update("performing signal received action...", msg_type="FAILURE")
+
+    status = "Signal received (" + str(signal) + ") - killing all spawned " \
+            "processes\n"
+
+    if processes.spawn_process_wait_for_code("docker kill $(docker ps " \
+            "--filter status=running " \
+            "--format \"{{.ID}}\" " \
+            "--filter name=uas_sim " \
+            "--latest)", show_output=False, allow_input=False) == 0:
+        status += "Killed simulator (docker)\n"
+
+    if processes.spawn_process_wait_for_code( \
+            "tmux kill-session -t uas_env", \
+            show_output=False, allow_input=False) == 0:
+        status += "Killed tmux\n"
+
+    DOCKER_PREFIX_CMD = "docker exec -t $(docker ps " \
+            "--filter status=running " \
+            "--filter name=uas_env " \
+            "--format \"{{.ID}}\" " \
+            "--latest) "
+
+    if processes.spawn_process_wait_for_code(DOCKER_EXEC_KILL_SCRIPT) == 0:
+        status += "Killed all spawned processes in docker image.\n"
+
+    status += processes.killall()
+    print_update(status, "FAILURE")
     sys.exit(0)
 
 
@@ -82,57 +151,161 @@ def run_travis(args):
     run_and_die_if_error(
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
 
+def run_cmd_exit_failure(cmd):
+    if processes.spawn_process_wait_for_code(cmd, allow_input=False) > 0:
+        status = "ERROR when running command: " + cmd + "\n" \
+                "Killing all spawned processes\n"
 
-def run_build(args):
-    run_and_die_if_error("bazel build //src/...")
-    run_and_die_if_error("bazel build //lib/...")
-    run_and_die_if_error("bazel build //aos/linux_code:core")
-    run_and_die_if_error("bazel build --cpu=raspi //src/...")
-    run_and_die_if_error("bazel build --cpu=raspi //aos/linux_code:core")
+        status += processes.killall()
+        print_update(status, "FAILURE")
+
+        sys.exit(1)
+
+def kill_running_simulators():
+    while processes.spawn_process_wait_for_code("docker kill $(docker ps " \
+            "--filter status=running " \
+            "--filter name=uas_sim " \
+            "--format \"{{.ID}}\" --latest)", \
+            show_output=False, \
+            allow_input=False) == 0:
+        print("killed sim")
+        time.sleep(0.1)
+
+
+def run_build(args=None, show_complete=True):
+    print_update("Going to build the code...")
+
+    # Start the UAS@UCLA software development docker image if it is not already
+    # running.
+    print_update("Bootstrapping UAS@UCLA environment...")
+    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+
+    # Execute the build commands in the running docker image.
+    print_update("Building src directory...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")
+
+    print_update("\n\nBuilding lib directory...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//lib/...")
+
+    print_update("\n\nBuilding shm core...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD \
+            + "//aos/linux_code:core")
+
+    print_update("\n\nBuilding src for raspi...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
+            + BAZEL_BUILD + "--cpu=raspi //src/...")
+
+    print_update("\n\nBuilding shm core for raspi...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
+            + BAZEL_BUILD + "--cpu=raspi //aos/linux_code:core")
+
+    if show_complete:
+        print_update("\n\nBuild complete :^) LONG LIVE SPINNY!", \
+                msg_type="SUCCESS")
 
 
 def run_simulate(args):
-    run_and_die_if_error("bazel build //src/...")
-    run_and_die_if_error("bazel build @PX4_sitl//:jmavsim")
+    print_update("Building the code...")
+    run_build(show_complete=False)
 
-    # Initialize shared memory for queues.
-    processes.spawn_process("ipcrm --all", None, True, args.verbose)
-    processes.wait_for_complete()
+    print_update("Build complete! Starting simulator...")
+    kill_running_simulators()
 
-    processes.spawn_process("./lib/scripts/bazel_run.sh //aos/linux_code:core",
-                            None, True, args.verbose)
+    print_update("Building UAS@UCLA software env docker...")
 
-    # Give aos core some time to run.
-    time.sleep(1.0)
+    # Build the image for our docker environment.
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
+            "git clone " \
+            "https://github.com/PX4/Firmware.git " \
+            "tools/docker/cache/px4_firmware || true")
 
-    # Simulator and port forwarder.
-    processes.spawn_process("./lib/scripts/bazel_run.sh @PX4_sitl//:jmavsim",
-                            None, True, args.verbose)
-    processes.spawn_process("mavproxy.py " \
-            "--mav20 " \
-            "--state-basedir=/tmp/ " \
-            "--master=0.0.0.0:14540 " \
-            "--out=udp:0.0.0.0:8083 " \
-            "--out=udp:0.0.0.0:8085 ", \
-            None, True, False)
+    # Set up tmux panes.
+    run_cmd_exit_failure("tmux start-server ")
 
-    # Log writer.
-    processes.spawn_process("./bazel-out/k8-fastbuild/bin/lib/logger/" \
-            "log_writer");
+    run_cmd_exit_failure("tmux kill-session " \
+            "-t uas_env " \
+            "> /dev/null || true")
 
-    # Drone control code.
-    processes.spawn_process(
-            "./bazel-out/k8-fastbuild/bin/src/control/ground_communicator/" \
-                    "ground_communicator", None, True, args.verbose)
-    processes.spawn_process("./bazel-out/k8-fastbuild/bin/src/control/io/io",
-                            None, True, True)
-    processes.spawn_process(
-        "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop", None,
-        True, args.verbose)
+    run_cmd_exit_failure("tmux " \
+            "-2 " \
+            "new-session " \
+            "-d " \
+            "-s " \
+            "uas_env")
 
-    # Ground server and interface.
-    processes.spawn_process("python ./src/ground/ground.py", None, True, args.verbose)
-    processes.wait_for_complete()
+    run_cmd_exit_failure("tmux split-window -h -t uas_env")
+    run_cmd_exit_failure("tmux split-window -v -t uas_env")
+    run_cmd_exit_failure("tmux split-window -v -t uas_env")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -L")
+    run_cmd_exit_failure("tmux split-window -v -t uas_env")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+
+    # Start the PX4 simulator docker image.
+    run_cmd_exit_failure("tmux send-keys \"" \
+            + DOCKER_RUN_SIM_SCRIPT + "\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-U")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_EXEC_SCRIPT + \
+            "/home/uas/.local/bin/mavproxy.py " \
+            "--nowait " \
+            "--show-errors " \
+            "--master udpout:172.19.0.3:14557 " \
+            "--out udp:0.0.0.0:8084 --non-interactive\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-R")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-U")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-U")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_EXEC_SCRIPT + \
+            "bazel run //src/control/loops:flight_loop\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-D")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_EXEC_SCRIPT + \
+            "bazel run //src/control/io:io\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-D")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_EXEC_SCRIPT + \
+            "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_EXEC_SCRIPT + \
+            "bazel run //lib/logger:log_writer\" C-m")
+
+    print_update("\n\nSimulation running! \n" \
+            "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
+            msg_type="SUCCESS")
+
+    while True:
+        time.sleep(1)
 
 
 def run_ground(args):
@@ -145,6 +318,25 @@ def run_ground(args):
                 args.verbose)
 
     processes.wait_for_complete()
+
+
+def run_help(args):
+    print("./do.sh")
+    print("      > help")
+    print("      > build")
+    print("      > test")
+    print("        controls")
+    print("               > build")
+    print("               > test")
+    print("               > simulate")
+    print("")
+    print("        ground")
+    print("               > run")
+    print("               > test")
+    print("")
+    print("        vision")
+    print("               > test")
+    print("               > train")
 
 
 if __name__ == '__main__':
@@ -183,6 +375,9 @@ if __name__ == '__main__':
 
     build_parser = subparsers.add_parser('build', help='build help')
     build_parser.set_defaults(func=run_build)
+
+    help_parser = subparsers.add_parser('help')
+    help_parser.set_defaults(func=run_help)
 
     args = parser.parse_args()
     args.func(args)

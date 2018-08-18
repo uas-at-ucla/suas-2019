@@ -31,3 +31,5 @@ core
 /src/ground/client/build_commit.txt
 src/ground/client/build
 /downloaded
+
+/tools/docker/cache/
