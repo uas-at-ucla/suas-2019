@@ -34,7 +34,11 @@ DOCKER_EXEC_SCRIPT = "./lib/scripts/docker/exec.sh "
 DOCKER_EXEC_KILL_SCRIPT = "./lib/scripts/docker/exec_kill.sh "
 
 # Command chains.
-BAZEL_BUILD = "bazel build --noshow_progress "
+if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
+    # Limit verbosity in Travis CI.
+    BAZEL_BUILD = "bazel build --noshow_progress "
+else:
+    BAZEL_BUILD = "bazel build "
 
 def print_update(message, msg_type="STATUS"):
     SPLIT_SIZE = 65
