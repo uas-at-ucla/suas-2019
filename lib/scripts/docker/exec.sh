@@ -10,7 +10,6 @@ function docker_exec {
 
     if [ -z $UAS_AT_UCLA_IMAGE ]
     then
-      # Docker environment already running, so no need to start it.
       echo "Could not find uas env docker image. Exiting..."
       exit 1
     fi
