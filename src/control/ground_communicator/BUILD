@@ -21,6 +21,7 @@ cc_library(
   deps = [
     '//src/control/loops:flight_loop_lib',
     '//src/control/io:io_lib',
+    '//src/control:messages_cpp',
     '//lib/mission_message_queue:mission_message_queue',
     '//lib/logger:log_sender',
     '//lib/serial_comms:serial_comms_bridge',
