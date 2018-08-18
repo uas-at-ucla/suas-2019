@@ -126,8 +126,6 @@ WORKDIR /home/uas/code_env
 
 RUN rm -rf /home/uas/mavlink-router
 
-ENTRYPOINT bazel && sleep infinity
-
 EXPOSE 8085/udp
 EXPOSE 8086/udp
 
