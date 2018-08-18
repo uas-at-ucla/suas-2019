@@ -124,7 +124,7 @@ def run_deploy(args):
     processes.wait_for_complete()
 
 
-def run_install(args):
+def run_install(args=None):
     processes.spawn_process("bash ./tools/scripts/install.sh")
     processes.wait_for_complete()
 
@@ -174,6 +174,10 @@ def kill_running_simulators():
 
 def run_build(args=None, show_complete=True):
     print_update("Going to build the code...")
+
+    print_update("Making sure all the necessary packages are installed.")
+    run_install()
+    
 
     # Start the UAS@UCLA software development docker image if it is not already
     # running.
