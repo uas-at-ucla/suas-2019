@@ -39,6 +39,7 @@ RUN apt install -y python3.7-distutils
 
 RUN apt install -y ant
 RUN apt install -y bazel
+RUN apt install -y bmon
 RUN apt install -y build-essential
 RUN apt install -y ca-certificates-java
 RUN apt install -y clang-3.9
@@ -47,8 +48,11 @@ RUN apt install -y cmake
 RUN apt install -y git
 RUN apt install -y gphoto2
 RUN apt install -y gphotofs
+RUN apt install -y htop
 RUN apt install -y libc++-dev
 RUN apt install -y libc++abi-dev
+RUN apt install -y lib32z1-dev
+RUN apt install -y libc6-dev-i386
 RUN apt install -y libssl-dev
 RUN apt install -y lsb-release
 RUN apt install -y nodejs
@@ -60,8 +64,15 @@ RUN apt install -y python2.7-dev
 RUN apt install -y python-empy
 RUN apt install -y python-jinja2
 RUN apt install -y ruby
+RUN apt install -y screen
 RUN apt install -y sudo
+RUN apt install -y tmux
 RUN apt install -y vim
+#RUN apt install -y libgazebo7-dev
+#RUN apt install -y libopencv-dev
+#RUN apt install -y libeigen3-dev
+#RUN apt install -y liblz4-dev
+#RUN apt install -y lib32stdc++6
 
 RUN apt upgrade -y
 
@@ -84,18 +95,6 @@ RUN ln -s /usr/include/locale.h /usr/include/xlocale.h
 RUN useradd -ms /bin/bash uas
 RUN echo "%sudo  ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 RUN usermod -a -G sudo uas
-
-# Put extra packages below for now so we don't need to reinstall the whole
-# stack...
-#RUN apt install -y libgazebo7-dev
-#RUN apt install -y libopencv-dev
-#RUN apt install -y libeigen3-dev
-#RUN apt install -y liblz4-dev
-RUN apt install -y libc6-dev-i386
-RUN apt install -y lib32z1-dev
-#RUN apt install -y lib32stdc++6
-RUN apt install -y tmux
-RUN apt install -y screen
 
 # User env setup.
 RUN mkdir /external_libs
@@ -126,9 +125,7 @@ WORKDIR /home/uas/code_env
 
 RUN rm -rf /home/uas/mavlink-router
 
-ENTRYPOINT bazel && sleep infinity
-
 EXPOSE 8085/udp
 EXPOSE 8086/udp
 
-# NOTE: Make sure to run "xhost +" for gui.
+USER root
