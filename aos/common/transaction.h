@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_TRANSACTION_H_
-#define AOS_COMMON_TRANSACTION_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -100,4 +99,3 @@ class RestorePointerWork : public RestoreValueWork<void *> {
 }  // namespace transaction
 }  // namespace aos
 
-#endif  // AOS_COMMON_TRANSACTION_H_

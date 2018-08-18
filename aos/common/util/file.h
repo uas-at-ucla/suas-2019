@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_FILE_H_
-#define AOS_COMMON_UTIL_FILE_H_
+#pragma once
 
 #include <string>
 
@@ -13,4 +12,3 @@ namespace util {
 }  // namespace util
 }  // namespace aos
 
-#endif  // AOS_COMMON_UTIL_FILE_H_

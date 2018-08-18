@@ -1,5 +1,4 @@
-#ifndef _AOS_EVENTS_EVENT_LOOP_TMPL_H_
-#define _AOS_EVENTS_EVENT_LOOP_TMPL_H_
+#pragma once
 
 #include <type_traits>
 #include "aos/events/event-loop.h"
@@ -37,4 +36,3 @@ void EventLoop::MakeWatcher(const std::string &path, Watch &&w) {
 
 }  // namespace aos
 
-#endif  // _AOS_EVENTS_EVENT_LOOP_TMPL_H

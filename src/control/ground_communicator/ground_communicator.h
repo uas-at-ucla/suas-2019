@@ -78,6 +78,6 @@ class MissionReceiver {
 void on_connect();
 void on_fail();
 
-} // namespace ground_communicator
-} // namespace control
-} // namespace src
+}  // namespace ground_communicator
+}  // namespace control
+}  // namespace src

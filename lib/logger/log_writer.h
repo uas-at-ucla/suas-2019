@@ -1,5 +1,4 @@
-#ifndef LIB_LOGGER_LOG_WRITER_H_
-#define LIB_LOGGER_LOG_WRITER_H_
+#pragma once
 
 #include <unistd.h>
 #include <algorithm>
@@ -43,4 +42,3 @@ class LogWriter {
 }  // namespace logger
 }  // namespace lib
 
-#endif  // LIB_LOGGER_LOG_WRITER_H_

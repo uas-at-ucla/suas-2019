@@ -1,5 +1,4 @@
-#ifndef SRC_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_
-#define SRC_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_
+#pragma once
 
 #include <atomic>
 #include <condition_variable>
@@ -82,4 +81,3 @@ class Pilot {
 }  // namespace control
 }  // namespace src
 
-#endif  // SRC_CONTROL_LOOPS_FLIGHT_LOOP_PILOT_PILOT_H_

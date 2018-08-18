@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_UTIL_WRAPPING_COUNTER_H_
-#define AOS_COMMON_UTIL_WRAPPING_COUNTER_H_
+#pragma once
 
 #include <stdint.h>
 
@@ -31,4 +30,3 @@ class WrappingCounter {
 }  // namespace util
 }  // namespace aos
 
-#endif  // AOS_COMMON_UTIL_WRAPPING_COUNTER_H_

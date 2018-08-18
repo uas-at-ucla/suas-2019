@@ -1,5 +1,4 @@
-#ifndef AOS_TESTING_TEST_SHM_H_
-#define AOS_TESTING_TEST_SHM_H_
+#pragma once
 
 #include "aos/linux_code/ipc_lib/shared_mem.h"
 
@@ -21,4 +20,3 @@ class TestSharedMemory {
 }  // namespace testing
 }  // namespace aos
 
-#endif  // AOS_TESTING_TEST_SHM_H_

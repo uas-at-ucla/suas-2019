@@ -1,5 +1,4 @@
-#ifndef AOS_COMMON_LOGGING_IMPLEMENTATIONS_H_
-#define AOS_COMMON_LOGGING_IMPLEMENTATIONS_H_
+#pragma once
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -212,4 +211,3 @@ void PrintMessage(FILE *output, const LogMessage &message);
 }  // namespace logging
 }  // namespace aos
 
-#endif  // AOS_COMMON_LOGGING_IMPLEMENTATIONS_H_

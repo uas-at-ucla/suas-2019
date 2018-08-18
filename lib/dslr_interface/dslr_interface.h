@@ -1,5 +1,4 @@
-#ifndef LIB_DSLR_INTERFACE_DSLR_INTERFACE_H_
-#define LIB_DSLR_INTERFACE_DSLR_INTERFACE_H_
+#pragma once
 
 #include <atomic>
 #include <mutex>
@@ -58,4 +57,3 @@ class DSLRInterface {
 
 }  // namespace lib
 
-#endif  // LIB_DSLR_INTERFACE_DSLR_INTERFACE_H_

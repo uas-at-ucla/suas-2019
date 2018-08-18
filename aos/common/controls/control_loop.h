@@ -1,5 +1,4 @@
-#ifndef AOS_CONTROL_LOOP_CONTROL_LOOP_H_
-#define AOS_CONTROL_LOOP_CONTROL_LOOP_H_
+#pragma once
 
 #include <string.h>
 #include <atomic>
@@ -174,4 +173,4 @@ class ControlLoop : public SerializableControlLoop {
 
 #include "aos/common/controls/control_loop-tmpl.h"  // IWYU pragma: export
 
-#endif
+

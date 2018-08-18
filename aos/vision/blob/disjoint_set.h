@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_BLOB_DISJOINT_SET_H_
-#define _AOS_VISION_BLOB_DISJOINT_SET_H_
+#pragma once
 
 #include <vector>
 
@@ -43,4 +42,3 @@ class DisjointSet {
 }  // namespace vision
 }  // namespace aos
 
-#endif  // _AOS_VISION_BLOB_DISJOINT_SET_H_

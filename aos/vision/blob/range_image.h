@@ -1,5 +1,4 @@
-#ifndef _AOS_VISION_BLOB_RANGE_IMAGE_H_
-#define _AOS_VISION_BLOB_RANGE_IMAGE_H_
+#pragma once
 
 #include <vector>
 
@@ -83,4 +82,3 @@ void DebugPrint(const BlobList &blobl);
 }  // namespace vision
 }  // namespace aos
 
-#endif  // _AOS_VISION_BLOB_RANGE_IMAGE_H_
