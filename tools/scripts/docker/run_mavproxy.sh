@@ -1,0 +1,27 @@
+#!/bin/bash
+
+SIM_IP=""
+
+while true
+do
+  SIM_IP="$(docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' uas_sim 2> /dev/null)"
+  if [ $? == 0 ]
+  then
+    SIM_IP="udpout:$SIM_IP:14557"
+    echo $SIM_IP
+
+    ./tools/scripts/docker/exec.sh \
+      /home/uas/.local/bin/mavproxy.py \
+      --nowait \
+      --show-errors \
+      --master $SIM_IP \
+      --out udp:0.0.0.0:8084 \
+      --non-interactive \
+      --baud 921600
+
+    exit 0
+  else
+    echo "Waiting for Pixhawk sim to start..."
+    sleep 1
+  fi
+done
