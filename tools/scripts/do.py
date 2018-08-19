@@ -255,13 +255,7 @@ def run_simulate(args):
             "-U")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_EXEC_SCRIPT + \
-            "/home/uas/.local/bin/mavproxy.py " \
-            "--nowait " \
-            "--show-errors " \
-            "--master udpout:172.19.0.3:14557 " \
-            "--out udp:0.0.0.0:8084 --non-interactive " \
-            "--baud 921600\" C-m")
+            "./tools/scripts/docker/run_mavproxy.sh\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
             "-t " \
