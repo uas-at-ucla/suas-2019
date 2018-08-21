@@ -408,8 +408,8 @@ void AutopilotInterface::set_message_period() {
 
 void AutopilotInterface::set_params() {
   set_param("MIS_TAKEOFF_ALT", 5.0);
-  set_param("MPC_XY_CRUISE", 10.0);
-  set_param("MPC_XY_VEL_MAX", 10.0);
+  set_param("MPC_XY_CRUISE  ", 10.0);
+  set_param("MPC_XY_VEL_MAX ", 10.0);
   set_param("MC_YAWRAUTO_MAX", 25.0);
 }
 
