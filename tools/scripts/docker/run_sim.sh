@@ -31,6 +31,9 @@ fi
 # Create network for docker container to use.
 docker network create -d bridge uas_bridge > /dev/null || true
 
+# Enable access to xhost from the container
+xhost +
+
 # Start docker container and let it run forever.
 docker run \
   --rm -t \
