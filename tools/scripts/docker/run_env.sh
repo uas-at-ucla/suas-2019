@@ -46,7 +46,7 @@ mkdir -p tools/docker/cache/bazel
 
 # Start docker container and let it run forever.
 PLATFORM=$(uname -s)
-DOCKER_BUILD_CMD="set -x getent group $(id -g) || groupadd -g $(id -g) host_group;usermod -u $(id -u) -g $(id -g) uas;chown -R uas /home/uas/.cache/bazel;sudo -u uas bash -c \"bazel;sleep infinity\""
+DOCKER_BUILD_CMD="set -x getent group $(id -g) || groupadd -g $(id -g) host_group;usermod -u $(id -u) -g $(id -g) uas;chown -R uas /home/uas/.cache/bazel;echo STARTED > /tmp/uas_init;sudo -u uas bash -c \"bazel;sleep infinity\""
 
 docker run \
   -d \
@@ -73,3 +73,6 @@ do
 
   sleep 0.25
 done
+
+# Wait for permission scripts to execute.
+./tools/scripts/docker/exec.sh "while [ ! -f /tmp/uas_init ];do sleep 0.25;done"
