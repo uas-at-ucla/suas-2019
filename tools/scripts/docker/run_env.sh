@@ -47,10 +47,6 @@ mkdir -p tools/docker/cache/bazel
 # Start docker container and let it run forever.
 PLATFORM=$(uname -s)
 DOCKER_BUILD_CMD="set -x getent group $(id -g) || groupadd -g $(id -g) host_group;usermod -u $(id -u) -g $(id -g) uas;chown -R uas /home/uas/.cache/bazel;sudo -u uas bash -c \"bazel;sleep infinity\""
-if [ "$PLATFORM" == "Darwin" -o "$TRAVIS" == "true" ]
-then
-  DOCKER_BUILD_CMD="$DOCKER_BUILD_CMD"
-fi
 
 docker run \
   -d \
