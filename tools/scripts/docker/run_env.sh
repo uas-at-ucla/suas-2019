@@ -49,7 +49,7 @@ PLATFORM=$(uname -s)
 DOCKER_BUILD_CMD="chown -R uas /home/uas/.cache/bazel;sudo -u uas bash -c \"bazel;sleep infinity\""
 if [ "$PLATFORM" == "Darwin" -o "$TRAVIS" == "true" ]
 then
-  DOCKER_BUILD_CMD="usermod -u $(id -u) uas;$DOCKER_BUILD_CMD"
+  DOCKER_BUILD_CMD="usermod -u $(id -u) -g $(id -g) -G $(id -G) uas;$DOCKER_BUILD_CMD"
 fi
 
 docker run \
