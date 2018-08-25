@@ -4,8 +4,11 @@
 #include <functional>
 #include <queue>
 #include <thread>
+#include <fstream>
 #include <iostream>
 #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "zmq.hpp"
 
@@ -32,6 +35,7 @@ class ProtoReceiver {
 
   void Quit() { run_ = false; }
 
+  bool HasMessages();
   ::std::string GetLatest();
   ::std::queue<::std::string> GetQueue();
 

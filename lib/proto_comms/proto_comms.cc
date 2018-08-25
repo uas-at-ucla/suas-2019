@@ -6,7 +6,11 @@ namespace proto_comms {
 // Sender //////////////////////////////////////////////////////////////////////
 ProtoSender::ProtoSender(const char *bind_address)
     : socket_(context_, ZMQ_PUB) {
-  socket_.connect(bind_address);
+  if(access(bind_address + 6, F_OK ) != -1) {
+    socket_.connect(bind_address);
+  } else {
+    socket_.bind(bind_address);
+  }
 }
 
 void ProtoSender::Send(::std::string message) {
@@ -20,7 +24,9 @@ ProtoReceiver::ProtoReceiver(const char *bind_address, size_t max_size)
     : socket_(context_, ZMQ_SUB),
       thread_(&ProtoReceiver::ReceiveThread, this), max_size_(max_size) {
 
-  socket_.bind(bind_address);
+  socket_.connect(bind_address);
+
+  ::std::ifstream ipc_file(bind_address);
   socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
 
   int linger = 0;
@@ -53,6 +59,10 @@ void ProtoReceiver::ReceiveThread() {
       received_messages_.pop();
     }
   }
+}
+
+bool ProtoReceiver::HasMessages() {
+  return received_messages_.size() > 0;
 }
 
 ::std::string ProtoReceiver::GetLatest() {

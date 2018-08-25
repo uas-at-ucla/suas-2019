@@ -62,8 +62,6 @@ if __name__ == '__main__':
     print_title("Building code for raspi CPU... ")
     processes.spawn_process('bazel build --cpu=raspi //src/...')
     processes.wait_for_complete()
-    processes.spawn_process('bazel build --cpu=raspi //aos/linux_code:core')
-    processes.wait_for_complete()
     processes.spawn_process('bazel build --cpu=raspi //lib/logger/...')
     processes.wait_for_complete()
 
@@ -105,8 +103,6 @@ if __name__ == '__main__':
     upload_to_drone('lib/scripts/raspi/serial_comms_sender.sh',
                     "/home/pi/suas_2018_deploy/scripts/serial_comms/.")
 
-    upload_bin_to_drone('aos/linux_code/core',
-                        "/home/pi/suas_2018_deploy/executables/aos_core")
     upload_bin_to_drone('src/control/loops/flight_loop',
                         "/home/pi/suas_2018_deploy/executables/.")
     upload_bin_to_drone('src/control/io/io',
@@ -142,7 +138,6 @@ if __name__ == '__main__':
             '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/serial_comms_sender.sh\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/process_manager.py\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/serial_comms_message.proto\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/executables/aos_core\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/executables/flight_loop\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/executables/io\\" ' + \
             '-not -path \\"/home/pi/suas_2018_deploy/executables/ground_communicator\\" ' + \
