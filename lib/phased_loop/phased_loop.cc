@@ -1,5 +1,7 @@
 #include "phased_loop.h"
 
+#include <iostream>
+
 namespace lib {
 namespace phased_loop {
 
@@ -9,12 +11,11 @@ PhasedLoop::PhasedLoop(double frequency)
 void PhasedLoop::SleepUntilNext() {
   double now = GetCurrentTime();
   double diff = next_iteration_ - now;
+  next_iteration_ += 1.0 / frequency_;
 
   if (diff <= 0) {
     return;
   }
-
-  next_iteration_ = now + 1.0 / frequency_;
 
   ::std::this_thread::sleep_for(::std::chrono::duration<double>(diff));
 }
