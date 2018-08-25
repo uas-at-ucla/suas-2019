@@ -1,5 +1,8 @@
-dist: trusty
-sudo: required
+sudo:
+  - required
+
+os:
+  - linux
 
 addons:
     apt:
