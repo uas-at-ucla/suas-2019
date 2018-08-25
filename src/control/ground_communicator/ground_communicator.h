@@ -16,9 +16,9 @@
 
 #include "lib/logger/log_sender.h"
 #include "lib/serial_comms/serial_comms_bridge.h"
+#include "lib/phased_loop/phased_loop.h"
 #include "src/control/io/io.h"
 #include "src/control/loops/flight_loop.h"
-#include "src/control/loops/flight_loop.q.h"
 #include "src/control/messages.pb.h"
 
 namespace src {
@@ -29,7 +29,7 @@ class MissionReceiver {
  public:
   MissionReceiver();
   void Run();
-  void RunIteration(int loop_index, int message_index);
+  void RunIteration(int message_index);
 
   void OnConnect();
   void OnFail();
@@ -65,14 +65,14 @@ class MissionReceiver {
   GoalState state_;
   ::sio::client client_;
 
-  ::aos::time::PhasedLoop phased_loop_;
+  ::lib::phased_loop::PhasedLoop phased_loop_;
 
   ::std::atomic<bool> running_;
 
   double last_serial_telemetry_sent_;
   ::lib::serial_comms::SerialCommsBridge serial_comms_bridge_;
 
-  void SendTelemetry(int loop_index, int message_index);
+  void SendTelemetry(int message_index);
 };
 
 void on_connect();

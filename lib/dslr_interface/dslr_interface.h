@@ -8,10 +8,9 @@
 #include <sys/wait.h>
 #include <signal.h>
 #include <string.h>
-
-#include "aos/common/util/phased_loop.h"
-
 #include <iostream>
+
+#include "lib/phased_loop/phased_loop.h"
 
 namespace lib {
 
@@ -39,7 +38,8 @@ class DSLRInterface {
   State state_;
 
   ::std::thread thread_;
-  ::aos::time::PhasedLoop phased_loop_;
+
+  ::lib::phased_loop::PhasedLoop phased_loop_;
 
   ::std::atomic<bool> exiting_{false};
   ::std::atomic<bool> run_{true};

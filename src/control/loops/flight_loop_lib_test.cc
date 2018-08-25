@@ -9,10 +9,6 @@
 
 #include "gtest/gtest.h"
 
-#include "aos/linux_code/init.h"
-
-#include "src/control/loops/flight_loop.q.h"
-
 namespace src {
 namespace control {
 namespace loops {
@@ -106,13 +102,7 @@ void quit_handler(int sig) {
 
 class FlightLoopTest : public ::testing::Test {
  protected:
-  FlightLoopTest()
-      : flight_loop_queue_(".src.control.loops.flight_loop_queue", 0x0,
-                           ".src.control.loops.flight_loop_queue.dummy",
-                           ".src.control.loops.flight_loop_queue.sensors",
-                           ".src.control.loops.flight_loop_queue.status",
-                           ".src.control.loops.flight_loop_queue.goal",
-                           ".src.control.loops.flight_loop_queue.output") {
+  FlightLoopTest() {
     flight_loop_.SetVerbose(verbose);
 
     // Change to the directory of the executable.
@@ -127,24 +117,13 @@ class FlightLoopTest : public ::testing::Test {
 
   void StepLoop() { flight_loop_.Iterate(); }
 
-  void CheckQueueForMessages() {
-    flight_loop_queue_.output.FetchLatest();
-
-    EXPECT_TRUE(flight_loop_queue_.output.get() != nullptr);
-  }
-
   void SendPosition() {
-    ::aos::ScopedMessagePtr<FlightLoopQueue::Sensors> sensors_message =
-        flight_loop_queue_.sensors.MakeMessage();
-
-    sensors_message.Send();
   }
 
   void SetUp() { create_procs(); }
 
   void TearDown() { quit_procs(); }
 
-  FlightLoopQueue flight_loop_queue_;
   FlightLoop flight_loop_;
 };
 
@@ -338,7 +317,6 @@ int main(int argc, char **argv) {
     }
   }
 
-  ::aos::InitCreate();
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }
