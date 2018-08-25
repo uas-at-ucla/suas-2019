@@ -76,7 +76,7 @@ class FlightLoop {
   double last_bomb_drop_;
   double last_dslr_;
 
-  ::lib::proto_comms::ProtoReceiver telemetry_receiver_;
+  ::lib::proto_comms::ProtoReceiver sensors_receiver_;
   ::lib::proto_comms::ProtoReceiver goal_receiver_;
   ::lib::proto_comms::ProtoSender status_sender_;
   ::lib::proto_comms::ProtoSender output_sender_;

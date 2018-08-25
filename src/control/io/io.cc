@@ -52,12 +52,11 @@ AutopilotSensorReader::AutopilotSensorReader(
     autopilot_interface::AutopilotInterface *copter_io)
     : copter_io_(copter_io),
       last_gps_(-::std::numeric_limits<double>::infinity()),
-      telemetry_sender_("ipc:///tmp/uasatucla_telemetry.ipc") {
+      sensors_sender_("ipc:///tmp/uasatucla_sensors.ipc") {
   last_timestamps_.reset_timestamps();
 }
 
 void AutopilotSensorReader::RunIteration() {
-  ::std::cout << "IT\n";
   autopilot_interface::TimeStamps current_timestamps =
       copter_io_->current_messages.time_stamps;
 
@@ -166,7 +165,8 @@ void AutopilotSensorReader::RunIteration() {
   // Serialize sensor protobuf and send it over ZMQ.
   ::std::string sensors_serialized;
   sensors.SerializeToString(&sensors_serialized);
-  telemetry_sender_.Send(sensors_serialized);
+  sensors_sender_.Send(sensors_serialized);
+  ::std::cout << "IT\n";
 }
 
 AutopilotOutputWriter::AutopilotOutputWriter(

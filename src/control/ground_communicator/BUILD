@@ -26,6 +26,8 @@ cc_library(
     '//lib/logger:log_sender',
     '//lib/serial_comms:serial_comms_bridge',
     '//lib/phased_loop:phased_loop',
+    '//lib/proto_comms:proto_comms',
+    '//lib/base64_tools:base64_tools',
     "@socketio_client_cpp//:socketio_client_cpp",
     "@cppzmq//:cppzmq",
   ],
