@@ -190,17 +190,9 @@ def run_build(args=None, show_complete=True):
     print_update("\n\nBuilding lib directory...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//lib/...")
 
-    print_update("\n\nBuilding shm core...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD \
-            + "//aos/linux_code:core")
-
     print_update("\n\nBuilding src for raspi...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
             + BAZEL_BUILD + "--cpu=raspi //src/...")
-
-    print_update("\n\nBuilding shm core for raspi...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
-            + BAZEL_BUILD + "--cpu=raspi //aos/linux_code:core")
 
     if show_complete:
         print_update("\n\nBuild complete :^) LONG LIVE SPINNY!", \
@@ -235,6 +227,8 @@ def run_simulate(args):
             "-d " \
             "-s " \
             "uas_env")
+
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "rm /tmp/uasatucla_* || true")
 
     run_cmd_exit_failure("tmux split-window -h -t uas_env")
     run_cmd_exit_failure("tmux split-window -v -t uas_env")
@@ -294,9 +288,9 @@ def run_simulate(args):
             DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
 
-    run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_EXEC_SCRIPT + \
-            "bazel run //lib/logger:log_writer\" C-m")
+#   run_cmd_exit_failure("tmux send-keys \"" + \
+#           DOCKER_EXEC_SCRIPT + \
+#           "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
 
     print_update("\n\nSimulation running! \n" \
             "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \

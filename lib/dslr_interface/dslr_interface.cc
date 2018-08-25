@@ -20,8 +20,7 @@ const char* kDownloadPhotosBashScriptLocation =
 DSLRInterface::DSLRInterface()
     : state_(STANDBY),
       thread_(&DSLRInterface::Run, this),
-      phased_loop_(::std::chrono::milliseconds(static_cast<int>(1e3 / 25)),
-                   ::std::chrono::milliseconds(0)),
+      phased_loop_(25),
       take_photos_triggered_(0),
       photos_available_to_download_(true) {}
 

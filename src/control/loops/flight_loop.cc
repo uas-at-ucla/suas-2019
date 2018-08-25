@@ -15,17 +15,24 @@ namespace loops {
 int kFlightLoopFrequency = 1e2;
 
 FlightLoop::FlightLoop()
-    : state_(STANDBY), running_(false),
-      phased_loop_(::std::chrono::milliseconds(
-                       static_cast<int>(1e3 / kFlightLoopFrequency)),
-                   ::std::chrono::milliseconds(0)),
-      start_(std::chrono::system_clock::now()), takeoff_ticker_(0),
-      verbose_(false), previous_flights_time_(0), current_flight_start_time_(0),
-      alarm_(kFlightLoopFrequency), got_sensors_(false), last_loop_(0),
-      did_alarm_(false), did_arm_(false), last_bomb_drop_(0), last_dslr_(0),
-      telemetry_receiver_("ipc:///tmp/uasatucla_telemetry.ipc", 5),
-      goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", 5),
-      status_sender_("ipc:///tmp/uasatucla_status.ipc"),
+    : state_(STANDBY),                                          //
+      running_(false),                                          //
+      phased_loop_(kFlightLoopFrequency),                       //
+      start_(std::chrono::system_clock::now()),                 //
+      takeoff_ticker_(0),                                       //
+      verbose_(false),                                          //
+      previous_flights_time_(0),                                //
+      current_flight_start_time_(0),                            //
+      alarm_(kFlightLoopFrequency),                             //
+      got_sensors_(false),                                      //
+      last_loop_(0),                                            //
+      did_alarm_(false),                                        //
+      did_arm_(false),                                          //
+      last_bomb_drop_(0),                                       //
+      last_dslr_(0),                                            //
+      sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", 5), //
+      goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", 5),       //
+      status_sender_("ipc:///tmp/uasatucla_status.ipc"),        //
       output_sender_("ipc:///tmp/uasatucla_output.ipc") {}
 
 void FlightLoop::Iterate() { RunIteration(); }
@@ -33,10 +40,7 @@ void FlightLoop::Iterate() { RunIteration(); }
 void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 
 void FlightLoop::RunIteration() {
-  const int iterations = phased_loop_.SleepUntilNext();
-  if (iterations < 0) {
-    std::cout << "SKIPPED ITERATIONS\n";
-  }
+  phased_loop_.SleepUntilNext();
 
   double current_time =
       ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
@@ -47,7 +51,7 @@ void FlightLoop::RunIteration() {
   // Get latest telemetry.
   ::src::control::Sensors sensors;
   {
-    ::std::string sensors_serialized = telemetry_receiver_.GetLatest();
+    ::std::string sensors_serialized = sensors_receiver_.GetLatest();
 
     if (sensors_serialized == "") {
       ::std::cout << "NO SENSORS @ " << ::std::setprecision(20)
@@ -145,8 +149,9 @@ void FlightLoop::RunIteration() {
   case ARMING:
     // Check if we have GPS.
     if (sensors.last_gps() < current_time - 0.5) {
-      LOG_LINE("can't arm; no GPS (last gps: "
-               << sensors.last_gps() << " current time: " << current_time);
+      LOG_LINE("can't arm; no GPS "                   //
+               << "(last gps: " << sensors.last_gps() //
+               << " current time: " << current_time);
 
       next_state = STANDBY;
       break;
@@ -307,8 +312,10 @@ void FlightLoop::RunIteration() {
            << " State: " << status.state()
            << " FlightTime: " << status.flight_time()
            << " CurrentCommandIndex: " << status.current_command_index());
-  //TODO(comran): Send status.
 
+  ::std::string output_serialized;
+  output.SerializeToString(&output_serialized);
+  output_sender_.Send(output_serialized);
 }
 
 void FlightLoop::EndFlightTimer() {

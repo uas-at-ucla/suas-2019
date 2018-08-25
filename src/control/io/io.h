@@ -7,15 +7,14 @@
 
 #include <atomic>
 #include <iomanip>
+#include <iostream>
+#include <limits>
 #include <unistd.h>
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
 #include <pigpiod_if2.h>
 #include <wiringPi.h>
 #endif
-
-#include "aos/common/util/phased_loop.h"
-#include "src/control/loops/flight_loop.q.h"
 
 #include "lib/dslr_interface/dslr_interface.h"
 #include "lib/logger/log_sender.h"
@@ -52,7 +51,7 @@ class AutopilotSensorReader : public LoopInputHandler {
 
   double last_gps_;
 
-  ::lib::proto_comms::ProtoSender telemetry_sender_;
+  ::lib::proto_comms::ProtoSender sensors_sender_;
 };
 
 class AutopilotOutputWriter : public LoopOutputHandler {

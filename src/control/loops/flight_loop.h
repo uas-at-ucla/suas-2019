@@ -2,12 +2,9 @@
 
 #include <atomic>
 
-#include "aos/common/time.h"
-#include "aos/common/util/phased_loop.h"
-#include "aos/linux_code/init.h"
-
 #include "lib/alarm/alarm.h"
 #include "lib/logger/log_sender.h"
+#include "lib/phased_loop/phased_loop.h"
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/proto_comms/proto_comms.h"
@@ -58,8 +55,8 @@ class FlightLoop {
   pilot::Pilot pilot_;
 
   ::std::atomic<bool> running_;
+  ::lib::phased_loop::PhasedLoop phased_loop_;
 
-  ::aos::time::PhasedLoop phased_loop_;
   ::std::chrono::time_point<std::chrono::system_clock> start_;
 
   int takeoff_ticker_;
@@ -79,7 +76,7 @@ class FlightLoop {
   double last_bomb_drop_;
   double last_dslr_;
 
-  ::lib::proto_comms::ProtoReceiver telemetry_receiver_;
+  ::lib::proto_comms::ProtoReceiver sensors_receiver_;
   ::lib::proto_comms::ProtoReceiver goal_receiver_;
   ::lib::proto_comms::ProtoSender status_sender_;
   ::lib::proto_comms::ProtoSender output_sender_;
