@@ -25,15 +25,10 @@ cc_library(
     ':loop_output_handler',
     ':loop_input_handler',
     '//src/control/io/autopilot_interface:autopilot_interface',
-    '//src/control/loops:flight_loop_queue',
     '//src/control:messages_cpp',
     '//lib/logger:log_sender',
     '//lib/dslr_interface:dslr_interface',
     '//lib/proto_comms:proto_comms',
-    '//aos/linux_code:init',
-    '//aos/common:scoped_fd',
-    '//aos/common:time',
-    '//aos/common/util:phased_loop',
     "@WiringPi//:WiringPi",
     "@pigpio//:pigpio",
   ],
@@ -49,9 +44,7 @@ cc_library(
     'loop_output_handler.h'
   ],
   deps = [
-    '//aos/common:scoped_fd',
-    '//aos/common:time',
-    '//aos/common/util:phased_loop',
+    '//lib/phased_loop:phased_loop',
   ],
 )
 
@@ -65,8 +58,6 @@ cc_library(
     'loop_input_handler.h'
   ],
   deps = [
-    '//aos/common:scoped_fd',
-    '//aos/common:time',
-    '//aos/common/util:phased_loop',
+    '//lib/phased_loop:phased_loop',
   ],
 )

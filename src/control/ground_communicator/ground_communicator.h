@@ -16,20 +16,25 @@
 
 #include "lib/logger/log_sender.h"
 #include "lib/serial_comms/serial_comms_bridge.h"
+#include "lib/phased_loop/phased_loop.h"
+#include "lib/proto_comms/proto_comms.h"
+#include "lib/base64_tools/base64_tools.h"
 #include "src/control/io/io.h"
 #include "src/control/loops/flight_loop.h"
-#include "src/control/loops/flight_loop.q.h"
 #include "src/control/messages.pb.h"
 
 namespace src {
 namespace control {
 namespace ground_communicator {
 
-class MissionReceiver {
+void on_connect();
+void on_fail();
+
+class GroundCommunicator {
  public:
-  MissionReceiver();
+  GroundCommunicator();
   void Run();
-  void RunIteration(int loop_index, int message_index);
+  void RunIteration();
 
   void OnConnect();
   void OnFail();
@@ -37,6 +42,7 @@ class MissionReceiver {
   void ConnectToGround();
 
   enum GoalState {
+    INIT,
     STANDBY,
     RUN_MISSION,
     FAILSAFE,
@@ -55,28 +61,30 @@ class MissionReceiver {
 
  private:
   void SetState(::std::string new_state);
-  MissionReceiver::GoalState GetState();
-  void SetFlightLoopGoal(GoalState new_state);
+  void SetGoal(GoalState new_state);
 
   ::lib::mission_message_queue::MissionMessageQueueSender
       mission_message_queue_sender_;
 
-  ::std::mutex state_mutex_;
   GoalState state_;
   ::sio::client client_;
 
-  ::aos::time::PhasedLoop phased_loop_;
+  ::src::control::Goal goal_;
+
+  ::lib::phased_loop::PhasedLoop phased_loop_;
 
   ::std::atomic<bool> running_;
 
   double last_serial_telemetry_sent_;
   ::lib::serial_comms::SerialCommsBridge serial_comms_bridge_;
 
-  void SendTelemetry(int loop_index, int message_index);
-};
+  ::lib::proto_comms::ProtoReceiver sensors_receiver_;
+  ::lib::proto_comms::ProtoReceiver goal_receiver_;
+  ::lib::proto_comms::ProtoReceiver status_receiver_;
+  ::lib::proto_comms::ProtoReceiver output_receiver_;
 
-void on_connect();
-void on_fail();
+  ::lib::proto_comms::ProtoSender goal_sender_;
+};
 
 }  // namespace ground_communicator
 }  // namespace control

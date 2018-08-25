@@ -1,14 +1,9 @@
 #pragma once
 
+#include <atomic>
 #include <chrono>
 
-#include <sys/timerfd.h>
-#include <atomic>
-
-#include "aos/common/scoped_fd.h"
-#include "aos/common/scoped_fd.h"
-#include "aos/common/time.h"
-#include "aos/common/util/phased_loop.h"
+#include "lib/phased_loop/phased_loop.h"
 
 namespace src {
 namespace control {
@@ -16,8 +11,7 @@ namespace io {
 
 class LoopOutputHandler {
  public:
-  LoopOutputHandler(
-      ::std::chrono::nanoseconds timeout = ::std::chrono::milliseconds(500));
+  LoopOutputHandler();
 
   void Quit() { run_ = false; }
 
@@ -39,37 +33,7 @@ class LoopOutputHandler {
   virtual void Stop() = 0;
 
  private:
-  // The thread that actually contains a timerfd to implement timeouts. The
-  // idea is to have a timerfd that is repeatedly set to the timeout expiration
-  // in the future so it will never actually expire unless it is not reset for
-  // too long.
-  //
-  // This class nicely encapsulates the raw fd and manipulating it. Its
-  // operator() loops until Quit() is called, calling Stop() on its associated
-  // LoopOutputHandler whenever the timerfd expires.
-  class Watchdog {
-   public:
-    Watchdog(LoopOutputHandler *handler, ::std::chrono::nanoseconds timeout);
-
-    void operator()();
-
-    void Reset();
-
-    void Quit() { run_ = false; }
-
-   private:
-    LoopOutputHandler *const handler_;
-
-    const ::std::chrono::nanoseconds timeout_;
-
-    ::aos::ScopedFD timerfd_;
-
-    ::std::atomic<bool> run_{true};
-  };
-
-  ::aos::time::PhasedLoop phased_loop_;
-
-  Watchdog watchdog_;
+  ::lib::phased_loop::PhasedLoop phased_loop_;
 
   ::std::atomic<bool> run_{true};
 };
