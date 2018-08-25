@@ -228,6 +228,8 @@ def run_simulate(args):
             "-s " \
             "uas_env")
 
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "rm /tmp/uasatucla_* || true")
+
     run_cmd_exit_failure("tmux split-window -h -t uas_env")
     run_cmd_exit_failure("tmux split-window -v -t uas_env")
     run_cmd_exit_failure("tmux split-window -v -t uas_env")
@@ -286,9 +288,9 @@ def run_simulate(args):
             DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
 
-    run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_EXEC_SCRIPT + \
-            "bazel run //lib/logger:log_writer\" C-m")
+#   run_cmd_exit_failure("tmux send-keys \"" + \
+#           DOCKER_EXEC_SCRIPT + \
+#           "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
 
     print_update("\n\nSimulation running! \n" \
             "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
