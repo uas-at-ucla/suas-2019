@@ -16,9 +16,7 @@ int kFlightLoopFrequency = 1e2;
 
 FlightLoop::FlightLoop()
     : state_(STANDBY), running_(false),
-      phased_loop_(::std::chrono::milliseconds(
-                       static_cast<int>(1e3 / kFlightLoopFrequency)),
-                   ::std::chrono::milliseconds(0)),
+      phased_loop_(kFlightLoopFrequency),
       start_(std::chrono::system_clock::now()), takeoff_ticker_(0),
       verbose_(false), previous_flights_time_(0), current_flight_start_time_(0),
       alarm_(kFlightLoopFrequency), got_sensors_(false), last_loop_(0),
@@ -33,10 +31,7 @@ void FlightLoop::Iterate() { RunIteration(); }
 void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 
 void FlightLoop::RunIteration() {
-  const int iterations = phased_loop_.SleepUntilNext();
-  if (iterations < 0) {
-    std::cout << "SKIPPED ITERATIONS\n";
-  }
+  phased_loop_.SleepUntilNext();
 
   double current_time =
       ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
