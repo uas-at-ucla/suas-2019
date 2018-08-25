@@ -64,7 +64,7 @@ then
   exit 0
 fi
 
-echo "Need to install $NEED_TO_INSTALL"
+echo "Need to install$NEED_TO_INSTALL"
 
 if [ "$PLATFORM" == "Darwin" ]
 then
