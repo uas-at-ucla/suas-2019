@@ -51,7 +51,7 @@ class AutopilotSensorReader : public LoopInputHandler {
 
   double last_gps_;
 
-  ::lib::proto_comms::ProtoSender telemetry_sender_;
+  ::lib::proto_comms::ProtoSender sensors_sender_;
 };
 
 class AutopilotOutputWriter : public LoopOutputHandler {
