@@ -2,20 +2,20 @@
 
 #include <atomic>
 
-#include "aos/common/util/phased_loop.h"
+#include "lib/phased_loop/phased_loop.h"
 
 namespace src {
 namespace control {
 namespace io {
 
 class LoopInputHandler {
- public: 
+ public:
   LoopInputHandler();
   void operator()();
   void Quit() { run_ = false; }
 
  protected:
-  aos::time::PhasedLoop phased_loop_;
+  ::lib::phased_loop::PhasedLoop phased_loop_;
 
  private:
   virtual void RunIteration() = 0;

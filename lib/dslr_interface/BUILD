@@ -10,6 +10,6 @@ cc_library(
     'dslr_interface.h',
   ],
   deps = [
-    '//aos/common/util:phased_loop',
+    '//lib/phased_loop:phased_loop',
   ],
 )
