@@ -11,7 +11,10 @@ do
     echo $SIM_IP
 
     ./tools/scripts/docker/exec.sh \
+      rm -rf /tmp/mav* && \
+      ./tools/scripts/docker/exec.sh \
       /home/uas/.local/bin/mavproxy.py \
+      --state-basedir=/tmp \
       --nowait \
       --show-errors \
       --master $SIM_IP \
