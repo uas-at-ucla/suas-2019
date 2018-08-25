@@ -5,8 +5,7 @@ namespace control {
 namespace io {
 
 LoopInputHandler::LoopInputHandler()
-    : phased_loop_(::std::chrono::milliseconds(5),
-                   ::std::chrono::milliseconds(0)) {}
+    : phased_loop_(200) {}
 
 void LoopInputHandler::operator()() {
   while (run_) {

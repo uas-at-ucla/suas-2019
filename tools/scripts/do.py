@@ -190,17 +190,9 @@ def run_build(args=None, show_complete=True):
     print_update("\n\nBuilding lib directory...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//lib/...")
 
-    print_update("\n\nBuilding shm core...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD \
-            + "//aos/linux_code:core")
-
     print_update("\n\nBuilding src for raspi...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
             + BAZEL_BUILD + "--cpu=raspi //src/...")
-
-    print_update("\n\nBuilding shm core for raspi...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
-            + BAZEL_BUILD + "--cpu=raspi //aos/linux_code:core")
 
     if show_complete:
         print_update("\n\nBuild complete :^) LONG LIVE SPINNY!", \

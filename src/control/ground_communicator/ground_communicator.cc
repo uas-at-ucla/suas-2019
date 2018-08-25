@@ -117,9 +117,10 @@ void on_fail() { socketio_ground_communicator->OnFail(); }
 void connect() { socketio_ground_communicator->ConnectToGround(); }
 
 MissionReceiver::MissionReceiver()
-    : phased_loop_(std::chrono::milliseconds(200),
-                   std::chrono::milliseconds(0)),
+    : phased_loop_(5),
       running_(false), last_serial_telemetry_sent_(0) {
+  (void)last_serial_telemetry_sent_;
+
   socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
@@ -138,244 +139,232 @@ void MissionReceiver::ConnectToGround() {
 #endif
 }
 
-void MissionReceiver::SendTelemetry(int loop_index, int message_index) {
+void MissionReceiver::SendTelemetry(int message_index) {
+  (void)message_index;
+//double current_time =
+//    ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+//        ::std::chrono::system_clock::now().time_since_epoch())
+//        .count() *
+//    1e-9;
 
-  double current_time =
-      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
-          ::std::chrono::system_clock::now().time_since_epoch())
-          .count() *
-      1e-9;
+//sio::message::ptr all_data = sio::object_message::create();
 
-  sio::message::ptr all_data = sio::object_message::create();
+//auto sensors = &::src::control::loops::flight_loop_queue.sensors;
+//auto status = &::src::control::loops::flight_loop_queue.status;
+//auto goal = &::src::control::loops::flight_loop_queue.goal;
+//auto output = &::src::control::loops::flight_loop_queue.output;
 
-  auto sensors = &::src::control::loops::flight_loop_queue.sensors;
-  auto status = &::src::control::loops::flight_loop_queue.status;
-  auto goal = &::src::control::loops::flight_loop_queue.goal;
-  auto output = &::src::control::loops::flight_loop_queue.output;
+//sensors->FetchLatest();
+//status->FetchLatest();
+//goal->FetchLatest();
+//output->FetchLatest();
 
-  sensors->FetchLatest();
-  status->FetchLatest();
-  goal->FetchLatest();
-  output->FetchLatest();
+//sio::message::ptr telemetry = sio::object_message::create();
 
-  sio::message::ptr telemetry = sio::object_message::create();
+//sio::message::ptr sensors_object = sio::object_message::create();
+//sio::message::ptr status_object = sio::object_message::create();
+//sio::message::ptr goal_object = sio::object_message::create();
+//sio::message::ptr output_object = sio::object_message::create();
 
-  sio::message::ptr sensors_object = sio::object_message::create();
-  sio::message::ptr status_object = sio::object_message::create();
-  sio::message::ptr goal_object = sio::object_message::create();
-  sio::message::ptr output_object = sio::object_message::create();
+//std::map<std::string, sio::message::ptr> *sensors_map =
+//    &sensors_object->get_map();
+//std::map<std::string, sio::message::ptr> *status_map =
+//    &status_object->get_map();
+//std::map<std::string, sio::message::ptr> *goal_map = &goal_object->get_map();
+//std::map<std::string, sio::message::ptr> *output_map =
+//    &output_object->get_map();
 
-  std::map<std::string, sio::message::ptr> *sensors_map =
-      &sensors_object->get_map();
-  std::map<std::string, sio::message::ptr> *status_map =
-      &status_object->get_map();
-  std::map<std::string, sio::message::ptr> *goal_map = &goal_object->get_map();
-  std::map<std::string, sio::message::ptr> *output_map =
-      &output_object->get_map();
+//bool send_sensors;
+//bool send_status;
+//bool send_goal;
+//bool send_output;
+//if (sensors->get()) {
+//  send_sensors = true;
 
-  bool send_sensors;
-  bool send_status;
-  bool send_goal;
-  bool send_output;
-  if (sensors->get()) {
-    send_sensors = true;
+//  (*sensors_map)["latitude"] =
+//      sio::double_message::create((*sensors)->latitude);
+//  (*sensors_map)["longitude"] =
+//      sio::double_message::create((*sensors)->longitude);
+//  (*sensors_map)["altitude"] =
+//      sio::double_message::create((*sensors)->altitude);
+//  (*sensors_map)["relative_altitude"] =
+//      sio::double_message::create((*sensors)->relative_altitude);
+//  (*sensors_map)["heading"] =
+//      sio::double_message::create((*sensors)->heading);
+//  (*sensors_map)["velocity_x"] =
+//      sio::double_message::create((*sensors)->velocity_x);
+//  (*sensors_map)["velocity_y"] =
+//      sio::double_message::create((*sensors)->velocity_y);
+//  (*sensors_map)["velocity_z"] =
+//      sio::double_message::create((*sensors)->velocity_z);
+//  (*sensors_map)["gps_ground_speed"] =
+//      sio::double_message::create((*sensors)->gps_ground_speed);
+//  (*sensors_map)["gps_satellite_count"] =
+//      sio::double_message::create((*sensors)->gps_satellite_count);
+//  (*sensors_map)["gps_eph"] =
+//      sio::double_message::create((*sensors)->gps_eph);
+//  (*sensors_map)["gps_epv"] =
+//      sio::double_message::create((*sensors)->gps_epv);
+//  (*sensors_map)["accelerometer_x"] =
+//      sio::double_message::create((*sensors)->accelerometer_x);
+//  (*sensors_map)["accelerometer_y"] =
+//      sio::double_message::create((*sensors)->accelerometer_y);
+//  (*sensors_map)["accelerometer_z"] =
+//      sio::double_message::create((*sensors)->accelerometer_z);
+//  (*sensors_map)["gyro_x"] = sio::double_message::create((*sensors)->gyro_x);
+//  (*sensors_map)["gyro_y"] = sio::double_message::create((*sensors)->gyro_y);
+//  (*sensors_map)["gyro_z"] = sio::double_message::create((*sensors)->gyro_z);
+//  (*sensors_map)["absolute_pressure"] =
+//      sio::double_message::create((*sensors)->absolute_pressure);
+//  (*sensors_map)["relative_pressure"] =
+//      sio::double_message::create((*sensors)->relative_pressure);
+//  (*sensors_map)["pressure_altitude"] =
+//      sio::double_message::create((*sensors)->pressure_altitude);
+//  (*sensors_map)["temperature"] =
+//      sio::double_message::create((*sensors)->temperature);
+//  (*sensors_map)["battery_voltage"] =
+//      sio::double_message::create((*sensors)->battery_voltage);
+//  (*sensors_map)["battery_current"] =
+//      sio::double_message::create((*sensors)->battery_current);
+//  (*sensors_map)["armed"] = sio::bool_message::create((*sensors)->armed);
 
-    (*sensors_map)["latitude"] =
-        sio::double_message::create((*sensors)->latitude);
-    (*sensors_map)["longitude"] =
-        sio::double_message::create((*sensors)->longitude);
-    (*sensors_map)["altitude"] =
-        sio::double_message::create((*sensors)->altitude);
-    (*sensors_map)["relative_altitude"] =
-        sio::double_message::create((*sensors)->relative_altitude);
-    (*sensors_map)["heading"] =
-        sio::double_message::create((*sensors)->heading);
-    (*sensors_map)["velocity_x"] =
-        sio::double_message::create((*sensors)->velocity_x);
-    (*sensors_map)["velocity_y"] =
-        sio::double_message::create((*sensors)->velocity_y);
-    (*sensors_map)["velocity_z"] =
-        sio::double_message::create((*sensors)->velocity_z);
-    (*sensors_map)["gps_ground_speed"] =
-        sio::double_message::create((*sensors)->gps_ground_speed);
-    (*sensors_map)["gps_satellite_count"] =
-        sio::double_message::create((*sensors)->gps_satellite_count);
-    (*sensors_map)["gps_eph"] =
-        sio::double_message::create((*sensors)->gps_eph);
-    (*sensors_map)["gps_epv"] =
-        sio::double_message::create((*sensors)->gps_epv);
-    (*sensors_map)["accelerometer_x"] =
-        sio::double_message::create((*sensors)->accelerometer_x);
-    (*sensors_map)["accelerometer_y"] =
-        sio::double_message::create((*sensors)->accelerometer_y);
-    (*sensors_map)["accelerometer_z"] =
-        sio::double_message::create((*sensors)->accelerometer_z);
-    (*sensors_map)["gyro_x"] = sio::double_message::create((*sensors)->gyro_x);
-    (*sensors_map)["gyro_y"] = sio::double_message::create((*sensors)->gyro_y);
-    (*sensors_map)["gyro_z"] = sio::double_message::create((*sensors)->gyro_z);
-    (*sensors_map)["absolute_pressure"] =
-        sio::double_message::create((*sensors)->absolute_pressure);
-    (*sensors_map)["relative_pressure"] =
-        sio::double_message::create((*sensors)->relative_pressure);
-    (*sensors_map)["pressure_altitude"] =
-        sio::double_message::create((*sensors)->pressure_altitude);
-    (*sensors_map)["temperature"] =
-        sio::double_message::create((*sensors)->temperature);
-    (*sensors_map)["battery_voltage"] =
-        sio::double_message::create((*sensors)->battery_voltage);
-    (*sensors_map)["battery_current"] =
-        sio::double_message::create((*sensors)->battery_current);
-    (*sensors_map)["armed"] = sio::bool_message::create((*sensors)->armed);
+//  ::src::control::io::AutopilotState autopilot_state =
+//      static_cast<::src::control::io::AutopilotState>(
+//          (*sensors)->autopilot_state);
 
-    ::src::control::io::AutopilotState autopilot_state =
-        static_cast<::src::control::io::AutopilotState>(
-            (*sensors)->autopilot_state);
+//  ::std::string autopilot_state_string;
 
-    ::std::string autopilot_state_string;
+//  switch (autopilot_state) {
+//  case ::src::control::io::AutopilotState::TAKEOFF:
+//    autopilot_state_string = "TAKEOFF";
+//    break;
+//  case ::src::control::io::AutopilotState::HOLD:
+//    autopilot_state_string = "HOLD";
+//    break;
+//  case ::src::control::io::AutopilotState::OFFBOARD:
+//    autopilot_state_string = "OFFBOARD";
+//    break;
+//  case ::src::control::io::AutopilotState::RTL:
+//    autopilot_state_string = "RTL";
+//    break;
+//  case ::src::control::io::AutopilotState::LAND:
+//    autopilot_state_string = "LAND";
+//    break;
+//  case ::src::control::io::AutopilotState::UNKNOWN:
+//  default:
+//    autopilot_state_string = "UNKNOWN";
+//    break;
+//  }
 
-    switch (autopilot_state) {
-    case ::src::control::io::AutopilotState::TAKEOFF:
-      autopilot_state_string = "TAKEOFF";
-      break;
-    case ::src::control::io::AutopilotState::HOLD:
-      autopilot_state_string = "HOLD";
-      break;
-    case ::src::control::io::AutopilotState::OFFBOARD:
-      autopilot_state_string = "OFFBOARD";
-      break;
-    case ::src::control::io::AutopilotState::RTL:
-      autopilot_state_string = "RTL";
-      break;
-    case ::src::control::io::AutopilotState::LAND:
-      autopilot_state_string = "LAND";
-      break;
-    case ::src::control::io::AutopilotState::UNKNOWN:
-    default:
-      autopilot_state_string = "UNKNOWN";
-      break;
-    }
+//  (*sensors_map)["autopilot_state"] =
+//      sio::string_message::create(autopilot_state_string);
 
-    (*sensors_map)["autopilot_state"] =
-        sio::string_message::create(autopilot_state_string);
+//  if (current_time - last_serial_telemetry_sent_ > 0.3) {
+//    // Time to send another serial telemetry message.
+//    ::lib::serial_comms::SerialCommsMessage message;
+//    message.set_latitude((*sensors)->latitude);
+//    message.set_longitude((*sensors)->longitude);
+//    message.set_altitude((*sensors)->relative_altitude);
+//    message.set_heading((*sensors)->heading);
 
-    if (current_time - last_serial_telemetry_sent_ > 0.3) {
-      // Time to send another serial telemetry message.
-      ::lib::serial_comms::SerialCommsMessage message;
-      message.set_latitude((*sensors)->latitude);
-      message.set_longitude((*sensors)->longitude);
-      message.set_altitude((*sensors)->relative_altitude);
-      message.set_heading((*sensors)->heading);
+//    serial_comms_bridge_.SendData(message);
 
-      serial_comms_bridge_.SendData(message);
+//    last_serial_telemetry_sent_ = current_time;
+//  }
+//}
 
-      last_serial_telemetry_sent_ = current_time;
-    }
-  }
+//if (status->get()) {
+//  send_status = true;
 
-  if (status->get()) {
-    send_status = true;
+//  std::string state = ::src::control::loops::state_string.at(
+//      static_cast<::src::control::loops::FlightLoop::State>(
+//          (*status)->state));
+//  (*status_map)["state"] = sio::string_message::create(state);
+//  (*status_map)["flight_time"] =
+//      sio::int_message::create((*status)->flight_time);
+//}
 
-    std::string state = ::src::control::loops::state_string.at(
-        static_cast<::src::control::loops::FlightLoop::State>(
-            (*status)->state));
-    (*status_map)["state"] = sio::string_message::create(state);
-    (*status_map)["flight_time"] =
-        sio::int_message::create((*status)->flight_time);
-  }
+//if (goal->get()) {
+//  send_goal = true;
 
-  if (goal->get()) {
-    send_goal = true;
+//  (*goal_map)["run_mission"] =
+//      sio::bool_message::create((*goal)->run_mission);
+//  (*goal_map)["trigger_failsafe"] =
+//      sio::bool_message::create((*goal)->trigger_failsafe);
+//  (*goal_map)["trigger_throttle_cut"] =
+//      sio::bool_message::create((*goal)->trigger_throttle_cut);
+//}
 
-    (*goal_map)["run_mission"] =
-        sio::bool_message::create((*goal)->run_mission);
-    (*goal_map)["trigger_failsafe"] =
-        sio::bool_message::create((*goal)->trigger_failsafe);
-    (*goal_map)["trigger_throttle_cut"] =
-        sio::bool_message::create((*goal)->trigger_throttle_cut);
-  }
+//if (output->get()) {
+//  send_output = true;
 
-  if (output->get()) {
-    send_output = true;
+//  (*output_map)["velocity_x"] =
+//      sio::double_message::create((*output)->velocity_x);
+//  (*output_map)["velocity_y"] =
+//      sio::double_message::create((*output)->velocity_y);
+//  (*output_map)["velocity_z"] =
+//      sio::double_message::create((*output)->velocity_z);
 
-    (*output_map)["velocity_x"] =
-        sio::double_message::create((*output)->velocity_x);
-    (*output_map)["velocity_y"] =
-        sio::double_message::create((*output)->velocity_y);
-    (*output_map)["velocity_z"] =
-        sio::double_message::create((*output)->velocity_z);
+//  (*output_map)["gimbal_angle"] =
+//      sio::double_message::create((*output)->gimbal_angle);
+//  (*output_map)["bomb_drop"] =
+//      sio::bool_message::create((*output)->bomb_drop);
+//  (*output_map)["alarm"] = sio::bool_message::create((*output)->alarm);
+//  (*output_map)["dslr"] = sio::bool_message::create((*output)->dslr);
+//  //  (*output_map)["velocity_control"] =
+//  //      sio::bool_message::create((*output)->velocity_control);
+//  //  (*output_map)["arm"] = sio::bool_message::create((*output)->arm);
+//  //  (*output_map)["disarm"] = sio::bool_message::create((*output)->disarm);
+//  //  (*output_map)["takeoff"] =
+//  //  sio::bool_message::create((*output)->takeoff);
+//  //  (*output_map)["land"] = sio::bool_message::create((*output)->land);
+//  //  (*output_map)["throttle_cut"] =
+//  //      sio::bool_message::create((*output)->throttle_cut);
+//}
 
-    (*output_map)["gimbal_angle"] =
-        sio::double_message::create((*output)->gimbal_angle);
-    (*output_map)["bomb_drop"] =
-        sio::bool_message::create((*output)->bomb_drop);
-    (*output_map)["alarm"] = sio::bool_message::create((*output)->alarm);
-    (*output_map)["dslr"] = sio::bool_message::create((*output)->dslr);
-    //  (*output_map)["velocity_control"] =
-    //      sio::bool_message::create((*output)->velocity_control);
-    //  (*output_map)["arm"] = sio::bool_message::create((*output)->arm);
-    //  (*output_map)["disarm"] = sio::bool_message::create((*output)->disarm);
-    //  (*output_map)["takeoff"] =
-    //  sio::bool_message::create((*output)->takeoff);
-    //  (*output_map)["land"] = sio::bool_message::create((*output)->land);
-    //  (*output_map)["throttle_cut"] =
-    //      sio::bool_message::create((*output)->throttle_cut);
-  }
+//LOG_LINE("sending telemetry: "
+//         << (send_sensors ? "sensors " : "") << (send_status ? "status " : "")
+//         << (send_goal ? "goal " : "") << (send_output ? "output " : ""));
 
-  LOG_LINE("sending telemetry: "
-           << (send_sensors ? "sensors " : "") << (send_status ? "status " : "")
-           << (send_goal ? "goal " : "") << (send_output ? "output " : ""));
+//telemetry->get_map()["sensors"] = sensors_object;
+//telemetry->get_map()["status"] = status_object;
+//telemetry->get_map()["goal"] = goal_object;
+//telemetry->get_map()["output"] = output_object;
 
-  telemetry->get_map()["sensors"] = sensors_object;
-  telemetry->get_map()["status"] = status_object;
-  telemetry->get_map()["goal"] = goal_object;
-  telemetry->get_map()["output"] = output_object;
+//all_data->get_map()["telemetry"] = telemetry;
 
-  all_data->get_map()["telemetry"] = telemetry;
+//::lib::mission_manager::Mission mission =
+//    mission_message_queue_sender_.GetMission();
+//::std::string serialized_mission;
+//mission.SerializeToString(&serialized_mission);
+//const unsigned char *serialized_mission_cstr =
+//    reinterpret_cast<const unsigned char *>(serialized_mission.c_str());
+//::std::string mission_base64 =
+//    base64_encode(serialized_mission_cstr, serialized_mission.length());
+//all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
 
-  ::lib::mission_manager::Mission mission =
-      mission_message_queue_sender_.GetMission();
-  ::std::string serialized_mission;
-  mission.SerializeToString(&serialized_mission);
-  const unsigned char *serialized_mission_cstr =
-      reinterpret_cast<const unsigned char *>(serialized_mission.c_str());
-  ::std::string mission_base64 =
-      base64_encode(serialized_mission_cstr, serialized_mission.length());
-  all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
+//all_data->get_map()["message_index"] =
+//    sio::int_message::create(message_index);
 
-  all_data->get_map()["loop_index"] = sio::int_message::create(loop_index);
-  all_data->get_map()["message_index"] =
-      sio::int_message::create(message_index);
-
-  client_.socket()->emit("telemetry", all_data);
+//client_.socket()->emit("telemetry", all_data);
 }
 
 void MissionReceiver::Run() {
-  running_ = true;
+//running_ = true;
 
-  int loop_index = 0;
-  int message_index = 0;
+//int message_index = 0;
 
-  while (running_) {
-    // std::chrono::steady_clock::time_point begin =
-    // std::chrono::steady_clock::now();
-    RunIteration(loop_index, message_index);
+//while (running_) {
+//  RunIteration(message_index);
 
-    const int iterations = phased_loop_.SleepUntilNext();
-    if (iterations > 1) {
-      std::cout << "SKIPPED " << (iterations - 1) << " TELEMETRY ITERATIONS\n";
-    }
-    // std::chrono::steady_clock::time_point end=
-    // std::chrono::steady_clock::now();
-    // std::cout << std::chrono::duration_cast<std::chrono::milliseconds>(end -
-    // begin).count() << std::endl;
-    message_index++;
-    loop_index += iterations;
-  }
+//  phased_loop_.SleepUntilNext();
+//  message_index++;
+//}
 }
 
-void MissionReceiver::RunIteration(int loop_index, int message_index) {
+void MissionReceiver::RunIteration(int message_index) {
   // SetFlightLoopGoal(GetState());
-  SendTelemetry(loop_index, message_index);
+  SendTelemetry(message_index);
 }
 
 void MissionReceiver::OnConnect() {
@@ -447,175 +436,177 @@ void MissionReceiver::OnConnect() {
 void MissionReceiver::OnFail() { ::std::cout << "socketio failed! :(\n"; }
 
 void MissionReceiver::SetFlightLoopGoal(GoalState new_state) {
-  auto last_goal = &::src::control::loops::flight_loop_queue.goal;
-  last_goal->FetchLatest();
+  (void)new_state;
+//auto last_goal = &::src::control::loops::flight_loop_queue.goal;
+//last_goal->FetchLatest();
 
-  auto flight_loop_goal_message =
-      ::src::control::loops::flight_loop_queue.goal.MakeMessage();
+//auto flight_loop_goal_message =
+//    ::src::control::loops::flight_loop_queue.goal.MakeMessage();
 
-  if (!::src::control::loops::flight_loop_queue.goal.get()) {
-    // Set initial goal.
-    flight_loop_goal_message->run_mission = false;
-    flight_loop_goal_message->trigger_failsafe = false;
-    flight_loop_goal_message->trigger_throttle_cut = false;
-    flight_loop_goal_message->trigger_alarm = 0;
-    flight_loop_goal_message->trigger_bomb_drop = 0;
-  } else {
-    // Copy past goal.
-    flight_loop_goal_message->run_mission = (*last_goal)->trigger_alarm;
-    flight_loop_goal_message->trigger_failsafe = (*last_goal)->trigger_failsafe;
-    flight_loop_goal_message->trigger_throttle_cut =
-        (*last_goal)->trigger_throttle_cut;
-    flight_loop_goal_message->trigger_alarm = (*last_goal)->trigger_alarm;
-  }
+//if (!::src::control::loops::flight_loop_queue.goal.get()) {
+//  // Set initial goal.
+//  flight_loop_goal_message->run_mission = false;
+//  flight_loop_goal_message->trigger_failsafe = false;
+//  flight_loop_goal_message->trigger_throttle_cut = false;
+//  flight_loop_goal_message->trigger_alarm = 0;
+//  flight_loop_goal_message->trigger_bomb_drop = 0;
+//} else {
+//  // Copy past goal.
+//  flight_loop_goal_message->run_mission = (*last_goal)->trigger_alarm;
+//  flight_loop_goal_message->trigger_failsafe = (*last_goal)->trigger_failsafe;
+//  flight_loop_goal_message->trigger_throttle_cut =
+//      (*last_goal)->trigger_throttle_cut;
+//  flight_loop_goal_message->trigger_alarm = (*last_goal)->trigger_alarm;
+//}
 
-  double time = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
-                    ::std::chrono::system_clock::now().time_since_epoch())
-                    .count() /
-                1e9;
+//double time = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+//                  ::std::chrono::system_clock::now().time_since_epoch())
+//                  .count() /
+//              1e9;
 
-  flight_loop_goal_message->run_mission = false;
+//flight_loop_goal_message->run_mission = false;
 
-  switch (new_state) {
-  case STANDBY:
-    break;
+//switch (new_state) {
+//case STANDBY:
+//  break;
 
-  case RUN_MISSION:
-    flight_loop_goal_message->run_mission = true;
-    flight_loop_goal_message->trigger_failsafe = false;
-    flight_loop_goal_message->trigger_throttle_cut = false;
-    break;
+//case RUN_MISSION:
+//  flight_loop_goal_message->run_mission = true;
+//  flight_loop_goal_message->trigger_failsafe = false;
+//  flight_loop_goal_message->trigger_throttle_cut = false;
+//  break;
 
-    //  case LAND:
-    //    flight_loop_goal_message->run_mission = false;
-    //    flight_loop_goal_message->trigger_failsafe = false;
-    //    flight_loop_goal_message->trigger_throttle_cut = false;
-    //    break;
+//  //  case LAND:
+//  //    flight_loop_goal_message->run_mission = false;
+//  //    flight_loop_goal_message->trigger_failsafe = false;
+//  //    flight_loop_goal_message->trigger_throttle_cut = false;
+//  //    break;
 
-  case FAILSAFE:
-    flight_loop_goal_message->run_mission = false;
-    flight_loop_goal_message->trigger_failsafe = true;
-    flight_loop_goal_message->trigger_throttle_cut = false;
-    break;
+//case FAILSAFE:
+//  flight_loop_goal_message->run_mission = false;
+//  flight_loop_goal_message->trigger_failsafe = true;
+//  flight_loop_goal_message->trigger_throttle_cut = false;
+//  break;
 
-  case THROTTLE_CUT:
-    flight_loop_goal_message->run_mission = false;
-    flight_loop_goal_message->trigger_failsafe = true;
-    flight_loop_goal_message->trigger_throttle_cut = true;
-    break;
+//case THROTTLE_CUT:
+//  flight_loop_goal_message->run_mission = false;
+//  flight_loop_goal_message->trigger_failsafe = true;
+//  flight_loop_goal_message->trigger_throttle_cut = true;
+//  break;
 
-  case TAKEOFF:
-    flight_loop_goal_message->trigger_takeoff = time;
-    LOG_LINE("GOT TAKEOFF @ TIME " << time);
-    break;
+//case TAKEOFF:
+//  flight_loop_goal_message->trigger_takeoff = time;
+//  LOG_LINE("GOT TAKEOFF @ TIME " << time);
+//  break;
 
-  case HOLD:
-    flight_loop_goal_message->trigger_hold = time;
-    LOG_LINE("GOT HOLD @ TIME " << time);
-    break;
+//case HOLD:
+//  flight_loop_goal_message->trigger_hold = time;
+//  LOG_LINE("GOT HOLD @ TIME " << time);
+//  break;
 
-  case OFFBOARD:
-    flight_loop_goal_message->trigger_offboard = time;
-    LOG_LINE("GOT OFFBOARD @ TIME " << time);
-    break;
+//case OFFBOARD:
+//  flight_loop_goal_message->trigger_offboard = time;
+//  LOG_LINE("GOT OFFBOARD @ TIME " << time);
+//  break;
 
-  case RTL:
-    flight_loop_goal_message->trigger_rtl = time;
-    LOG_LINE("GOT RTL @ TIME " << time);
-    break;
+//case RTL:
+//  flight_loop_goal_message->trigger_rtl = time;
+//  LOG_LINE("GOT RTL @ TIME " << time);
+//  break;
 
-  case LAND:
-    flight_loop_goal_message->trigger_land = time;
-    LOG_LINE("GOT LAND @ TIME " << time);
-    break;
+//case LAND:
+//  flight_loop_goal_message->trigger_land = time;
+//  LOG_LINE("GOT LAND @ TIME " << time);
+//  break;
 
-  case ARM:
-    flight_loop_goal_message->trigger_arm = time;
-    LOG_LINE("GOT ARM @ TIME " << time);
-    break;
+//case ARM:
+//  flight_loop_goal_message->trigger_arm = time;
+//  LOG_LINE("GOT ARM @ TIME " << time);
+//  break;
 
-  case DISARM:
-    flight_loop_goal_message->trigger_disarm = time;
-    LOG_LINE("GOT DISARM @ TIME " << time);
-    break;
+//case DISARM:
+//  flight_loop_goal_message->trigger_disarm = time;
+//  LOG_LINE("GOT DISARM @ TIME " << time);
+//  break;
 
-  case ALARM:
-    flight_loop_goal_message->trigger_alarm = time;
-    LOG_LINE("GOT ALARM @ TIME " << time);
-    break;
+//case ALARM:
+//  flight_loop_goal_message->trigger_alarm = time;
+//  LOG_LINE("GOT ALARM @ TIME " << time);
+//  break;
 
-  case BOMB_DROP:
-    flight_loop_goal_message->trigger_bomb_drop = time;
-    LOG_LINE("GOT BOMB DROP @ TIME " << time);
-    break;
+//case BOMB_DROP:
+//  flight_loop_goal_message->trigger_bomb_drop = time;
+//  LOG_LINE("GOT BOMB DROP @ TIME " << time);
+//  break;
 
-  case DSLR:
-    flight_loop_goal_message->trigger_dslr = time;
-    LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
-    break;
-  }
+//case DSLR:
+//  flight_loop_goal_message->trigger_dslr = time;
+//  LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
+//  break;
+//}
 
-  flight_loop_goal_message.Send();
+//flight_loop_goal_message.Send();
 }
 
 void MissionReceiver::SetState(::std::string new_state_string) {
-  auto sensors = &::src::control::loops::flight_loop_queue.sensors;
-  auto status = &::src::control::loops::flight_loop_queue.status;
-  sensors->FetchLatest();
-  status->FetchLatest();
+  (void)new_state_string;
+//auto sensors = &::src::control::loops::flight_loop_queue.sensors;
+//auto status = &::src::control::loops::flight_loop_queue.status;
+//sensors->FetchLatest();
+//status->FetchLatest();
 
-  GoalState new_state;
+//GoalState new_state;
 
-  if (new_state_string == "MISSION") {
-    if ((*status)->state == ::src::control::loops::FlightLoop::State::LANDING &&
-        (*sensors)->relative_altitude < 5.0) {
-      ::std::cerr << "Cannot switch to mission: landing and at unsafe altitude."
-                  << ::std::endl;
-      return;
-    }
-    new_state = RUN_MISSION;
-  } else if (new_state_string == "FAILSAFE") {
-    new_state = FAILSAFE;
-  } else if (new_state_string == "THROTTLE CUT") {
-    new_state = THROTTLE_CUT;
-  } else if (new_state_string == "TAKEOFF") {
-    new_state = TAKEOFF;
-  } else if (new_state_string == "HOLD") {
-    new_state = HOLD;
-  } else if (new_state_string == "OFFBOARD") {
-    new_state = OFFBOARD;
-  } else if (new_state_string == "RTL") {
-    new_state = RTL;
-  } else if (new_state_string == "LAND") {
-    new_state = LAND;
-  } else if (new_state_string == "ARM") {
-    new_state = ARM;
-  } else if (new_state_string == "DISARM") {
-    new_state = DISARM;
-  } else if (new_state_string == "ALARM") {
-    new_state = ALARM;
-  } else if (new_state_string == "BOMB_DROP") {
-    new_state = BOMB_DROP;
-  } else if (new_state_string == "DSLR") {
-    new_state = DSLR;
-  } else {
-    ::std::cerr << "Unknown state: " << new_state_string << ::std::endl;
-    return;
-  }
+//if (new_state_string == "MISSION") {
+//  if ((*status)->state == ::src::control::loops::FlightLoop::State::LANDING &&
+//      (*sensors)->relative_altitude < 5.0) {
+//    ::std::cerr << "Cannot switch to mission: landing and at unsafe altitude."
+//                << ::std::endl;
+//    return;
+//  }
+//  new_state = RUN_MISSION;
+//} else if (new_state_string == "FAILSAFE") {
+//  new_state = FAILSAFE;
+//} else if (new_state_string == "THROTTLE CUT") {
+//  new_state = THROTTLE_CUT;
+//} else if (new_state_string == "TAKEOFF") {
+//  new_state = TAKEOFF;
+//} else if (new_state_string == "HOLD") {
+//  new_state = HOLD;
+//} else if (new_state_string == "OFFBOARD") {
+//  new_state = OFFBOARD;
+//} else if (new_state_string == "RTL") {
+//  new_state = RTL;
+//} else if (new_state_string == "LAND") {
+//  new_state = LAND;
+//} else if (new_state_string == "ARM") {
+//  new_state = ARM;
+//} else if (new_state_string == "DISARM") {
+//  new_state = DISARM;
+//} else if (new_state_string == "ALARM") {
+//  new_state = ALARM;
+//} else if (new_state_string == "BOMB_DROP") {
+//  new_state = BOMB_DROP;
+//} else if (new_state_string == "DSLR") {
+//  new_state = DSLR;
+//} else {
+//  ::std::cerr << "Unknown state: " << new_state_string << ::std::endl;
+//  return;
+//}
 
-  if ((GetState() == FAILSAFE && new_state != THROTTLE_CUT) ||
-      (GetState() == THROTTLE_CUT)) {
-    ::std::cerr << "Could not override higher order emergency state."
-                << ::std::endl;
+//if ((GetState() == FAILSAFE && new_state != THROTTLE_CUT) ||
+//    (GetState() == THROTTLE_CUT)) {
+//  ::std::cerr << "Could not override higher order emergency state."
+//              << ::std::endl;
 
-    return;
-  }
+//  return;
+//}
 
-  state_mutex_.lock();
-  state_ = new_state;
-  state_mutex_.unlock();
+//state_mutex_.lock();
+//state_ = new_state;
+//state_mutex_.unlock();
 
-  SetFlightLoopGoal(new_state);
+//SetFlightLoopGoal(new_state);
 }
 
 MissionReceiver::GoalState MissionReceiver::GetState() {
