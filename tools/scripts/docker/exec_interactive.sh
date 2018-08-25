@@ -17,7 +17,7 @@ function docker_exec {
     PIDFILE=/tmp/docker-exec-$$
     NAMEFILE=/tmp/docker-exec-$$
 
-    docker exec -t -u $(id -u):$(id -g) $UAS_AT_UCLA_IMAGE \
+    docker exec -it -u $(id -u):$(id -g) $UAS_AT_UCLA_IMAGE \
       bash -c "echo \"\$\$\" > \"$PIDFILE\".pid; echo \"$*\" > \"$NAMEFILE\".name;$*"
 
     exit $?
