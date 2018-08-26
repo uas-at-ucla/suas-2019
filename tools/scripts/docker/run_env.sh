@@ -32,7 +32,7 @@ fi
 
 
 # Build docker container.
-docker build -t uas-at-ucla_software tools/docker
+docker build -t uas-at-ucla_software tools/docker > /dev/null
 
 if [ $? -ne 0 ]; then
     echo "Error building UAS env docker container."
