@@ -3,7 +3,7 @@
 function interrupt_exec {
   if [ ! -z $PIDFILE ]
   then
-    docker exec -t $UAS_AT_UCLA_IMAGE sh -c "PID=\$(cat $PIDFILE);echo \"KILLING \$PID\";kill -15 \$PID > /dev/null 2>&1 || true;rm $PIDFILE"
+    docker exec -t $UAS_AT_UCLA_IMAGE sh -c "PID=\$(cat $PIDFILE);echo \"KILLING \$PID\";kill -15 \$PID > /dev/null 2>&1 || true;rm $PIDFILE;rm $NAMEFILE"
     printf "\033[91mINTERRUPTED!\033[0m"
   fi
 }
@@ -23,14 +23,16 @@ function docker_exec {
     fi
 
     PIDFILE=/tmp/docker-exec-$$.pid
-    NAMEFILE=/tmp/docker-exec-$$
+    NAMEFILE=/tmp/docker-exec-$$.name
 
     trap interrupt_exec INT
 
     docker exec -t -u $(id -u):$(id -g) $UAS_AT_UCLA_IMAGE \
-      bash -c "echo \"\$\$\" > \"$PIDFILE\"; echo \"$*\" > \"$NAMEFILE\".name;$*"
-
+      bash -c "echo \"\$\$\" > \"$PIDFILE\"; echo \"$*\" > \"$NAMEFILE\";$*"
     CODE=$?
+
+    docker exec -t $UAS_AT_UCLA_IMAGE sh -c "rm -f $PIDFILE"
+    docker exec -t $UAS_AT_UCLA_IMAGE sh -c "rm -f $NAMEFILE"
 
     exit $CODE
 }

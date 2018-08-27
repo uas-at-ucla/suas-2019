@@ -290,10 +290,6 @@ def run_simulate(args):
             DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
 
-#   run_cmd_exit_failure("tmux send-keys \"" + \
-#           DOCKER_EXEC_SCRIPT + \
-#           "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
-
     print_update("\n\nSimulation running! \n" \
             "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
             msg_type="SUCCESS")
