@@ -19,7 +19,6 @@ do
       --show-errors \
       --master $SIM_IP \
       --out udp:0.0.0.0:8084 \
-      --non-interactive \
       --baud 921600
 
     exit 0

@@ -120,7 +120,7 @@ ENV WORKSPACE /home/uas/code_env WORKDIR /home/uas/code_env
 
 WORKDIR /home/uas
 
-# Install mavlink-router and mavproxy. #########################################
+# Install python requirements. #################################################
 RUN pip2.7 install --user future
 RUN git clone https://github.com/intel/mavlink-router.git
 WORKDIR /home/uas/mavlink-router
@@ -133,7 +133,28 @@ RUN ./autogen.sh && ./configure CFLAGS='-g -O2' \
 RUN make
 RUN sudo make install
 
-RUN pip2.7 install --user mavproxy
+RUN pip2.7 install --user                                                      \
+  future==0.16.0                                                               \
+  MAVProxy==1.6.1                                                              \
+  pymavlink==2.2.4                                                             \
+  pyserial==3.4                                                                \
+  websocket-client==0.44.0                                                     \
+  dronekit==2.9.1                                                              \
+  dronekit-sitl==3.2.0                                                         \
+  Pillow==4.3.0                                                                \
+  socketIO-client==0.7.2                                                       \
+  python-socketio==1.8.1                                                       \
+  Flask==0.12.2                                                                \
+  Flask-SocketIO==2.9.2                                                        \
+  futures==3.1.1                                                               \
+  socketIO-client==0.7.2                                                       \
+  numpy==1.13.1                                                                \
+  empy==3.3.2                                                                  \
+  toml==0.9.4                                                                  \
+  eventlet==0.23.0                                                             \
+  protobuf==3.5.2.post1                                                        \
+  pyzmq==17.0.0                                                                \
+  zmq==0.0.0
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
@@ -143,4 +164,6 @@ RUN rm -rf /home/uas/mavlink-router
 EXPOSE 8085/udp
 EXPOSE 8086/udp
 
+# Set user to root so that we can set the appropriate permissions for file #####
+# access later on. #############################################################
 USER root
