@@ -240,7 +240,7 @@ def run_simulate(args):
     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
 
     # Start the PX4 simulator docker image.
-    run_cmd_exit_failure("tmux send-keys \"" \
+    run_cmd_exit_failure("tmux send-keys \"exec " \
             + DOCKER_RUN_SIM_SCRIPT + "\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
@@ -248,7 +248,9 @@ def run_simulate(args):
             "uas_env " \
             "-U")
 
-    run_cmd_exit_failure("tmux send-keys \"" + \
+    run_cmd_exit_failure("tmux renamew -t uas_env controls")
+
+    run_cmd_exit_failure("tmux send-keys \"exec " + \
             "./tools/scripts/docker/run_mavproxy.sh\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
@@ -287,10 +289,6 @@ def run_simulate(args):
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
-
-#   run_cmd_exit_failure("tmux send-keys \"" + \
-#           DOCKER_EXEC_SCRIPT + \
-#           "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
 
     print_update("\n\nSimulation running! \n" \
             "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
