@@ -166,7 +166,6 @@ void AutopilotSensorReader::RunIteration() {
   ::std::string sensors_serialized;
   sensors.SerializeToString(&sensors_serialized);
   sensors_sender_.Send(sensors_serialized);
-  ::std::cout << "IT\n";
 }
 
 AutopilotOutputWriter::AutopilotOutputWriter(
