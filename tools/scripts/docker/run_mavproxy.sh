@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source tools/scripts/docker/start_machine_mac.sh
+
 SIM_IP=""
 
 while true

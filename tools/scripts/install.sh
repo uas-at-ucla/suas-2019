@@ -97,7 +97,7 @@ then
   check_if_installed "virtualbox"
   if [ $? -ne 0 ]
   then
-    # brew cask install virtualbox (requires root permissions)
+    # brew cask install virtualbox (requires sudo)
     ACTION_REQUIRED="$ACTION_REQUIRED""Please install VirtualBox from https://www.virtualbox.org\n"
   fi
 fi
