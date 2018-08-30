@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source tools/scripts/docker/start_machine_mac.sh
+
 unset UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER
 unset UAS_AT_UCLA_ENV_DOCKER_CONTAINER
 unset UAS_AT_UCLA_RUNNING_DOCKER_CONTAINERS
