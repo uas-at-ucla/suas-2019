@@ -7,9 +7,10 @@ unset PLATFORM
 unset NEED_TO_INSTALL
 
 PACKAGES="docker python2.7 tmux git"
-MACOS_PACKAGES="brew docker-machine-nfs"
+MACOS_PACKAGES="brew docker-machine docker-machine-nfs virtualbox"
 INSTALL_REQUIRED="false"
 NEED_TO_INSTALL=""
+ACTION_REQUIRED=""
 
 PLATFORM=$(uname -s)
 
@@ -76,17 +77,28 @@ then
 
     if [ $? -ne 0 ]
     then
-      echo "Error installing brew."
+      echo "Error installing Homebrew."
+      exit 1
     fi
+  fi
+
+  check_if_installed "docker-machine"
+  if [ $? -ne 0 ]
+  then
+    brew install docker-machine
   fi
 
   check_if_installed "docker-machine-nfs"
   if [ $? -ne 0 ]
   then
-    curl -s "https://raw.githubusercontent.com/adlogix/docker-machine-nfs/" \
-      "master/docker-machine-nfs.sh" | sudo tee \
-      /usr/local/bin/docker-machine-nfs > /dev/null && sudo chmod +x \
-      /usr/local/bin/docker-machine-nfs
+    brew install docker-machine-nfs
+  fi
+
+  check_if_installed "virtualbox"
+  if [ $? -ne 0 ]
+  then
+    # brew cask install virtualbox (requires sudo)
+    ACTION_REQUIRED="$ACTION_REQUIRED""Please install VirtualBox from https://www.virtualbox.org\n"
   fi
 fi
 
@@ -120,15 +132,23 @@ then
   fi
 fi
 
-check_if_installed "$1"
+check_if_installed "python2.7"
 if [ $? -ne 0 ]
 then
   if [ "$PLATFORM" == "Darwin" ]
   then
-    brew install python
+    brew install python@2
   else
     sudo apt-get install -y python2.7
   fi
 fi
 
 install_package "tmux git"
+
+if [ "$ACTION_REQUIRED" != "" ]
+then
+  echo ""
+  printf "\033[91mAction Required:\033[0m\n"
+  printf "$ACTION_REQUIRED\n"
+  exit 1
+fi

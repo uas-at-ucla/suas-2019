@@ -125,8 +125,7 @@ def run_deploy(args):
 
 
 def run_install(args=None):
-    processes.spawn_process("bash ./tools/scripts/install.sh")
-    processes.wait_for_complete()
+    run_cmd_exit_failure("bash ./tools/scripts/install.sh", show_msg=False)
 
 
 def run_kill_dangling(args):
@@ -151,13 +150,15 @@ def run_travis(args):
     run_and_die_if_error(
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
 
-def run_cmd_exit_failure(cmd):
+def run_cmd_exit_failure(cmd, show_msg=True):
     if processes.spawn_process_wait_for_code(cmd, allow_input=False) > 0:
         status = "ERROR when running command: " + cmd + "\n" \
                 "Killing all spawned processes\n"
 
         status += processes.killall()
-        print_update(status, "FAILURE")
+
+        if show_msg:
+            print_update(status, "FAILURE")
 
         sys.exit(1)
 
