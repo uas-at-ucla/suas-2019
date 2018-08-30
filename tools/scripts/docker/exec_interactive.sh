@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source tools/scripts/docker/start_machine_mac.sh
+
 function docker_exec {
     unset UAS_AT_UCLA_IMAGE
     UAS_AT_UCLA_IMAGE=$(docker ps \
