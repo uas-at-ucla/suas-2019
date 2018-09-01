@@ -3,27 +3,32 @@ pipeline {
   stages {
     stage('Checkout') {
       steps {
-        echo 'checkout'
+        echo 'Checking if the run script exists.'
+        fileExists './do.sh'
       }
     }
     stage('Build') {
       steps {
-        echo 'build'
+        echo 'Building the code.'
+        catchError() {
+          sh './do.sh build'
+        }
+
       }
     }
     stage('Test SITL') {
       steps {
-        echo 'test sitl'
+        echo 'Test SITL'
       }
     }
     stage('Test HITL') {
       steps {
-        echo 'test hitl'
+        echo 'Test HITL'
       }
     }
     stage('Static Analyzer') {
       steps {
-        echo 'static analyzer'
+        echo 'Static analyzer'
       }
     }
   }
