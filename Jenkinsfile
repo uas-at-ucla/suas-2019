@@ -11,7 +11,7 @@ pipeline {
       steps {
         echo 'Building the code.'
         catchError() {
-          sh 'PATH=${PATH}:/usr/local/bin:/usr/bin ./do.sh build'
+          sh './do.sh build'
         }
 
       }
