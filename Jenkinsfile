@@ -10,6 +10,7 @@ pipeline {
     stage('Build') {
       steps {
         echo 'Building the code.'
+        sh 'PATH=${PATH}:/usr/local/bin:/usr/bin'
         catchError() {
           sh './do.sh build'
         }
