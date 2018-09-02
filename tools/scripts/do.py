@@ -179,6 +179,9 @@ def run_build(args=None, show_complete=True):
     print_update("Making sure all the necessary packages are installed.")
     run_install()
 
+    run_cmd_exit_failure("pwd")
+    run_cmd_exit_failure("ls")
+
     # Start the UAS@UCLA software development docker image if it is not already
     # running.
     print_update("Bootstrapping UAS@UCLA environment...")
