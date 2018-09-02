@@ -61,7 +61,7 @@ then
 else
   # Need to use path of the host container running dockerd.
   ROOT_PATH=$(pwd)
-  ROOT_PATH=$JENKINS_HOST_ROOT/${ROOT_PATH:20}
+  ROOT_PATH=$JENKINS_HOST_ROOT/${ROOT_PATH:18}
 fi
 
 docker run \
