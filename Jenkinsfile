@@ -4,31 +4,28 @@ pipeline {
     PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"
   }
   stages {
-    stage('Checkout') {
+    stage('SETUP') {
       steps {
-        echo 'Checking if the run script exists.'
         fileExists './do.sh'
+        sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
       }
     }
-    stage('Build') {
+    stage('BUILD') {
       steps {
-        echo 'Building the code.'
-
-        sh 'echo $PATH'
         sh './do.sh build'
       }
     }
-    stage('Test SITL') {
+    stage('TEST SITL') {
       steps {
         echo 'Test SITL'
       }
     }
-    stage('Test HITL') {
+    stage('TEST HITL') {
       steps {
         echo 'Test HITL'
       }
     }
-    stage('Static Analyzer') {
+    stage('STATIC ANALYZER') {
       steps {
         echo 'Static analyzer'
       }
