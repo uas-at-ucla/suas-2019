@@ -24,8 +24,8 @@
 4. Add an [SSH-Key](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/) onto your local machine or VM.
 5. Clone the repository - assure you are cloning with an SSH key.
    ```bash
-   git clone --recursive git@github.com:uas-at-ucla/suas_2018.git
-   cd suas_2018
+   git clone --recursive git@github.com:uas-at-ucla/drone_code.git
+   cd drone_code
    ```
 ### Branching
 Branching is a system we use so that we can constantly develop our code in
@@ -40,12 +40,12 @@ approval and merging. The purpose of this is to make sure your code does not
 break anything severe on the master branch.
 
 #### Creating Your Own Branch
-1. Create the remote branch. In the [UAS Repository](https://github.com/uas-at-ucla/suas_2018), by the
+1. Create the remote branch. In the [UAS Repository](https://github.com/uas-at-ucla/drone_code), by the
    left-side section you should see a box that says 'Branch: master'. Click on it,
    and create the remote branch. Name the branch by the corresponding GitHub issue. The
    remote branch is the cloud where you store your newly edited files and
    allow everyone else to see your edits.
-2. In the suas_2018 directory, run the following:
+2. In the drone_code directory, run the following:
    ```bash
    git fetch
    git checkout -b GITHUB-ISSUE origin/GITHUB-ISSUE
@@ -81,7 +81,7 @@ break anything severe on the master branch.
 Pull requests are what you submit for people to review your code. Reviewers will
 see the latest file edits you made that do not exist in the MASTER branch.
 
-1. Go to the [UAS Repository](https://github.com/uas-at-ucla/suas_2018).
+1. Go to the [UAS Repository](https://github.com/uas-at-ucla/drone_code).
 2. Near the top section, you should see a series of tabs: Code, Issues, Pull
    Requests, Projects, Wiki, Insights. Click on the 'Pull Requests' tab.
 3. On the right-side, click on 'New Pull Request'.

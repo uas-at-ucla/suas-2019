@@ -55,12 +55,21 @@ mkdir -p tools/docker/cache/bazel
 PLATFORM=$(uname -s)
 DOCKER_BUILD_CMD="set -x; getent group $(id -g) || groupadd -g $(id -g) host_group;usermod -u $(id -u) -g $(id -g) uas;chown -R uas /home/uas/.cache/bazel;echo STARTED > /tmp/uas_init;sudo -u uas bash -c \"bazel;sleep infinity\""
 
+if [ -z $JENKINS_HOST_ROOT ]
+then
+  ROOT_PATH=$(pwd)
+else
+  # Need to use path of the host container running dockerd.
+  ROOT_PATH=$(pwd)
+  ROOT_PATH=$JENKINS_HOST_ROOT/${ROOT_PATH:18}
+fi
+
 docker run \
   -d \
   --rm \
   --net uas_bridge \
-  -v $(pwd):/home/uas/code_env/ \
-  -v $(pwd)/tools/docker/cache/bazel:/home/uas/.cache/bazel  \
+  -v $ROOT_PATH:/home/uas/code_env/ \
+  -v $ROOT_PATH/tools/docker/cache/bazel:/home/uas/.cache/bazel  \
   --dns 8.8.8.8 \
   --name uas_env \
   uas-at-ucla_software \

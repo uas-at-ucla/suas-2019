@@ -10,7 +10,7 @@ while true;do
   echo "TRYING USB$PORT"
 
   # Do this in a loop in case we can't find the serial device.
-  python /home/pi/suas_2018_deploy/scripts/serial_comms/serial_comms.py sender --device /dev/ttyUSB$PORT;
+  python /home/pi/drone_code_deploy/scripts/serial_comms/serial_comms.py sender --device /dev/ttyUSB$PORT;
   let PORT="$PORT+1"
   sleep 0.3;
 done

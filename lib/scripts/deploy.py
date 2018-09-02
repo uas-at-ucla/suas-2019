@@ -14,7 +14,7 @@ DRONE_ADDR = 'pi@192.168.2.21'
 
 processes = process_manager.ProcessManager()
 
-suas_2018_uploads = list()
+drone_code_uploads = list()
 
 
 def signal_received(signal, frame):
@@ -70,47 +70,47 @@ if __name__ == '__main__':
 
     run_cmd_on_drone('mkdir -p /home/pi/logs')
     run_cmd_on_drone('mkdir -p /home/pi/pictures')
-    run_cmd_on_drone('mkdir -p /home/pi/suas_2018_deploy')
+    run_cmd_on_drone('mkdir -p /home/pi/drone_code_deploy')
     processes.wait_for_complete()
 
     run_cmd_on_drone('mkdir -p /home/pi/logs/uas_at_ucla')
     run_cmd_on_drone('mkdir -p /home/pi/logs/mavproxy')
-    run_cmd_on_drone('mkdir -p /home/pi/suas_2018_deploy/scripts')
-    run_cmd_on_drone('mkdir -p /home/pi/suas_2018_deploy/executables')
+    run_cmd_on_drone('mkdir -p /home/pi/drone_code_deploy/scripts')
+    run_cmd_on_drone('mkdir -p /home/pi/drone_code_deploy/executables')
     processes.wait_for_complete()
-    run_cmd_on_drone('mkdir -p /home/pi/suas_2018_deploy/scripts/serial_comms')
+    run_cmd_on_drone('mkdir -p /home/pi/drone_code_deploy/scripts/serial_comms')
     processes.wait_for_complete()
 
     # Upload the binaries to the drone.
     print_title("Uploading binaries to drone... ")
     upload_to_drone('lib/scripts/raspi/start.sh', "/home/pi/.")
     upload_to_drone('lib/scripts/raspi/start_drone_code.sh',
-                    "/home/pi/suas_2018_deploy/scripts/.")
+                    "/home/pi/drone_code_deploy/scripts/.")
     upload_to_drone('lib/scripts/raspi/run_mavproxy.sh',
-                    "/home/pi/suas_2018_deploy/scripts/.")
+                    "/home/pi/drone_code_deploy/scripts/.")
     upload_to_drone('lib/scripts/download_photos.sh',
-                    "/home/pi/suas_2018_deploy/scripts/.")
+                    "/home/pi/drone_code_deploy/scripts/.")
     upload_to_drone('lib/scripts/take_photos_continuously.sh',
-                    "/home/pi/suas_2018_deploy/scripts/.")
+                    "/home/pi/drone_code_deploy/scripts/.")
     upload_to_drone('lib/scripts/tag_photos.sh',
-                    "/home/pi/suas_2018_deploy/scripts/.")
+                    "/home/pi/drone_code_deploy/scripts/.")
     upload_to_drone('lib/serial_comms/serial_comms.py',
-                    "/home/pi/suas_2018_deploy/scripts/serial_comms/.")
+                    "/home/pi/drone_code_deploy/scripts/serial_comms/.")
     upload_to_drone('lib/process_manager.py',
-                    "/home/pi/suas_2018_deploy/scripts/serial_comms/.")
+                    "/home/pi/drone_code_deploy/scripts/serial_comms/.")
     upload_to_drone('lib/serial_comms/serial_comms_message.proto',
-                    "/home/pi/suas_2018_deploy/scripts/serial_comms/.")
+                    "/home/pi/drone_code_deploy/scripts/serial_comms/.")
     upload_to_drone('lib/scripts/raspi/serial_comms_sender.sh',
-                    "/home/pi/suas_2018_deploy/scripts/serial_comms/.")
+                    "/home/pi/drone_code_deploy/scripts/serial_comms/.")
 
     upload_bin_to_drone('src/control/loops/flight_loop',
-                        "/home/pi/suas_2018_deploy/executables/.")
+                        "/home/pi/drone_code_deploy/executables/.")
     upload_bin_to_drone('src/control/io/io',
-                        "/home/pi/suas_2018_deploy/executables/.")
+                        "/home/pi/drone_code_deploy/executables/.")
     upload_bin_to_drone('src/control/ground_communicator/ground_communicator',
-                        "/home/pi/suas_2018_deploy/executables/.")
+                        "/home/pi/drone_code_deploy/executables/.")
     upload_bin_to_drone('lib/logger/log_writer',
-                        "/home/pi/suas_2018_deploy/executables/.")
+                        "/home/pi/drone_code_deploy/executables/.")
 
     processes.wait_for_complete()
 
@@ -120,32 +120,32 @@ if __name__ == '__main__':
             '-not -path \\"/home/pi/logs/mavproxy\\" ' + \
             '-not -path \\"/home/pi/logs/uas_at_ucla\\" ' + \
             '-not -path \\"/home/pi/pictures\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/executables\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/executables\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts/serial_comms\\" ' + \
             '-not -path \\"/home/pi/\.*\\" ' + \
             '-not -path \\"/home/pi/start.sh\\" ' + \
             '-not -path \\"/home/pi/logs/mavproxy/*\\" ' + \
             '-not -path \\"/home/pi/logs/uas_at_ucla/*\\" ' + \
             '-not -path \\"/home/pi/pictures/*\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts/start_drone_code.sh\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts/run_mavproxy.sh\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts/download_photos.sh\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts/take_photos_continuously.sh\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts/tag_photos.sh\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/serial_comms.py\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/serial_comms_sender.sh\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/process_manager.py\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/scripts/serial_comms/serial_comms_message.proto\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/executables/flight_loop\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/executables/io\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/executables/ground_communicator\\" ' + \
-            '-not -path \\"/home/pi/suas_2018_deploy/executables/log_writer\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts/start_drone_code.sh\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts/run_mavproxy.sh\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts/download_photos.sh\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts/take_photos_continuously.sh\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts/tag_photos.sh\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts/serial_comms/serial_comms.py\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts/serial_comms/serial_comms_sender.sh\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts/serial_comms/process_manager.py\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/scripts/serial_comms/serial_comms_message.proto\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/executables/flight_loop\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/executables/io\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/executables/ground_communicator\\" ' + \
+            '-not -path \\"/home/pi/drone_code_deploy/executables/log_writer\\" ' + \
             '-delete')
     processes.wait_for_complete()
 
     # Start binaries.
     print_title("Starting the new binaries on the drone... ")
-    run_cmd_on_drone('/home/pi/suas_2018_deploy/scripts/start_drone_code.sh')
+    run_cmd_on_drone('/home/pi/drone_code_deploy/scripts/start_drone_code.sh')
     processes.wait_for_complete()

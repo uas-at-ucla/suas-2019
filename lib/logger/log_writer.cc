@@ -4,9 +4,9 @@ namespace lib {
 namespace logger {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-const char* kLogFileLocation = "/home/pi/logs/uas_at_ucla/suas_2018.csv";
+const char* kLogFileLocation = "/home/pi/logs/uas_at_ucla/drone_code.csv";
 #else
-const char* kLogFileLocation = "/tmp/suas_2018.csv";
+const char* kLogFileLocation = "/tmp/drone_code.csv";
 #endif
 
 LogWriter::LogWriter()
