@@ -12,6 +12,8 @@ pipeline {
     }
     stage('BUILD') {
       steps {
+        sh 'pwd'
+        sh 'ls'
         sh './do.sh build'
       }
     }
