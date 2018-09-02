@@ -189,6 +189,9 @@ def run_build(args=None, show_complete=True):
 
     # Execute the build commands in the running docker image.
     print_update("Building src directory...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "echo HIHIHIHIHIH")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "pwd")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "ls")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")
 
     print_update("\n\nBuilding lib directory...")
