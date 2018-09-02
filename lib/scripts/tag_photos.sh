@@ -9,7 +9,7 @@ while true;do
 	GREP_PATTERN=""
 
 	# Generate search patterns for image times.
-	for FILENAME in ~/pictures/suas_2018_dslr_mounted/store_00020001/DCIM/100CANON/*.JPG;do
+	for FILENAME in ~/pictures/drone_code_dslr_mounted/store_00020001/DCIM/100CANON/*.JPG;do
 		JSON_FILE="${FILENAME%.*}.json"
 		BASENAME="$(basename $FILENAME)"
 
@@ -36,7 +36,7 @@ while true;do
 
 	GREP_PATTERN=${GREP_PATTERN::-4}
 
-	MATCHES="$(cat ~/logs/uas_at_ucla/suas_2018*.csv | grep -a ${GREP_PATTERN} | grep SENSORS)"
+	MATCHES="$(cat ~/logs/uas_at_ucla/drone_code*.csv | grep -a ${GREP_PATTERN} | grep SENSORS)"
 
 	for JSON_FILE in ${!JSON_TO_TIME[@]}; do
 		FILE=${JSON_TO_FILE[$JSON_FILE]}

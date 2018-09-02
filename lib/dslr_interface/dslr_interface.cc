@@ -5,9 +5,9 @@ namespace {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
 const char* kTakePhotosBashScriptLocation =
-    "/home/pi/suas_2018_deploy/scripts/take_photos_continuously.sh";
+    "/home/pi/drone_code_deploy/scripts/take_photos_continuously.sh";
 const char* kDownloadPhotosBashScriptLocation =
-    "/home/pi/suas_2018_deploy/scripts/download_photos.sh";
+    "/home/pi/drone_code_deploy/scripts/download_photos.sh";
 #else
 const char* kTakePhotosBashScriptLocation =
     "./lib/scripts/take_photos_continuously.sh";
@@ -32,7 +32,7 @@ void DSLRInterface::Quit() {
   int unmount_dslr_pid = fork();
   if (!unmount_dslr_pid) {
     setsid();
-    execl("/bin/fusermount", "/tmp/suas_2018_dslr_mounted", NULL);
+    execl("/bin/fusermount", "/tmp/drone_code_dslr_mounted", NULL);
     exit(0);
   }
 

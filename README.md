@@ -1,7 +1,7 @@
 # UAS at UCLA 2018 Drone Code
 Code used on our drone competing in the AUVSI SUAS competition.
 
-[![Build Status](https://travis-ci.com/uas-at-ucla/suas_2018.svg?token=vswHzoLKgsSxcZysVnEN&branch=master)](https://travis-ci.com/uas-at-ucla/suas_2018)
+[![Build Status](https://travis-ci.com/uas-at-ucla/drone_code.svg?token=vswHzoLKgsSxcZysVnEN&branch=master)](https://travis-ci.com/uas-at-ucla/drone_code)
 
 ![FlightDeck Ground Interface](https://i.imgur.com/n9vinQs.jpg)
 
@@ -34,11 +34,11 @@ run on any new code that is checked into this repository, which evaluates
 everything from target identification accuracy for the vision system to safety
 and reliability for the control software.
 
-[Travis-CI](https://travis-ci.org/uas-at-ucla/suas_2018) is used to
+[Travis-CI](https://travis-ci.org/uas-at-ucla/drone_code) is used to
 automatically build every commit that is pushed to this Github repository.
 
 ### Installation
-Please see the [Setup documentation](https://github.com/uas-at-ucla/suas_2018/blob/master/tools/installation/SETUP.md).
+Please see the [Setup documentation](https://github.com/uas-at-ucla/drone_code/blob/master/tools/installation/SETUP.md).
 
 ### Platforms and Libraries Used
  * [PX4 Firmware](https://github.com/PX4/Firmware) as the flight controller software stack and simulator.
