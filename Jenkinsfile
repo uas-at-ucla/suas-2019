@@ -30,11 +30,6 @@ pipeline {
         echo 'Static analyzer'
       }
     }
-    stage('CLEANUP') {
-      steps {
-        echo 'Static analyzer'
-      }
-    }
   }
 
   post {
