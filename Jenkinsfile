@@ -12,10 +12,6 @@ pipeline {
     }
     stage('BUILD') {
       steps {
-        sh 'pwd'
-        sh 'ls'
-        sh 'id -u'
-        sh 'id -g'
         sh './do.sh build'
       }
     }
@@ -33,6 +29,17 @@ pipeline {
       steps {
         echo 'Static analyzer'
       }
+    }
+    stage('CLEANUP') {
+      steps {
+        echo 'Static analyzer'
+      }
+    }
+  }
+
+  post {
+    always {
+      sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
     }
   }
 }
