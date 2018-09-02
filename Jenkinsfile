@@ -1,37 +1,35 @@
 pipeline {
   agent any
-  environment {
-    PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"
-  }
   stages {
-    stage('Checkout') {
+    stage('CHECKOUT') {
       steps {
         echo 'Checking if the run script exists.'
         fileExists './do.sh'
       }
     }
-    stage('Build') {
+    stage('BUILD') {
       steps {
         echo 'Building the code.'
-
-        sh 'echo $PATH'
         sh './do.sh build'
       }
     }
-    stage('Test SITL') {
+    stage('SITL TEST') {
       steps {
         echo 'Test SITL'
       }
     }
-    stage('Test HITL') {
+    stage('HITL TEST') {
       steps {
         echo 'Test HITL'
       }
     }
-    stage('Static Analyzer') {
+    stage('STATIC ANALYZER') {
       steps {
         echo 'Static analyzer'
       }
     }
+  }
+  environment {
+    PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"
   }
 }
