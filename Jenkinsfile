@@ -14,6 +14,8 @@ pipeline {
       steps {
         sh 'pwd'
         sh 'ls'
+        sh 'id -u'
+        sh 'id -g'
         sh './do.sh build'
       }
     }
