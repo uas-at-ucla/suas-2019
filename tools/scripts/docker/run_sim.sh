@@ -40,7 +40,7 @@ xhost +
 docker run \
   --rm -t \
   --env=LOCAL_USER_ID="$(id -u)" \
-  -v $(pwd)/tools/docker/cache/px4_firmware:/src/firmware/:rw \
+  -v $(pwd)/tools/cache/px4_firmware:/src/firmware/:rw \
   -v /tmp/.X11-unix:/tmp/.X11-unix:ro \
   -e DISPLAY=:0 \
   --name uas_sim \
