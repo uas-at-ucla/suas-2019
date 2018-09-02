@@ -1,5 +1,8 @@
 pipeline {
   agent any
+  environment {
+    PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"
+  }
   stages {
     stage('Checkout') {
       steps {
@@ -10,11 +13,9 @@ pipeline {
     stage('Build') {
       steps {
         echo 'Building the code.'
-        catchError() {
-          sh 'echo $PATH'
-          sh './do.sh build'
-        }
 
+        sh 'echo $PATH'
+        sh './do.sh build'
       }
     }
     stage('Test SITL') {
