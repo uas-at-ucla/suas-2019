@@ -1,4 +1,5 @@
 .DS_STORE
+*.JPG
 *.pyc
 *.swp
 *.pickle
@@ -29,8 +30,8 @@ core
 /src/vision/shape_classifier/darkflow/summary
 /src/vision/shape_classifier/darkflow/built_graph
 
-/src/ground/client/build_commit.txt
-src/ground/client/build
+/src/ground/interface/build_commit.txt
+src/ground/interface/build
 /downloaded
 
 /tools/docker/cache/

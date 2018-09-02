@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "./DownloadMap.css";
 import GMapCache from "../../Map/GMapCache.jsx";
+import scriptLoader from 'react-async-script-loader';
 
 const METERS_PER_FOOT = 0.3048;
 const google = window.google;
@@ -22,7 +23,21 @@ class DownloadMap extends Component {
     );
   }
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.isScriptLoaded && !this.props.isScriptLoaded) { // load finished
+      if (nextProps.isScriptLoadSucceed) {
+        this.initMap();
+      }
+    }
+  }
+
   componentDidMount() {
+    if (google.maps || (this.props.isScriptLoaded && this.props.isScriptLoadSucceed)) {
+      this.initMap();
+    }
+  }
+
+  initMap() {
     this.TILE_SIZE = 256;
 
     let field = {
@@ -31,7 +46,10 @@ class DownloadMap extends Component {
     };
 
     this.map = new google.maps.Map(this.refs.download_map, {
-      center: field,
+      center: new google.maps.LatLng(
+        field.lat,
+        field.lng
+      ),
       zoom: 11,
       tilt: 0,
       disableDefaultUI: true,
@@ -179,4 +197,6 @@ class DownloadMap extends Component {
   }
 }
 
-export default DownloadMap;
+export default scriptLoader(
+    ["https://maps.googleapis.com/maps/api/js?key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c&libraries=visualization"]
+)(DownloadMap)
