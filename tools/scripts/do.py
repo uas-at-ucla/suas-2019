@@ -33,6 +33,8 @@ DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/docker/run_sim.sh "
 DOCKER_EXEC_SCRIPT      = "./tools/scripts/docker/exec.sh "
 DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/docker/exec_kill.sh "
 
+JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
+
 # Command chains.
 if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
     # Limit verbosity in Travis CI.
@@ -213,7 +215,7 @@ def run_simulate(args):
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
             "git clone " \
             "https://github.com/PX4/Firmware.git " \
-            "tools/docker/cache/px4_firmware || true")
+            "tools/cache/px4_firmware || true")
 
     # Set up tmux panes.
     run_cmd_exit_failure("tmux start-server ")
@@ -299,6 +301,10 @@ def run_simulate(args):
         time.sleep(1)
 
 
+def run_jenkins_server(args):
+    run_cmd_exit_failure(JENKINS_SERVER_START_SCRIPT)
+
+
 def run_ground(args):
     # Ground server and interface.
     if args.device is not None:
@@ -366,6 +372,9 @@ if __name__ == '__main__':
 
     build_parser = subparsers.add_parser('build', help='build help')
     build_parser.set_defaults(func=run_build)
+
+    jenkins_server_parser = subparsers.add_parser('jenkins_server', help='jenkins_server help')
+    jenkins_server_parser.set_defaults(func=run_jenkins_server)
 
     help_parser = subparsers.add_parser('help')
     help_parser.set_defaults(func=run_help)
