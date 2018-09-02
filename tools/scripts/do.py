@@ -302,6 +302,8 @@ def run_simulate(args):
 
 
 def run_jenkins_server(args):
+    print_update("Starting Jenkins CI server...", \
+            msg_type="SUCCESS")
     run_cmd_exit_failure(JENKINS_SERVER_START_SCRIPT)
 
 
