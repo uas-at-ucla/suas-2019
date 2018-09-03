@@ -357,6 +357,9 @@ def run_env(args=None, show_complete=True):
 
 
 def run_lint(args):
+    print_update("Starting UAS@UCLA development environment...")
+    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+
     print_update("Running lint...")
 
     if args.format:
