@@ -5,6 +5,7 @@ pipeline {
       steps {
         fileExists './do.sh'
         sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
+        sh './do.sh run_env'
       }
     }
     stage('BUILD') {
@@ -27,6 +28,7 @@ pipeline {
         stage('UNIT TESTS') {
           steps {
             echo 'unit tests'
+            sh './do.sh unittest'
           }
         }
       }

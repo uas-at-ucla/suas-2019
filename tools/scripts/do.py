@@ -201,8 +201,8 @@ def run_build(args=None, show_complete=True):
                 msg_type="SUCCESS")
 
 
-def run_test(args=None, show_complete=True):
-    print_update("Going to test the code...")
+def run_unittest(args=None, show_complete=True):
+    print_update("Going to unittest the code...")
 
     print_update("Making sure all the necessary packages are installed.")
     run_install()
@@ -400,8 +400,8 @@ if __name__ == '__main__':
     build_parser = subparsers.add_parser('build', help='build help')
     build_parser.set_defaults(func=run_build)
 
-    test_parser = subparsers.add_parser('test', help='test help')
-    test_parser.set_defaults(func=run_test)
+    unittest_parser = subparsers.add_parser('unittest', help='unittest help')
+    unittest_parser.set_defaults(func=run_unittest)
 
     run_env_parser = subparsers.add_parser('run_env', help='run_env help')
     run_env_parser.set_defaults(func=run_env)
