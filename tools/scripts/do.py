@@ -183,8 +183,7 @@ def run_build(args=None, show_complete=True):
 
     # Start the UAS@UCLA software development docker image if it is not already
     # running.
-    print_update("Bootstrapping UAS@UCLA environment...")
-    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+    run_env(show_complete=False)
 
     # Execute the build commands in the running docker image.
     print_update("Building src directory...")
@@ -210,8 +209,7 @@ def run_test(args=None, show_complete=True):
 
     # Start the UAS@UCLA software development docker image if it is not already
     # running.
-    print_update("Bootstrapping UAS@UCLA environment...")
-    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+    run_env(show_complete=False)
 
     # Execute the build commands in the running docker image.
     print_update("Testing src directory...")
@@ -336,6 +334,16 @@ def run_ground(args):
     processes.wait_for_complete()
 
 
+def run_env(args=None, show_complete=True):
+    print_update("Starting UAS@UCLA development environment...")
+
+    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+
+    if show_complete:
+        print_update("\n\nUAS@UCLA development environment started " \
+                "successfully!", msg_type="SUCCESS")
+
+
 def run_help(args):
     print("./do.sh")
     print("      > help")
@@ -394,6 +402,9 @@ if __name__ == '__main__':
 
     test_parser = subparsers.add_parser('test', help='test help')
     test_parser.set_defaults(func=run_test)
+
+    run_env_parser = subparsers.add_parser('run_env', help='run_env help')
+    run_env_parser.set_defaults(func=run_env)
 
     help_parser = subparsers.add_parser('help')
     help_parser.set_defaults(func=run_help)
