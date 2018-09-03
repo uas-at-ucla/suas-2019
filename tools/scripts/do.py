@@ -37,8 +37,10 @@ DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/docker/exec_kill.sh "
 if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
     # Limit verbosity in Travis CI.
     BAZEL_BUILD = "bazel build --noshow_progress "
+    BAZEL_TEST = "bazel test --noshow_progress "
 else:
     BAZEL_BUILD = "bazel build "
+    BAZEL_TEST = "bazel test "
 
 def print_update(message, msg_type="STATUS"):
     SPLIT_SIZE = 65
@@ -179,9 +181,6 @@ def run_build(args=None, show_complete=True):
     print_update("Making sure all the necessary packages are installed.")
     run_install()
 
-    run_cmd_exit_failure("pwd")
-    run_cmd_exit_failure("ls")
-
     # Start the UAS@UCLA software development docker image if it is not already
     # running.
     print_update("Bootstrapping UAS@UCLA environment...")
@@ -189,9 +188,6 @@ def run_build(args=None, show_complete=True):
 
     # Execute the build commands in the running docker image.
     print_update("Building src directory...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "echo HIHIHIHIHIH")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "pwd")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "ls")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")
 
     print_update("\n\nBuilding lib directory...")
@@ -203,6 +199,29 @@ def run_build(args=None, show_complete=True):
 
     if show_complete:
         print_update("\n\nBuild complete :^) LONG LIVE SPINNY!", \
+                msg_type="SUCCESS")
+
+
+def run_test(args=None, show_complete=True):
+    print_update("Going to test the code...")
+
+    print_update("Making sure all the necessary packages are installed.")
+    run_install()
+
+    # Start the UAS@UCLA software development docker image if it is not already
+    # running.
+    print_update("Bootstrapping UAS@UCLA environment...")
+    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+
+    # Execute the build commands in the running docker image.
+    print_update("Testing src directory...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_TEST + "//src/...")
+
+    print_update("\n\nTesting lib directory...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_TEST + "//lib/...")
+
+    if show_complete:
+        print_update("\n\nAll tests successful :^) LONG LIVE SPINNY!", \
                 msg_type="SUCCESS")
 
 
@@ -372,6 +391,9 @@ if __name__ == '__main__':
 
     build_parser = subparsers.add_parser('build', help='build help')
     build_parser.set_defaults(func=run_build)
+
+    test_parser = subparsers.add_parser('test', help='test help')
+    test_parser.set_defaults(func=run_test)
 
     help_parser = subparsers.add_parser('help')
     help_parser.set_defaults(func=run_help)
