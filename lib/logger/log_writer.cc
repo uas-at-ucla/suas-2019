@@ -4,14 +4,13 @@ namespace lib {
 namespace logger {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-const char* kLogFileLocation = "/home/pi/logs/uas_at_ucla/drone_code.csv";
+const char *kLogFileLocation = "/home/pi/logs/uas_at_ucla/drone_code.csv";
 #else
-const char* kLogFileLocation = "/tmp/drone_code.csv";
+const char *kLogFileLocation = "/tmp/drone_code.csv";
 #endif
 
 LogWriter::LogWriter()
-    : context_(1),
-      socket_(context_, ZMQ_SUB),
+    : context_(1), socket_(context_, ZMQ_SUB),
       thread_(&LogWriter::ReceiveThread, this),
       logger_(::spdlog::rotating_logger_mt("suas2018_log", kLogFileLocation,
                                            1024 * 1024 * 50, 3)) {
@@ -38,7 +37,7 @@ void LogWriter::ReceiveThread() {
       continue;
     }
 
-    ::std::string log_message_string(static_cast<char*>(log_message.data()),
+    ::std::string log_message_string(static_cast<char *>(log_message.data()),
                                      log_message.size());
 
     ::lib::logger::LogMessage log_message_proto;
@@ -61,15 +60,16 @@ void LogWriter::ReceiveThread() {
 
     // Periodically flush log data to file.
     if (::std::chrono::duration_cast<::std::chrono::milliseconds>(
-            ::std::chrono::steady_clock::now() - last_flush).count() > 1e1) {
+            ::std::chrono::steady_clock::now() - last_flush)
+            .count() > 1e1) {
       logger_->flush();
       last_flush = ::std::chrono::steady_clock::now();
     }
   }
 }
 
-void LogWriter::ReplaceString(std::string& subject, const std::string& search,
-                              const std::string& replace) {
+void LogWriter::ReplaceString(std::string &subject, const std::string &search,
+                              const std::string &replace) {
   size_t pos = 0;
   while ((pos = subject.find(search, pos)) != std::string::npos) {
     subject.replace(pos, search.length(), replace);
@@ -77,5 +77,5 @@ void LogWriter::ReplaceString(std::string& subject, const std::string& search,
   }
 }
 
-}  // namespace logger
-}  // namespace lib
+} // namespace logger
+} // namespace lib

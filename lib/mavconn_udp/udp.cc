@@ -15,8 +15,8 @@
  * https://github.com/mavlink/mavros/tree/master/LICENSE.md
  */
 
-#include <console_bridge/console.h>
 #include <cassert>
+#include <console_bridge/console.h>
 
 #include "udp.h"
 
@@ -41,18 +41,19 @@ static bool resolve_address_udp(io_service &io, size_t chan, std::string host,
     ep = q_ep;
     ep.port(port);
     result = true;
-//  logDebug(PFXd "host %s resolved as %s", chan, host.c_str(),
-//           to_string_ss(ep).c_str());
+    //  logDebug(PFXd "host %s resolved as %s", chan, host.c_str(),
+    //           to_string_ss(ep).c_str());
   };
 
 #if BOOST_ASIO_VERSION >= 101200
-  for (auto q_ep : resolver.resolve(query, ec)) fn(q_ep);
+  for (auto q_ep : resolver.resolve(query, ec))
+    fn(q_ep);
 #else
   std::for_each(resolver.resolve(query, ec), udp::resolver::iterator(), fn);
 #endif
 
   if (ec) {
-//  logWarn(PFXd "resolve error: %s", chan, ec.message().c_str());
+    //  logWarn(PFXd "resolve error: %s", chan, ec.message().c_str());
     result = false;
   }
 
@@ -62,20 +63,15 @@ static bool resolve_address_udp(io_service &io, size_t chan, std::string host,
 MAVConnUDP::MAVConnUDP(uint8_t system_id, uint8_t component_id,
                        std::string bind_host, unsigned short bind_port,
                        std::string remote_host, unsigned short remote_port)
-    : MAVConnInterface(system_id, component_id),
-      remote_exists(false),
-      tx_in_progress(false),
-      tx_q{},
-      rx_buf{},
-      io_service(),
-      io_work(new io_service::work(io_service)),
-      socket(io_service) {
+    : MAVConnInterface(system_id, component_id), remote_exists(false),
+      tx_in_progress(false), tx_q{}, rx_buf{}, io_service(),
+      io_work(new io_service::work(io_service)), socket(io_service) {
   using udps = boost::asio::ip::udp::socket;
 
   if (!resolve_address_udp(io_service, conn_id, bind_host, bind_port, bind_ep))
     throw DeviceError("udp: resolve", "Bind address resolve failed");
 
-//logInform(PFXd "Bind address: %s", conn_id, to_string_ss(bind_ep).c_str());
+  // logInform(PFXd "Bind address: %s", conn_id, to_string_ss(bind_ep).c_str());
 
   if (remote_host != "") {
     if (remote_host != BROADCAST_REMOTE_HOST)
@@ -88,10 +84,10 @@ MAVConnUDP::MAVConnUDP(uint8_t system_id, uint8_t component_id,
     }
 
     if (remote_exists) {
-//    logInform(PFXd "Remote address: %s", conn_id,
-//              to_string_ss(remote_ep).c_str());
+      //    logInform(PFXd "Remote address: %s", conn_id,
+      //              to_string_ss(remote_ep).c_str());
     } else {
-//    logWarn(PFXd "Remote address resolve failed.", conn_id);
+      //    logWarn(PFXd "Remote address resolve failed.", conn_id);
     }
   }
 
@@ -101,7 +97,7 @@ MAVConnUDP::MAVConnUDP(uint8_t system_id, uint8_t component_id,
 
     // set buffer opt. size from QGC
     socket.set_option(udps::reuse_address(true));
-    //TODO(comran): Should be send as KiB.
+    // TODO(comran): Should be send as KiB.
     socket.set_option(udps::send_buffer_size(256));
     socket.set_option(udps::receive_buffer_size(512));
 
@@ -117,16 +113,15 @@ MAVConnUDP::MAVConnUDP(uint8_t system_id, uint8_t component_id,
   io_service.post(std::bind(&MAVConnUDP::do_recvfrom, this));
 
   // run io_service for async io
-  io_thread = std::thread([this]() {
-    io_service.run();
-  });
+  io_thread = std::thread([this]() { io_service.run(); });
 }
 
 MAVConnUDP::~MAVConnUDP() { close(); }
 
 void MAVConnUDP::close() {
   lock_guard lock(mutex);
-  if (!is_open()) return;
+  if (!is_open())
+    return;
 
   socket.cancel();
   socket.close();
@@ -134,21 +129,23 @@ void MAVConnUDP::close() {
   io_work.reset();
   io_service.stop();
 
-  if (io_thread.joinable()) io_thread.join();
+  if (io_thread.joinable())
+    io_thread.join();
 
   io_service.reset();
 
-  if (port_closed_cb) port_closed_cb();
+  if (port_closed_cb)
+    port_closed_cb();
 }
 
 void MAVConnUDP::send_bytes(const uint8_t *bytes, size_t length) {
   if (!is_open()) {
-//  logError(PFXd "send: channel closed!", conn_id);
+    //  logError(PFXd "send: channel closed!", conn_id);
     return;
   }
 
   if (!remote_exists) {
-//  logDebug(PFXd "send: Remote not known, message dropped.", conn_id);
+    //  logDebug(PFXd "send: Remote not known, message dropped.", conn_id);
     return;
   }
 
@@ -167,16 +164,16 @@ void MAVConnUDP::send_message(const mavlink_message_t *message) {
   assert(message != nullptr);
 
   if (!is_open()) {
-//  logError(PFXd "send: channel closed!", conn_id);
+    //  logError(PFXd "send: channel closed!", conn_id);
     return;
   }
 
   if (!remote_exists) {
-//  logDebug(PFXd "send: Remote not known, message dropped.", conn_id);
+    //  logDebug(PFXd "send: Remote not known, message dropped.", conn_id);
     return;
   }
 
-//log_send(PFX, message);
+  // log_send(PFX, message);
 
   {
     lock_guard lock(mutex);
@@ -195,14 +192,15 @@ void MAVConnUDP::do_recvfrom() {
       buffer(rx_buf), remote_ep,
       [sthis](error_code error, size_t bytes_transferred) {
         if (error) {
-//        logError(PFXd "receive: %s", sthis->conn_id, error.message().c_str());
+          //        logError(PFXd "receive: %s", sthis->conn_id,
+          //        error.message().c_str());
           sthis->close();
           return;
         }
 
         if (sthis->remote_ep != sthis->last_remote_ep) {
-//        logInform(PFXd "Remote address: %s", sthis->conn_id,
-//                  to_string_ss(sthis->remote_ep).c_str());
+          //        logInform(PFXd "Remote address: %s", sthis->conn_id,
+          //                  to_string_ss(sthis->remote_ep).c_str());
           sthis->remote_exists = true;
           sthis->last_remote_ep = sthis->remote_ep;
         }
@@ -214,10 +212,12 @@ void MAVConnUDP::do_recvfrom() {
 }
 
 void MAVConnUDP::do_sendto(bool check_tx_state) {
-  if (check_tx_state && tx_in_progress) return;
+  if (check_tx_state && tx_in_progress)
+    return;
 
   lock_guard lock(mutex);
-  if (tx_q.empty()) return;
+  if (tx_q.empty())
+    return;
 
   tx_in_progress = true;
   auto sthis = shared_from_this();
@@ -228,11 +228,12 @@ void MAVConnUDP::do_sendto(bool check_tx_state) {
         assert(bytes_transferred <= buf_ref.len);
 
         if (error == boost::asio::error::network_unreachable) {
-//        logWarn(PFXd "sendto: %s, retrying", sthis->conn_id,
-//                error.message().c_str());
+          //        logWarn(PFXd "sendto: %s, retrying", sthis->conn_id,
+          //                error.message().c_str());
           // do not return, try to resend
         } else if (error) {
-//        logError(PFXd "sendto: %s", sthis->conn_id, error.message().c_str());
+          //        logError(PFXd "sendto: %s", sthis->conn_id,
+          //        error.message().c_str());
           sthis->close();
           return;
         }
@@ -256,4 +257,4 @@ void MAVConnUDP::do_sendto(bool check_tx_state) {
           sthis->tx_in_progress = false;
       });
 }
-}  // namespace mavconn
+} // namespace mavconn

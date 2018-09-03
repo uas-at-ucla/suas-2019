@@ -1,11 +1,11 @@
-#include <unistd.h>
-#include <thread>
 #include <sstream>
+#include <thread>
+#include <unistd.h>
 
 #include "gtest/gtest.h"
 
-#include "lib/logger/log_writer.h"
 #include "lib/logger/log_sender.h"
+#include "lib/logger/log_writer.h"
 
 namespace lib {
 namespace logger {
@@ -24,6 +24,6 @@ TEST(LoggerTest, LogTest) {
   usleep(1e4);
 }
 
-}  // namespace testing
-}  // namespace logger
-}  // namespace lib
+} // namespace testing
+} // namespace logger
+} // namespace lib

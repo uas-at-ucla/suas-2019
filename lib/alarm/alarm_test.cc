@@ -36,6 +36,6 @@ TEST(AlarmTest, AlarmRoutineTest) {
   }
 }
 
-}  // namespace testing
-}  // namespace larm
-}  // namespace lib
+} // namespace testing
+} // namespace larm
+} // namespace lib

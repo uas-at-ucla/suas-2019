@@ -1,27 +1,27 @@
 #pragma once
 
+#include <algorithm>
 #include <atomic>
+#include <cmath>
 #include <condition_variable>
+#include <iostream>
 #include <iostream>
 #include <map>
 #include <memory>
 #include <string>
 #include <thread>
 #include <vector>
-#include <cmath>
-#include <algorithm>
-#include <iostream>
 
 #include "zmq.hpp"
 
 #include <google/protobuf/util/message_differencer.h>
 
-#include "lib/mission_message_queue/mission_message_queue.h"
 #include "lib/mission_manager/mission_commands.pb.h"
+#include "lib/mission_message_queue/mission_message_queue.h"
 #include "lib/motion_profile/motion_profile.h"
 #include "lib/physics_structs/physics_structs.h"
-#include "lib/semaphore/semaphore.h"
 #include "lib/pid/pid.h"
+#include "lib/semaphore/semaphore.h"
 
 namespace src {
 namespace control {
@@ -76,8 +76,7 @@ class Pilot {
   ::Eigen::Vector3d current_physical_velocity_;
 };
 
-}  // namespace pilot
-}  // namespace loops
-}  // namespace control
-}  // namespace src
-
+} // namespace pilot
+} // namespace loops
+} // namespace control
+} // namespace src

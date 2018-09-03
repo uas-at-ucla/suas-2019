@@ -11,14 +11,15 @@ int main(void) {
   if (k != -1) { /* did we succeed? */
     /* get the queue (create if it doesn't exist) */
     mq = msgget(k, 0644 | IPC_CREAT);
-    if (mq != -1) {     /* did we succeed */
+    if (mq != -1) {       /* did we succeed */
       char b[10000] = ""; /* a message buffer */
       /* keep waiting on messages */
       while (1) { /* keep going */
         /* attempt to receive a message */
         if (msgrcv(mq, &b, sizeof(b), 0, IPC_NOWAIT) != -1) {
           /* was it the `stop' instruction? */
-          if (strcmp(b, "stop") == 0) break;
+          if (strcmp(b, "stop") == 0)
+            break;
           printf("%s\n", b); /* print the message */
         } else {
           perror("msgrcv()");

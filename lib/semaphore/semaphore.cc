@@ -31,4 +31,4 @@ bool Semaphore::TryWait() {
   return false;
 }
 
-}  // namespace lib
+} // namespace lib

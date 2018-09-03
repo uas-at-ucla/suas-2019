@@ -36,9 +36,9 @@ fi
 # Build docker container.
 if [ -z $TRAVIS ]
 then
-  docker build -t uas-at-ucla_software tools/docker
+  docker build -t uas-at-ucla_software tools/dockerfiles/control
 else
-  docker build -t uas-at-ucla_software tools/docker > /dev/null
+  docker build -t uas-at-ucla_software tools/dockerfiles/control > /dev/null
 fi
 
 if [ $? -ne 0 ]; then
@@ -49,7 +49,7 @@ fi
 # Create network for docker container to use.
 docker network create -d bridge uas_bridge > /dev/null 2>&1 || true
 
-mkdir -p tools/docker/cache/bazel
+mkdir -p tools/cache/bazel
 
 # Start docker container and let it run forever.
 PLATFORM=$(uname -s)
@@ -69,7 +69,7 @@ docker run \
   --rm \
   --net uas_bridge \
   -v $ROOT_PATH:/home/uas/code_env/ \
-  -v $ROOT_PATH/tools/docker/cache/bazel:/home/uas/.cache/bazel  \
+  -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
   --dns 8.8.8.8 \
   --name uas_env \
   uas-at-ucla_software \

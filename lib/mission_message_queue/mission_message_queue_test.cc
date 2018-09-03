@@ -1,7 +1,7 @@
 #include "mission_message_queue.h"
 
-#include <unistd.h>
 #include <thread>
+#include <unistd.h>
 
 #include "gtest/gtest.h"
 
@@ -44,5 +44,5 @@ TEST(MissionMessageQueueTest, SendMissionOverQueueTest) {
       100);
 }
 
-}  // namespace testing
-}  // namespace lib
+} // namespace testing
+} // namespace lib

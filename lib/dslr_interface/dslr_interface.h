@@ -1,14 +1,14 @@
 #pragma once
 
 #include <atomic>
-#include <mutex>
 #include <condition_variable>
-#include <unistd.h>
-#include <sys/types.h>
-#include <sys/wait.h>
+#include <iostream>
+#include <mutex>
 #include <signal.h>
 #include <string.h>
-#include <iostream>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <unistd.h>
 
 #include "lib/phased_loop/phased_loop.h"
 
@@ -55,5 +55,4 @@ class DSLRInterface {
   bool photos_available_to_download_;
 };
 
-}  // namespace lib
-
+} // namespace lib

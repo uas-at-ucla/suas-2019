@@ -4,8 +4,8 @@
 //  Sends "Hello" to server, expects "World" back
 //
 #include <iostream>
-#include <string>
 #include <sstream>
+#include <string>
 
 #include "zmq.hpp"
 
@@ -30,7 +30,7 @@ int main() {
     zmq::message_t reply;
     socket.recv(&reply);
 
-    ::std::string input(static_cast<char*>(reply.data()), reply.size());
+    ::std::string input(static_cast<char *>(reply.data()), reply.size());
 
     ::spinny::controls::ground_communicator::Command cmd;
     cmd.ParseFromString(input);

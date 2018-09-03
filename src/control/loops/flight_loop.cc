@@ -54,8 +54,8 @@ void FlightLoop::RunIteration() {
     ::std::string sensors_serialized = sensors_receiver_.GetLatest();
 
     if (sensors_serialized == "") {
-      ::std::cout << "NO SENSORS @ " << ::std::setprecision(20)
-        << current_time << "\n";
+      ::std::cout << "NO SENSORS @ " << ::std::setprecision(20) << current_time
+                  << "\n";
       return;
     }
 
@@ -253,11 +253,9 @@ void FlightLoop::RunIteration() {
   }
 
   // Land if the GPS data is old.
-  if (next_state == IN_AIR && sensors.last_gps() <
-          current_time - 0.5) {
+  if (next_state == IN_AIR && sensors.last_gps() < current_time - 0.5) {
     LOG_LINE("no GPS; landing (last gps: "
-             << sensors.last_gps()
-             << " current time: " << current_time);
+             << sensors.last_gps() << " current time: " << current_time);
 
     next_state = LANDING;
   }
@@ -272,8 +270,7 @@ void FlightLoop::RunIteration() {
   output.set_alarm(alarm_.ShouldAlarm());
 
   // Handle bomb drop.
-  last_bomb_drop_ = ::std::max(
-      last_bomb_drop_, goal.trigger_bomb_drop());
+  last_bomb_drop_ = ::std::max(last_bomb_drop_, goal.trigger_bomb_drop());
 
   output.set_bomb_drop(false);
   if (last_bomb_drop_ <= current_time && last_bomb_drop_ + 5.0 > current_time) {
@@ -282,8 +279,7 @@ void FlightLoop::RunIteration() {
 
   // Handle dslr.
   output.set_dslr(false);
-  last_dslr_ = ::std::max(
-      last_dslr_, goal.trigger_dslr());
+  last_dslr_ = ::std::max(last_dslr_, goal.trigger_dslr());
   if (last_dslr_ <= current_time && last_dslr_ + 15.0 > current_time) {
     output.set_dslr(true);
   }
@@ -292,7 +288,7 @@ void FlightLoop::RunIteration() {
            << " VelocityX: " << output.velocity_x() << " VelocityY: "
            << output.velocity_y() << " VelocityZ: " << output.velocity_z());
 
-  //TODO(comran): Send output.
+  // TODO(comran): Send output.
 
   ::src::control::Status status = ::src::control::Status();
   status.set_state(next_state);
@@ -301,7 +297,8 @@ void FlightLoop::RunIteration() {
   if (current_flight_start_time_ == 0) {
     status.set_flight_time(previous_flights_time_);
   } else {
-    status.set_flight_time(previous_flights_time_ +
+    status.set_flight_time(
+        previous_flights_time_ +
         (std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::system_clock::now().time_since_epoch())
              .count() -

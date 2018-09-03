@@ -4,12 +4,12 @@
 
 #include "lib/alarm/alarm.h"
 #include "lib/logger/log_sender.h"
-#include "lib/phased_loop/phased_loop.h"
 #include "lib/mission_manager/mission_commands.pb.h"
+#include "lib/phased_loop/phased_loop.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/proto_comms/proto_comms.h"
-#include "src/control/messages.pb.h"
 #include "src/control/loops/pilot/pilot.h"
+#include "src/control/messages.pb.h"
 
 /*      ________  ________  ___  ________   ________       ___    ___
        |\   ____\|\   __  \|\  \|\   ___  \|\   ___  \    |\  \  /  /|

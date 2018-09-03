@@ -23,6 +23,5 @@ class Alarm {
   double loop_period_;
 };
 
-}  // namespace alarm
-}  // namespace lib
-
+} // namespace alarm
+} // namespace lib

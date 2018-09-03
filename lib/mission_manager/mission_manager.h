@@ -38,8 +38,8 @@ class MissionManager {
   ::lib::mission_manager::Mission mission_;
   ::lib::mission_manager::Obstacles obstacles_;
 
-  ::lib::mission_manager::Command GetCurrentCommand(
-      ::lib::mission_manager::Mission &mission);
+  ::lib::mission_manager::Command
+  GetCurrentCommand(::lib::mission_manager::Mission &mission);
   bool PopCommand(::lib::mission_manager::Mission &mission);
   void DumpMission(::lib::mission_manager::Mission, int nest);
 
@@ -48,5 +48,4 @@ class MissionManager {
   Semaphore semaphore_;
 };
 
-}  // namespace lib
-
+} // namespace lib

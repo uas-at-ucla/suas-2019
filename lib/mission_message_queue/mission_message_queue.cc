@@ -36,16 +36,15 @@ void MissionMessageQueueSender::SendData(
     }
   }
 
-  ::std::string mission_string(
-        static_cast<char *>(mission_message.data()), mission_message.size());
+  ::std::string mission_string(static_cast<char *>(mission_message.data()),
+                               mission_message.size());
   mission_protobuf.ParseFromString(mission_string);
   return mission_protobuf;
 }
 
 // Receiver ////////////////////////////////////////////////////////////////////
 MissionMessageQueueReceiver::MissionMessageQueueReceiver()
-    : context_(1),
-      socket_(context_, ZMQ_PAIR),
+    : context_(1), socket_(context_, ZMQ_PAIR),
       thread_(&MissionMessageQueueReceiver::ReceiveThread, this) {}
 
 MissionMessageQueueReceiver::~MissionMessageQueueReceiver() {
@@ -71,14 +70,14 @@ void MissionMessageQueueReceiver::ReceiveThread() {
         static_cast<char *>(mission_message.data()), mission_message.size());
 
     if (ground_data_string == "get_mission") {
-        ::std::string serialized_mission;
-        mission_manager_.GetMission().SerializeToString(&serialized_mission);
+      ::std::string serialized_mission;
+      mission_manager_.GetMission().SerializeToString(&serialized_mission);
 
-        ::zmq::message_t mission_protobuf_zmq(serialized_mission.size());
-        memcpy((void *)mission_protobuf_zmq.data(),
-               serialized_mission.c_str(), serialized_mission.size());
+      ::zmq::message_t mission_protobuf_zmq(serialized_mission.size());
+      memcpy((void *)mission_protobuf_zmq.data(), serialized_mission.c_str(),
+             serialized_mission.size());
 
-        socket_.send(mission_protobuf_zmq);
+      socket_.send(mission_protobuf_zmq);
     } else {
       ::lib::mission_manager::GroundData ground_data_protobuf;
       ground_data_protobuf.ParseFromString(ground_data_string);
@@ -106,5 +105,5 @@ void MissionMessageQueueReceiver::RunPreprocessor(Position3D position) {
   mission_manager_.Preprocess(position);
 }
 
-}  // mission_message_queue
-}  // namespace lib
+} // mission_message_queue
+} // namespace lib

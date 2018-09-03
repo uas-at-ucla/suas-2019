@@ -17,10 +17,10 @@ RRTAvoidance::RRTAvoidance()
   birrt_.set_max_step_size(15.0);
 }
 
-::std::vector<Position3D> RRTAvoidance::Process(
-    Position3D start, Position3D end,
-    ::lib::mission_manager::Obstacles obstacles) {
-  if(start.latitude == end.latitude && start.longitude == end.longitude) {
+::std::vector<Position3D>
+RRTAvoidance::Process(Position3D start, Position3D end,
+                      ::lib::mission_manager::Obstacles obstacles) {
+  if (start.latitude == end.latitude && start.longitude == end.longitude) {
     return ::std::vector<Position3D>();
   }
 
@@ -50,7 +50,8 @@ RRTAvoidance::RRTAvoidance()
     double coordinate_to_meter = GetDistance2D({0, 0, 0}, {1, 0, 0});
 
     if (dist_to_center * coordinate_to_meter < 1.2 * m(i, 2)) {
-      double multiplication_factor = (1.4 * m(i, 2)) / (dist_to_center * coordinate_to_meter);
+      double multiplication_factor =
+          (1.4 * m(i, 2)) / (dist_to_center * coordinate_to_meter);
       m(0, 0) = m(i, 0) - lat_diff * multiplication_factor;
       m(0, 1) = m(i, 1) - long_diff * multiplication_factor;
     }
@@ -165,5 +166,5 @@ RRTAvoidance::RRTAvoidance()
   return final_path;
 }
 
-}  // namespace rrt_avoidance
-}  // namespace lib
+} // namespace rrt_avoidance
+} // namespace lib

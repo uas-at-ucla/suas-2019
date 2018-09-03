@@ -13,9 +13,9 @@ int main(void) {
   piHiPri(1);
 
   for (;;) {
-    digitalWrite(LED, HIGH);  // On
+    digitalWrite(LED, HIGH); // On
     delayMicroseconds(1e6 / 100);
-    digitalWrite(LED, LOW);   // Off
+    digitalWrite(LED, LOW); // Off
     delayMicroseconds(1e6 / 100);
   }
   return 0;

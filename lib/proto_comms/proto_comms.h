@@ -1,14 +1,14 @@
 #pragma once
 
 #include <atomic>
-#include <functional>
-#include <queue>
-#include <thread>
 #include <fstream>
+#include <functional>
 #include <iostream>
-#include <unistd.h>
+#include <queue>
 #include <stdio.h>
 #include <stdlib.h>
+#include <thread>
+#include <unistd.h>
 
 #include "zmq.hpp"
 
@@ -41,7 +41,7 @@ class ProtoReceiver {
 
  private:
   void ReceiveThread();
-  
+
   ::std::atomic<bool> run_{true};
 
   ::zmq::context_t context_;

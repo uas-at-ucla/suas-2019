@@ -33,12 +33,18 @@ DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/docker/run_sim.sh "
 DOCKER_EXEC_SCRIPT      = "./tools/scripts/docker/exec.sh "
 DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/docker/exec_kill.sh "
 
+JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
+LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
+LINT_FORMAT_SCRIPT = "./tools/scripts/lint/format.sh"
+
 # Command chains.
 if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
     # Limit verbosity in Travis CI.
     BAZEL_BUILD = "bazel build --noshow_progress "
+    BAZEL_TEST = "bazel test --noshow_progress "
 else:
     BAZEL_BUILD = "bazel build "
+    BAZEL_TEST = "bazel test "
 
 def print_update(message, msg_type="STATUS"):
     SPLIT_SIZE = 65
@@ -179,19 +185,12 @@ def run_build(args=None, show_complete=True):
     print_update("Making sure all the necessary packages are installed.")
     run_install()
 
-    run_cmd_exit_failure("pwd")
-    run_cmd_exit_failure("ls")
-
     # Start the UAS@UCLA software development docker image if it is not already
     # running.
-    print_update("Bootstrapping UAS@UCLA environment...")
-    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+    run_env(show_complete=False)
 
     # Execute the build commands in the running docker image.
     print_update("Building src directory...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "echo HIHIHIHIHIH")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "pwd")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "ls")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")
 
     print_update("\n\nBuilding lib directory...")
@@ -203,6 +202,28 @@ def run_build(args=None, show_complete=True):
 
     if show_complete:
         print_update("\n\nBuild complete :^) LONG LIVE SPINNY!", \
+                msg_type="SUCCESS")
+
+
+def run_unittest(args=None, show_complete=True):
+    print_update("Going to unittest the code...")
+
+    print_update("Making sure all the necessary packages are installed.")
+    run_install()
+
+    # Start the UAS@UCLA software development docker image if it is not already
+    # running.
+    run_env(show_complete=False)
+
+    # Execute the build commands in the running docker image.
+    print_update("Testing src directory...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_TEST + "//src/...")
+
+    print_update("\n\nTesting lib directory...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_TEST + "//lib/...")
+
+    if show_complete:
+        print_update("\n\nAll tests successful :^) LONG LIVE SPINNY!", \
                 msg_type="SUCCESS")
 
 
@@ -219,7 +240,7 @@ def run_simulate(args):
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
             "git clone " \
             "https://github.com/PX4/Firmware.git " \
-            "tools/docker/cache/px4_firmware || true")
+            "tools/cache/px4_firmware || true")
 
     # Set up tmux panes.
     run_cmd_exit_failure("tmux start-server ")
@@ -305,6 +326,12 @@ def run_simulate(args):
         time.sleep(1)
 
 
+def run_jenkins_server(args):
+    print_update("Starting Jenkins CI server...", \
+            msg_type="SUCCESS")
+    run_cmd_exit_failure(JENKINS_SERVER_START_SCRIPT)
+
+
 def run_ground(args):
     # Ground server and interface.
     if args.device is not None:
@@ -315,6 +342,31 @@ def run_ground(args):
                 args.verbose)
 
     processes.wait_for_complete()
+
+
+def run_env(args=None, show_complete=True):
+    print_update("Starting UAS@UCLA development environment...")
+
+    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+
+    if show_complete:
+        print_update("UAS@UCLA development environment started " \
+                "successfully!", msg_type="SUCCESS")
+
+
+def run_lint(args):
+    print_update("Running lint...")
+
+    if args.format:
+        print_update("Formatting the code...")
+        run_cmd_exit_failure(LINT_FORMAT_SCRIPT)
+        print_update("Format finished!", msg_type="SUCCESS")
+    elif args.check:
+        print_update("Checking lint...")
+        run_cmd_exit_failure(LINT_CHECK_SCRIPT)
+        print_update("Lint check passed!", msg_type="SUCCESS")
+    else:
+        print_update("NO LINTING OPTION SPECIFIED.", "FAILURE")
 
 
 def run_help(args):
@@ -372,6 +424,20 @@ if __name__ == '__main__':
 
     build_parser = subparsers.add_parser('build', help='build help')
     build_parser.set_defaults(func=run_build)
+
+    unittest_parser = subparsers.add_parser('unittest', help='unittest help')
+    unittest_parser.set_defaults(func=run_unittest)
+
+    run_env_parser = subparsers.add_parser('run_env', help='run_env help')
+    run_env_parser.set_defaults(func=run_env)
+
+    jenkins_server_parser = subparsers.add_parser('jenkins_server', help='jenkins_server help')
+    jenkins_server_parser.set_defaults(func=run_jenkins_server)
+
+    lint_parser = subparsers.add_parser('lint')
+    lint_parser.set_defaults(func=run_lint)
+    lint_parser.add_argument('--format', action='store_true')
+    lint_parser.add_argument('--check', action='store_true')
 
     help_parser = subparsers.add_parser('help')
     help_parser.set_defaults(func=run_help)

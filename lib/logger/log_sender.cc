@@ -7,8 +7,8 @@ LogSender::LogSender() : context_(1), socket_(context_, ZMQ_PUB) {
   socket_.connect("ipc:///tmp/logger.ipc");
 }
 
-void LogSender::Log(const char* file, const char* function, int line_num,
-                    ::std::ostringstream& log_line) {
+void LogSender::Log(const char *file, const char *function, int line_num,
+                    ::std::ostringstream &log_line) {
   double time = ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
                     ::std::chrono::system_clock::now().time_since_epoch())
                     .count() /
@@ -26,11 +26,11 @@ void LogSender::Log(const char* file, const char* function, int line_num,
   log_message_proto.SerializeToString(&serialized_log_message);
 
   ::zmq::message_t log_message_zmq(serialized_log_message.size());
-  memcpy((void*)log_message_zmq.data(), serialized_log_message.c_str(),
+  memcpy((void *)log_message_zmq.data(), serialized_log_message.c_str(),
          serialized_log_message.size());
 
   socket_.send(log_message_zmq);
 }
 
-}  // namespace logger
-}  // namespace lib
+} // namespace logger
+} // namespace lib

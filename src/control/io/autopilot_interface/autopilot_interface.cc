@@ -48,10 +48,7 @@ void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
 }
 
 AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
-    : write_tid_(0),
-      reading_status_(0),
-      writing_status_(0),
-      write_count_(0),
+    : write_tid_(0), reading_status_(0), writing_status_(0), write_count_(0),
       time_to_exit_(false) {
   system_id = 1;
   autopilot_id = 1;
@@ -67,67 +64,67 @@ AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
                                          const ::mavconn::Framing framing) {
 
     switch (msg->msgid) {
-      case MAVLINK_MSG_ID_HEARTBEAT:
-        mavlink_msg_heartbeat_decode(msg, &(current_messages.heartbeat));
-        current_messages.time_stamps.heartbeat = get_time_usec();
-        break;
+    case MAVLINK_MSG_ID_HEARTBEAT:
+      mavlink_msg_heartbeat_decode(msg, &(current_messages.heartbeat));
+      current_messages.time_stamps.heartbeat = get_time_usec();
+      break;
 
-      case MAVLINK_MSG_ID_SYS_STATUS:
-        mavlink_msg_sys_status_decode(msg, &(current_messages.sys_status));
-        current_messages.time_stamps.sys_status = get_time_usec();
-        break;
+    case MAVLINK_MSG_ID_SYS_STATUS:
+      mavlink_msg_sys_status_decode(msg, &(current_messages.sys_status));
+      current_messages.time_stamps.sys_status = get_time_usec();
+      break;
 
-      case MAVLINK_MSG_ID_BATTERY_STATUS:
-        mavlink_msg_battery_status_decode(msg,
-                                          &(current_messages.battery_status));
-        current_messages.time_stamps.battery_status = get_time_usec();
-        break;
+    case MAVLINK_MSG_ID_BATTERY_STATUS:
+      mavlink_msg_battery_status_decode(msg,
+                                        &(current_messages.battery_status));
+      current_messages.time_stamps.battery_status = get_time_usec();
+      break;
 
-      case MAVLINK_MSG_ID_RADIO_STATUS:
-        mavlink_msg_radio_status_decode(msg, &(current_messages.radio_status));
-        current_messages.time_stamps.radio_status = get_time_usec();
-        break;
+    case MAVLINK_MSG_ID_RADIO_STATUS:
+      mavlink_msg_radio_status_decode(msg, &(current_messages.radio_status));
+      current_messages.time_stamps.radio_status = get_time_usec();
+      break;
 
-      case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
-        mavlink_msg_local_position_ned_decode(
-            msg, &(current_messages.local_position_ned));
-        current_messages.time_stamps.local_position_ned = get_time_usec();
-        break;
+    case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
+      mavlink_msg_local_position_ned_decode(
+          msg, &(current_messages.local_position_ned));
+      current_messages.time_stamps.local_position_ned = get_time_usec();
+      break;
 
-      case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
-        mavlink_msg_global_position_int_decode(
-            msg, &(current_messages.global_position_int));
-        current_messages.time_stamps.global_position_int = get_time_usec();
-        break;
+    case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+      mavlink_msg_global_position_int_decode(
+          msg, &(current_messages.global_position_int));
+      current_messages.time_stamps.global_position_int = get_time_usec();
+      break;
 
-      case MAVLINK_MSG_ID_GPS_RAW_INT:
-        mavlink_msg_gps_raw_int_decode(msg, &(current_messages.gps_raw_int));
-        current_messages.time_stamps.gps_raw_int = get_time_usec();
-        break;
+    case MAVLINK_MSG_ID_GPS_RAW_INT:
+      mavlink_msg_gps_raw_int_decode(msg, &(current_messages.gps_raw_int));
+      current_messages.time_stamps.gps_raw_int = get_time_usec();
+      break;
 
-      case MAVLINK_MSG_ID_HIGHRES_IMU:
-        mavlink_msg_highres_imu_decode(msg, &(current_messages.highres_imu));
-        current_messages.time_stamps.highres_imu = get_time_usec();
-        break;
+    case MAVLINK_MSG_ID_HIGHRES_IMU:
+      mavlink_msg_highres_imu_decode(msg, &(current_messages.highres_imu));
+      current_messages.time_stamps.highres_imu = get_time_usec();
+      break;
 
-      case MAVLINK_MSG_ID_ATTITUDE:
-        mavlink_msg_attitude_decode(msg, &(current_messages.attitude));
-        current_messages.time_stamps.attitude = get_time_usec();
-        break;
+    case MAVLINK_MSG_ID_ATTITUDE:
+      mavlink_msg_attitude_decode(msg, &(current_messages.attitude));
+      current_messages.time_stamps.attitude = get_time_usec();
+      break;
 
-      case MAVLINK_MSG_ID_VFR_HUD:
-        mavlink_msg_vfr_hud_decode(msg, &(current_messages.vfr_hud));
-        current_messages.time_stamps.vfr_hud = get_time_usec();
-        break;
+    case MAVLINK_MSG_ID_VFR_HUD:
+      mavlink_msg_vfr_hud_decode(msg, &(current_messages.vfr_hud));
+      current_messages.time_stamps.vfr_hud = get_time_usec();
+      break;
 
-      case MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET:
-        mavlink_msg_actuator_control_target_decode(
-            msg, &(current_messages.control_target));
+    case MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET:
+      mavlink_msg_actuator_control_target_decode(
+          msg, &(current_messages.control_target));
 
-        break;
+      break;
 
-      default:
-        break;
+    default:
+      break;
     }
   };
 }
@@ -148,7 +145,8 @@ void AutopilotInterface::write_setpoint() {
   mavlink_set_position_target_local_ned_t sp = current_setpoint;
 
   // double check some system parameters
-  if (not sp.time_boot_ms) sp.time_boot_ms = (uint32_t)(get_time_usec() / 1e3);
+  if (not sp.time_boot_ms)
+    sp.time_boot_ms = (uint32_t)(get_time_usec() / 1e3);
   sp.target_system = system_id;
   sp.target_component = autopilot_id;
 
@@ -170,7 +168,8 @@ void AutopilotInterface::start() {
   // Wait for initial position ned
   while (not(current_messages.time_stamps.local_position_ned &&
              current_messages.time_stamps.attitude)) {
-    if (time_to_exit_) return;
+    if (time_to_exit_)
+      return;
     usleep(1e6 / 2);
   }
 
@@ -187,10 +186,12 @@ void AutopilotInterface::start() {
 
   result = pthread_create(&write_tid_, NULL,
                           &start_autopilot_interface_write_thread, this);
-  if (result) throw result;
+  if (result)
+    throw result;
 
   // Wait for write thread to be started.
-  while (not writing_status_) usleep(1e6 / 10);
+  while (not writing_status_)
+    usleep(1e6 / 10);
 
   return;
 }
@@ -201,7 +202,7 @@ void AutopilotInterface::Arm() {
   com.target_component = autopilot_id;
   com.command = MAV_CMD_COMPONENT_ARM_DISARM;
   com.confirmation = true;
-  com.param1 = 1;  // Should arm.
+  com.param1 = 1; // Should arm.
 
   mavlink_message_t message;
   mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
@@ -215,7 +216,7 @@ void AutopilotInterface::Disarm() {
   com.target_component = autopilot_id;
   com.command = MAV_CMD_COMPONENT_ARM_DISARM;
   com.confirmation = true;
-  com.param1 = 0;  // Should disarm.
+  com.param1 = 0; // Should disarm.
 
   mavlink_message_t message;
   mavlink_msg_command_long_encode(system_id, companion_id, &message, &com);
@@ -378,16 +379,16 @@ void AutopilotInterface::set_message_period() {
     bool valid = false;
 
     switch (i) {
-      case MAVLINK_MSG_ID_HEARTBEAT:
-      case MAVLINK_MSG_ID_SYS_STATUS:
-      case MAVLINK_MSG_ID_BATTERY_STATUS:
-      case MAVLINK_MSG_ID_RADIO_STATUS:
-      case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
-      case MAVLINK_MSG_ID_HIGHRES_IMU:
-      case MAVLINK_MSG_ID_ATTITUDE:
-        interval = 1e6 / 25;
-        valid = true;
-        break;
+    case MAVLINK_MSG_ID_HEARTBEAT:
+    case MAVLINK_MSG_ID_SYS_STATUS:
+    case MAVLINK_MSG_ID_BATTERY_STATUS:
+    case MAVLINK_MSG_ID_RADIO_STATUS:
+    case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+    case MAVLINK_MSG_ID_HIGHRES_IMU:
+    case MAVLINK_MSG_ID_ATTITUDE:
+      interval = 1e6 / 25;
+      valid = true;
+      break;
     }
 
     if (valid) {
@@ -418,20 +419,19 @@ void AutopilotInterface::set_param(const char id[], float value) {
   param_config.target_system = system_id;
   param_config.target_component = autopilot_id;
 
-  memcpy(param_config.param_id, id,
-         ::std::min(16, (int)strlen(id)));
+  memcpy(param_config.param_id, id, ::std::min(16, (int)strlen(id)));
   param_config.param_value = value;
 
   mavlink_message_t message;
   mavlink_msg_param_set_encode(system_id, companion_id, &message,
-                                  &param_config);
+                               &param_config);
 
   write_message(message);
 }
 
 void AutopilotInterface::stop() {
   time_to_exit_ = true;
-  //pixhawk_->close();
+  // pixhawk_->close();
 
   pthread_join(write_tid_, NULL);
 }
@@ -497,7 +497,7 @@ void *start_autopilot_interface_write_thread(void *args) {
   return NULL;
 }
 
-}  // namespace autopilot_interface
-}  // namespace io
-}  // namespace control
-}  // namespace src
+} // namespace autopilot_interface
+} // namespace io
+} // namespace control
+} // namespace src

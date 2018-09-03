@@ -2,8 +2,7 @@
 
 #include <iostream>
 
-
-Vector3D& operator+=(Vector3D& vector, double scalar) {
+Vector3D &operator+=(Vector3D &vector, double scalar) {
   vector.x += scalar;
   vector.y += scalar;
   vector.z += scalar;
@@ -11,7 +10,7 @@ Vector3D& operator+=(Vector3D& vector, double scalar) {
   return vector;
 }
 
-Vector3D& operator-=(Vector3D& vector, double scalar) {
+Vector3D &operator-=(Vector3D &vector, double scalar) {
   vector.x -= scalar;
   vector.y -= scalar;
   vector.z -= scalar;
@@ -19,7 +18,7 @@ Vector3D& operator-=(Vector3D& vector, double scalar) {
   return vector;
 }
 
-Vector3D& operator*=(Vector3D& vector, double scalar) {
+Vector3D &operator*=(Vector3D &vector, double scalar) {
   vector.x *= scalar;
   vector.y *= scalar;
   vector.z *= scalar;
@@ -27,7 +26,7 @@ Vector3D& operator*=(Vector3D& vector, double scalar) {
   return vector;
 }
 
-Vector3D& operator/=(Vector3D& vector, double scalar) {
+Vector3D &operator/=(Vector3D &vector, double scalar) {
   vector.x /= scalar;
   vector.y /= scalar;
   vector.z /= scalar;
@@ -71,7 +70,7 @@ double GetDistance3D(Position3D start, Position3D end) {
 Vector3D PointTowards(Position3D start, Position3D end) {
   double dx = GetDistance2D({start.latitude, 0, 0}, {end.latitude, 0, 0});
   double dy = GetDistance2D({0, start.longitude, 0}, {0, end.longitude, 0});
-  double dz = start.altitude - end.altitude;  // In NED coordinates.
+  double dz = start.altitude - end.altitude; // In NED coordinates.
 
   dx *= end.latitude > start.latitude ? 1 : -1;
   dy *= end.longitude > start.longitude ? 1 : -1;
@@ -86,4 +85,3 @@ Vector3D PointTowards(Position3D start, Position3D end) {
 
   return pointing_vector;
 }
-

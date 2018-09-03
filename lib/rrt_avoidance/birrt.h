@@ -1,7 +1,7 @@
 #pragma once
 
-#include <limits.h>
 #include <Eigen/Dense>
+#include <limits.h>
 
 #include "lib/rrt_avoidance/Tree.hpp"
 
@@ -16,8 +16,8 @@ class BiRRT {
  public:
   BiRRT(std::shared_ptr<StateSpace<::Eigen::Vector2d>> state_space,
         std::function<size_t(::Eigen::Vector2d)> hash, int dimensions,
-        std::function<::Eigen::Vector2d(double*)> array_to_t = NULL,
-        std::function<void(::Eigen::Vector2d, double*)> t_to_array = NULL);
+        std::function<::Eigen::Vector2d(double *)> array_to_t = NULL,
+        std::function<void(::Eigen::Vector2d, double *)> t_to_array = NULL);
 
   // Get the shortest path from the start to the goal
   std::vector<::Eigen::Vector2d> GetPath();
@@ -45,10 +45,10 @@ class BiRRT {
   int min_iterations() const { return min_iterations_; }
   void set_min_iterations(int itr) { min_iterations_ = itr; }
 
-  const std::vector<::Eigen::Vector2d>& waypoints() {
+  const std::vector<::Eigen::Vector2d> &waypoints() {
     return start_tree_.waypoints();
   }
-  void set_waypoints(const std::vector<::Eigen::Vector2d>& waypoints) {
+  void set_waypoints(const std::vector<::Eigen::Vector2d> &waypoints) {
     start_tree_.setWaypoints(waypoints);
     goal_tree_.setWaypoints(waypoints);
   }
@@ -71,27 +71,27 @@ class BiRRT {
     goal_tree_.setGoalMaxDist(maxDist);
   }
 
-  const ::Eigen::Vector2d& start_state() const {
+  const ::Eigen::Vector2d &start_state() const {
     return start_tree_.startState();
   }
-  const ::Eigen::Vector2d& goal_state() const {
+  const ::Eigen::Vector2d &goal_state() const {
     return start_tree_.goalState();
   }
 
-  void set_start_state(const ::Eigen::Vector2d& start) {
+  void set_start_state(const ::Eigen::Vector2d &start) {
     start_tree_.setStartState(start);
     goal_tree_.setGoalState(start);
   }
 
-  void set_goal_state(const ::Eigen::Vector2d& goal) {
+  void set_goal_state(const ::Eigen::Vector2d &goal) {
     start_tree_.setGoalState(goal);
     goal_tree_.setStartState(goal);
   }
 
-  const Node<::Eigen::Vector2d>* start_solution_node() {
+  const Node<::Eigen::Vector2d> *start_solution_node() {
     return start_solution_node_;
   }
-  const Node<::Eigen::Vector2d>* goal_solution_node() {
+  const Node<::Eigen::Vector2d> *goal_solution_node() {
     return goal_solution_node_;
   }
 
@@ -110,9 +110,9 @@ class BiRRT {
   }
 
  private:
-  const Node<::Eigen::Vector2d>* FindBestPath(
-      const ::Eigen::Vector2d& target_state,
-      Tree<::Eigen::Vector2d>& tree_to_search, int* depth_out) const;
+  const Node<::Eigen::Vector2d> *
+  FindBestPath(const ::Eigen::Vector2d &target_state,
+               Tree<::Eigen::Vector2d> &tree_to_search, int *depth_out) const;
 
   Tree<::Eigen::Vector2d> start_tree_, goal_tree_;
   const Node<::Eigen::Vector2d> *start_solution_node_, *goal_solution_node_;
@@ -123,6 +123,5 @@ class BiRRT {
   int solution_length_;
 };
 
-}  // namespace rrt_avoidance
-}  // namespace lib
-
+} // namespace rrt_avoidance
+} // namespace lib

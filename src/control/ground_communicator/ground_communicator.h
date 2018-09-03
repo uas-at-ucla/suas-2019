@@ -14,11 +14,11 @@
 #include "sio_socket.h"
 #include "zmq.hpp"
 
+#include "lib/base64_tools/base64_tools.h"
 #include "lib/logger/log_sender.h"
-#include "lib/serial_comms/serial_comms_bridge.h"
 #include "lib/phased_loop/phased_loop.h"
 #include "lib/proto_comms/proto_comms.h"
-#include "lib/base64_tools/base64_tools.h"
+#include "lib/serial_comms/serial_comms_bridge.h"
 #include "src/control/io/io.h"
 #include "src/control/loops/flight_loop.h"
 #include "src/control/messages.pb.h"
@@ -86,6 +86,6 @@ class GroundCommunicator {
   ::lib::proto_comms::ProtoSender goal_sender_;
 };
 
-}  // namespace ground_communicator
-}  // namespace control
-}  // namespace src
+} // namespace ground_communicator
+} // namespace control
+} // namespace src

@@ -15,11 +15,11 @@ void SerialCommsBridge::SendData(
   message.SerializeToString(&serialized_protobuf);
 
   ::zmq::message_t zmq_protobuf(serialized_protobuf.size());
-  memcpy((void *)zmq_protobuf.data(),
-         serialized_protobuf.c_str(), serialized_protobuf.size());
+  memcpy((void *)zmq_protobuf.data(), serialized_protobuf.c_str(),
+         serialized_protobuf.size());
 
   socket_.send(zmq_protobuf);
 }
 
-}  // namespace serial_comms
-}  // namespace lib
+} // namespace serial_comms
+} // namespace lib

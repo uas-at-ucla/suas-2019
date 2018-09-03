@@ -101,7 +101,7 @@ bool IsBase64(unsigned char c) {
 
 ::std::string Encode(::std::string str) {
   return Encode(reinterpret_cast<unsigned const char *>(str.c_str()),
-                       str.size());
+                str.size());
 }
 
 } // namespace base64_tools

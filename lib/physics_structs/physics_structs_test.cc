@@ -63,4 +63,4 @@ TEST(PhysicsStructsTest, PointTowardsTest) {
   EXPECT_GE(pointing_to.x, 0.707107 - kAngleTolerance);
 }
 
-}  // namespace testing
+} // namespace testing
