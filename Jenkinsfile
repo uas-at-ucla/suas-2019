@@ -15,6 +15,11 @@ pipeline {
         sh './do.sh build'
       }
     }
+    stage('TEST') {
+      steps {
+        sh './do.sh test'
+      }
+    }
     stage('TEST SITL') {
       steps {
         echo 'Test SITL'
