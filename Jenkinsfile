@@ -1,6 +1,10 @@
 pipeline {
   agent any
 
+  options {
+    ansiColor('xterm')
+  }
+
   stages {
     stage('SETUP') {
       steps {
