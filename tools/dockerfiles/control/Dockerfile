@@ -163,6 +163,8 @@ RUN rm -rf /home/uas/mavlink-router
 
 EXPOSE 8085/udp
 EXPOSE 8086/udp
+EXPOSE 8090/udp
+EXPOSE 8091/udp
 
 # Set user to root so that we can set the appropriate permissions for file #####
 # access later on. #############################################################

@@ -268,7 +268,7 @@ def run_simulate(args):
     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
 
     # Start the PX4 simulator docker image.
-    run_cmd_exit_failure("tmux send-keys \"exec " \
+    run_cmd_exit_failure("tmux send-keys \"" \
             + DOCKER_RUN_SIM_SCRIPT + "\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
@@ -278,7 +278,7 @@ def run_simulate(args):
 
     run_cmd_exit_failure("tmux renamew -t uas_env controls")
 
-    run_cmd_exit_failure("tmux send-keys \"exec " + \
+    run_cmd_exit_failure("tmux send-keys \"" + \
             "./tools/scripts/docker/run_mavproxy.sh\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
@@ -370,7 +370,7 @@ def run_lint(args):
 
 
 def run_help(args):
-    print("./do.sh")
+    print("./uas.sh")
     print("      > help")
     print("      > build")
     print("      > test")

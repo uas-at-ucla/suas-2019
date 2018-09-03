@@ -6,19 +6,19 @@ pipeline {
         sh 'date'
         sh 'env'
         sh 'pwd'
-        fileExists './do.sh'
+        fileExists './uas.sh'
         sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
-        sh './do.sh run_env'
+        sh './uas.sh run_env'
       }
     }
     stage('LINT') {
       steps {
-        sh './do.sh lint --check'
+        sh './uas.sh lint --check'
       }
     }
     stage('BUILD') {
       steps {
-        sh './do.sh build'
+        sh './uas.sh build'
       }
     }
     stage('TEST') {
@@ -36,7 +36,7 @@ pipeline {
         stage('UNIT TESTS') {
           steps {
             echo 'unit tests'
-            sh './do.sh unittest'
+            sh './uas.sh unittest'
           }
         }
       }
