@@ -10,8 +10,8 @@
 namespace lib {
 namespace testing {
 
-//TODO(comran): Fix this test.
-//TEST(MissionMessageQueueTest, SendMissionOverQueueTest) {
+// TODO(comran): Fix this test.
+// TEST(MissionMessageQueueTest, SendMissionOverQueueTest) {
 //  ::lib::mission_message_queue::MissionMessageQueueSender
 //      mission_message_queue_sender;
 
