@@ -4,12 +4,13 @@ namespace lib {
 namespace pid {
 
 class PIDImpl {
-public:
-  PIDImpl(double dt, double max, double min, double Kp, double Kd, double Ki, double imax);
+ public:
+  PIDImpl(double dt, double max, double min, double Kp, double Kd, double Ki,
+          double imax);
   ~PIDImpl();
   double calculate(double setpoint, double pv);
 
-private:
+ private:
   double _dt;
   double _max;
   double _min;
@@ -21,7 +22,8 @@ private:
   double _integral;
 };
 
-PID::PID(double dt, double max, double min, double Kp, double Kd, double Ki, double imax) {
+PID::PID(double dt, double max, double min, double Kp, double Kd, double Ki,
+         double imax) {
   pimpl = new PIDImpl(dt, max, min, Kp, Kd, Ki, imax);
 }
 double PID::calculate(double setpoint, double pv) {
@@ -34,8 +36,8 @@ PID::~PID() { delete pimpl; }
  */
 PIDImpl::PIDImpl(double dt, double max, double min, double Kp, double Kd,
                  double Ki, double imax)
-    : _dt(dt), _max(max), _min(min), _Kp(Kp), _Kd(Kd), _Ki(Ki), _imax(imax), _pre_error(0),
-      _integral(0) {}
+    : _dt(dt), _max(max), _min(min), _Kp(Kp), _Kd(Kd), _Ki(Ki), _imax(imax),
+      _pre_error(0), _integral(0) {}
 
 double PIDImpl::calculate(double setpoint, double pv) {
 

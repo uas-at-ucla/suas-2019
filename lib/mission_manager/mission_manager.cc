@@ -94,8 +94,8 @@ size_t MissionManager::NumberOfCommands() { return mission_.commands_size(); }
   return mission;
 }
 
-::lib::mission_manager::Command MissionManager::GetCurrentCommand(
-    ::lib::mission_manager::Mission &mission) {
+::lib::mission_manager::Command
+MissionManager::GetCurrentCommand(::lib::mission_manager::Mission &mission) {
   // If the mission is empty, return immediately.
   if (mission.commands_size() == 0) {
     ::lib::mission_manager::Command cmd;
@@ -152,7 +152,8 @@ void MissionManager::UnrollMission(::lib::mission_manager::Mission *mission,
           cmd->mutable_bombdropcommand();
 
       if (cmd->sub_mission().commands_size() == 0) {
-        // Create a waypoint command to go to the bomb drop location, sleep a bit,
+        // Create a waypoint command to go to the bomb drop location, sleep a
+        // bit,
         // and drop the payload.
         {
           ::lib::mission_manager::WaypointCommand *waypoint_cmd =
@@ -307,4 +308,4 @@ void MissionManager::DumpMission(::lib::mission_manager::Mission mission,
   }
 }
 
-}  // namespace lib
+} // namespace lib

@@ -3,9 +3,17 @@ pipeline {
   stages {
     stage('SETUP') {
       steps {
+        sh 'date'
+        sh 'env'
+        sh 'pwd'
         fileExists './do.sh'
         sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
         sh './do.sh run_env'
+      }
+    }
+    stage('LINT') {
+      steps {
+        sh './do.sh lint --check'
       }
     }
     stage('BUILD') {
@@ -45,7 +53,6 @@ pipeline {
   post {
     always {
       sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
-
     }
   }
 }

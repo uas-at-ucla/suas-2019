@@ -43,7 +43,7 @@ int MavlinkSerial::read_messages(::std::vector<mavlink_message_t> &messages) {
   // this function locks the port during read
   int result = _read_port(cp);
 
-  for(int i = 0;i < result;i++) {
+  for (int i = 0; i < result; i++) {
     // the parsing
     mavlink_message_t message;
 
@@ -87,13 +87,13 @@ int MavlinkSerial::read_messages(::std::vector<mavlink_message_t> &messages) {
       }
     }
 
-    if(msgReceived) {
+    if (msgReceived) {
       messages.push_back(message);
     }
   }
 
   // Couldn't read from port
-  if(result < 1) {
+  if (result < 1) {
     fprintf(stderr, "ERROR: Could not read from fd %d\n", fd);
     stop();
     start();
@@ -137,10 +137,9 @@ int MavlinkSerial::open_serial() {
     throw EXIT_FAILURE;
   }
 
-  printf(
-      "Connected to %s with %d baud, 8 data bits, no parity, 1 stop bit "
-      "(8N1)\n",
-      uart_name, baudrate);
+  printf("Connected to %s with %d baud, 8 data bits, no parity, 1 stop bit "
+         "(8N1)\n",
+         uart_name, baudrate);
   lastStatus.packet_rx_drop_count = 0;
 
   status = true;
@@ -198,7 +197,7 @@ int MavlinkSerial::_open_port(const char *port) {
 
 // Sets configuration, flags, and baud rate
 bool MavlinkSerial::_setup_port(int baud, int data_bits, int stop_bits,
-                              bool parity, bool hardware_control) {
+                                bool parity, bool hardware_control) {
   // Check file descriptor
   if (!isatty(fd)) {
     fprintf(stderr, "\nERROR: file descriptor %d is NOT a serial port\n", fd);
@@ -249,7 +248,7 @@ bool MavlinkSerial::_setup_port(int baud, int data_bits, int stop_bits,
   // One input byte is enough to return from read()
   // Inter-character timer off
   config.c_cc[VMIN] = 1;
-  config.c_cc[VTIME] = 10;  // was 0
+  config.c_cc[VTIME] = 10; // was 0
 
   // Get the current options for the port
   ////struct termios options;
@@ -257,75 +256,72 @@ bool MavlinkSerial::_setup_port(int baud, int data_bits, int stop_bits,
 
   // Apply baudrate
   switch (baud) {
-    case 1200:
-      if (cfsetispeed(&config, B1200) < 0 || cfsetospeed(&config, B1200) < 0) {
-        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-                baud);
-        return false;
-      }
-      break;
-    case 1800:
-      cfsetispeed(&config, B1800);
-      cfsetospeed(&config, B1800);
-      break;
-    case 9600:
-      cfsetispeed(&config, B9600);
-      cfsetospeed(&config, B9600);
-      break;
-    case 19200:
-      cfsetispeed(&config, B19200);
-      cfsetospeed(&config, B19200);
-      break;
-    case 38400:
-      if (cfsetispeed(&config, B38400) < 0 ||
-          cfsetospeed(&config, B38400) < 0) {
-        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-                baud);
-        return false;
-      }
-      break;
-    case 57600:
-      if (cfsetispeed(&config, B57600) < 0 ||
-          cfsetospeed(&config, B57600) < 0) {
-        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-                baud);
-        return false;
-      }
-      break;
-    case 115200:
-      if (cfsetispeed(&config, B115200) < 0 ||
-          cfsetospeed(&config, B115200) < 0) {
-        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-                baud);
-        return false;
-      }
-      break;
-
-    // These two non-standard (by the 70'ties ) rates are fully supported on
-    // current Debian and Mac OS versions (tested since 2010).
-    case 460800:
-      if (cfsetispeed(&config, B460800) < 0 ||
-          cfsetospeed(&config, B460800) < 0) {
-        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-                baud);
-        return false;
-      }
-      break;
-    case 921600:
-      if (cfsetispeed(&config, B921600) < 0 ||
-          cfsetospeed(&config, B921600) < 0) {
-        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-                baud);
-        return false;
-      }
-      break;
-    default:
-      fprintf(stderr,
-              "ERROR: Desired baud rate %d could not be set, aborting.\n",
+  case 1200:
+    if (cfsetispeed(&config, B1200) < 0 || cfsetospeed(&config, B1200) < 0) {
+      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
               baud);
       return false;
+    }
+    break;
+  case 1800:
+    cfsetispeed(&config, B1800);
+    cfsetospeed(&config, B1800);
+    break;
+  case 9600:
+    cfsetispeed(&config, B9600);
+    cfsetospeed(&config, B9600);
+    break;
+  case 19200:
+    cfsetispeed(&config, B19200);
+    cfsetospeed(&config, B19200);
+    break;
+  case 38400:
+    if (cfsetispeed(&config, B38400) < 0 || cfsetospeed(&config, B38400) < 0) {
+      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+              baud);
+      return false;
+    }
+    break;
+  case 57600:
+    if (cfsetispeed(&config, B57600) < 0 || cfsetospeed(&config, B57600) < 0) {
+      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+              baud);
+      return false;
+    }
+    break;
+  case 115200:
+    if (cfsetispeed(&config, B115200) < 0 ||
+        cfsetospeed(&config, B115200) < 0) {
+      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+              baud);
+      return false;
+    }
+    break;
 
-      break;
+  // These two non-standard (by the 70'ties ) rates are fully supported on
+  // current Debian and Mac OS versions (tested since 2010).
+  case 460800:
+    if (cfsetispeed(&config, B460800) < 0 ||
+        cfsetospeed(&config, B460800) < 0) {
+      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+              baud);
+      return false;
+    }
+    break;
+  case 921600:
+    if (cfsetispeed(&config, B921600) < 0 ||
+        cfsetospeed(&config, B921600) < 0) {
+      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+              baud);
+      return false;
+    }
+    break;
+  default:
+    fprintf(stderr, "ERROR: Desired baud rate %d could not be set, aborting.\n",
+            baud);
+    return false;
+
+    break;
   }
 
   // Finally, apply the configuration
@@ -366,5 +362,5 @@ int MavlinkSerial::_write_port(char *buf, unsigned len) {
   return bytesWritten;
 }
 
-}  // namespace mavlink_serial
-}  // namespace lib
+} // namespace mavlink_serial
+} // namespace lib

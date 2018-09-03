@@ -23,7 +23,6 @@ class LoopInputHandler {
   ::std::atomic<bool> run_{true};
 };
 
-}  // namespace io
-}  // namespace control
-}  // namespace src
-
+} // namespace io
+} // namespace control
+} // namespace src

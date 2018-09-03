@@ -4,8 +4,7 @@ namespace src {
 namespace control {
 namespace io {
 
-LoopInputHandler::LoopInputHandler()
-    : phased_loop_(200) {}
+LoopInputHandler::LoopInputHandler() : phased_loop_(200) {}
 
 void LoopInputHandler::operator()() {
   while (run_) {
@@ -14,6 +13,6 @@ void LoopInputHandler::operator()() {
   }
 }
 
-}  // namespace io
-}  // namespace control
-}  // namespace src
+} // namespace io
+} // namespace control
+} // namespace src

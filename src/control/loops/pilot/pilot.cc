@@ -16,20 +16,14 @@ constexpr double kGotoRawReCenterRamp = 15;
 // trigger a continuation to the next command.
 constexpr double kGotoRawWaypointTolerance = 2;
 
-}  // namespace
+} // namespace
 
 Pilot::Pilot()
     : thrust_pid_(1 / 100.0, kSpeed, 0, 0.2, 0.4, 0, 4),
-      profile_(kSpeed, 5, 1 / 100.0),
-      cmd_set_(false),
-      position_set_(false),
-      position_semaphore_(1),
-      thread_(&Pilot::PreprocessorThread, this),
-      sleep_time_(0),
-      come_to_stop_(true),
-      come_to_stop_count_(0),
-      setpoint_reset_(true),
-      met_goal_(false) {}
+      profile_(kSpeed, 5, 1 / 100.0), cmd_set_(false), position_set_(false),
+      position_semaphore_(1), thread_(&Pilot::PreprocessorThread, this),
+      sleep_time_(0), come_to_stop_(true), come_to_stop_count_(0),
+      setpoint_reset_(true), met_goal_(false) {}
 
 Pilot::~Pilot() {
   Quit();
@@ -115,7 +109,8 @@ PilotOutput Pilot::VelocityNavigator() {
       (drone_to_end_vector - drone_projection_on_path_vector) /
       kGotoRawReCenterRamp;
 
-  float direction_of_travel = ::std::atan2(start_to_end_vector.y(), start_to_end_vector.x());
+  float direction_of_travel =
+      ::std::atan2(start_to_end_vector.y(), start_to_end_vector.x());
 
   // A value, between 0 and 1, which determines whether the output vector
   // should point straight at the goal relative to the start-end path (mix =
@@ -237,7 +232,8 @@ PilotOutput Pilot::Calculate(Position3D position, ::Eigen::Vector3d velocity) {
   //                exactly the same?)
   come_to_stop_ = true;
 
-  bool first_run = !google::protobuf::util::MessageDifferencer::Equals(cmd, cmd_);
+  bool first_run =
+      !google::protobuf::util::MessageDifferencer::Equals(cmd, cmd_);
   if (cmd_set_) {
     if (first_run) {
       if (cmd.has_gotorawcommand()) {
@@ -266,7 +262,7 @@ PilotOutput Pilot::Calculate(Position3D position, ::Eigen::Vector3d velocity) {
       sleep_time_ = 0;
     } else {
       sleep_time_ +=
-          1 / 100.0;  // TODO(comran): Loop speed should not be hard coded.
+          1 / 100.0; // TODO(comran): Loop speed should not be hard coded.
     }
 
     if (sleep_time_ >= cmd.sleepcommand().time()) {
@@ -276,7 +272,7 @@ PilotOutput Pilot::Calculate(Position3D position, ::Eigen::Vector3d velocity) {
   } else if (cmd.has_gotorawcommand()) {
     // Change the goal setpoint and choose whether to use the come-to-stop
     // or fly-through controller.
-    if(first_run) {
+    if (first_run) {
       start_ = end_;
     }
 
@@ -312,7 +308,7 @@ void Pilot::SetMission(::lib::mission_manager::Mission mission) {
   mission_message_queue_receiver_.SetMission(mission);
 }
 
-}  // namespace pilot
-}  // namespace loops
-}  // namespace control
-}  // namespace src
+} // namespace pilot
+} // namespace loops
+} // namespace control
+} // namespace src

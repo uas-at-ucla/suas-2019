@@ -17,8 +17,7 @@ class MotionProfile {
   MotionProfile(double max_velocity, double max_acceleration,
                 double delta_time);
 
-  ::Eigen::Vector3d Calculate(
-      ::Eigen::Vector3d flight_direction);
+  ::Eigen::Vector3d Calculate(::Eigen::Vector3d flight_direction);
 
   void SetOutput(::Eigen::Vector3d output);
 
@@ -30,6 +29,5 @@ class MotionProfile {
   double delta_time_;
 };
 
-}  // namespace motion_profile
-}  // namespace lib
-
+} // namespace motion_profile
+} // namespace lib

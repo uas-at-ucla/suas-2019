@@ -36,8 +36,8 @@ enum class Framing : uint8_t {
 
 //! MAVLink protocol version
 enum class Protocol : uint8_t {
-  V10 = 1,  //!< MAVLink v1.0
-  V20 = 2   //!< MAVLink v2.0
+  V10 = 1, //!< MAVLink v1.0
+  V20 = 2  //!< MAVLink v2.0
 };
 
 /**
@@ -78,18 +78,18 @@ class MAVConnInterface {
   MAVConnInterface(const MAVConnInterface &) = delete;
 
  public:
-  using ReceivedCb = std::function<void(
-      const mavlink_message_t *message, const Framing framing)>;
+  using ReceivedCb = std::function<void(const mavlink_message_t *message,
+                                        const Framing framing)>;
   using ClosedCb = std::function<void(void)>;
   using Ptr = std::shared_ptr<MAVConnInterface>;
   using ConstPtr = std::shared_ptr<MAVConnInterface const>;
   using WeakPtr = std::weak_ptr<MAVConnInterface>;
 
   struct IOStat {
-    size_t tx_total_bytes;  //!< total bytes transferred
-    size_t rx_total_bytes;  //!< total bytes received
-    float tx_speed;         //!< current transfer speed [B/s]
-    float rx_speed;         //!< current receive speed [B/s]
+    size_t tx_total_bytes; //!< total bytes transferred
+    size_t rx_total_bytes; //!< total bytes received
+    float tx_speed;        //!< current transfer speed [B/s]
+    float rx_speed;        //!< current receive speed [B/s]
   };
 
   /**
@@ -170,8 +170,8 @@ class MAVConnInterface {
   static std::vector<std::string> get_known_dialects();
 
  protected:
-  uint8_t sys_id;   //!< Connection System Id
-  uint8_t comp_id;  //!< Connection Component Id
+  uint8_t sys_id;  //!< Connection System Id
+  uint8_t comp_id; //!< Connection Component Id
 
   //! Maximum mavlink packet size + some extra bytes for padding.
   static constexpr size_t MAX_PACKET_SIZE = MAVLINK_MAX_PACKET_LEN + 16;
@@ -180,8 +180,7 @@ class MAVConnInterface {
 
   //! This map merge all dialect mavlink_msg_entry_t structs. Needed for packet
   //! parser.
-  static std::unordered_map<msgid_t,
-                            const mavlink_msg_entry_t *>
+  static std::unordered_map<msgid_t, const mavlink_msg_entry_t *>
       message_entries;
 
   //! Channel number used for logging.
@@ -200,13 +199,11 @@ class MAVConnInterface {
   void iostat_tx_add(size_t bytes);
   void iostat_rx_add(size_t bytes);
 
-  void log_recv(const char *pfx, mavlink_message_t &msg,
-                Framing framing);
+  void log_recv(const char *pfx, mavlink_message_t &msg, Framing framing);
   void log_send(const char *pfx, const mavlink_message_t *msg);
 
  private:
-  friend const mavlink_msg_entry_t *mavlink_get_msg_entry(
-      uint32_t msgid);
+  friend const mavlink_msg_entry_t *mavlink_get_msg_entry(uint32_t msgid);
 
   mavlink_status_t m_status;
   mavlink_message_t m_buffer;
@@ -229,4 +226,4 @@ class MAVConnInterface {
    */
   static void init_msg_entry();
 };
-}  // namespace mavconn
+} // namespace mavconn

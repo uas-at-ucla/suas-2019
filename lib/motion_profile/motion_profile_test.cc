@@ -6,7 +6,7 @@ namespace lib {
 namespace motion_profile {
 namespace testing {
 
-//TEST(MotionProfileTest, SimpleProfile) {
+// TEST(MotionProfileTest, SimpleProfile) {
 //  MotionProfile motion_profile(5.0, 5.0, 1.0 / 100);
 
 //  Position3D drone_position{0, 0, 0};
@@ -30,7 +30,8 @@ namespace testing {
 //        motion_profile.Calculate(drone_position, waypoints);
 
 //    if(i % print_interval == 0) {
-////    ::std::cout << new_velocity.x() << "," << new_velocity.y() << ::std::endl;
+////    ::std::cout << new_velocity.x() << "," << new_velocity.y() <<
+///::std::endl;
 ////    ::std::cout << "new_velocity: " << ::std::endl
 ////                << new_velocity << ::std::endl;
 //    }
@@ -41,18 +42,20 @@ namespace testing {
 //    drone_position.longitude +=
 //        new_velocity.y() / GetDistance2D({0, 0, 0}, {0, 1, 0});
 
-//    if(waypoints.size() > 0 && GetDistance3D(drone_position, waypoints.at(0)) < 10) {
+//    if(waypoints.size() > 0 && GetDistance3D(drone_position, waypoints.at(0))
+//    < 10) {
 //      waypoints.erase(waypoints.begin());
 //    }
 
 //    if(i % print_interval == 0) {
-//      ::std::cout << i / 100.0 << "," << drone_position.latitude << "," << drone_position.longitude << ::std::endl;
+//      ::std::cout << i / 100.0 << "," << drone_position.latitude << "," <<
+//      drone_position.longitude << ::std::endl;
 ////    ::std::cout << "lat: " << drone_position.latitude
 ////                << " lng: " << drone_position.longitude << ::std::endl;
 //    }
 //  }
 //}
 
-}  // namespace testing
-}  // namespace motion_profile
-}  // namespace lib
+} // namespace testing
+} // namespace motion_profile
+} // namespace lib

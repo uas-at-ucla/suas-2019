@@ -14,10 +14,10 @@ namespace control {
 namespace io {
 namespace autopilot_interface {
 
- // Bitmasks to indicate what type of message is being sent to the vehicle.
+// Bitmasks to indicate what type of message is being sent to the vehicle.
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_POSITION 0b0000110111111000
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY 0b0000110111000111
-#define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_ACCELERATION \
+#define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_ACCELERATION                 \
   0b0000110000111111
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_FORCE 0b0000111000111111
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_ANGLE 0b0000100111111111
@@ -144,8 +144,7 @@ class AutopilotInterface {
   bool time_to_exit_;
 };
 
-}  // namespace autopilot_interface
-}  // namespace io
-}  // namespace control
-}  // namespace src
-
+} // namespace autopilot_interface
+} // namespace io
+} // namespace control
+} // namespace src

@@ -34,6 +34,8 @@ DOCKER_EXEC_SCRIPT      = "./tools/scripts/docker/exec.sh "
 DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/docker/exec_kill.sh "
 
 JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
+LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
+LINT_FORMAT_SCRIPT = "./tools/scripts/lint/format.sh"
 
 # Command chains.
 if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
@@ -348,8 +350,23 @@ def run_env(args=None, show_complete=True):
     run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
 
     if show_complete:
-        print_update("\n\nUAS@UCLA development environment started " \
+        print_update("UAS@UCLA development environment started " \
                 "successfully!", msg_type="SUCCESS")
+
+
+def run_lint(args):
+    print_update("Running lint...")
+
+    if args.format:
+        print_update("Formatting the code...")
+        run_cmd_exit_failure(LINT_FORMAT_SCRIPT)
+        print_update("Format finished!", msg_type="SUCCESS")
+    elif args.check:
+        print_update("Checking lint...")
+        run_cmd_exit_failure(LINT_CHECK_SCRIPT)
+        print_update("Lint check passed!", msg_type="SUCCESS")
+    else:
+        print_update("NO LINTING OPTION SPECIFIED.", "FAILURE")
 
 
 def run_help(args):
@@ -416,6 +433,11 @@ if __name__ == '__main__':
 
     jenkins_server_parser = subparsers.add_parser('jenkins_server', help='jenkins_server help')
     jenkins_server_parser.set_defaults(func=run_jenkins_server)
+
+    lint_parser = subparsers.add_parser('lint')
+    lint_parser.set_defaults(func=run_lint)
+    lint_parser.add_argument('--format', action='store_true')
+    lint_parser.add_argument('--check', action='store_true')
 
     help_parser = subparsers.add_parser('help')
     help_parser.set_defaults(func=run_help)

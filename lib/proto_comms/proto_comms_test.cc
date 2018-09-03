@@ -9,8 +9,8 @@ namespace lib {
 namespace proto_comms {
 namespace testing {
 
-//TODO(comran): Fix these tests.
-//TEST(ProtoCommsTest, SendReceiveTest) {
+// TODO(comran): Fix these tests.
+// TEST(ProtoCommsTest, SendReceiveTest) {
 //  ProtoSender tx("ipc:///tmp/uasatucla_proto_comms_test.ipc");
 //  ProtoReceiver rx("ipc:///tmp/uasatucla_proto_comms_test.ipc", 10);
 
@@ -23,7 +23,7 @@ namespace testing {
 //  ASSERT_STREQ("test", latest.c_str());
 //}
 
-//TEST(ProtoCommsTest, SendReceiveMultipleTest) {
+// TEST(ProtoCommsTest, SendReceiveMultipleTest) {
 //  ProtoSender tx("ipc:///tmp/uasatucla_proto_comms_test.ipc");
 //  ProtoReceiver rx("ipc:///tmp/uasatucla_proto_comms_test.ipc", 10);
 

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <mutex>
 #include <condition_variable>
+#include <mutex>
 
 namespace lib {
 
@@ -18,4 +18,4 @@ class Semaphore {
   unsigned long count_;
 };
 
-}  // namespace lib
+} // namespace lib

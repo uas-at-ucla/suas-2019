@@ -39,8 +39,8 @@ void create_procs() {
 
     if (!verbose) {
       int null_fd = open("/dev/null", O_WRONLY);
-      dup2(null_fd, 1);  // redirect stdout
-      dup2(null_fd, 2);  // redirect stderr
+      dup2(null_fd, 1); // redirect stdout
+      dup2(null_fd, 2); // redirect stderr
     }
 
     execl("/bin/sh", "sh", "-c", simulator_path, NULL);
@@ -53,15 +53,12 @@ void create_procs() {
     setsid();
 
     int null_fd = open("/dev/null", O_WRONLY);
-    dup2(null_fd, 1);  // redirect stdout
-    dup2(null_fd, 2);  // redirect stderr
+    dup2(null_fd, 1); // redirect stdout
+    dup2(null_fd, 2); // redirect stderr
 
-    execl("/usr/local/bin/mavproxy.py",
-            "--mav20 ",
-            "--state-basedir=/tmp/ ",
-            "--master=0.0.0.0:14550 ",
-            "--out=udp:0.0.0.0:8084 ",
-            "--out=udp:0.0.0.0:8085 ", NULL);
+    execl("/usr/local/bin/mavproxy.py", "--mav20 ", "--state-basedir=/tmp/ ",
+          "--master=0.0.0.0:14550 ", "--out=udp:0.0.0.0:8084 ",
+          "--out=udp:0.0.0.0:8085 ", NULL);
     exit(0);
   }
 
@@ -75,8 +72,8 @@ void create_procs() {
 
     if (!verbose) {
       int null_fd = open("/dev/null", O_WRONLY);
-      dup2(null_fd, 1);  // redirect stdout
-      dup2(null_fd, 2);  // redirect stderr
+      dup2(null_fd, 1); // redirect stdout
+      dup2(null_fd, 2); // redirect stderr
     }
 
     const char *io_path = "../io/io";
@@ -117,8 +114,7 @@ class FlightLoopTest : public ::testing::Test {
 
   void StepLoop() { flight_loop_.Iterate(); }
 
-  void SendPosition() {
-  }
+  void SendPosition() {}
 
   void SetUp() { create_procs(); }
 
@@ -127,7 +123,7 @@ class FlightLoopTest : public ::testing::Test {
   FlightLoop flight_loop_;
 };
 
-//TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
+// TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
 //  for (int i = 0; i < 1000; i++) {
 //    flight_loop_queue_.goal.MakeWithBuilder()
 //        .run_mission(false)
@@ -203,7 +199,7 @@ class FlightLoopTest : public ::testing::Test {
 //  }
 //}
 
-//TEST_F(FlightLoopTest, FailsafeCheck) {
+// TEST_F(FlightLoopTest, FailsafeCheck) {
 //  flight_loop_queue_.output.FetchLatest();
 //  flight_loop_queue_.sensors.FetchLatest();
 
@@ -249,7 +245,7 @@ class FlightLoopTest : public ::testing::Test {
 //  }
 //}
 
-//TEST_F(FlightLoopTest, ThrottleCutCheck) {
+// TEST_F(FlightLoopTest, ThrottleCutCheck) {
 //  int timeout = 0;
 
 //  ::std::cout << "taking off" << ::std::endl;
@@ -270,7 +266,8 @@ class FlightLoopTest : public ::testing::Test {
 //  ASSERT_GE(flight_loop_queue_.sensors->relative_altitude, 2.1);
 
 //  ::std::cout << "throttle cut" << ::std::endl;
-//  for (int i = 0; i < 5000 && flight_loop_queue.sensors->relative_altitude > 0.1;
+//  for (int i = 0; i < 5000 && flight_loop_queue.sensors->relative_altitude >
+//  0.1;
 //       i++) {
 //    flight_loop_queue_.goal.MakeWithBuilder()
 //        .run_mission(true)
@@ -291,10 +288,10 @@ class FlightLoopTest : public ::testing::Test {
 //  }
 //}
 
-}  // namespace testing
-}  // namespace loops
-}  // namespace control
-}  // namespace src
+} // namespace testing
+} // namespace loops
+} // namespace control
+} // namespace src
 
 int main(int argc, char **argv) {
   signal(SIGINT, ::src::control::loops::testing::quit_handler);
@@ -305,15 +302,16 @@ int main(int argc, char **argv) {
 
   while (1) {
     int opt = getopt_long(argc, argv, "i:o:sc", getopt_options, NULL);
-    if (opt == -1) break;
+    if (opt == -1)
+      break;
 
     switch (opt) {
-      case 'v':
-        ::src::control::loops::testing::verbose = true;
-        break;
-      default:
-        exit(1);
-        break;
+    case 'v':
+      ::src::control::loops::testing::verbose = true;
+      break;
+    default:
+      exit(1);
+      break;
     }
   }
 

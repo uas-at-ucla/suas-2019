@@ -17,6 +17,6 @@ void LoopOutputHandler::operator()() {
   Stop();
 }
 
-}  // namespace io
-}  // namespace control
-}  // namespace src
+} // namespace io
+} // namespace control
+} // namespace src

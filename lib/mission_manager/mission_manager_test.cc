@@ -45,9 +45,9 @@ TEST(MissionManagerTest, MissionManagerTest) {
   }
 }
 
-//TODO(comran): Re-enable when we add back in the goto raw avoidance stuff.
+// TODO(comran): Re-enable when we add back in the goto raw avoidance stuff.
 
-//TEST(MissionManagerTest, PreprocessorTest) {
+// TEST(MissionManagerTest, PreprocessorTest) {
 //  ::lib::mission_manager::Mission mission;
 
 //  for (int i = 0; i < 10; i++) {
@@ -142,5 +142,5 @@ TEST(MissionManagerTest, MissionManagerTest) {
 //  }
 //}
 
-}  // namespace testing
-}  // namespace lib
+} // namespace testing
+} // namespace lib

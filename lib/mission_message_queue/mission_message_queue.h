@@ -1,9 +1,9 @@
 #pragma once
 
-#include <unistd.h>
 #include <atomic>
 #include <functional>
 #include <thread>
+#include <unistd.h>
 
 #include "zmq.hpp"
 
@@ -54,6 +54,5 @@ class MissionMessageQueueReceiver {
   ::std::thread thread_;
 };
 
-}  // mission_message_queue
-}  // namespace lib
-
+} // mission_message_queue
+} // namespace lib

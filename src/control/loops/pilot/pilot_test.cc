@@ -12,7 +12,7 @@ namespace testing {
 namespace {
 const double kMetPositionTolerance = 5;
 const double kMetersPerCoordinate = GetDistance2D({0, 0, 0}, {1, 0, 0});
-}  // namespace
+} // namespace
 
 class PilotPlant {
  public:
@@ -97,8 +97,8 @@ TEST_F(PilotTest, ReachesGoalTest) {
   MetGoal(plant.GetPosition(), goal);
 }
 
-}  // namespace testing
-}  // namespace pilot
-}  // namespace loops
-}  // namespace control
-}  // namespace src
+} // namespace testing
+} // namespace pilot
+} // namespace loops
+} // namespace control
+} // namespace src

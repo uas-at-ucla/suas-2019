@@ -24,7 +24,6 @@ struct MsgBuffer {
     assert(len < MAX_SIZE);
   }
 
-
   /**
    * @brief Buffer constructor for send_bytes()
    * @param[in] nbytes should be less than MAX_SIZE
@@ -43,4 +42,4 @@ struct MsgBuffer {
 
   ssize_t nbytes() { return len - pos; }
 };
-}  // namespace mavconn
+} // namespace mavconn

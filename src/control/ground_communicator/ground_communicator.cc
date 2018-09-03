@@ -91,11 +91,11 @@ void GroundCommunicator::RunIteration() {
       message.set_altitude(sensors.relative_altitude());
       message.set_heading(sensors.heading());
 
-      ::std::cout << "Lat: " << message.latitude() //
-        << " Lng: " << message.longitude()         //
-        << " Alt: " << message.altitude()          //
-        << " Heading: " << message.heading()       //
-        << ::std::endl;
+      ::std::cout << "Lat: " << message.latitude()     //
+                  << " Lng: " << message.longitude()   //
+                  << " Alt: " << message.altitude()    //
+                  << " Heading: " << message.heading() //
+                  << ::std::endl;
 
       serial_comms_bridge_.SendData(message);
 

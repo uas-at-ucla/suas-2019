@@ -1,16 +1,16 @@
 #pragma once
 
-#include <unistd.h>
 #include <algorithm>
 #include <atomic>
 #include <functional>
 #include <iomanip>
-#include <string>
 #include <sstream>
+#include <string>
 #include <thread>
+#include <unistd.h>
 
-#include "zmq.hpp"
 #include "spdlog/spdlog.h"
+#include "zmq.hpp"
 
 #include "lib/logger/log_message.pb.h"
 
@@ -26,8 +26,8 @@ class LogWriter {
 
  private:
   void ReceiveThread();
-  void ReplaceString(std::string& subject, const std::string& search,
-                     const std::string& replace);
+  void ReplaceString(std::string &subject, const std::string &search,
+                     const std::string &replace);
 
   ::std::atomic<bool> run_{true};
 
@@ -39,6 +39,5 @@ class LogWriter {
   ::std::shared_ptr<::spdlog::logger> logger_;
 };
 
-}  // namespace logger
-}  // namespace lib
-
+} // namespace logger
+} // namespace lib

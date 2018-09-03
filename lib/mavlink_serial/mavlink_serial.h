@@ -1,12 +1,12 @@
 #pragma once
 
-#include <fcntl.h>    // File control definitions
-#include <pthread.h>  // This uses POSIX Threads
-#include <signal.h>
-#include <stdio.h>    // Standard input/output definitions
-#include <termios.h>  // POSIX terminal control definitions
-#include <unistd.h>   // UNIX standard function definitions
 #include <cstdlib>
+#include <fcntl.h>   // File control definitions
+#include <pthread.h> // This uses POSIX Threads
+#include <signal.h>
+#include <stdio.h>   // Standard input/output definitions
+#include <termios.h> // POSIX terminal control definitions
+#include <unistd.h>  // UNIX standard function definitions
 #include <vector>
 
 #include <common/mavlink.h>
@@ -70,6 +70,5 @@ class MavlinkSerial {
   int _write_port(char *buf, unsigned len);
 };
 
-}  // namespace mavlink_serial
-}  // namespace lib
-
+} // namespace mavlink_serial
+} // namespace lib

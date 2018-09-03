@@ -14,15 +14,9 @@ namespace mavconn {
 ::std::atomic<size_t> MAVConnInterface::conn_id_counter{0};
 
 MAVConnInterface::MAVConnInterface(uint8_t system_id, uint8_t component_id)
-    : sys_id(system_id),
-      comp_id(component_id),
-      m_status{},
-      m_buffer{},
-      tx_total_bytes(0),
-      rx_total_bytes(0),
-      last_tx_total_bytes(0),
-      last_rx_total_bytes(0),
-      last_iostat(steady_clock::now()) {
+    : sys_id(system_id), comp_id(component_id), m_status{}, m_buffer{},
+      tx_total_bytes(0), rx_total_bytes(0), last_tx_total_bytes(0),
+      last_rx_total_bytes(0), last_iostat(steady_clock::now()) {
   conn_id = conn_id_counter.fetch_add(1);
   //::std::call_once(init_flag, init_msg_entry);
 }
@@ -70,8 +64,8 @@ void MAVConnInterface::parse_buffer(const char *pfx, uint8_t *buf,
     auto c = *buf++;
 
     // based on mavlink_parse_char()
-    auto msg_received = static_cast<Framing>(mavlink_frame_char_buffer(
-        &m_buffer, &m_status, c, &message, &status));
+    auto msg_received = static_cast<Framing>(
+        mavlink_frame_char_buffer(&m_buffer, &m_status, c, &message, &status));
     if (msg_received == Framing::bad_crc ||
         msg_received == Framing::bad_signature) {
       _mav_parse_error(&m_status);
@@ -87,7 +81,8 @@ void MAVConnInterface::parse_buffer(const char *pfx, uint8_t *buf,
     if (msg_received != Framing::incomplete) {
       log_recv(pfx, message, msg_received);
 
-      if (message_received_cb) message_received_cb(&message, msg_received);
+      if (message_received_cb)
+        message_received_cb(&message, msg_received);
     }
   }
 }
@@ -103,27 +98,30 @@ void MAVConnInterface::log_recv(const char *pfx, mavlink_message_t &msg,
 
   const char *proto_version_str = (msg.magic == MAVLINK_STX) ? "v2.0" : "v1.0";
 
-//logDebug("%s%zu: recv: %s %4s Message-Id: %u [%u bytes] IDs: %u.%u Seq: %u",
-//         pfx, conn_id, proto_version_str, framing_str, msg.msgid, msg.len,
-//         msg.sysid, msg.compid, msg.seq);
+  // logDebug("%s%zu: recv: %s %4s Message-Id: %u [%u bytes] IDs: %u.%u Seq:
+  // %u",
+  //         pfx, conn_id, proto_version_str, framing_str, msg.msgid, msg.len,
+  //         msg.sysid, msg.compid, msg.seq);
 }
 
 void MAVConnInterface::log_send(const char *pfx, const mavlink_message_t *msg) {
   const char *proto_version_str = (msg->magic == MAVLINK_STX) ? "v2.0" : "v1.0";
 
-//logDebug("%s%zu: send: %s Message-Id: %u [%u bytes] IDs: %u.%u Seq: %u", pfx,
-//         conn_id, proto_version_str, msg->msgid, msg->len, msg->sysid,
-//         msg->compid, msg->seq);
+  // logDebug("%s%zu: send: %s Message-Id: %u [%u bytes] IDs: %u.%u Seq: %u",
+  // pfx,
+  //         conn_id, proto_version_str, msg->msgid, msg->len, msg->sysid,
+  //         msg->compid, msg->seq);
 }
 
-void MAVConnInterface::send_message_ignore_drop(
-    const mavlink_message_t *msg) {
+void MAVConnInterface::send_message_ignore_drop(const mavlink_message_t *msg) {
   try {
     send_message(msg);
   } catch (::std::length_error &e) {
-//  logError(PFX "%zu: DROPPED Message-Id %u [%u bytes] IDs: %u.%u Seq: %u: %s",
-//           conn_id, msg->msgid, msg->len, msg->sysid, msg->compid, msg->seq,
-//           e.what());
+    //  logError(PFX "%zu: DROPPED Message-Id %u [%u bytes] IDs: %u.%u Seq: %u:
+    //  %s",
+    //           conn_id, msg->msgid, msg->len, msg->sysid, msg->compid,
+    //           msg->seq,
+    //           e.what());
   }
 }
 
@@ -182,19 +180,20 @@ static void url_parse_query(::std::string query, uint8_t &sysid,
   const ::std::string ids_end("ids=");
   ::std::string sys, comp;
 
-  if (query.empty()) return;
+  if (query.empty())
+    return;
 
   auto ids_it =
       ::std::search(query.begin(), query.end(), ids_end.begin(), ids_end.end());
   if (ids_it == query.end()) {
-//  logWarn(PFX "URL: unknown query arguments");
+    //  logWarn(PFX "URL: unknown query arguments");
     return;
   }
 
   ::std::advance(ids_it, ids_end.length());
   auto comma_it = ::std::find(ids_it, query.end(), ',');
   if (comma_it == query.end()) {
-//  logError(PFX "URL: no comma in ids= query");
+    //  logError(PFX "URL: no comma in ids= query");
     return;
   }
 
@@ -204,10 +203,11 @@ static void url_parse_query(::std::string query, uint8_t &sysid,
   sysid = ::std::stoi(sys);
   compid = ::std::stoi(comp);
 
-//logDebug(PFX "URL: found system/component id = [%u, %u]", sysid, compid);
+  // logDebug(PFX "URL: found system/component id = [%u, %u]", sysid, compid);
 }
 
-static MAVConnInterface::Ptr url_parse_udp(::std::string hosts, ::std::string query,
+static MAVConnInterface::Ptr url_parse_udp(::std::string hosts,
+                                           ::std::string query,
                                            uint8_t system_id,
                                            uint8_t component_id, bool is_udpb) {
   ::std::string bind_pair, remote_pair;
@@ -216,7 +216,7 @@ static MAVConnInterface::Ptr url_parse_udp(::std::string hosts, ::std::string qu
 
   auto sep_it = ::std::find(hosts.begin(), hosts.end(), '@');
   if (sep_it == hosts.end()) {
-//  logError(PFX "UDP URL should contain @!");
+    //  logError(PFX "UDP URL should contain @!");
     throw DeviceError("url", "UDP separator not found");
   }
 
@@ -231,10 +231,11 @@ static MAVConnInterface::Ptr url_parse_udp(::std::string hosts, ::std::string qu
                  MAVConnUDP::DEFAULT_REMOTE_PORT);
   url_parse_query(query, system_id, component_id);
 
-  if (is_udpb) remote_host = MAVConnUDP::BROADCAST_REMOTE_HOST;
+  if (is_udpb)
+    remote_host = MAVConnUDP::BROADCAST_REMOTE_HOST;
 
   return ::std::make_shared<MAVConnUDP>(system_id, component_id, bind_host,
-                                      bind_port, remote_host, remote_port);
+                                        bind_port, remote_host, remote_port);
 }
 
 MAVConnInterface::Ptr MAVConnInterface::open_url(::std::string url,
@@ -252,22 +253,24 @@ MAVConnInterface::Ptr MAVConnInterface::open_url(::std::string url,
   // copy protocol
   proto.reserve(::std::distance(url.begin(), proto_it));
   ::std::transform(url.begin(), proto_it, ::std::back_inserter(proto),
-                 ::std::ref(tolower));
+                   ::std::ref(tolower));
 
   // copy host
   ::std::advance(proto_it, proto_end.length());
   auto path_it = ::std::find(proto_it, url.end(), '/');
   ::std::transform(proto_it, path_it, ::std::back_inserter(host),
-                 ::std::ref(tolower));
+                   ::std::ref(tolower));
 
   // copy path, and query if exists
   auto query_it = ::std::find(path_it, url.end(), '?');
   path.assign(path_it, query_it);
-  if (query_it != url.end()) ++query_it;
+  if (query_it != url.end())
+    ++query_it;
   query.assign(query_it, url.end());
 
-//logDebug(PFX "URL: %s: proto: %s, host: %s, path: %s, query: %s", url.c_str(),
-//         proto.c_str(), host.c_str(), path.c_str(), query.c_str());
+  // logDebug(PFX "URL: %s: proto: %s, host: %s, path: %s, query: %s",
+  // url.c_str(),
+  //         proto.c_str(), host.c_str(), path.c_str(), query.c_str());
 
   if (proto == "udp")
     return url_parse_udp(host, query, system_id, component_id, false);
@@ -276,4 +279,4 @@ MAVConnInterface::Ptr MAVConnInterface::open_url(::std::string url,
   else
     throw DeviceError("url", "Unknown URL type");
 }
-}  // namespace mavconn
+} // namespace mavconn

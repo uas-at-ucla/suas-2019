@@ -18,8 +18,8 @@
 #pragma once
 
 #include <atomic>
-#include <memory>
 #include <boost/asio.hpp>
+#include <memory>
 
 #include "interface.h"
 
@@ -79,4 +79,4 @@ class MAVConnUDP : public MAVConnInterface,
   void do_recvfrom();
   void do_sendto(bool check_tx_state);
 };
-}  // namespace mavconn<Paste>
+} // namespace mavconn<Paste>

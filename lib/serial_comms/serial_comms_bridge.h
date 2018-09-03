@@ -1,9 +1,9 @@
 #pragma once
 
-#include <unistd.h>
 #include <atomic>
 #include <functional>
 #include <thread>
+#include <unistd.h>
 
 #include "zmq.hpp"
 
@@ -23,6 +23,5 @@ class SerialCommsBridge {
   ::zmq::socket_t socket_;
 };
 
-}  // namespace serial_comms
-}  // namespace lib
-
+} // namespace serial_comms
+} // namespace lib

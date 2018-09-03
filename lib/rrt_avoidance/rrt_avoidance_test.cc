@@ -1,6 +1,6 @@
+#include "getopt.h"
 #include <gtest/gtest.h>
 #include <vector>
-#include "getopt.h"
 
 #include "matplotlibcpp.h"
 
@@ -160,8 +160,8 @@ TEST(RRTAvoidance, RandomObstacle) {
     for (double x = obstacle_position->latitude() - coord_radius;
          x < obstacle_position->latitude() + coord_radius;
          x += coord_radius / 20) {
-      double y_max =
-          sqrt(pow(coord_radius, 2) - pow(x - obstacle_position->latitude(), 2));
+      double y_max = sqrt(pow(coord_radius, 2) -
+                          pow(x - obstacle_position->latitude(), 2));
 
       for (double y = obstacle_position->longitude() - y_max;
            y < obstacle_position->longitude() + y_max; y += coord_radius / 20) {
@@ -190,12 +190,12 @@ TEST(RRTAvoidance, RandomObstacle) {
     ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
               end.longitude + tolerance);
 
-//  if (plot) {
-//    ::matplotlibcpp::xkcd();
-//    ::matplotlibcpp::plot(final_x, final_y);
-//    ::matplotlibcpp::plot(obs_x, obs_y);
-//    ::matplotlibcpp::show();
-//  }
+    //  if (plot) {
+    //    ::matplotlibcpp::xkcd();
+    //    ::matplotlibcpp::plot(final_x, final_y);
+    //    ::matplotlibcpp::plot(obs_x, obs_y);
+    //    ::matplotlibcpp::show();
+    //  }
   }
 }
 
@@ -246,10 +246,9 @@ TEST(RRTAvoidance, RealObstacles) {
   }
 }
 
-
-}  // namespace testing
-}  // namespace rrt_avoidance
-}  // namespace lib
+} // namespace testing
+} // namespace rrt_avoidance
+} // namespace lib
 
 int main(int argc, char **argv) {
   // Add some command line options for displaying plots, if we want to see them.
@@ -259,15 +258,16 @@ int main(int argc, char **argv) {
 
   while (1) {
     int opt = getopt_long(argc, argv, "i:o:sc", getopt_options, NULL);
-    if (opt == -1) break;
+    if (opt == -1)
+      break;
 
     switch (opt) {
-      case 'p':
-        ::lib::rrt_avoidance::testing::plot = true;
-        break;
-      default:
-        exit(1);
-        break;
+    case 'p':
+      ::lib::rrt_avoidance::testing::plot = true;
+      break;
+    default:
+      exit(1);
+      break;
     }
   }
 

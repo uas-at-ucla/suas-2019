@@ -3,16 +3,16 @@
 //  Binds REP socket to tcp://*:5555
 //  Expects "Hello" from client, replies with "World"
 //
-#include <unistd.h>
 #include <iostream>
 #include <string>
+#include <unistd.h>
 
 #include "zmq.hpp"
 
 #include "lib/sandbox/zmq/mission_commands.pb.h"
 
-#include <sstream>
 #include <ostream>
+#include <sstream>
 
 int main() {
   //  Prepare our context and socket
