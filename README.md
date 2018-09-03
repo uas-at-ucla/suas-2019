@@ -38,7 +38,8 @@ and reliability for the control software.
 automatically build every commit that is pushed to this Github repository.
 
 ### Installation
-Please see the [Setup documentation](https://github.com/uas-at-ucla/drone_code/blob/master/tools/installation/SETUP.md).
+Install docker, tmux, and python2.7. After that, "./do.sh" will list all of the
+possible commands that can be run. Use "./do.sh build" to build the code.
 
 ### Platforms and Libraries Used
  * [PX4 Firmware](https://github.com/PX4/Firmware) as the flight controller software stack and simulator.
