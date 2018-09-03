@@ -2,19 +2,23 @@ pipeline {
   agent any
 
   stages {
-    stage('SETUP') {
-      steps {
-        sh 'date'
-        sh 'env'
-        sh 'pwd'
-        fileExists './uas.sh'
-        sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
-        sh './uas.sh run_env'
-      }
-    }
-    stage('LINT') {
-      steps {
-        sh './uas.sh lint --check'
+    stage('INITIAL CHECKS') {
+      parallel {
+        stage('ENVIRONMENT SETUP') {
+          steps {
+            sh 'date'
+            sh 'env'
+            sh 'pwd'
+            fileExists './uas.sh'
+            sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
+            sh './uas.sh run_env'
+          }
+        }
+        stage('LINT') {
+          steps {
+            sh './uas.sh lint --check'
+          }
+        }
       }
     }
     stage('BUILD') {
