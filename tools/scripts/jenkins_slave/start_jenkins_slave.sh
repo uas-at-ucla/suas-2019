@@ -30,6 +30,8 @@ then
   docker rm $UAS_AT_UCLA_ENV_DOCKER_CONTAINER
 fi
 
+DOCKER_GROUP_ID=$(getent group docker | awk -F: '{printf "%d\n", $3}')
+
 docker run \
   -it \
   --rm \
@@ -38,7 +40,9 @@ docker run \
   -v $(pwd)/tools/scripts/jenkins_slave:/home/jenkins_uasatucla/scripts \
   -v /var/run/docker.sock:/var/run/docker.sock \
   $JENKINS_SLAVE_TAG \
-  bash -c "service ssh start;
+  bash -c "
+  service ssh start;
+  groupmod -g $DOCKER_GROUP_ID docker
   su - jenkins_uasatucla bash -c \"
   PORT=9000
   while true
