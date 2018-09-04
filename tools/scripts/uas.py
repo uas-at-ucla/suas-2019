@@ -37,6 +37,8 @@ JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server
 LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
 LINT_FORMAT_SCRIPT = "./tools/scripts/lint/format.sh"
 
+NUKE_SCRIPT = "./tools/scripts/nuke.sh"
+
 # Command chains.
 if "CONTINUOUS_INTEGRATION" in os.environ \
         and os.environ["CONTINUOUS_INTEGRATION"] == "true":
@@ -203,8 +205,8 @@ def run_build(args=None, show_complete=True):
             + BAZEL_BUILD + "--cpu=raspi //src/...")
 
     if show_complete:
-        print_update("\n\nBuild complete :^) LONG LIVE SPINNY!", \
-                msg_type="SUCCESS")
+        print_update("\n\nbuild complete :^) long live spinny!", \
+                msg_type="success")
 
 
 def run_unittest(args=None, show_complete=True):
@@ -362,6 +364,12 @@ def run_env(args=None, show_complete=True):
                 "successfully!", msg_type="SUCCESS")
 
 
+def run_nuke(args):
+    run_cmd_exit_failure(NUKE_SCRIPT)
+
+    print_update("Successfully nuked the UAS@UCLA development environment! " \
+            ">:)", msg_type="SUCCESS")
+
 def run_lint(args):
     print_update("Starting UAS@UCLA development environment...")
     run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
@@ -449,6 +457,9 @@ if __name__ == '__main__':
     lint_parser.set_defaults(func=run_lint)
     lint_parser.add_argument('--format', action='store_true')
     lint_parser.add_argument('--check', action='store_true')
+
+    nuke_parser = subparsers.add_parser('nuke')
+    nuke_parser.set_defaults(func=run_nuke)
 
     help_parser = subparsers.add_parser('help')
     help_parser.set_defaults(func=run_help)
