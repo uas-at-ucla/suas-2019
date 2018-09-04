@@ -329,9 +329,15 @@ def run_simulate(args):
 
 
 def run_jenkins_server(args):
-    print_update("Starting Jenkins CI server...", \
-            msg_type="SUCCESS")
-    run_cmd_exit_failure(JENKINS_SERVER_START_SCRIPT)
+    print_update("Starting server...")
+
+    # Create a Jenkins server and tunnel it to the uasatucla.org domain.
+    processes.spawn_process(JENKINS_SERVER_START_SCRIPT)
+    processes.spawn_process("while true;do " \
+        "ssh -N -R 8082:localhost:8085 uas@uasatucla.org;sleep 1;done")
+
+    print_update("Started Jenkins CI server!", msg_type="SUCCESS")
+    processes.wait_for_complete()
 
 
 def run_ground(args):
