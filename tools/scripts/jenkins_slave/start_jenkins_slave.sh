@@ -1,0 +1,58 @@
+#!/bin/bash
+
+JENKINS_SLAVE_TAG=uas-at-ucla_jenkins-slave
+CRED_ID=$1
+
+docker build -t uas-at-ucla_jenkins-slave tools/dockerfiles/jenkins_slave
+
+UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
+  --filter name=$JENKINS_SLAVE_TAG \
+  --filter status=running \
+  --format "{{.ID}}" \
+  --latest \
+  )
+
+if [ ! -z $UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER ]
+then
+  echo "KILLING $UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER"
+  docker kill $UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER
+fi
+
+UAS_AT_UCLA_ENV_DOCKER_CONTAINER=$(docker ps \
+  --filter name=$JENKINS_SLAVE_TAG \
+  --format "{{.ID}}" \
+  --latest
+  )
+
+if [ ! -z $UAS_AT_UCLA_ENV_DOCKER_CONTAINER ]
+then
+  echo "Removing old container with ID $UAS_AT_UCLA_ENV_DOCKER_CONTAINER"
+  docker rm $UAS_AT_UCLA_ENV_DOCKER_CONTAINER
+fi
+
+docker run \
+  -it \
+  --rm \
+  --name $JENKINS_SLAVE_TAG \
+  -v ~/.ssh:/home/jenkins_uasatucla/.ssh \
+  -v $(pwd)/tools/scripts/jenkins_slave:/home/jenkins_uasatucla/scripts \
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  $JENKINS_SLAVE_TAG \
+  bash -c "service ssh start;
+  su - jenkins_uasatucla bash -c \"
+  PORT=9000
+  while true
+  do
+    nc -z uasatucla.org \\\$PORT
+    echo \\\"TRYING \\\$PORT\\\"
+    if [[ \\\$? == 0 ]]
+    then
+      break
+    fi
+    PORT=\\\$((PORT + 1))
+    sleep 1
+  done
+  echo \\\"USING PORT \\\$PORT\\\"
+  /home/jenkins_uasatucla/scripts/start_ssh_tunnel.sh \\\$PORT &
+  /home/jenkins_uasatucla/scripts/create_jenkins_slave.sh $(hostname) \\\$PORT $CRED_ID
+  sleep infinity\""
