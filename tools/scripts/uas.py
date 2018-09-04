@@ -6,7 +6,7 @@ import argparse
 import textwrap
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
-os.chdir("../../")
+os.chdir("../..")
 sys.dont_write_bytecode = True
 sys.path.insert(0, 'lib')
 import process_manager
@@ -38,8 +38,10 @@ LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
 LINT_FORMAT_SCRIPT = "./tools/scripts/lint/format.sh"
 
 # Command chains.
-if "TRAVIS" in os.environ and os.environ["TRAVIS"] == "true":
-    # Limit verbosity in Travis CI.
+if "CONTINUOUS_INTEGRATION" in os.environ \
+        and os.environ["CONTINUOUS_INTEGRATION"] == "true":
+
+    # Limit verbosity in CI logs.
     BAZEL_BUILD = "bazel build --noshow_progress "
     BAZEL_TEST = "bazel test --noshow_progress "
 else:
@@ -268,7 +270,7 @@ def run_simulate(args):
     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
 
     # Start the PX4 simulator docker image.
-    run_cmd_exit_failure("tmux send-keys \"exec " \
+    run_cmd_exit_failure("tmux send-keys \"" \
             + DOCKER_RUN_SIM_SCRIPT + "\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
@@ -278,7 +280,7 @@ def run_simulate(args):
 
     run_cmd_exit_failure("tmux renamew -t uas_env controls")
 
-    run_cmd_exit_failure("tmux send-keys \"exec " + \
+    run_cmd_exit_failure("tmux send-keys \"" + \
             "./tools/scripts/docker/run_mavproxy.sh\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
@@ -355,6 +357,9 @@ def run_env(args=None, show_complete=True):
 
 
 def run_lint(args):
+    print_update("Starting UAS@UCLA development environment...")
+    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+
     print_update("Running lint...")
 
     if args.format:
@@ -370,7 +375,7 @@ def run_lint(args):
 
 
 def run_help(args):
-    print("./do.sh")
+    print("./uas.sh")
     print("      > help")
     print("      > build")
     print("      > test")
