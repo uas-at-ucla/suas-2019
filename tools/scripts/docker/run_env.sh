@@ -74,11 +74,13 @@ then
 fi
 echo "Root path is $ROOT_PATH"
 
+echo "Root path is $ROOT_PATH"
+
 docker run \
   -d \
   --rm \
   --net uas_bridge \
-  -v $ROOT_PATH:/home/uas/code_env/ \
+  -v $ROOT_PATH:/home/uas/code_env \
   -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
   --dns 8.8.8.8 \
   --name uas_env \
