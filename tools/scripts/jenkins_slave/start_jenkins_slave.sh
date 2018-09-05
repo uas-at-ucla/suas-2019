@@ -38,18 +38,21 @@ docker run \
   --name $JENKINS_SLAVE_TAG \
   -v ~/.ssh:/home/jenkins_uasatucla/.ssh \
   -v $(pwd)/tools/scripts/jenkins_slave:/home/jenkins_uasatucla/scripts \
+  -v $(pwd)/tools/cache/jenkins_slave:/home/jenkins_uasatucla/slave \
   -v /var/run/docker.sock:/var/run/docker.sock \
   $JENKINS_SLAVE_TAG \
   bash -c "
-  service ssh start;
+  getent group $(id -g) || groupadd -g $(id -g) host_group;
+  usermod -u $(id -u) -g $(id -g) jenkins_uasatucla;
+  chown -R jenkins_uasatucla:jenkins_uasatucla /home/jenkins_uasatucla;
+  service ssh start
   groupmod -g $DOCKER_GROUP_ID docker
   su - jenkins_uasatucla bash -c \"
   PORT=9000
   while true
   do
     nc -z uasatucla.org \\\$PORT
-    echo \\\"TRYING \\\$PORT\\\"
-    if [[ \\\$? == 0 ]]
+    if [[ \\\$? == 1 ]]
     then
       break
     fi
@@ -58,5 +61,5 @@ docker run \
   done
   echo \\\"USING PORT \\\$PORT\\\"
   /home/jenkins_uasatucla/scripts/start_ssh_tunnel.sh \\\$PORT &
-  /home/jenkins_uasatucla/scripts/create_jenkins_slave.sh $(hostname) \\\$PORT $CRED_ID
+  /home/jenkins_uasatucla/scripts/create_jenkins_slave.sh $(hostname) \\\$PORT $CRED_ID $(pwd)
   sleep infinity\""

@@ -4,11 +4,12 @@ JENKINS_URL="http://uasatucla.org:8082"
 NAME=$1
 USERID=jenkins_uasatucla
 NODE_NAME=uasatucla.org
-NODE_SLAVE_HOME="/home/$USERID"
+NODE_SLAVE_HOME="/home/$USERID/slave"
 EXECUTORS=1
 SSH_PORT=$2
 CRED_ID="af7db496-c7b7-444e-ac32-1b4b5032d5bb"
 AUTH_ID=$3
+HOST_DOCKER_PATH=$4
 
 # Delete any existing nodes.
 java \
@@ -40,9 +41,26 @@ cat <<EOF | java -jar /home/jenkins_uasatucla/jenkins-cli.jar \
     <port>${SSH_PORT}</port>
     <credentialsId>${CRED_ID}</credentialsId>
     <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy"/>
+    <launchTimeoutSeconds>1200</launchTimeoutSeconds>
   </launcher>
   <label></label>
-  <nodeProperties/>
+  <nodeProperties>
+    <hudson.slaves.EnvironmentVariablesNodeProperty>
+      <envVars serialization="custom">
+        <unserializable-parents/>
+        <tree-map>
+          <default>
+            <comparator class="hudson.util.CaseInsensitiveComparator"/>
+          </default>
+          <int>2</int>
+          <string>HOST_ROOT_SEARCH</string>
+          <string>/home/jenkins_uasatucla/slave</string>
+          <string>HOST_ROOT_REPLACE</string>
+          <string>$HOST_DOCKER_PATH/tools/cache/jenkins_slave</string>
+        </tree-map>
+      </envVars>
+    </hudson.slaves.EnvironmentVariablesNodeProperty>
+  </nodeProperties>
   <userId>${USERID}</userId>
 </slave>
 EOF

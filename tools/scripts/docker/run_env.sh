@@ -34,14 +34,15 @@ fi
 
 
 # Build docker container.
-if [ -z $TRAVIS ]
+if [[ -z $TRAVIS ]]
 then
   docker build -t uas-at-ucla_software tools/dockerfiles/control
 else
   docker build -t uas-at-ucla_software tools/dockerfiles/control > /dev/null
 fi
 
-if [ $? -ne 0 ]; then
+if [ $? -ne 0 ]
+then
     echo "Error building UAS env docker container."
     exit 1
 fi
@@ -53,15 +54,23 @@ mkdir -p tools/cache/bazel
 
 # Start docker container and let it run forever.
 PLATFORM=$(uname -s)
-DOCKER_BUILD_CMD="set -x; getent group $(id -g) || groupadd -g $(id -g) host_group;usermod -u $(id -u) -g $(id -g) uas;chown -R uas /home/uas/.cache/bazel;echo STARTED > /tmp/uas_init;sudo -u uas bash -c \"bazel;sleep infinity\""
+DOCKER_BUILD_CMD="set -x; \
+  getent group $(id -g) || groupadd -g $(id -g) host_group; \
+  usermod -u $(id -u) -g $(id -g) uas; \
+  chown -R uas /home/uas/.cache/bazel; \
+  echo STARTED > /tmp/uas_init; \
+  sudo -u uas bash -c \"bazel; \
+  sleep infinity\""
 
-if [ -z $JENKINS_HOST_ROOT ]
+# Set root path of the repository volume on the host machine.
+# Note: If docker is called within another docker instance & is trying to start
+#       the UAS@UCLA docker environment, the root will need to be set to the
+#       path that is used by wherever dockerd is running.
+ROOT_PATH=$(pwd)
+if [ ! -z $HOST_ROOT_SEARCH ] && [ ! -z $HOST_ROOT_REPLACE ]
 then
-  ROOT_PATH=$(pwd)
-else
   # Need to use path of the host container running dockerd.
-  ROOT_PATH=$(pwd)
-  ROOT_PATH=$JENKINS_HOST_ROOT/${ROOT_PATH:18}
+  ROOT_PATH=${ROOT_PATH/$HOST_ROOT_SEARCH/$HOST_ROOT_REPLACE}
 fi
 
 echo "Root path is $ROOT_PATH"
