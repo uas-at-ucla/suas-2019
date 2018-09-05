@@ -9,7 +9,7 @@ pipeline {
     stage('SETUP') {
       steps {
         fileExists './uas.sh'
-        sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
+        sh './uas.sh nuke'
         sh './uas.sh run_env'
       }
     }

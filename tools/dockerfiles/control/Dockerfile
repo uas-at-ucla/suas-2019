@@ -108,11 +108,14 @@ RUN pip2.7 install --upgrade pip                                            && \
 RUN ln -s /usr/include/locale.h /usr/include/xlocale.h
 
 RUN useradd -ms /bin/bash uas
+RUN echo 'uas:spinny' | chpasswd
 RUN echo "%sudo  ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
-RUN usermod -a -G sudo uas
+RUN usermod -aG sudo uas
 
 # User env setup. ##############################################################
 RUN mkdir /external_libs
+
+RUN apt install -y openssh-client openssh-server
 
 USER uas
 RUN mkdir -p /home/uas/code_env
