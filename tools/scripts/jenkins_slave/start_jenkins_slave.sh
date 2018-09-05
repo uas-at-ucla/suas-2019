@@ -52,8 +52,7 @@ docker run \
   while true
   do
     nc -z uasatucla.org \\\$PORT
-    echo \\\"TRYING \\\$PORT\\\"
-    if [[ \\\$? == 0 ]]
+    if [[ \\\$? == 1 ]]
     then
       break
     fi
