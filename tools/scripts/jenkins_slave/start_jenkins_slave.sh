@@ -62,5 +62,5 @@ docker run \
   done
   echo \\\"USING PORT \\\$PORT\\\"
   /home/jenkins_uasatucla/scripts/start_ssh_tunnel.sh \\\$PORT &
-  /home/jenkins_uasatucla/scripts/create_jenkins_slave.sh $(hostname) \\\$PORT $CRED_ID
+  /home/jenkins_uasatucla/scripts/create_jenkins_slave.sh $(hostname) \\\$PORT $CRED_ID $(pwd)
   sleep infinity\""

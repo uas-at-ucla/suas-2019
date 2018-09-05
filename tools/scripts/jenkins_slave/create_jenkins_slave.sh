@@ -9,6 +9,7 @@ EXECUTORS=1
 SSH_PORT=$2
 CRED_ID="af7db496-c7b7-444e-ac32-1b4b5032d5bb"
 AUTH_ID=$3
+HOST_DOCKER_PATH=$4
 
 # Delete any existing nodes.
 java \
@@ -54,7 +55,7 @@ cat <<EOF | java -jar /home/jenkins_uasatucla/jenkins-cli.jar \
           <string>HOST_ROOT_SEARCH</string>
           <string>/home/jenkins_uasatucla/slave</string>
           <string>HOST_ROOT_REPLACE</string>
-          <string>$(pwd)/tools/cache/jenkins_slave</string>
+          <string>$HOST_DOCKER_PATH/tools/cache/jenkins_slave</string>
         </tree-map>
       </envVars>
     </hudson.slaves.EnvironmentVariablesNodeProperty>

@@ -72,7 +72,6 @@ then
   # Need to use path of the host container running dockerd.
   ROOT_PATH=${ROOT_PATH/$HOST_ROOT_SEARCH/$HOST_ROOT_REPLACE}
 fi
-echo "Root path is $ROOT_PATH"
 
 echo "Root path is $ROOT_PATH"
 
