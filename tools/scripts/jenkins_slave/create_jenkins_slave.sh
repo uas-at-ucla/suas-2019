@@ -41,6 +41,7 @@ cat <<EOF | java -jar /home/jenkins_uasatucla/jenkins-cli.jar \
     <port>${SSH_PORT}</port>
     <credentialsId>${CRED_ID}</credentialsId>
     <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy"/>
+    <launchTimeoutSeconds>1200</launchTimeoutSeconds>
   </launcher>
   <label></label>
   <nodeProperties>
