@@ -67,7 +67,7 @@ DOCKER_BUILD_CMD="set -x; \
 #       the UAS@UCLA docker environment, the root will need to be set to the
 #       path that is used by wherever dockerd is running.
 ROOT_PATH=$(pwd)
-if [ ! -z $HOST_ROOT_SEARCH && ! -z $HOST_ROOT_REPLACE ]
+if [ ! -z $HOST_ROOT_SEARCH ] && [ ! -z $HOST_ROOT_REPLACE ]
 then
   # Need to use path of the host container running dockerd.
   ROOT_PATH=${ROOT_PATH/$HOST_ROOT_SEARCH/$HOST_ROOT_REPLACE}

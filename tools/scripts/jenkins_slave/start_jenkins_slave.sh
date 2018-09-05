@@ -40,12 +40,11 @@ docker run \
   -v $(pwd)/tools/scripts/jenkins_slave:/home/jenkins_uasatucla/scripts \
   -v $(pwd)/tools/cache/jenkins_slave:/home/jenkins_uasatucla/slave \
   -v /var/run/docker.sock:/var/run/docker.sock \
-  -e HOST_ROOT_SEARCH="/home/jenkins_uasatucla/slave" \
-  -e HOST_ROOT_REPLACE="$(pwd)/tools/cache/jenkins_slave" \
   $JENKINS_SLAVE_TAG \
   bash -c "
-  getent group $(id -g) || groupadd -g $(id -g) host_group; \
-  usermod -u $(id -u) -g $(id -g) jenkins_uasatucla; \
+  getent group $(id -g) || groupadd -g $(id -g) host_group;
+  usermod -u $(id -u) -g $(id -g) jenkins_uasatucla;
+  chown -R jenkins_uasatucla:jenkins_uasatucla /home/jenkins_uasatucla;
   service ssh start
   groupmod -g $DOCKER_GROUP_ID docker
   su - jenkins_uasatucla bash -c \"

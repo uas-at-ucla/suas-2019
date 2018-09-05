@@ -42,7 +42,23 @@ cat <<EOF | java -jar /home/jenkins_uasatucla/jenkins-cli.jar \
     <sshHostKeyVerificationStrategy class="hudson.plugins.sshslaves.verifiers.NonVerifyingKeyVerificationStrategy"/>
   </launcher>
   <label></label>
-  <nodeProperties/>
+  <nodeProperties>
+    <hudson.slaves.EnvironmentVariablesNodeProperty>
+      <envVars serialization="custom">
+        <unserializable-parents/>
+        <tree-map>
+          <default>
+            <comparator class="hudson.util.CaseInsensitiveComparator"/>
+          </default>
+          <int>2</int>
+          <string>HOST_ROOT_SEARCH</string>
+          <string>/home/jenkins_uasatucla/slave</string>
+          <string>HOST_ROOT_REPLACE</string>
+          <string>$(pwd)/tools/cache/jenkins_slave</string>
+        </tree-map>
+      </envVars>
+    </hudson.slaves.EnvironmentVariablesNodeProperty>
+  </nodeProperties>
   <userId>${USERID}</userId>
 </slave>
 EOF
