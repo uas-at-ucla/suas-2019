@@ -21,22 +21,38 @@ TARGET_TYPES = [
 
 
 class TargetGenerator(abc.ABC):
-    def __init__(self, font_path, font_size=12, font_face=0):
+    def __init__(self, font_path, font_ratio=0.35, font_face=0):
         """Generate targets.
 
         Arguments:
         font_path -- path to OpenType/TrueType font
-        font_size -- point size of the font
+        font_ratio -- font_height/target_size
         font_face -- index of the font face to load
         """
+        self.font_path = font_path
+        self.font_ratio = font_ratio
+        self.font_face = font_face
+        self.font_size = 0
         self.font = ImageFont.truetype(
-            font=font_path, size=font_size, index=font_face)
+            font=font_path, size=self.font_size, index=font_face)
 
     @abc.abstractmethod
     def _draw_shape(self, context, size, color):
         """Draw the desired shape."""
 
     def _draw_letter(self, size, letter, color):
+        # Resize font to correct ratio
+        while (self.font.getsize(letter)[1] / size) > self.font_ratio:
+            self.font_size -= 1
+            self.font = ImageFont.truetype(
+                font=self.font_path, size=self.font_size, index=self.font_face)
+
+        while (self.font.getsize(letter)[1] / size) < self.font_ratio:
+            self.font_size += 1
+            self.font = ImageFont.truetype(
+                font=self.font_path, size=self.font_size, index=self.font_face)
+
+        # Draw the letter
         font = self.font
         image = Image.new('RGBA', (size, size), (255, 255, 255, 0))
         context = ImageDraw.Draw(image)
@@ -72,7 +88,8 @@ class HalfCircle(TargetGenerator):
 
 class QuarterCircle(TargetGenerator):
     def _draw_shape(self, context, size, color):
-        context.pieslice([(-size, 0), (size, size * 2)], 270, 360, fill=color + (255, ))
+        context.pieslice(
+            [(-size, 0), (size, size * 2)], 270, 360, fill=color + (255, ))
 
 
 class Rectangle(TargetGenerator):
@@ -96,6 +113,7 @@ class Triangle(TargetGenerator):
             [(int(size / 2), 0), (size, size), (0, size)],
             fill=color + (255, ))
 
+
 # yapf: disable
 class Cross(TargetGenerator):
     def _draw_shape(self, context, size, color):
@@ -115,9 +133,11 @@ class Cross(TargetGenerator):
             fill=color + (255, ))
 # yapf: enable
 
+
 class Polygon(TargetGenerator):
     def _draw_polygon(self, context, size, color, n_sides):
-        verticies = [(int(size / 2), 0)] # the first point is always on the top edge
+        verticies = [(int(size / 2),
+                      0)]  # the first point is always on the top edge
         r = size / 2
         d_angle = math.pi * 2 / n_sides
         angle = math.pi / 2 + d_angle
@@ -129,15 +149,17 @@ class Polygon(TargetGenerator):
         print('Creating polygon ' + str(n_sides) + ': ' + str(verticies))
         context.polygon(verticies, fill=color + (255, ))
 
+
 class Pentagon(Polygon):
     def _draw_shape(self, context, size, color):
         self._draw_polygon(context, size, color, 5)
+
 
 class Hexagon(Polygon):
     def _draw_shape(self, context, size, color):
         self._draw_polygon(context, size, color, 6)
 
+
 class Heptagon(Polygon):
     def _draw_shape(self, context, size, color):
         self._draw_polygon(context, size, color, 7)
-
