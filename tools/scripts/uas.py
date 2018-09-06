@@ -46,11 +46,9 @@ if "CONTINUOUS_INTEGRATION" in os.environ \
     # Limit verbosity in CI logs.
     BAZEL_BUILD = "bazel build --noshow_progress "
     BAZEL_TEST = "bazel test --noshow_progress "
-    BAZEL_FETCH = "bazel fetch --noshow_progress "
 else:
     BAZEL_BUILD = "bazel build "
     BAZEL_TEST = "bazel test "
-    BAZEL_FETCH = "bazel fetch "
 
 def print_update(message, msg_type="STATUS"):
     SPLIT_SIZE = 65
@@ -90,10 +88,16 @@ def print_update(message, msg_type="STATUS"):
 
         print(print_line)
 
-
 def signal_received(signal, frame):
-    # Shutdown all the spawned processes and exit cleanly.
+    global received_signal
+    if received_signal:
+        print_update("ALREADY GOT SIGNAL RECEIVED ACTION! (be patient...)", \
+                msg_type="FAILURE")
+        return
 
+    received_signal = True
+
+    # Shutdown all the spawned processes and exit cleanly.
     print_update("performing signal received action...", msg_type="FAILURE")
 
     status = "Signal received (" + str(signal) + ") - killing all spawned " \
@@ -197,10 +201,6 @@ def run_build(args=None, show_complete=True):
 
     # Execute the build commands in the running docker image.
     print_update("Downloading the dependencies...")
-    run_cmd_exit_failure("while true; " \
-        "do " + DOCKER_EXEC_SCRIPT + BAZEL_FETCH + "; " \
-        "if [ $? == 0 ]; then break; " \
-        "fi;done")
 
     print_update("Building src directory...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")
@@ -416,6 +416,8 @@ def run_help(args):
 
 
 if __name__ == '__main__':
+    global received_signal
+    received_signal = False
     signal.signal(signal.SIGINT, signal_received)
 
     print(UAS_AT_UCLA_TEXT)

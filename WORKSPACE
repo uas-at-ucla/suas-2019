@@ -120,10 +120,9 @@ new_http_archive(
   strip_prefix = "googletest-release-1.8.0",
 )
 
-git_repository(
+http_archive(
   name = "PX4_sitl",
-  remote = "https://github.com/uas-at-ucla/PX4_sitl.git",
-  commit = "e9aa8c07cd9b62e484512826ea4bdab396be3801",
+  url = "https://github.com/uas-at-ucla/PX4_sitl/archive/e9aa8c07cd9b62e484512826ea4bdab396be3801.tar.gz",
 )
 
 git_repository(
@@ -167,17 +166,15 @@ new_git_repository(
   build_file = "lib/third_party/libgphoto2.BUILD",
 )
 
-new_git_repository(
-  name = "libexif",
-  commit = "3cc93d33d4cb11899b986cc15fa9e8ec9cc7a9a1",
-  remote = "https://github.com/libexif/libexif.git",
-  build_file = "lib/third_party/libexif.BUILD",
+git_repository(
+  name = "PX4_sitl",
+  remote = "https://github.com/uas-at-ucla/PX4_sitl.git",
+  commit = "e9aa8c07cd9b62e484512826ea4bdab396be3801",
 )
 
-new_git_repository(
+new_http_archive(
   name = "gphoto2pp",
-  commit = "da6db6f79edc4291f7a5ff38d825b8f3102d6270",
-  remote = "https://github.com/maldworth/gphoto2pp.git",
+  url = "https://github.com/maldworth/gphoto2pp/archive/da6db6f79edc4291f7a5ff38d825b8f3102d6270.tar.gz",
   build_file = "lib/third_party/gphoto2pp.BUILD",
 )
 
