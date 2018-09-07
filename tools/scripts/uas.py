@@ -88,10 +88,16 @@ def print_update(message, msg_type="STATUS"):
 
         print(print_line)
 
-
 def signal_received(signal, frame):
-    # Shutdown all the spawned processes and exit cleanly.
+    global received_signal
+    if received_signal:
+        print_update("ALREADY GOT SIGNAL RECEIVED ACTION! (be patient...)", \
+                msg_type="FAILURE")
+        return
 
+    received_signal = True
+
+    # Shutdown all the spawned processes and exit cleanly.
     print_update("performing signal received action...", msg_type="FAILURE")
 
     status = "Signal received (" + str(signal) + ") - killing all spawned " \
@@ -194,6 +200,8 @@ def run_build(args=None, show_complete=True):
     run_env(show_complete=False)
 
     # Execute the build commands in the running docker image.
+    print_update("Downloading the dependencies...")
+
     print_update("Building src directory...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")
 
@@ -408,49 +416,47 @@ def run_help(args):
 
 
 if __name__ == '__main__':
+    global received_signal
+    received_signal = False
     signal.signal(signal.SIGINT, signal_received)
 
     print(UAS_AT_UCLA_TEXT)
 
     parser = argparse.ArgumentParser()
 
-    subparsers = parser.add_subparsers(help='sub-command help')
+    subparsers = parser.add_subparsers()
 
-    deploy_parser = subparsers.add_parser('deploy', help='deploy help')
+    deploy_parser = subparsers.add_parser('deploy')
     deploy_parser.set_defaults(func=run_deploy)
 
-    install_parser = subparsers.add_parser('install', help='install help')
+    install_parser = subparsers.add_parser('install')
     install_parser.set_defaults(func=run_install)
 
-    travis_parser = subparsers.add_parser('travis', help='travis help')
+    travis_parser = subparsers.add_parser('travis')
     travis_parser.set_defaults(func=run_travis)
 
-    kill_dangling_parser = subparsers.add_parser(
-        'kill_dangling', help='kill_dangling help')
+    kill_dangling_parser = subparsers.add_parser('kill_dangling')
     kill_dangling_parser.set_defaults(func=run_kill_dangling)
 
-    simulate_parser = subparsers.add_parser('simulate', help='simulate help')
-    simulate_parser.add_argument(
-        '--verbose', action='store_true', help='verbose help')
+    simulate_parser = subparsers.add_parser('simulate')
+    simulate_parser.add_argument('--verbose', action='store_true')
     simulate_parser.set_defaults(func=run_simulate)
 
-    ground_parser = subparsers.add_parser('ground', help='ground help')
-    ground_parser.add_argument(
-        '--verbose', action='store_true', help='verbose help')
-    ground_parser.add_argument(
-        '--device', action='store', help='device help', required=False)
+    ground_parser = subparsers.add_parser('ground')
+    ground_parser.add_argument('--verbose', action='store_true')
+    ground_parser.add_argument('--device', action='store', required=False)
     ground_parser.set_defaults(func=run_ground)
 
-    build_parser = subparsers.add_parser('build', help='build help')
+    build_parser = subparsers.add_parser('build')
     build_parser.set_defaults(func=run_build)
 
-    unittest_parser = subparsers.add_parser('unittest', help='unittest help')
+    unittest_parser = subparsers.add_parser('unittest')
     unittest_parser.set_defaults(func=run_unittest)
 
-    run_env_parser = subparsers.add_parser('run_env', help='run_env help')
+    run_env_parser = subparsers.add_parser('run_env')
     run_env_parser.set_defaults(func=run_env)
 
-    jenkins_server_parser = subparsers.add_parser('jenkins_server', help='jenkins_server help')
+    jenkins_server_parser = subparsers.add_parser('jenkins_server')
     jenkins_server_parser.set_defaults(func=run_jenkins_server)
 
     lint_parser = subparsers.add_parser('lint')
