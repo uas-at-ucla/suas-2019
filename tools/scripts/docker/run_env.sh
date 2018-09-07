@@ -83,7 +83,6 @@ docker run \
   -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
   --dns 8.8.8.8 \
   --name uas_env \
-
   uas-at-ucla_software \
   bash -c "$DOCKER_BUILD_CMD"
 
