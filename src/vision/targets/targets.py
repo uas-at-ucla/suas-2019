@@ -5,17 +5,18 @@ from PIL import Image, ImageFont, ImageDraw
 # yapf: disable
 TARGET_TYPES = [
     "Circle",
-    "HalfCircle",
+    "SemiCircle",
     "QuarterCircle",
+    "Triangle",
+    "Square",
     "Rectangle",
     "Trapezoid",
-    "Triangle",
-    "Cross",
     "Pentagon",
     "Hexagon",
     "Heptagon",
     "Octagon",
-    "Star"
+    "Star",
+    "Cross"
 ]
 #yapf: enable
 
@@ -77,7 +78,7 @@ class Circle(TargetGenerator):
         context.ellipse([(0, 0), (size, size)], fill=color + (255, ))
 
 
-class HalfCircle(TargetGenerator):
+class SemiCircle(TargetGenerator):
     def _draw_shape(self, context, size, color):
         context.pieslice(
             [(0, int(size / 4)), (size, int(size * 5 / 4))],
@@ -92,9 +93,35 @@ class QuarterCircle(TargetGenerator):
             [(-size, 0), (size, size * 2)], 270, 360, fill=color + (255, ))
 
 
-class Rectangle(TargetGenerator):
+class Square(TargetGenerator):
     def _draw_shape(self, context, size, color):
         context.rectangle([(0, 0), (size, size)], fill=color + (255, ))
+
+
+class Rectangle(TargetGenerator):
+    def draw_target(self, size, shape_color, letter, letter_color, dim_ratio):
+        """Draw a rectangle target.
+        
+        Arguments:
+        size -- width and height (one integer) of the target
+        shape_color -- color of the shape
+        letter -- letter to draw
+        letter_color -- color of the letter
+        dim_ratio -- ratio of the height / width of the rectangle
+        """
+
+        self.dim_ratio = dim_ratio
+        return super().draw_target(size, shape_color, letter, letter_color)
+
+    def _draw_shape(self, context, size, color):
+        if self.dim_ratio < 1:
+            top_left = (0, (size - size * self.dim_ratio) / 2)
+            bot_right = (size, top_left[1] + size * self.dim_ratio)
+            context.rectangle([top_left, bot_right], fill=color + (255, ))
+        else:
+            top_left = ((size - size / self.dim_ratio) / 2, 0)
+            bot_right = (top_left[0] + size / self.dim_ratio, size)
+            context.rectangle([top_left, bot_right], fill=color + (255, ))
 
 
 # yapf: disable
@@ -136,17 +163,21 @@ class Cross(TargetGenerator):
 
 class Polygon(TargetGenerator):
     def _draw_polygon(self, context, size, color, n_sides):
-        verticies = [(int(size / 2),
-                      0)]  # the first point is always on the top edge
+
+        # the first point is always on the top edge
+        verticies = [(int(size / 2), 0)]
+
         r = size / 2
         d_angle = math.pi * 2 / n_sides
         angle = math.pi / 2 + d_angle
+
         for i in range(n_sides - 1):
             x = math.cos(angle) * r + r
             y = math.sin(angle) * -r + r
             verticies += [(int(x), int(y))]
             angle += d_angle
-        print('Creating polygon ' + str(n_sides) + ': ' + str(verticies))
+
+        #print('Creating polygon ' + str(n_sides) + ': ' + str(verticies))
         context.polygon(verticies, fill=color + (255, ))
 
 
@@ -163,3 +194,41 @@ class Hexagon(Polygon):
 class Heptagon(Polygon):
     def _draw_shape(self, context, size, color):
         self._draw_polygon(context, size, color, 7)
+
+
+class Octagon(Polygon):
+    def _draw_shape(self, context, size, color):
+        self._draw_polygon(context, size, color, 8)
+
+class Star(TargetGenerator):
+    def _draw_shape(self, context, size, color):
+
+        # the first point is always on the top edge
+        verticies = [(int(size / 2), 0)]
+
+        n_points = 5
+
+        out_r = size / 2
+        in_r = out_r * 1 / 2
+        d_angle = math.pi * 2 / n_points
+        out_angle = math.pi / 2 + d_angle
+        in_angle = math.pi / 2 + d_angle / 2
+
+        for i in range(n_points - 1):
+            in_x = math.cos(in_angle) * in_r + out_r
+            in_y = math.sin(in_angle) * -in_r + out_r
+            verticies += [(int(in_x), int(in_y))]
+            in_angle += d_angle
+
+            out_x = math.cos(out_angle) * out_r + out_r
+            out_y = math.sin(out_angle) * -out_r + out_r
+            verticies += [(int(out_x), int(out_y))]
+            out_angle += d_angle
+
+        # final vertex
+        in_x = math.cos(in_angle) * in_r + out_r
+        in_y = math.sin(in_angle) * -in_r + out_r
+        verticies += [(int(in_x), int(in_y))]
+
+        context.polygon(verticies, fill=color + (255, ))
+
