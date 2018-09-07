@@ -79,7 +79,6 @@ docker run \
   -d \
   --rm \
   --net uas_bridge \
-  -p 8090:8090
   -v $ROOT_PATH:/home/uas/code_env \
   -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
   --dns 8.8.8.8 \
