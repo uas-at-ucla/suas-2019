@@ -28,5 +28,4 @@ docker run \
   su - uas bash -c \"
   cd px4_simulator
   HOST_IP=\\\$(/sbin/ip route|awk '/default/ { print \\\$3 }')
-  mavlink-routerd -e \\\$HOST_IP:8086 -e 172.19.0.2:8084 0.0.0.0:14550 &
   make posix_sitl_default jmavsim\""

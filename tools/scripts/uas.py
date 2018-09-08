@@ -290,6 +290,10 @@ def run_simulate(args):
 
     run_cmd_exit_failure("tmux renamew -t uas_env controls")
 
+    run_cmd_exit_failure("tmux send-keys \"" + \
+           "./tools/scripts/px4_simulator/exec_mavlink_router.sh\" C-m")
+
+
     run_cmd_exit_failure("tmux select-pane " \
             "-t " \
             "uas_env " \
