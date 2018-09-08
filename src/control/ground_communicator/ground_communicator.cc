@@ -65,13 +65,13 @@ void GroundCommunicator::RunIteration() {
           .count() *
       1e-9;
 
-  if(timet < 10) {
+  if (timet < 10) {
     timet = current_time;
   }
 
   ::std::cout << "DIFF IS " << current_time - timet << ::std::endl;
-  if(current_time - timet > 10) {
-    if(track) {
+  if (current_time - timet > 10) {
+    if (track) {
       SetState("LAND");
     } else {
       SetState("ARM");
