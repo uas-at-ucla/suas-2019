@@ -16,6 +16,7 @@ docker run \
   -v $(pwd)/tools/cache/px4_simulator:/home/uas/px4_simulator \
   -p 8085:8085/udp \
   -p 8095:8095/udp \
+  --net uas_bridge \
   uas-at-ucla_px4-simulator \
   bash -c "
   set -x
@@ -26,4 +27,6 @@ docker run \
   export DISPLAY
   su - uas bash -c \"
   cd px4_simulator
+  HOST_IP=\\\$(/sbin/ip route|awk '/default/ { print \\\$3 }')
+  mavlink-routerd -e \\\$HOST_IP:8086 -e 172.19.0.2:8084 0.0.0.0:14550 &
   make posix_sitl_default jmavsim\""

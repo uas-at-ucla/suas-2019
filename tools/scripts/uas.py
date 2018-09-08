@@ -29,7 +29,7 @@ UAS_AT_UCLA_TEXT = '\033[96m' + \
 
 # Script locations.
 DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/docker/run_env.sh "
-DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/docker/run_sim.sh "
+DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/px4_simulator/start_sim.sh "
 DOCKER_EXEC_SCRIPT      = "./tools/scripts/docker/exec.sh "
 DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/docker/exec_kill.sh "
 
@@ -106,7 +106,7 @@ def signal_received(signal, frame):
     if processes.spawn_process_wait_for_code("docker kill $(docker ps " \
             "--filter status=running " \
             "--format \"{{.ID}}\" " \
-            "--filter name=uas_sim " \
+            "--filter name=uas-at-ucla_px4-simulator " \
             "--latest)", show_output=False, allow_input=False) == 0:
         status += "Killed simulator (docker)\n"
 
@@ -251,8 +251,8 @@ def run_simulate(args):
     # Build the image for our docker environment.
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
             "git clone " \
-            "https://github.com/PX4/Firmware.git " \
-            "tools/cache/px4_firmware || true")
+            "https://github.com/uas-at-ucla/Firmware.git " \
+            "tools/cache/px4_simulator || true")
 
     # Set up tmux panes.
     run_cmd_exit_failure("tmux start-server ")
@@ -289,9 +289,6 @@ def run_simulate(args):
             "-U")
 
     run_cmd_exit_failure("tmux renamew -t uas_env controls")
-
-    run_cmd_exit_failure("tmux send-keys \"" + \
-            "./tools/scripts/docker/run_mavproxy.sh\" C-m")
 
     run_cmd_exit_failure("tmux select-pane " \
             "-t " \

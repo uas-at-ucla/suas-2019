@@ -126,6 +126,19 @@ RUN git clone https://github.com/MonashUAS/cmavnode.git && \
     make && \
     sudo make install
 
+RUN git clone https://github.com/intel/mavlink-router.git && \
+    cd mavlink-router && \
+    git submodule update --init --recursive && \
+    ./autogen.sh && ./configure CFLAGS='-g -O2' \
+        --sysconfdir=/etc --localstatedir=/var --libdir=/usr/lib64 \
+    --prefix=/usr && \
+    make && \
+    sudo make install
+
+RUN pip install --user mavproxy
+
+WORKDIR /home/uas
+
 EXPOSE 8085/udp
 EXPOSE 8086/udp
 EXPOSE 8095/udp
