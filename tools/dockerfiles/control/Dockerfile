@@ -159,6 +159,11 @@ RUN pip2.7 install --user                                                      \
   pyzmq==17.0.0                                                                \
   zmq==0.0.0
 
+RUN pip2.7 install --user matplotlib numpy
+RUN sudo apt-get install -y python-tk
+RUN pip2.7 install numpy --user --upgrade
+RUN pip3.6 install numpy --user --upgrade
+
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
 

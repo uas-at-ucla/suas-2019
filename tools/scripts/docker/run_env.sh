@@ -79,6 +79,8 @@ docker run \
   -d \
   --rm \
   --net uas_bridge \
+  --env="DISPLAY" \
+  -v "/tmp/.X11-unix:/tmp/.X11-unix:rw" \
   -v $ROOT_PATH:/home/uas/code_env \
   -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
   --dns 8.8.8.8 \

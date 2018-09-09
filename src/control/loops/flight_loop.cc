@@ -275,10 +275,9 @@ void FlightLoop::RunIteration() {
   }
 
   LOG_LINE("Flight loop iteration OUTPUT..."
-           << " VelocityX: " << output.velocity_x() << " VelocityY: "
-           << output.velocity_y() << " VelocityZ: " << output.velocity_z());
-
-  // TODO(comran): Send output.
+           << " VelocityX: " << output.velocity_x() //
+           << " VelocityY: " << output.velocity_y() //
+           << " VelocityZ: " << output.velocity_z());
 
   ::src::control::Status status = ::src::control::Status();
   status.set_state(next_state);
