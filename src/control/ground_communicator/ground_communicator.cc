@@ -50,8 +50,6 @@ void GroundCommunicator::Run() {
   }
 }
 
-static double timet = 0;
-static bool track = false;
 void GroundCommunicator::RunIteration() {
   // Send out latest goal.
   goal_sender_.Send(goal_);
@@ -62,23 +60,6 @@ void GroundCommunicator::RunIteration() {
           ::std::chrono::system_clock::now().time_since_epoch())
           .count() *
       1e-9;
-
-  if (timet < 10) {
-    timet = current_time;
-  }
-
-  ::std::cout << "DIFF IS " << current_time - timet << ::std::endl;
-  if (current_time - timet > 10) {
-    if (track) {
-      SetState("LAND");
-    } else {
-      SetState("ARM");
-      SetState("TAKEOFF");
-    }
-
-    track = !track;
-    timet = current_time;
-  }
 
   ::sio::message::ptr all_data = ::sio::object_message::create();
   ::sio::message::ptr telemetry = ::sio::object_message::create();

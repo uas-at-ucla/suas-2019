@@ -225,8 +225,6 @@ void AutopilotOutputWriter::Write() {
   set_servo_pulsewidth(pigpio_, 24, gimbal_angle);
 #endif
 
-  ::std::cout << output.trigger_takeoff() << " : " << current_time
-              << ::std::endl;
   if (output.trigger_takeoff() + 0.1 > current_time) {
     ::std::cout << "taking off!" << ::std::endl;
     if (!did_takeoff_) {

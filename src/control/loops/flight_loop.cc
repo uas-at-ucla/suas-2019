@@ -88,7 +88,6 @@ void FlightLoop::RunIteration() {
   output.set_trigger_land(goal.trigger_land());
   output.set_trigger_arm(goal.trigger_arm());
   output.set_trigger_disarm(goal.trigger_disarm());
-  ::std::cout << "TAKEOFF: " << goal.trigger_takeoff() << ::std::endl;
 
   if (goal.trigger_failsafe()) {
     EndFlightTimer();

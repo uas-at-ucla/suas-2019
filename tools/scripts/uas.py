@@ -268,36 +268,47 @@ def run_simulate(args):
             "-s " \
             "uas_env")
 
+    run_cmd_exit_failure("tmux renamew -t uas_env controls")
+
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "rm /tmp/uasatucla_* || true")
 
-    run_cmd_exit_failure("tmux split-window -h -t uas_env")
-    run_cmd_exit_failure("tmux split-window -v -t uas_env")
-    run_cmd_exit_failure("tmux split-window -v -t uas_env")
+    run_cmd_exit_failure("tmux split-window -h -p 50 -t uas_env")
+
+    # Set up right side with 4 panes.
+    run_cmd_exit_failure("tmux split-window -v -p 75 -t uas_env")
+    run_cmd_exit_failure("tmux split-window -v -p 66 -t uas_env")
+    run_cmd_exit_failure("tmux split-window -v -p 50 -t uas_env")
+
+    # Set up left side with 3 panes
     run_cmd_exit_failure("tmux select-pane -t uas_env -L")
-    run_cmd_exit_failure("tmux split-window -v -t uas_env")
-    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    run_cmd_exit_failure("tmux split-window -v -p 66 -t uas_env")
+    run_cmd_exit_failure("tmux split-window -v -p 50 -t uas_env")
     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
 
-    # Start the PX4 simulator docker image.
-    run_cmd_exit_failure("tmux send-keys \"" \
-            + DOCKER_RUN_SIM_SCRIPT + "\" C-m")
+    # Run scripts on the left side.
+    run_cmd_exit_failure("tmux send-keys \"" + DOCKER_RUN_SIM_SCRIPT + "\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+           "./tools/scripts/px4_simulator/exec_mavlink_router.sh\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_EXEC_SCRIPT + " tail -F /tmp/drone_code.csv\" C-m")
+
+    # Run scripts on the right side.
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-R")
 
     run_cmd_exit_failure("tmux select-pane " \
             "-t " \
             "uas_env " \
             "-U")
-
-    run_cmd_exit_failure("tmux renamew -t uas_env controls")
-
-    run_cmd_exit_failure("tmux send-keys \"" + \
-           "./tools/scripts/px4_simulator/exec_mavlink_router.sh\" C-m")
-
-
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-R")
 
     run_cmd_exit_failure("tmux select-pane " \
             "-t " \
@@ -330,6 +341,15 @@ def run_simulate(args):
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-D")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_EXEC_SCRIPT + \
+            "./tools/scripts/bazel_run.sh //lib/logger:log_writer\" C-m")
 
     print_update("\n\nSimulation running! \n" \
             "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
