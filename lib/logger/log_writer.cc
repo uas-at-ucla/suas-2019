@@ -12,7 +12,7 @@ const char *kLogFileLocation = "/tmp/drone_code.csv";
 LogWriter::LogWriter()
     : context_(1), socket_(context_, ZMQ_SUB),
       thread_(&LogWriter::ReceiveThread, this),
-      logger_(::spdlog::rotating_logger_mt("suas2018_log", kLogFileLocation,
+      logger_(::spdlog::rotating_logger_mt("uas-at-ucla_log", kLogFileLocation,
                                            1024 * 1024 * 50, 3)) {
   logger_->set_pattern("%v");
 }
@@ -33,7 +33,7 @@ void LogWriter::ReceiveThread() {
 
   while (run_) {
     if (!socket_.recv(&log_message, ZMQ_NOBLOCK)) {
-      usleep(1e6 / 1e4);
+      usleep(1e6 / 1e2);
       continue;
     }
 
@@ -59,9 +59,9 @@ void LogWriter::ReceiveThread() {
     logger_->info(log_line_csv);
 
     // Periodically flush log data to file.
-    if (::std::chrono::duration_cast<::std::chrono::milliseconds>(
+    if (::std::chrono::duration_cast<::std::chrono::microseconds>(
             ::std::chrono::steady_clock::now() - last_flush)
-            .count() > 1e1) {
+            .count() > 1) {
       logger_->flush();
       last_flush = ::std::chrono::steady_clock::now();
     }

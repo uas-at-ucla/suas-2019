@@ -29,7 +29,9 @@ function docker_exec {
 
     trap interrupt_exec INT
 
-    docker exec -t -u $(id -u):$(id -g) $UAS_AT_UCLA_IMAGE \
+    docker exec -t -u $(id -u):$(id -g) \
+       -e COLUMNS="`tput cols`" -e LINES="`tput lines`" \
+       $UAS_AT_UCLA_IMAGE \
       bash -c "echo \"\$\$\" > \"$PIDFILE\"; echo \"$*\" > \"$NAMEFILE\";$*"
     CODE=$?
 

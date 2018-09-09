@@ -29,7 +29,7 @@ UAS_AT_UCLA_TEXT = '\033[96m' + \
 
 # Script locations.
 DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/docker/run_env.sh "
-DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/docker/run_sim.sh "
+DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/px4_simulator/start_sim.sh "
 DOCKER_EXEC_SCRIPT      = "./tools/scripts/docker/exec.sh "
 DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/docker/exec_kill.sh "
 
@@ -88,10 +88,16 @@ def print_update(message, msg_type="STATUS"):
 
         print(print_line)
 
-
 def signal_received(signal, frame):
-    # Shutdown all the spawned processes and exit cleanly.
+    global received_signal
+    if received_signal:
+        print_update("ALREADY GOT SIGNAL RECEIVED ACTION! (be patient...)", \
+                msg_type="FAILURE")
+        return
 
+    received_signal = True
+
+    # Shutdown all the spawned processes and exit cleanly.
     print_update("performing signal received action...", msg_type="FAILURE")
 
     status = "Signal received (" + str(signal) + ") - killing all spawned " \
@@ -100,7 +106,7 @@ def signal_received(signal, frame):
     if processes.spawn_process_wait_for_code("docker kill $(docker ps " \
             "--filter status=running " \
             "--format \"{{.ID}}\" " \
-            "--filter name=uas_sim " \
+            "--filter name=uas-at-ucla_px4-simulator " \
             "--latest)", show_output=False, allow_input=False) == 0:
         status += "Killed simulator (docker)\n"
 
@@ -194,6 +200,8 @@ def run_build(args=None, show_complete=True):
     run_env(show_complete=False)
 
     # Execute the build commands in the running docker image.
+    print_update("Downloading the dependencies...")
+
     print_update("Building src directory...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")
 
@@ -243,8 +251,8 @@ def run_simulate(args):
     # Build the image for our docker environment.
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
             "git clone " \
-            "https://github.com/PX4/Firmware.git " \
-            "tools/cache/px4_firmware || true")
+            "https://github.com/uas-at-ucla/Firmware.git " \
+            "tools/cache/px4_simulator || true")
 
     # Set up tmux panes.
     run_cmd_exit_failure("tmux start-server ")
@@ -260,35 +268,47 @@ def run_simulate(args):
             "-s " \
             "uas_env")
 
+    run_cmd_exit_failure("tmux renamew -t uas_env controls")
+
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "rm /tmp/uasatucla_* || true")
 
-    run_cmd_exit_failure("tmux split-window -h -t uas_env")
-    run_cmd_exit_failure("tmux split-window -v -t uas_env")
-    run_cmd_exit_failure("tmux split-window -v -t uas_env")
+    run_cmd_exit_failure("tmux split-window -h -p 50 -t uas_env")
+
+    # Set up right side with 4 panes.
+    run_cmd_exit_failure("tmux split-window -v -p 75 -t uas_env")
+    run_cmd_exit_failure("tmux split-window -v -p 66 -t uas_env")
+    run_cmd_exit_failure("tmux split-window -v -p 50 -t uas_env")
+
+    # Set up left side with 3 panes
     run_cmd_exit_failure("tmux select-pane -t uas_env -L")
-    run_cmd_exit_failure("tmux split-window -v -t uas_env")
-    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    run_cmd_exit_failure("tmux split-window -v -p 66 -t uas_env")
+    run_cmd_exit_failure("tmux split-window -v -p 50 -t uas_env")
     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
 
-    # Start the PX4 simulator docker image.
-    run_cmd_exit_failure("tmux send-keys \"" \
-            + DOCKER_RUN_SIM_SCRIPT + "\" C-m")
+    # Run scripts on the left side.
+    run_cmd_exit_failure("tmux send-keys \"" + DOCKER_RUN_SIM_SCRIPT + "\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+           "./tools/scripts/px4_simulator/exec_mavlink_router.sh\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_EXEC_SCRIPT + " tail -F /tmp/drone_code.csv\" C-m")
+
+    # Run scripts on the right side.
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-R")
 
     run_cmd_exit_failure("tmux select-pane " \
             "-t " \
             "uas_env " \
             "-U")
-
-    run_cmd_exit_failure("tmux renamew -t uas_env controls")
-
-    run_cmd_exit_failure("tmux send-keys \"" + \
-            "./tools/scripts/docker/run_mavproxy.sh\" C-m")
-
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-R")
 
     run_cmd_exit_failure("tmux select-pane " \
             "-t " \
@@ -321,6 +341,15 @@ def run_simulate(args):
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
+
+    run_cmd_exit_failure("tmux select-pane " \
+            "-t " \
+            "uas_env " \
+            "-D")
+
+    run_cmd_exit_failure("tmux send-keys \"" + \
+            DOCKER_EXEC_SCRIPT + \
+            "./tools/scripts/bazel_run.sh //lib/logger:log_writer\" C-m")
 
     print_update("\n\nSimulation running! \n" \
             "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
@@ -408,49 +437,47 @@ def run_help(args):
 
 
 if __name__ == '__main__':
+    global received_signal
+    received_signal = False
     signal.signal(signal.SIGINT, signal_received)
 
     print(UAS_AT_UCLA_TEXT)
 
     parser = argparse.ArgumentParser()
 
-    subparsers = parser.add_subparsers(help='sub-command help')
+    subparsers = parser.add_subparsers()
 
-    deploy_parser = subparsers.add_parser('deploy', help='deploy help')
+    deploy_parser = subparsers.add_parser('deploy')
     deploy_parser.set_defaults(func=run_deploy)
 
-    install_parser = subparsers.add_parser('install', help='install help')
+    install_parser = subparsers.add_parser('install')
     install_parser.set_defaults(func=run_install)
 
-    travis_parser = subparsers.add_parser('travis', help='travis help')
+    travis_parser = subparsers.add_parser('travis')
     travis_parser.set_defaults(func=run_travis)
 
-    kill_dangling_parser = subparsers.add_parser(
-        'kill_dangling', help='kill_dangling help')
+    kill_dangling_parser = subparsers.add_parser('kill_dangling')
     kill_dangling_parser.set_defaults(func=run_kill_dangling)
 
-    simulate_parser = subparsers.add_parser('simulate', help='simulate help')
-    simulate_parser.add_argument(
-        '--verbose', action='store_true', help='verbose help')
+    simulate_parser = subparsers.add_parser('simulate')
+    simulate_parser.add_argument('--verbose', action='store_true')
     simulate_parser.set_defaults(func=run_simulate)
 
-    ground_parser = subparsers.add_parser('ground', help='ground help')
-    ground_parser.add_argument(
-        '--verbose', action='store_true', help='verbose help')
-    ground_parser.add_argument(
-        '--device', action='store', help='device help', required=False)
+    ground_parser = subparsers.add_parser('ground')
+    ground_parser.add_argument('--verbose', action='store_true')
+    ground_parser.add_argument('--device', action='store', required=False)
     ground_parser.set_defaults(func=run_ground)
 
-    build_parser = subparsers.add_parser('build', help='build help')
+    build_parser = subparsers.add_parser('build')
     build_parser.set_defaults(func=run_build)
 
-    unittest_parser = subparsers.add_parser('unittest', help='unittest help')
+    unittest_parser = subparsers.add_parser('unittest')
     unittest_parser.set_defaults(func=run_unittest)
 
-    run_env_parser = subparsers.add_parser('run_env', help='run_env help')
+    run_env_parser = subparsers.add_parser('run_env')
     run_env_parser.set_defaults(func=run_env)
 
-    jenkins_server_parser = subparsers.add_parser('jenkins_server', help='jenkins_server help')
+    jenkins_server_parser = subparsers.add_parser('jenkins_server')
     jenkins_server_parser.set_defaults(func=run_jenkins_server)
 
     lint_parser = subparsers.add_parser('lint')

@@ -163,9 +163,7 @@ void AutopilotSensorReader::RunIteration() {
   }
 
   // Serialize sensor protobuf and send it over ZMQ.
-  ::std::string sensors_serialized;
-  sensors.SerializeToString(&sensors_serialized);
-  sensors_sender_.Send(sensors_serialized);
+  sensors_sender_.Send(sensors);
 }
 
 AutopilotOutputWriter::AutopilotOutputWriter(
@@ -195,17 +193,13 @@ void AutopilotOutputWriter::Write() {
       1e-9;
 
   ::src::control::Output output;
-  {
-    ::std::string output_serialized = output_receiver_.GetLatest();
-
-    if (output_serialized == "") {
-      ::std::cout << "NO OUTPUT @ " << ::std::setprecision(20) << current_time
-                  << "\n";
-      return;
-    }
-
-    output.ParseFromString(output_serialized);
+  if (!output_receiver_.HasMessages()) {
+    ::std::cout << "NO OUTPUT @ " << ::std::setprecision(20) << current_time
+                << "\n";
+    return;
   }
+
+  output = output_receiver_.GetLatest();
 
   if (output.dslr()) {
     dslr_interface_.TakePhotos();
@@ -231,7 +225,8 @@ void AutopilotOutputWriter::Write() {
   set_servo_pulsewidth(pigpio_, 24, gimbal_angle);
 #endif
 
-  if (output.trigger_takeoff() + 0.05 > current_time) {
+  if (output.trigger_takeoff() + 0.1 > current_time) {
+    ::std::cout << "taking off!" << ::std::endl;
     if (!did_takeoff_) {
       did_takeoff_ = true;
       copter_io_->Takeoff();
@@ -240,7 +235,7 @@ void AutopilotOutputWriter::Write() {
     did_takeoff_ = false;
   }
 
-  if (output.trigger_hold() + 0.05 > current_time) {
+  if (output.trigger_hold() + 0.1 > current_time) {
     if (!did_hold_) {
       did_hold_ = true;
       copter_io_->Hold();
@@ -249,7 +244,7 @@ void AutopilotOutputWriter::Write() {
     did_hold_ = false;
   }
 
-  if (output.trigger_offboard() + 0.05 > current_time) {
+  if (output.trigger_offboard() + 0.1 > current_time) {
     if (!did_offboard_) {
       did_offboard_ = true;
       copter_io_->Offboard();
@@ -258,7 +253,7 @@ void AutopilotOutputWriter::Write() {
     did_offboard_ = false;
   }
 
-  if (output.trigger_rtl() + 0.05 > current_time) {
+  if (output.trigger_rtl() + 0.1 > current_time) {
     if (!did_rtl_) {
       did_rtl_ = true;
       copter_io_->ReturnToLaunch();
@@ -267,7 +262,7 @@ void AutopilotOutputWriter::Write() {
     did_rtl_ = false;
   }
 
-  if (output.trigger_land() + 0.05 > current_time) {
+  if (output.trigger_land() + 0.1 > current_time) {
     if (!did_land_) {
       did_land_ = true;
       copter_io_->Land();
@@ -276,7 +271,7 @@ void AutopilotOutputWriter::Write() {
     did_land_ = false;
   }
 
-  if (output.trigger_arm() + 0.05 > current_time) {
+  if (output.trigger_arm() + 0.1 > current_time) {
     if (!did_arm_) {
       did_arm_ = true;
       copter_io_->Arm();
@@ -285,7 +280,7 @@ void AutopilotOutputWriter::Write() {
     did_arm_ = false;
   }
 
-  if (output.trigger_disarm() + 0.05 > current_time) {
+  if (output.trigger_disarm() + 0.1 > current_time) {
     if (!did_disarm_) {
       did_disarm_ = true;
       copter_io_->Disarm();

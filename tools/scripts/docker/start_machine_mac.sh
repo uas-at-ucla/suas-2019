@@ -10,7 +10,7 @@ then
     then
       echo ""
       echo "Creating uas-env docker machine:"
-      echo "docker-machine create -d virtualbox --virtualbox-memory 4096 --virtualbox-cpu-count 3 --virtualbox-disk-size 15000 uas-env"
+      echo "docker-machine create -d virtualbox --virtualbox-memory 4096 --virtualbox-cpu-count 4 --virtualbox-disk-size 8000 uas-env"
       echo ""
       docker-machine create -d virtualbox --virtualbox-memory 4096 --virtualbox-cpu-count 3 --virtualbox-disk-size 15000 uas-env
       docker-machine-nfs uas-env --shared-folder=$(pwd) -f --nfs-config="-alldirs -mapall=$(id -u):20"
