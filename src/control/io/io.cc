@@ -193,7 +193,7 @@ void AutopilotOutputWriter::Write() {
       1e-9;
 
   ::src::control::Output output;
-  if(!output_receiver_.HasMessages()) {
+  if (!output_receiver_.HasMessages()) {
     ::std::cout << "NO OUTPUT @ " << ::std::setprecision(20) << current_time
                 << "\n";
     return;
