@@ -51,7 +51,7 @@ class AutopilotSensorReader : public LoopInputHandler {
 
   double last_gps_;
 
-  ::lib::proto_comms::ProtoSender sensors_sender_;
+  ::lib::proto_comms::ProtoSender<::src::control::Sensors> sensors_sender_;
 };
 
 class AutopilotOutputWriter : public LoopOutputHandler {
@@ -82,7 +82,7 @@ class AutopilotOutputWriter : public LoopOutputHandler {
   bool did_arm_;
   bool did_disarm_;
 
-  ::lib::proto_comms::ProtoReceiver output_receiver_;
+  ::lib::proto_comms::ProtoReceiver<::src::control::Output> output_receiver_;
 };
 
 class IO {

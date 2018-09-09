@@ -78,12 +78,12 @@ class GroundCommunicator {
   double last_serial_telemetry_sent_;
   ::lib::serial_comms::SerialCommsBridge serial_comms_bridge_;
 
-  ::lib::proto_comms::ProtoReceiver sensors_receiver_;
-  ::lib::proto_comms::ProtoReceiver goal_receiver_;
-  ::lib::proto_comms::ProtoReceiver status_receiver_;
-  ::lib::proto_comms::ProtoReceiver output_receiver_;
+  ::lib::proto_comms::ProtoReceiver<::src::control::Sensors> sensors_receiver_;
+  ::lib::proto_comms::ProtoReceiver<::src::control::Goal> goal_receiver_;
+  ::lib::proto_comms::ProtoReceiver<::src::control::Status> status_receiver_;
+  ::lib::proto_comms::ProtoReceiver<::src::control::Output> output_receiver_;
 
-  ::lib::proto_comms::ProtoSender goal_sender_;
+  ::lib::proto_comms::ProtoSender<::src::control::Goal> goal_sender_;
 };
 
 } // namespace ground_communicator

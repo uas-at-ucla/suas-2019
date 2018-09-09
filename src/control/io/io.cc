@@ -163,9 +163,7 @@ void AutopilotSensorReader::RunIteration() {
   }
 
   // Serialize sensor protobuf and send it over ZMQ.
-  ::std::string sensors_serialized;
-  sensors.SerializeToString(&sensors_serialized);
-  sensors_sender_.Send(sensors_serialized);
+  sensors_sender_.Send(sensors);
 }
 
 AutopilotOutputWriter::AutopilotOutputWriter(
@@ -195,17 +193,13 @@ void AutopilotOutputWriter::Write() {
       1e-9;
 
   ::src::control::Output output;
-  {
-    ::std::string output_serialized = output_receiver_.GetLatest();
-
-    if (output_serialized == "") {
-      ::std::cout << "NO OUTPUT @ " << ::std::setprecision(20) << current_time
-                  << "\n";
-      return;
-    }
-
-    output.ParseFromString(output_serialized);
+  if(!output_receiver_.HasMessages()) {
+    ::std::cout << "NO OUTPUT @ " << ::std::setprecision(20) << current_time
+                << "\n";
+    return;
   }
+
+  output = output_receiver_.GetLatest();
 
   if (output.dslr()) {
     dslr_interface_.TakePhotos();

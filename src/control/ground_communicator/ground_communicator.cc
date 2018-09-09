@@ -54,9 +54,7 @@ static double timet = 0;
 static bool track = false;
 void GroundCommunicator::RunIteration() {
   // Send out latest goal.
-  ::std::string goal_serialized;
-  goal_.SerializeToString(&goal_serialized);
-  goal_sender_.Send(goal_serialized);
+  goal_sender_.Send(goal_);
 
   // Send telemetry to ground.
   double current_time =
@@ -95,9 +93,9 @@ void GroundCommunicator::RunIteration() {
   if (sensors_receiver_.HasMessages()) {
     send_sensors = true;
 
-    ::src::control::Sensors sensors;
-    ::std::string sensors_serialized = sensors_receiver_.GetLatest();
-    sensors.ParseFromString(sensors_serialized);
+    ::src::control::Sensors sensors = sensors_receiver_.GetLatest();
+    ::std::string sensors_serialized;
+    sensors.SerializeToString(&sensors_serialized);
 
     telemetry->get_map()["sensors"] = ::sio::string_message::create(
         ::lib::base64_tools::Encode(sensors_serialized));
@@ -125,7 +123,9 @@ void GroundCommunicator::RunIteration() {
   if (status_receiver_.HasMessages()) {
     send_status = true;
 
-    ::std::string status_serialized = status_receiver_.GetLatest();
+    ::src::control::Status status = status_receiver_.GetLatest();
+    ::std::string status_serialized;
+    status.SerializeToString(&status_serialized);
 
     telemetry->get_map()["status"] = ::sio::string_message::create(
         ::lib::base64_tools::Encode(status_serialized));
@@ -134,7 +134,9 @@ void GroundCommunicator::RunIteration() {
   if (goal_receiver_.HasMessages()) {
     send_goal = true;
 
-    ::std::string goal_serialized = goal_receiver_.GetLatest();
+    ::src::control::Goal goal = goal_receiver_.GetLatest();
+    ::std::string goal_serialized;
+    goal.SerializeToString(&goal_serialized);
 
     telemetry->get_map()["goal"] = ::sio::string_message::create(
         ::lib::base64_tools::Encode(goal_serialized));
@@ -143,7 +145,9 @@ void GroundCommunicator::RunIteration() {
   if (output_receiver_.HasMessages()) {
     send_output = true;
 
-    ::std::string output_serialized = output_receiver_.GetLatest();
+    ::src::control::Output output = output_receiver_.GetLatest();
+    ::std::string output_serialized;
+    output.SerializeToString(&output_serialized);
 
     telemetry->get_map()["output"] = ::sio::string_message::create(
         ::lib::base64_tools::Encode(output_serialized));

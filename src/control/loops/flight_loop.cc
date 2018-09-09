@@ -49,31 +49,21 @@ void FlightLoop::RunIteration() {
       1e-9;
 
   // Get latest telemetry.
-  ::src::control::Sensors sensors;
-  {
-    ::std::string sensors_serialized = sensors_receiver_.GetLatest();
-
-    if (sensors_serialized == "") {
-      ::std::cout << "NO SENSORS @ " << ::std::setprecision(20) << current_time
-                  << "\n";
-      return;
-    }
-
-    sensors.ParseFromString(sensors_serialized);
+  if (!sensors_receiver_.HasMessages()) {
+    ::std::cout << "NO SENSORS @ " << ::std::setprecision(20) << current_time
+                << "\n";
+    return;
   }
+
+  ::src::control::Sensors sensors = sensors_receiver_.GetLatest();
 
   // Get latest goal.
-  ::src::control::Goal goal;
-  {
-    ::std::string goal_serialized = goal_receiver_.GetLatest();
-
-    if (goal_serialized == "") {
-      ::std::cout << "NO GOAL!\n";
-      return;
-    }
-
-    goal.ParseFromString(goal_serialized);
+  if (!goal_receiver_.HasMessages()) {
+    ::std::cout << "NO GOAL!\n";
+    return;
   }
+
+  ::src::control::Goal goal = goal_receiver_.GetLatest();
 
   got_sensors_ = true;
   State next_state = state_;
@@ -311,9 +301,7 @@ void FlightLoop::RunIteration() {
            << " FlightTime: " << status.flight_time()
            << " CurrentCommandIndex: " << status.current_command_index());
 
-  ::std::string output_serialized;
-  output.SerializeToString(&output_serialized);
-  output_sender_.Send(output_serialized);
+  output_sender_.Send(output);
 }
 
 void FlightLoop::EndFlightTimer() {
