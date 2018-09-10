@@ -25,7 +25,6 @@ Pilot::Pilot()
       sleep_time_(0), come_to_stop_(true), come_to_stop_count_(0),
       setpoint_reset_(true), met_goal_(false) {}
 
-
 Pilot::~Pilot() {
   Quit();
   thread_.join();

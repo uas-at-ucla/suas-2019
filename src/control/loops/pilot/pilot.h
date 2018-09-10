@@ -53,7 +53,7 @@ class Pilot {
   ::lib::motion_profile::MotionProfile profile_;
 
   ::lib::mission_message_queue::MissionMessageQueueReceiver
-           mission_message_queue_receiver_;
+      mission_message_queue_receiver_;
 
   ::lib::mission_manager::Command cmd_, last_cmd_;
   bool cmd_set_;
