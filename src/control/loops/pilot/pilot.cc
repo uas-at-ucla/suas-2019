@@ -23,9 +23,7 @@ Pilot::Pilot()
       profile_(kSpeed, 5, 1 / 100.0), cmd_set_(false), position_set_(false),
       position_semaphore_(1), thread_(&Pilot::PreprocessorThread, this),
       sleep_time_(0), come_to_stop_(true), come_to_stop_count_(0),
-      setpoint_reset_(true), met_goal_(false),
-      mission_receiver_("ipc:///tmp/uasatucla_missions.ipc", 5), 
-      mission_sender_("ipc:///tmp/uasatucla_missions.ipc") {}
+      setpoint_reset_(true), met_goal_(false) {}
 
 
 Pilot::~Pilot() {
