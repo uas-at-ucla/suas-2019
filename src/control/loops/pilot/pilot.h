@@ -17,7 +17,6 @@
 #include <google/protobuf/util/message_differencer.h>
 
 #include "lib/mission_manager/mission_commands.pb.h"
-#include "lib/mission_message_queue/mission_message_queue.h"
 #include "lib/motion_profile/motion_profile.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/pid/pid.h"
@@ -52,8 +51,9 @@ class Pilot {
   ::lib::pid::PID thrust_pid_;
   ::lib::motion_profile::MotionProfile profile_;
 
-  ::lib::mission_message_queue::MissionMessageQueueReceiver
-      mission_message_queue_receiver_;
+  ::lib::mission_manager mission_manager_;
+  ::lib::proto_comms::ProtoReceiver<::lib::mission_manager::Mission> mission_receiver_;
+  ::lib::proto_comms::ProtoSender<::lib::mission_manager::Mission> mission_sender_;
 
   ::lib::mission_manager::Command cmd_, last_cmd_;
   bool cmd_set_;
