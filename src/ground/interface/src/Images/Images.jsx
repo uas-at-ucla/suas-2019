@@ -144,7 +144,8 @@ class Images extends Component {
     return images;
   }
 
-  images = this.importAll(require.context('../../public/testPhotos', false, /\.(png|jpe?g|svg)$/));
+  // TODO(comran): Re-enable this after safely checking if photos exist.
+  // images = this.importAll(require.context('../../public/testPhotos', false, /\.(png|jpe?g|svg)$/));
 
   renderRawImages(myList) {
 
