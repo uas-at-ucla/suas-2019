@@ -2,10 +2,65 @@ import targets
 from PIL import Image
 from argparse import ArgumentParser
 import random
+import os
+import math
+
+COLORS = {
+    'white': (255, 255, 255),
+    'black': (0, 0, 0),
+    'gray': (128, 128, 128),
+    'red': (255, 0, 0),
+    'blue': (0, 0, 255),
+    'green': (0, 255, 0),
+    'yellow': (255, 255, 0),
+    'purple': (128, 0, 128),
+    'brown': (165, 42, 42),
+    'orange': (255, 165, 0)
+}
+
+LETTERS = [
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+]
 
 
-def gen_images(t_gen, n, shape, t_size, i_size, backs, dest):
-    pass
+def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir):
+    background_files = os.scandir(bg_dir)
+    field_width = math.trunc(math.log10(n))
+    for i in range(n):
+
+        # Get a background image
+        background_file = None
+        try:
+            background_file = next(background_files).path
+        except StopIteration:
+            # if there are no more files, go back to the beginning
+            background_files = os.scandir(bg_dir)
+            background_file = next(background_files).path
+        background = Image.open(background_file)
+
+        # Choose some colors
+        shape_color = random.choice(list(COLORS.values()))
+        letter_color = random.choice(list(COLORS.values()))
+        while letter_color == shape_color:
+            letter_color = random.choice(list(COLORS.values()))
+
+        # Draw a target with a generator decided by the iterator
+        generator = next(t_gen)
+        target = generator.draw_target(
+            size=t_size,
+            shape_color=shape_color,
+            letter=random.choice(LETTERS),
+            letter_color=letter_color)
+        target_pos = (random.randint(0, i_size[0] - t_size),
+                      random.randint(0, i_size[1] - t_size))
+
+        # Paste the target and save
+        result = background.crop(box=(0, 0, i_size[0], i_size[1]))
+        result.paste(target, box=target_pos, mask=target)
+        result.save(
+            os.path.join(dest_dir,
+                         ('{:0=' + str(field_width) + 'd}.jpg').format(i)))
 
 
 if __name__ == '__main__':
@@ -32,7 +87,8 @@ if __name__ == '__main__':
         help='width/height of target(s) in pixels')
     parser.add_argument(
         '--image-size',
-        type=tuple,
+        type=int,
+        nargs=2,
         default=None,
         dest='image_size',
         help=
@@ -67,9 +123,19 @@ if __name__ == '__main__':
         parser.error('number of targets must be positive')
     if args.image_size is None:
         args.image_size = (args.target_size, args.target_size)
+    if args.font is None:
+        # TODO add font autodownload
+        args.font = 'arialbd.ttf'
+    if args.dest is None:
+        default_dest = os.path.join('output', args.target_shape)
+        os.makedirs(default_dest, exist_ok=True)
+        #if not os.path.isdir(args.target_shape):
+        #    os.mkdir(args.target_shape)
+        args.dest = default_dest
 
     class TargetSelector:
         def __init__(self, target_names, font):
+            self.targets = []
             for target_name in target_names:
                 self.targets += [getattr(targets, target_name)(font)]
 
@@ -101,5 +167,5 @@ if __name__ == '__main__':
         shape=args.target_shape,
         t_size=args.target_size,
         i_size=args.image_size,
-        backs=args.backgrounds,
-        dest=args.dest)
+        bg_dir=args.backgrounds,
+        dest_dir=args.dest)
