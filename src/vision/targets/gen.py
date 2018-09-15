@@ -4,6 +4,8 @@ from argparse import ArgumentParser
 import random
 import os
 import math
+import urllib.request
+import subprocess
 
 COLORS = {
     'white': (255, 255, 255),
@@ -124,8 +126,14 @@ if __name__ == '__main__':
     if args.image_size is None:
         args.image_size = (args.target_size, args.target_size)
     if args.font is None:
-        # TODO add font autodownload
-        args.font = 'arialbd.ttf'
+        if not os.path.isfile('fonts/OpenSans-Bold.ttf'):
+            os.makedirs('fonts', exist_ok=True)
+            print('Downloading necessary fonts...')
+            urllib.request.urlretrieve('https://www.fontsquirrel.com/fonts/download/open-sans', 'fonts/open-sans.zip')
+            print('Extracting fonts...')
+            subprocess.run(['unzip', 'fonts/open-sans.zip', '-d', 'fonts'])
+            print('Fonts extracted!')
+        args.font = 'fonts/OpenSans-Bold.ttf'
     if args.dest is None:
         default_dest = os.path.join('output', args.target_shape)
         os.makedirs(default_dest, exist_ok=True)
