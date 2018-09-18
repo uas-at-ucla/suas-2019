@@ -5,12 +5,12 @@ source tools/scripts/docker/start_machine_mac.sh
 unset INTEROP_DOCKER_RUNNING_CONTAINER
 unset INTEROP_DOCKER_CONTAINER
 
-INTEROP_DOCKER_RUNNING_CONTAINER=$(docker ps \
-  --filter name=interop-server \
-  --filter status=running \
-  --format "{{.ID}}" \
-  --latest \
-  )
+INTEROP_DOCKER_RUNNING_CONTAINER=$(docker ps                                   \
+  --filter name=interop-server                                                 \
+  --filter status=running                                                      \
+  --format "{{.ID}}"                                                           \
+  --latest                                                                     \
+)
 
 if [ ! -z $INTEROP_DOCKER_RUNNING_CONTAINER ]
 then
@@ -18,11 +18,11 @@ then
   docker kill $INTEROP_DOCKER_RUNNING_CONTAINER
 fi
 
-INTEROP_DOCKER_CONTAINER=$(docker ps \
-  --filter name=interop-server \
-  --format "{{.ID}}" \
-  --latest
-  )
+INTEROP_DOCKER_CONTAINER=$(docker ps                                           \
+  --filter name=uas-at-ucla_interop-server                                     \
+  --format "{{.ID}}"                                                           \
+  --latest                                                                     \
+)
 
 if [ ! -z $INTEROP_DOCKER_CONTAINER ]
 then
@@ -30,8 +30,30 @@ then
   docker rm $INTEROP_DOCKER_CONTAINER
 fi
 
+function kill_interop {
+  INTEROP_DOCKER_ID=$(
+    docker ps \
+      --filter status=running \
+      --format "{{.ID}}" \
+      --latest \
+      --filter name=uas-at-ucla_interop-server
+  )
+
+  SIGNAL=1
+  if [ ! -z $INTEROP_DOCKER_ID ]
+  then
+    docker kill $INTEROP_DOCKER_ID
+    SIGNAL=$?
+  fi
+
+  exit $SIGNAL
+}
+
+trap kill_interop INT
+
+
 # Start docker container and let it run forever.
-docker run -d --restart=unless-stopped --interactive --tty --publish 8000:80 --name interop-server auvsisuas/interop-server
+docker run -t --restart=unless-stopped -p 8000:80 --name uas-at-ucla_interop-server auvsisuas/interop-server
 
 echo ""
 VM_IP=$(docker-machine ip uas-env 2> /dev/null)
