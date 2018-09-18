@@ -10,9 +10,9 @@ then
     then
       echo ""
       echo "Creating uas-env docker machine:"
-      echo "docker-machine create -d virtualbox --virtualbox-memory 4096 --virtualbox-cpu-count 4 --virtualbox-disk-size 8000 uas-env"
-      echo ""
-      docker-machine create -d virtualbox --virtualbox-memory 4096 --virtualbox-cpu-count 3 --virtualbox-disk-size 15000 uas-env
+      DOCKER_MACHINE_CREATE_CMD="docker-machine create -d virtualbox --virtualbox-memory 4096 --virtualbox-cpu-count 4 --virtualbox-disk-size 8000 uas-env"
+      echo "$DOCKER_MACHINE_CREATE_CMD"
+      eval "$DOCKER_MACHINE_CREATE_CMD"
       docker-machine-nfs uas-env --shared-folder=$(pwd) -f --nfs-config="-alldirs -mapall=$(id -u):20"
       echo ""
       echo "Started uas-env docker machine. To stop it, run \"docker-machine stop uas-env\""

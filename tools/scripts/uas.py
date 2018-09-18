@@ -369,6 +369,10 @@ def run_jenkins_server(args):
     processes.wait_for_complete()
 
 
+def run_interop(args):
+    run_cmd_exit_failure("./tools/scripts/docker/run_interop.sh")
+
+
 def run_ground(args):
     # Ground server and interface.
     if args.device is not None:
@@ -460,6 +464,9 @@ if __name__ == '__main__':
     simulate_parser = subparsers.add_parser('simulate')
     simulate_parser.add_argument('--verbose', action='store_true')
     simulate_parser.set_defaults(func=run_simulate)
+
+    interop_parser = subparsers.add_parser('interop')
+    interop_parser.set_defaults(func=run_interop)
 
     ground_parser = subparsers.add_parser('ground')
     ground_parser.add_argument('--verbose', action='store_true')
