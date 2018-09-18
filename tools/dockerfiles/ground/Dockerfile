@@ -1,68 +1,55 @@
 FROM debian:stretch
 
 # Install compilation and testing dependencies #################################
-RUN apt update                                                              && \
-    apt install -y curl                                                     && \
-    apt install -y gnupg
+RUN apt update     -qq                                                      && \
+    apt install -y -qq curl                                                 && \
+    apt install -y -qq gnupg
 
 # Add apt repositories containing required packages. ###########################
-RUN echo "deb http://deb.debian.org/debian stretch main contrib non-free\n" \
-  "deb-src http://deb.debian.org/debian stretch main\n\n" \
-  "deb http://deb.debian.org/debian stretch-updates main contrib non-free\n" \
-  "deb-src http://deb.debian.org/debian stretch-updates main\n\n" \
+RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
+  "deb-src http://deb.debian.org/debian buster main\n\n" \
+  "deb http://deb.debian.org/debian buster-updates main contrib non-free\n" \
+  "deb-src http://deb.debian.org/debian buster-updates main\n\n" \
   "deb http://deb.debian.org/debian sid main contrib non-free\n" \
   "deb-src http://deb.debian.org/debian sid main" > \
   /etc/apt/sources.list
 
-RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN echo "deb http://deb.debian.org/debian testing main" \
-  | tee /etc/apt/sources.list.d/python3_6.list
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 
-RUN apt update                                                              && \
-    apt upgrade -y
+RUN apt update     -qq                                                      && \
+    apt upgrade -y -qq
 
 # Install apt dependencies. ####################################################
-RUN apt install -y                                                             \
-  ant                                                                          \
+RUN apt install -y -qq                                                         \
+  bmon                                                                         \
   build-essential                                                              \
   git                                                                          \
   htop                                                                         \
   nodejs                                                                       \
-  python2.7                                                                    \
-  python2.7-lib                                                                \
-  python2.7-dev                                                                \
-  python3.7                                                                    \
-  python3.7-dev                                                                \
-  python3.7-distutils                                                          \
+  python3.6                                                                    \
+  python3.6-dev                                                                \
+  python3.6-distutils                                                          \
   sudo                                                                         \
   tmux                                                                         \
   vim
 
-RUN apt upgrade -y
-
-# Fix git certificate bug with open JDK. #######################################
-RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
-  /etc/java-10-openjdk/security/java.security
-RUN rm /etc/ssl/certs/java/cacerts
-RUN update-ca-certificates -f
+RUN apt upgrade -y -qq
 
 # Install pip and python dependencies. #########################################
-RUN curl https://bootstrap.pypa.io/get-pip.py | python2.7
-RUN curl https://bootstrap.pypa.io/get-pip.py | python3.7
-RUN pip2.7 install --upgrade pip                                            && \
-    pip3.7 install --upgrade pip
-
-RUN apt-get install -y libtiff5-dev libjpeg62-turbo-dev zlib1g-dev libfreetype6-dev liblcms2-dev libwebp-dev
-RUN ln -s /usr/lib/x86_64-linux-gnu/libz.so /lib/
-RUN ln -s /usr/lib/x86_64-linux-gnu/libjpeg.so /lib/
+RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
+RUN pip3.6 install --upgrade pip
 
 # Set up workspace. ############################################################
 RUN useradd -ms /bin/bash uas
+RUN echo 'uas:spinny' | chpasswd
 RUN echo "%sudo  ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 RUN usermod -aG sudo uas
 
 # User env setup. ##############################################################
+RUN mkdir /external_libs
+
+RUN apt-get install -y libjpeg-dev zlib1g-dev
+
 USER uas
 RUN mkdir -p /home/uas/code_env
 ENV WORKSPACE /home/uas/code_env WORKDIR /home/uas/code_env
@@ -70,9 +57,9 @@ ENV WORKSPACE /home/uas/code_env WORKDIR /home/uas/code_env
 WORKDIR /home/uas
 
 # Install python requirements. #################################################
-RUN pip3.7 install --user                                                      \
-  future                                                                       \
-  futures                                                                      \
+RUN pip3.6 install --user future
+
+RUN pip3.6 install --user                                                      \
   MAVProxy==1.6.1                                                              \
   pymavlink==2.2.4                                                             \
   pyserial==3.4                                                                \
@@ -84,8 +71,9 @@ RUN pip3.7 install --user                                                      \
   python-socketio==1.8.1                                                       \
   Flask==0.12.2                                                                \
   Flask-SocketIO==2.9.2                                                        \
+  futures==3.1.1                                                               \
   socketIO-client==0.7.2                                                       \
-  numpy                                                                        \
+  numpy==1.13.1                                                                \
   empy==3.3.2                                                                  \
   toml==0.9.4                                                                  \
   eventlet==0.23.0                                                             \
@@ -95,6 +83,13 @@ RUN pip3.7 install --user                                                      \
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
+
+RUN rm -rf /home/uas/mavlink-router
+
+EXPOSE 8085/udp
+EXPOSE 8086/udp
+EXPOSE 8090/udp
+EXPOSE 8091/udp
 
 # Set user to root so that we can set the appropriate permissions for file #####
 # access later on. #############################################################

@@ -141,7 +141,7 @@ def run_deploy(args):
 
 
 def run_install(args=None):
-    run_cmd_exit_failure("bash ./tools/scripts/install.sh", show_msg=False)
+    run_and_die_if_error("bash ./tools/scripts/install.sh")
 
 
 def run_kill_dangling(args):
@@ -166,15 +166,13 @@ def run_travis(args):
     run_and_die_if_error(
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
 
-def run_cmd_exit_failure(cmd, show_msg=True):
+def run_cmd_exit_failure(cmd):
     if processes.spawn_process_wait_for_code(cmd, allow_input=False) > 0:
         status = "ERROR when running command: " + cmd + "\n" \
                 "Killing all spawned processes\n"
 
         status += processes.killall()
-
-        if show_msg:
-            print_update(status, "FAILURE")
+        print_update(status, "FAILURE")
 
         sys.exit(1)
 
@@ -208,9 +206,9 @@ def run_build(args=None, show_complete=True):
     print_update("\n\nBuilding lib directory...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//lib/...")
 
-    print_update("\n\nBuilding src for raspi...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
-            + BAZEL_BUILD + "--cpu=raspi //src/...")
+    # print_update("\n\nBuilding src for raspi...")
+    # run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
+    #         + BAZEL_BUILD + "--cpu=raspi //src/...")
 
     if show_complete:
         print_update("\n\nbuild complete :^) long live spinny!", \
@@ -371,6 +369,12 @@ def run_jenkins_server(args):
     processes.wait_for_complete()
 
 
+def run_interop(args):
+    print_update("Starting AUVSI interop server...")
+    processes.spawn_process("./tools/scripts/docker/run_interop.sh")
+    processes.wait_for_complete()
+
+
 def run_ground(args):
     # Ground server and interface.
     if args.device is not None:
@@ -462,6 +466,9 @@ if __name__ == '__main__':
     simulate_parser = subparsers.add_parser('simulate')
     simulate_parser.add_argument('--verbose', action='store_true')
     simulate_parser.set_defaults(func=run_simulate)
+
+    interop_parser = subparsers.add_parser('interop')
+    interop_parser.set_defaults(func=run_interop)
 
     ground_parser = subparsers.add_parser('ground')
     ground_parser.add_argument('--verbose', action='store_true')

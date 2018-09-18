@@ -1,4 +1,4 @@
-# UAS at UCLA 2018 Drone Code
+# UAS@UCLA 2018 Drone Code
 Code used on our drone competing in the AUVSI SUAS competition.
 
 [![Build Status](https://travis-ci.com/uas-at-ucla/drone_code.svg?token=vswHzoLKgsSxcZysVnEN&branch=master)](https://travis-ci.com/uas-at-ucla/drone_code)
