@@ -144,6 +144,11 @@ def run_install(args=None):
     run_and_die_if_error("bash ./tools/scripts/install.sh")
 
 
+def run_cleanup_docker(args):
+    processes.spawn_process("./tools/scripts/docker/cleanup.sh")
+    processes.wait_for_complete()
+
+
 def run_kill_dangling(args):
     processes.spawn_process("killall java")
     processes.spawn_process("killall px4")
@@ -459,6 +464,9 @@ if __name__ == '__main__':
 
     travis_parser = subparsers.add_parser('travis')
     travis_parser.set_defaults(func=run_travis)
+
+    cleanup_docker_parser = subparsers.add_parser('cleanup_docker')
+    cleanup_docker_parser.set_defaults(func=run_cleanup_docker)
 
     kill_dangling_parser = subparsers.add_parser('kill_dangling')
     kill_dangling_parser.set_defaults(func=run_kill_dangling)
