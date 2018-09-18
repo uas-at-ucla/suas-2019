@@ -15,24 +15,24 @@ namespace loops {
 int kFlightLoopFrequency = 1e2;
 
 FlightLoop::FlightLoop()
-    : state_(STANDBY),                                          //
-      running_(false),                                          //
-      phased_loop_(kFlightLoopFrequency),                       //
-      start_(std::chrono::system_clock::now()),                 //
-      takeoff_ticker_(0),                                       //
-      verbose_(false),                                          //
-      previous_flights_time_(0),                                //
-      current_flight_start_time_(0),                            //
-      alarm_(kFlightLoopFrequency),                             //
-      got_sensors_(false),                                      //
-      last_loop_(0),                                            //
-      did_alarm_(false),                                        //
-      did_arm_(false),                                          //
-      last_bomb_drop_(0),                                       //
-      last_dslr_(0),                                            //
-      sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", 5), //
-      goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", 5),       //
-      status_sender_("ipc:///tmp/uasatucla_status.ipc"),        //
+    : state_(STANDBY),                                                        //
+      running_(false),                                                        //
+      phased_loop_(kFlightLoopFrequency),                                     //
+      start_(std::chrono::system_clock::now()),                               //
+      takeoff_ticker_(0),                                                     //
+      verbose_(false),                                                        //
+      previous_flights_time_(0),                                              //
+      current_flight_start_time_(0),                                          //
+      alarm_(kFlightLoopFrequency),                                           //
+      got_sensors_(false),                                                    //
+      last_loop_(0),                                                          //
+      did_alarm_(false),                                                      //
+      did_arm_(false),                                                        //
+      last_bomb_drop_(0),                                                     //
+      last_dslr_(0),                                                          //
+      sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", 5),               //
+      goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", 5),                     //
+      status_sender_("ipc:///tmp/uasatucla_status.ipc"),                      //
       output_sender_("ipc:///tmp/uasatucla_output.ipc") {}
 
 void FlightLoop::Iterate() { RunIteration(); }
