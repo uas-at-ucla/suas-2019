@@ -2,34 +2,34 @@
 
 source tools/scripts/docker/start_machine_mac.sh
 
-unset UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER
-unset UAS_AT_UCLA_ENV_DOCKER_CONTAINER
-unset UAS_AT_UCLA_RUNNING_DOCKER_CONTAINERS
+unset ENV_DOCKER_RUNNING_CONTAINER
+unset ENV_DOCKER_CONTAINER
+unset RUNNING_DOCKER_CONTAINERS
 
-UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
+ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
   --filter name=uas_env \
   --filter status=running \
   --format "{{.ID}}" \
   --latest \
   )
 
-if [ ! -z $UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER ]
+if [ ! -z $ENV_DOCKER_RUNNING_CONTAINER ]
 then
   echo "Docker environment already running."
 
   exit
 fi
 
-UAS_AT_UCLA_ENV_DOCKER_CONTAINER=$(docker ps \
+ENV_DOCKER_CONTAINER=$(docker ps \
   --filter name=uas_env \
   --format "{{.ID}}" \
   --latest
   )
 
-if [ ! -z $UAS_AT_UCLA_ENV_DOCKER_CONTAINER ]
+if [ ! -z $ENV_DOCKER_CONTAINER ]
 then
-  echo "Removing old container with ID $UAS_AT_UCLA_ENV_DOCKER_CONTAINER"
-  docker rm $UAS_AT_UCLA_ENV_DOCKER_CONTAINER
+  echo "Removing old container with ID $ENV_DOCKER_CONTAINER"
+  docker rm $ENV_DOCKER_CONTAINER
 fi
 
 
@@ -52,16 +52,6 @@ docker network create -d bridge uas_bridge > /dev/null 2>&1 || true
 
 mkdir -p tools/cache/bazel
 
-# Start docker container and let it run forever.
-PLATFORM=$(uname -s)
-DOCKER_BUILD_CMD="set -x; \
-  getent group $(id -g) || groupadd -g $(id -g) host_group; \
-  usermod -u $(id -u) -g $(id -g) uas; \
-  chown -R uas /home/uas/.cache/bazel; \
-  echo STARTED > /tmp/uas_init; \
-  sudo -u uas bash -c \"bazel; \
-  sleep infinity\""
-
 # Set root path of the repository volume on the host machine.
 # Note: If docker is called within another docker instance & is trying to start
 #       the UAS@UCLA docker environment, the root will need to be set to the
@@ -74,6 +64,16 @@ then
 fi
 
 echo "Root path is $ROOT_PATH"
+
+# Start docker container and let it run forever.
+PLATFORM=$(uname -s)
+DOCKER_BUILD_CMD="set -x; \
+  getent group $(id -g) || groupadd -g $(id -g) host_group; \
+  usermod -u $(id -u) -g $(id -g) uas; \
+  chown -R uas /home/uas/.cache/bazel; \
+  echo STARTED > /tmp/uas_init; \
+  sudo -u uas bash -c \"bazel; \
+  sleep infinity\""
 
 docker run \
   -d \
@@ -89,9 +89,9 @@ docker run \
 echo "Started uas env docker image. Waiting for it to boot..."
 
 # Wait for docker container to start up.
-while [ -z $UAS_AT_UCLA_RUNNING_DOCKER_CONTAINERS ]
+while [ -z $RUNNING_DOCKER_CONTAINERS ]
 do
-  UAS_AT_UCLA_RUNNING_DOCKER_CONTAINERS=$(docker ps \
+  RUNNING_DOCKER_CONTAINERS=$(docker ps \
     --filter name=uas_env \
     --filter status=running \
     --format "{{.ID}}" \
