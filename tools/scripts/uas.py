@@ -371,7 +371,7 @@ def run_jenkins_server(args):
 
 def run_interop(args):
     print_update("Starting AUVSI interop server...")
-    processes.spawn_process("./tools/scripts/docker/run_interop.sh")
+    processes.spawn_process("./tools/scripts/ground/run_interop.sh")
     processes.wait_for_complete()
 
 
