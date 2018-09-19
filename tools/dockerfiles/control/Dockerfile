@@ -33,53 +33,54 @@ RUN apt update     -qq                                                      && \
     apt upgrade -y -qq
 
 # Install apt dependencies. ####################################################
-RUN apt install -y                                                             \
-  ant                                                                          \
-  autoconf                                                                     \
-  autoconf                                                                     \
-  automake                                                                     \
-  bazel                                                                        \
-  bmon                                                                         \
-  build-essential                                                              \
-  ca-certificates-java                                                         \
-  check                                                                        \
-  clang-3.9                                                                    \
-  clang-format-3.9                                                             \
-  cmake                                                                        \
-  g++                                                                          \
-  git                                                                          \
-  gphoto2                                                                      \
-  gphotofs                                                                     \
-  htop                                                                         \
-  libc++-dev                                                                   \
-  libc++abi-dev                                                                \
-  lib32z1-dev                                                                  \
-  libc6-dev-i386                                                               \
-  librsync-dev                                                                 \
-  libssl-dev                                                                   \
-  lsb-release                                                                  \
-  libtool                                                                      \
-  libyajl-dev                                                                  \
-  libz-dev                                                                     \
-  make                                                                         \
-  nodejs                                                                       \
-  openjdk-10-jdk                                                               \
-  pkg-config                                                                   \
-  protobuf-compiler                                                            \
-  python2.7                                                                    \
-  python2.7-lib                                                                \
-  python2.7-dev                                                                \
-  python3.7                                                                    \
-  python3.7-dev                                                                \
-  python3.7-distutils                                                          \
-  python-empy                                                                  \
-  python-jinja2                                                                \
-  ruby                                                                         \
-  screen                                                                       \
-  sudo                                                                         \
-  tmux                                                                         \
-  uthash-dev                                                                   \
-  vim
+RUN apt-get update                                                          && \
+  apt install -y                                                               \
+    ant                                                                        \
+    autoconf                                                                   \
+    autoconf                                                                   \
+    automake                                                                   \
+    bazel                                                                      \
+    bmon                                                                       \
+    build-essential                                                            \
+    ca-certificates-java                                                       \
+    check                                                                      \
+    clang-3.9                                                                  \
+    clang-format-3.9                                                           \
+    cmake                                                                      \
+    g++                                                                        \
+    git                                                                        \
+    gphoto2                                                                    \
+    gphotofs                                                                   \
+    htop                                                                       \
+    libc++-dev                                                                 \
+    libc++abi-dev                                                              \
+    lib32z1-dev                                                                \
+    libc6-dev-i386                                                             \
+    librsync-dev                                                               \
+    libssl-dev                                                                 \
+    lsb-release                                                                \
+    libtool                                                                    \
+    libyajl-dev                                                                \
+    libz-dev                                                                   \
+    make                                                                       \
+    nodejs                                                                     \
+    openjdk-10-jdk                                                             \
+    pkg-config                                                                 \
+    protobuf-compiler                                                          \
+    python2.7                                                                  \
+    python2.7-lib                                                              \
+    python2.7-dev                                                              \
+    python3.7                                                                  \
+    python3.7-dev                                                              \
+    python3.7-distutils                                                        \
+    python-empy                                                                \
+    python-jinja2                                                              \
+    ruby                                                                       \
+    screen                                                                     \
+    sudo                                                                       \
+    tmux                                                                       \
+    uthash-dev                                                                 \
+    vim
 
 # May need these dependencies later:
 # libgazebo7-dev
