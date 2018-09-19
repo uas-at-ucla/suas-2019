@@ -33,7 +33,7 @@ RUN apt update     -qq                                                      && \
     apt upgrade -y -qq
 
 # Install apt dependencies. ####################################################
-RUN apt install -y -qq                                                         \
+RUN apt install -y                                                             \
   ant                                                                          \
   autoconf                                                                     \
   autoconf                                                                     \
