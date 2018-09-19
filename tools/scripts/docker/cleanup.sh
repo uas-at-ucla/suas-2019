@@ -1,6 +1,9 @@
 #!/bin/bash
 
-eval $(docker-machine env uas-env 2> /dev/null)
+if [ $(uname -s) == "Darwin" ]
+then
+  eval $(docker-machine env uas-env 2> /dev/null)
+fi
 
 docker version > /dev/null 2>&1
 if [ $? -ne 0 ]
@@ -24,10 +27,9 @@ do
   fi
 done
 
-# prompt to stop virtual machine
-which docker-machine 1> /dev/null
-if [ $? -eq 0 ]
+if [ $(uname -s) == "Darwin" ]
 then
+  # prompt to stop virtual machine
   MACHINES=$(docker-machine ls --filter state=Running | awk '{if(NR>1) print $1}')
   for MACHINE in $MACHINES
   do

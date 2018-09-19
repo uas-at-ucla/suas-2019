@@ -14,8 +14,9 @@ INTEROP_DOCKER_RUNNING_CONTAINER=$(docker ps                                   \
 
 if [ ! -z $INTEROP_DOCKER_RUNNING_CONTAINER ]
 then
-  # Kill running docker simulators.
-  docker kill $INTEROP_DOCKER_RUNNING_CONTAINER
+  echo "Interop Docker container already running."
+
+  exit
 fi
 
 INTEROP_DOCKER_CONTAINER=$(docker ps                                           \
@@ -53,13 +54,13 @@ trap kill_interop INT
 
 
 # Start docker container and let it run forever.
-docker run -t --restart=unless-stopped -p 8000:80 --name uas-at-ucla_interop-server auvsisuas/interop-server
+docker run --rm -t --restart=unless-stopped -p 8000:80 --name uas-at-ucla_interop-server auvsisuas/interop-server
 
 echo ""
 VM_IP=$(docker-machine ip uas-env 2> /dev/null)
 if [ $? -eq 0 ]
 then
-  echo "Starting Interop Server at http://$VM_IP:8000 (this is the IP of the uas-env docker-machine)"
+  echo "Starting Interop Server at http://$VM_IP:8000 (this is the IP of your uas-env docker-machine)"
 else
   echo "Starting Interop Server at http://localhost:8000"
 fi
