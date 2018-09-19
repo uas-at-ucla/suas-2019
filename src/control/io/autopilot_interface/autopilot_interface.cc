@@ -48,7 +48,10 @@ void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
 }
 
 AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
-    : write_tid_(0), reading_status_(0), writing_status_(0), write_count_(0),
+    : write_tid_(0),
+      reading_status_(0),
+      writing_status_(0),
+      write_count_(0),
       time_to_exit_(false) {
   system_id = 1;
   autopilot_id = 1;

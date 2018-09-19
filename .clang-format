@@ -1,3 +1,4 @@
 AccessModifierOffset: -1
 TabWidth: 2
 UseTab: Never
+ConstructorInitializerAllOnOneLineOrOnePerLine: true

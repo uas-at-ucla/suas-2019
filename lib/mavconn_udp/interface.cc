@@ -14,9 +14,15 @@ namespace mavconn {
 ::std::atomic<size_t> MAVConnInterface::conn_id_counter{0};
 
 MAVConnInterface::MAVConnInterface(uint8_t system_id, uint8_t component_id)
-    : sys_id(system_id), comp_id(component_id), m_status{}, m_buffer{},
-      tx_total_bytes(0), rx_total_bytes(0), last_tx_total_bytes(0),
-      last_rx_total_bytes(0), last_iostat(steady_clock::now()) {
+    : sys_id(system_id),
+      comp_id(component_id),
+      m_status{},
+      m_buffer{},
+      tx_total_bytes(0),
+      rx_total_bytes(0),
+      last_tx_total_bytes(0),
+      last_rx_total_bytes(0),
+      last_iostat(steady_clock::now()) {
   conn_id = conn_id_counter.fetch_add(1);
   //::std::call_once(init_flag, init_msg_entry);
 }

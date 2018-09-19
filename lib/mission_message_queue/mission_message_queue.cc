@@ -44,7 +44,8 @@ void MissionMessageQueueSender::SendData(
 
 // Receiver ////////////////////////////////////////////////////////////////////
 MissionMessageQueueReceiver::MissionMessageQueueReceiver()
-    : context_(1), socket_(context_, ZMQ_PAIR),
+    : context_(1),
+      socket_(context_, ZMQ_PAIR),
       thread_(&MissionMessageQueueReceiver::ReceiveThread, this) {}
 
 MissionMessageQueueReceiver::~MissionMessageQueueReceiver() {
