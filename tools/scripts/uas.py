@@ -88,6 +88,7 @@ def print_update(message, msg_type="STATUS"):
 
         print(print_line)
 
+
 def signal_received(signal, frame):
     global received_signal
     if received_signal:
@@ -103,35 +104,71 @@ def signal_received(signal, frame):
     status = "Signal received (" + str(signal) + ") - killing all spawned " \
             "processes\n"
 
-    if processes.spawn_process_wait_for_code("docker kill $(docker ps " \
-            "--filter status=running " \
-            "--format \"{{.ID}}\" " \
-            "--filter name=uas-at-ucla_px4-simulator " \
-            "--latest)", show_output=False, allow_input=False) == 0:
-        status += "Killed simulator (docker)\n"
-
-    if processes.spawn_process_wait_for_code( \
-            "tmux kill-session -t uas_env", \
-            show_output=False, allow_input=False) == 0:
-        status += "Killed tmux\n"
-
-    DOCKER_PREFIX_CMD = "docker exec -t $(docker ps " \
-            "--filter status=running " \
-            "--filter name=uas_env " \
-            "--format \"{{.ID}}\" " \
-            "--latest) "
-
-    if processes.spawn_process_wait_for_code(DOCKER_EXEC_KILL_SCRIPT) == 0:
-        status += "Killed all spawned processes in docker image.\n"
+    global shutdown_functions
+    shutdown_functions = set(shutdown_functions) # unique list
+    for shutdown_function in shutdown_functions:
+        status += shutdown_function()
 
     status += processes.killall()
     print_update(status, "FAILURE")
     sys.exit(0)
 
 
+def kill_tmux():
+    if processes.spawn_process_wait_for_code( \
+            "tmux kill-session -t uas_env", \
+            show_output=False, allow_input=False) == 0:
+        return "Killed tmux\n"
+    return ""
+
+
+def kill_processes_in_uas_env_container():
+    # DOCKER_PREFIX_CMD = "docker exec -t $(docker ps " \
+    #         "--filter status=running " \
+    #         "--filter name=uas_env " \
+    #         "--format \"{{.ID}}\" " \
+    #         "--latest) "
+
+    if processes.spawn_process_wait_for_code(DOCKER_EXEC_KILL_SCRIPT) == 0:
+        return "Killed all spawned processes in docker image.\n"
+    return ""
+
+
+def kill_running_simulators():
+    while processes.spawn_process_wait_for_code("docker kill $(docker ps " \
+            "--filter status=running " \
+            "--filter name=uas_sim " \
+            "--format \"{{.ID}}\" --latest)", \
+            show_output=False, \
+            allow_input=False) == 0:
+        print("killed sim")
+        time.sleep(0.1)
+
+
+def kill_interop():
+    if processes.spawn_process_wait_for_code("docker kill $(docker ps " \
+            "--filter status=running " \
+            "--format \"{{.ID}}\" " \
+            "--filter name=uas-at-ucla_interop-server " \
+            "--latest)", show_output=False, allow_input=False) == 0:
+        return "Killed interop server docker container\n"
+    return ""
+
+
 def run_and_die_if_error(command):
     if (processes.spawn_process_wait_for_code(command) != 0):
         processes.killall()
+        sys.exit(1)
+
+
+def run_cmd_exit_failure(cmd):
+    if processes.spawn_process_wait_for_code(cmd, allow_input=False) > 0:
+        status = "ERROR when running command: " + cmd + "\n" \
+                "Killing all spawned processes\n"
+
+        status += processes.killall()
+        print_update(status, "FAILURE")
+
         sys.exit(1)
 
 
@@ -172,28 +209,10 @@ def run_travis(args):
     run_and_die_if_error(
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
 
-def run_cmd_exit_failure(cmd):
-    if processes.spawn_process_wait_for_code(cmd, allow_input=False) > 0:
-        status = "ERROR when running command: " + cmd + "\n" \
-                "Killing all spawned processes\n"
-
-        status += processes.killall()
-        print_update(status, "FAILURE")
-
-        sys.exit(1)
-
-def kill_running_simulators():
-    while processes.spawn_process_wait_for_code("docker kill $(docker ps " \
-            "--filter status=running " \
-            "--filter name=uas_sim " \
-            "--format \"{{.ID}}\" --latest)", \
-            show_output=False, \
-            allow_input=False) == 0:
-        print("killed sim")
-        time.sleep(0.1)
-
 
 def run_build(args=None, show_complete=True):
+    shutdown_functions.append(kill_processes_in_uas_env_container)
+
     print_update("Going to build the code...")
 
     print_update("Making sure all the necessary packages are installed.")
@@ -222,6 +241,8 @@ def run_build(args=None, show_complete=True):
 
 
 def run_unittest(args=None, show_complete=True):
+    shutdown_functions.append(kill_processes_in_uas_env_container)
+
     print_update("Going to unittest the code...")
 
     print_update("Making sure all the necessary packages are installed.")
@@ -244,6 +265,10 @@ def run_unittest(args=None, show_complete=True):
 
 
 def run_simulate(args):
+    shutdown_functions.append(kill_processes_in_uas_env_container)
+    shutdown_functions.append(kill_running_simulators)
+    shutdown_functions.append(kill_tmux)
+
     print_update("Building the code...")
     run_build(show_complete=False)
 
@@ -376,6 +401,8 @@ def run_jenkins_server(args):
 
 
 def run_interop(args):
+    shutdown_functions.append(kill_interop)
+
     print_update("Starting AUVSI interop server...")
     processes.spawn_process("./tools/scripts/ground/run_interop.sh")
     processes.wait_for_complete()
@@ -450,6 +477,9 @@ if __name__ == '__main__':
     global received_signal
     received_signal = False
     signal.signal(signal.SIGINT, signal_received)
+
+    global shutdown_functions
+    shutdown_functions = []
 
     print(UAS_AT_UCLA_TEXT)
 

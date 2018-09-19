@@ -30,6 +30,7 @@ done
 if [ $(uname -s) == "Darwin" ]
 then
   # prompt to stop virtual machine
+  echo ""
   MACHINES=$(docker-machine ls --filter state=Running | awk '{if(NR>1) print $1}')
   for MACHINE in $MACHINES
   do
