@@ -114,12 +114,16 @@ def signal_received(signal, frame):
     sys.exit(0)
 
 
-def kill_tmux():
+def kill_tmux_session(session):
     if processes.spawn_process_wait_for_code( \
-            "tmux kill-session -t uas_env", \
+            "tmux kill-session -t " + session, \
             show_output=False, allow_input=False) == 0:
         return "Killed tmux\n"
     return ""
+
+
+def kill_tmux_session_uas_env():
+    return kill_tmux_session("uas_env")
 
 
 def kill_processes_in_uas_env_container():
@@ -134,23 +138,22 @@ def kill_processes_in_uas_env_container():
     return ""
 
 
-def kill_running_simulators():
-    while processes.spawn_process_wait_for_code("docker kill $(docker ps " \
+def kill_docker_container(name):
+    return processes.spawn_process_wait_for_code("docker kill $(docker ps " \
             "--filter status=running " \
-            "--filter name=uas_sim " \
-            "--format \"{{.ID}}\" --latest)", \
-            show_output=False, \
-            allow_input=False) == 0:
-        print("killed sim")
-        time.sleep(0.1)
+            "--format \"{{.ID}}\" " \
+            "--filter name="+name+" " \
+            "--latest)", show_output=False, allow_input=False)
+
+
+def kill_simulator():
+    if kill_docker_container("uas-at-ucla_px4-simulator") == 0:
+        return "Killed simulator (docker)\n"
+    return ""
 
 
 def kill_interop():
-    if processes.spawn_process_wait_for_code("docker kill $(docker ps " \
-            "--filter status=running " \
-            "--format \"{{.ID}}\" " \
-            "--filter name=uas-at-ucla_interop-server " \
-            "--latest)", show_output=False, allow_input=False) == 0:
+    if kill_docker_container("uas-at-ucla_interop-server") == 0:
         return "Killed interop server docker container\n"
     return ""
 
@@ -170,6 +173,12 @@ def run_cmd_exit_failure(cmd):
         print_update(status, "FAILURE")
 
         sys.exit(1)
+
+
+def kill_running_simulators():
+    while kill_docker_container("uas-at-ucla_px4-simulator") == 0:
+        print("killed sim")
+        time.sleep(0.1)
 
 
 def run_deploy(args):
@@ -266,8 +275,8 @@ def run_unittest(args=None, show_complete=True):
 
 def run_simulate(args):
     shutdown_functions.append(kill_processes_in_uas_env_container)
-    shutdown_functions.append(kill_running_simulators)
-    shutdown_functions.append(kill_tmux)
+    shutdown_functions.append(kill_simulator)
+    shutdown_functions.append(kill_tmux_session_uas_env)
 
     print_update("Building the code...")
     run_build(show_complete=False)
