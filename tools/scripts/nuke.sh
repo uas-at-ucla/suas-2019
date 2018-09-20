@@ -70,5 +70,5 @@ then
 fi
 
 # Remove all cache.
-echo "\nRemoving all cache..."
+printf "\nRemoving all cache..."
 rm -rf tools/cache

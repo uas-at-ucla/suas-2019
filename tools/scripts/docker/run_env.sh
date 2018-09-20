@@ -7,7 +7,7 @@ unset ENV_DOCKER_CONTAINER
 unset RUNNING_DOCKER_CONTAINERS
 
 ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
-  --filter name=uas_env \
+  --filter name=uas-at-ucla_controls \
   --filter status=running \
   --format "{{.ID}}" \
   --latest \
@@ -21,7 +21,7 @@ then
 fi
 
 ENV_DOCKER_CONTAINER=$(docker ps \
-  --filter name=uas_env \
+  --filter name=uas-at-ucla_controls \
   --format "{{.ID}}" \
   --latest
   )
@@ -36,9 +36,9 @@ fi
 # Build docker container.
 if [[ -z $TRAVIS ]]
 then
-  docker build -t uas-at-ucla_software tools/dockerfiles/control
+  docker build -t uas-at-ucla_controls tools/dockerfiles/control
 else
-  docker build -t uas-at-ucla_software tools/dockerfiles/control > /dev/null
+  docker build -t uas-at-ucla_controls tools/dockerfiles/control > /dev/null
 fi
 
 if [ $? -ne 0 ]
@@ -82,17 +82,17 @@ docker run \
   -v $ROOT_PATH:/home/uas/code_env \
   -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
   --dns 8.8.8.8 \
-  --name uas_env \
-  uas-at-ucla_software \
+  --name uas-at-ucla_controls \
+  uas-at-ucla_controls \
   bash -c "$DOCKER_BUILD_CMD"
 
-echo "Started uas env docker image. Waiting for it to boot..."
+echo "Started uas-at-ucla_controls docker image. Waiting for it to boot..."
 
 # Wait for docker container to start up.
 while [ -z $RUNNING_DOCKER_CONTAINERS ]
 do
   RUNNING_DOCKER_CONTAINERS=$(docker ps \
-    --filter name=uas_env \
+    --filter name=uas-at-ucla_controls \
     --filter status=running \
     --format "{{.ID}}" \
     --latest \
