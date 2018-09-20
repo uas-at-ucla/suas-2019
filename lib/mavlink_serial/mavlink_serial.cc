@@ -256,72 +256,75 @@ bool MavlinkSerial::_setup_port(int baud, int data_bits, int stop_bits,
 
   // Apply baudrate
   switch (baud) {
-  case 1200:
-    if (cfsetispeed(&config, B1200) < 0 || cfsetospeed(&config, B1200) < 0) {
-      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-              baud);
-      return false;
-    }
-    break;
-  case 1800:
-    cfsetispeed(&config, B1800);
-    cfsetospeed(&config, B1800);
-    break;
-  case 9600:
-    cfsetispeed(&config, B9600);
-    cfsetospeed(&config, B9600);
-    break;
-  case 19200:
-    cfsetispeed(&config, B19200);
-    cfsetospeed(&config, B19200);
-    break;
-  case 38400:
-    if (cfsetispeed(&config, B38400) < 0 || cfsetospeed(&config, B38400) < 0) {
-      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-              baud);
-      return false;
-    }
-    break;
-  case 57600:
-    if (cfsetispeed(&config, B57600) < 0 || cfsetospeed(&config, B57600) < 0) {
-      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-              baud);
-      return false;
-    }
-    break;
-  case 115200:
-    if (cfsetispeed(&config, B115200) < 0 ||
-        cfsetospeed(&config, B115200) < 0) {
-      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-              baud);
-      return false;
-    }
-    break;
+    case 1200:
+      if (cfsetispeed(&config, B1200) < 0 || cfsetospeed(&config, B1200) < 0) {
+        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+                baud);
+        return false;
+      }
+      break;
+    case 1800:
+      cfsetispeed(&config, B1800);
+      cfsetospeed(&config, B1800);
+      break;
+    case 9600:
+      cfsetispeed(&config, B9600);
+      cfsetospeed(&config, B9600);
+      break;
+    case 19200:
+      cfsetispeed(&config, B19200);
+      cfsetospeed(&config, B19200);
+      break;
+    case 38400:
+      if (cfsetispeed(&config, B38400) < 0 ||
+          cfsetospeed(&config, B38400) < 0) {
+        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+                baud);
+        return false;
+      }
+      break;
+    case 57600:
+      if (cfsetispeed(&config, B57600) < 0 ||
+          cfsetospeed(&config, B57600) < 0) {
+        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+                baud);
+        return false;
+      }
+      break;
+    case 115200:
+      if (cfsetispeed(&config, B115200) < 0 ||
+          cfsetospeed(&config, B115200) < 0) {
+        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+                baud);
+        return false;
+      }
+      break;
 
-  // These two non-standard (by the 70'ties ) rates are fully supported on
-  // current Debian and Mac OS versions (tested since 2010).
-  case 460800:
-    if (cfsetispeed(&config, B460800) < 0 ||
-        cfsetospeed(&config, B460800) < 0) {
-      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+    // These two non-standard (by the 70'ties ) rates are fully supported on
+    // current Debian and Mac OS versions (tested since 2010).
+    case 460800:
+      if (cfsetispeed(&config, B460800) < 0 ||
+          cfsetospeed(&config, B460800) < 0) {
+        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+                baud);
+        return false;
+      }
+      break;
+    case 921600:
+      if (cfsetispeed(&config, B921600) < 0 ||
+          cfsetospeed(&config, B921600) < 0) {
+        fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
+                baud);
+        return false;
+      }
+      break;
+    default:
+      fprintf(stderr,
+              "ERROR: Desired baud rate %d could not be set, aborting.\n",
               baud);
       return false;
-    }
-    break;
-  case 921600:
-    if (cfsetispeed(&config, B921600) < 0 ||
-        cfsetospeed(&config, B921600) < 0) {
-      fprintf(stderr, "\nERROR: Could not set desired baud rate of %d Baud\n",
-              baud);
-      return false;
-    }
-    break;
-  default:
-    fprintf(stderr, "ERROR: Desired baud rate %d could not be set, aborting.\n",
-            baud);
-    return false;
 
-    break;
+      break;
   }
 
   // Finally, apply the configuration
