@@ -5,7 +5,7 @@ source tools/scripts/docker/start_machine_mac.sh
 unset UAS_AT_UCLA_IMAGE
 UAS_AT_UCLA_IMAGE=$(docker ps \
   --filter status=running \
-  --filter name=uas_env \
+  --filter name=uas-at-ucla_controls \
   --format "{{.ID}}" \
   --latest)
 
