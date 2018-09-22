@@ -6,6 +6,7 @@ import os
 import math
 import urllib.request
 import subprocess
+import xml.etree.ElementTree as ET
 
 # run this script only in the targets directory
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
@@ -67,12 +68,34 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms):
         target_pos = (random.randint(0, i_size[0] - t_size),
                       random.randint(0, i_size[1] - t_size))
 
+        # create annotation
+        im_filename = ('{:0=' + str(field_width) + 'd}').format(i)
+        annotation = ET.Element('annotation')
+        annotation_xml = ET.ElementTree(element=annotation)
+        ET.SubElement(annotation, 'filename').text = im_filename + '.jpg'
+        ET.SubElement(ET.SubElement(annotation, 'source'),
+                      'database').text = 'Unknown'
+        size_e = ET.SubElement(annotation, 'size')
+        ET.SubElement(size_e, 'width').text = str(i_size[0])
+        ET.SubElement(size_e, 'height').text = str(i_size[1])
+        ET.SubElement(size_e, 'depth').text = '3'
+        ET.SubElement(annotation, 'segmented').text = '0'
+        obj_e = ET.SubElement(annotation, 'object')
+        ET.SubElement(obj_e, 'name').text = type(generator).__name__
+        ET.SubElement(obj_e, 'pose').text = 'Unspecified'
+        ET.SubElement(obj_e, 'truncated').text = '0'
+        ET.SubElement(obj_e, 'difficult').text = '0'
+        target_bounds = ET.SubElement(obj_e, 'bndbox')
+        ET.SubElement(target_bounds, 'xmin').text = str(target_pos[0])
+        ET.SubElement(target_bounds, 'ymin').text = str(target_pos[1])
+        ET.SubElement(target_bounds, 'xmax').text = str(target_pos[0] + t_size)
+        ET.SubElement(target_bounds, 'ymax').text = str(target_pos[1] + t_size)
+        annotation_xml.write(os.path.join(dest_dir, im_filename + '.xml'))
+
         # Paste the target and save
         result = background.crop(box=(0, 0, i_size[0], i_size[1]))
         result.paste(target, box=target_pos, mask=target)
-        result.save(
-            os.path.join(dest_dir,
-                         ('{:0=' + str(field_width) + 'd}.jpg').format(i)))
+        result.save(os.path.join(dest_dir, im_filename + '.jpg'))
 
 
 if __name__ == '__main__':
