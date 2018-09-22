@@ -18,7 +18,7 @@ TARGET_TYPES = [
     "Star",
     "Cross"
 ]
-#yapf: enable
+# yapf: enable
 
 
 class TargetGenerator(abc.ABC):
@@ -80,17 +80,18 @@ class Circle(TargetGenerator):
 
 class SemiCircle(TargetGenerator):
     def _draw_shape(self, context, size, color):
-        context.pieslice(
-            [(0, int(size / 4)), (size, int(size * 5 / 4))],
-            180,
-            360,
-            fill=color + (255, ))
+        context.pieslice([(0, int(size / 4)), (size, int(size * 5 / 4))],
+                         180,
+                         360,
+                         fill=color + (255, ))
 
 
 class QuarterCircle(TargetGenerator):
     def _draw_shape(self, context, size, color):
-        context.pieslice(
-            [(-size, 0), (size, size * 2)], 270, 360, fill=color + (255, ))
+        context.pieslice([(-size, 0), (size, size * 2)],
+                         270,
+                         360,
+                         fill=color + (255, ))
 
 
 class Square(TargetGenerator):
@@ -99,9 +100,10 @@ class Square(TargetGenerator):
 
 
 class Rectangle(TargetGenerator):
-    def draw_target(self, size, shape_color, letter, letter_color, dim_ratio):
+    def draw_target(self, size, shape_color, letter, letter_color,
+                    dim_ratio=2):
         """Draw a rectangle target.
-        
+
         Arguments:
         size -- width and height (one integer) of the target
         shape_color -- color of the shape
@@ -136,9 +138,8 @@ class Trapezoid(TargetGenerator):
 
 class Triangle(TargetGenerator):
     def _draw_shape(self, context, size, color):
-        context.polygon(
-            [(int(size / 2), 0), (size, size), (0, size)],
-            fill=color + (255, ))
+        context.polygon([(int(size / 2), 0), (size, size), (0, size)],
+                        fill=color + (255, ))
 
 
 # yapf: disable
@@ -177,7 +178,6 @@ class Polygon(TargetGenerator):
             verticies += [(int(x), int(y))]
             angle += d_angle
 
-        #print('Creating polygon ' + str(n_sides) + ': ' + str(verticies))
         context.polygon(verticies, fill=color + (255, ))
 
 
@@ -199,6 +199,7 @@ class Heptagon(Polygon):
 class Octagon(Polygon):
     def _draw_shape(self, context, size, color):
         self._draw_polygon(context, size, color, 8)
+
 
 class Star(TargetGenerator):
     def _draw_shape(self, context, size, color):
@@ -231,4 +232,3 @@ class Star(TargetGenerator):
         verticies += [(int(in_x), int(in_y))]
 
         context.polygon(verticies, fill=color + (255, ))
-
