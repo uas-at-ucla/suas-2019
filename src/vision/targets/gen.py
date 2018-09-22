@@ -7,6 +7,9 @@ import math
 import urllib.request
 import subprocess
 
+# run this script only in the targets directory
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
+
 COLORS = {
     'white': (255, 255, 255),
     'black': (0, 0, 0),
@@ -25,8 +28,10 @@ LETTERS = [
     'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
 ]
 
+TRANSFORMS = ('rotate', 'perspective', 'affine')
 
-def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir):
+
+def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms):
     background_files = os.scandir(bg_dir)
     field_width = math.trunc(math.log10(n))
     for i in range(n):
@@ -54,6 +59,11 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir):
             shape_color=shape_color,
             letter=random.choice(LETTERS),
             letter_color=letter_color)
+        if 'rotate' in transforms:
+            target = target.rotate(
+                random.randint(0, 359), resample=Image.BICUBIC,
+                expand=1).resize((t_size, t_size), resample=Image.BOX)
+
         target_pos = (random.randint(0, i_size[0] - t_size),
                       random.randint(0, i_size[1] - t_size))
 
@@ -93,31 +103,34 @@ if __name__ == '__main__':
         nargs=2,
         default=None,
         dest='image_size',
-        help=
-        'width and height of the image as a tuple (width, height). By default it will crop the image to the target'
-    )
+        help='width and height of the image as a tuple (width, height). \
+        By default it will crop the image to the target')
     parser.add_argument(
         '-d',
         '--dest',
         default=None,
         dest='dest',
-        help=
-        'destination folder of the target images; by default it is the name of the target shape'
-    )
+        help='destination folder of the target images; by default it is the \
+        name of the target shape')
     parser.add_argument(
         '-f',
         '--font',
         default=None,
         dest='font',
-        help=
-        'path to the font to use for the targets; leave unspecified to automatically download a font'
-    )
+        help='path to the font to use for the targets; leave unspecified to \
+        automatically download a font')
     parser.add_argument(
         '-b',
         '--backgrounds',
         default='backgrounds',
         dest='backgrounds',
         help='path to folder containing background images')
+    parser.add_argument(
+        '--transforms',
+        nargs='*',
+        default=[],
+        choices=TRANSFORMS,
+        help='transformations to apply to the targets and images')
 
     args = parser.parse_args()
 
@@ -129,7 +142,9 @@ if __name__ == '__main__':
         if not os.path.isfile('fonts/OpenSans-Bold.ttf'):
             os.makedirs('fonts', exist_ok=True)
             print('Downloading necessary fonts...')
-            urllib.request.urlretrieve('https://www.fontsquirrel.com/fonts/download/open-sans', 'fonts/open-sans.zip')
+            urllib.request.urlretrieve(
+                'https://www.fontsquirrel.com/fonts/download/open-sans',
+                'fonts/open-sans.zip')
             print('Extracting fonts...')
             subprocess.run(['unzip', 'fonts/open-sans.zip', '-d', 'fonts'])
             print('Fonts extracted!')
@@ -137,8 +152,6 @@ if __name__ == '__main__':
     if args.dest is None:
         default_dest = os.path.join('output', args.target_shape)
         os.makedirs(default_dest, exist_ok=True)
-        #if not os.path.isdir(args.target_shape):
-        #    os.mkdir(args.target_shape)
         args.dest = default_dest
 
     class TargetSelector:
@@ -176,4 +189,5 @@ if __name__ == '__main__':
         t_size=args.target_size,
         i_size=args.image_size,
         bg_dir=args.backgrounds,
-        dest_dir=args.dest)
+        dest_dir=args.dest,
+        transforms=args.transforms)
