@@ -1,5 +1,5 @@
 import targets
-from PIL import Image
+from PIL import Image, ImageDraw
 from argparse import ArgumentParser
 import random
 import os
@@ -32,7 +32,8 @@ LETTERS = [
 TRANSFORMS = ('rotate', 'perspective', 'affine')
 
 
-def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms):
+def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
+               draw_box):
     background_files = os.scandir(bg_dir)
     field_width = math.trunc(math.log10(n))
     for i in range(n):
@@ -85,12 +86,20 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms):
         ET.SubElement(obj_e, 'pose').text = 'Unspecified'
         ET.SubElement(obj_e, 'truncated').text = '0'
         ET.SubElement(obj_e, 'difficult').text = '0'
-        target_bounds = ET.SubElement(obj_e, 'bndbox')
-        ET.SubElement(target_bounds, 'xmin').text = str(target_pos[0])
-        ET.SubElement(target_bounds, 'ymin').text = str(target_pos[1])
-        ET.SubElement(target_bounds, 'xmax').text = str(target_pos[0] + t_size)
-        ET.SubElement(target_bounds, 'ymax').text = str(target_pos[1] + t_size)
+
+        target_bounds = [(target_pos[0], target_pos[1]),
+                         (target_pos[0] + t_size, target_pos[1] + t_size)]
+        bnds_e = ET.SubElement(obj_e, 'bndbox')
+        ET.SubElement(bnds_e, 'xmin').text = str(target_bounds[0][0])
+        ET.SubElement(bnds_e, 'ymin').text = str(target_bounds[0][1])
+        ET.SubElement(bnds_e, 'xmax').text = str(target_bounds[1][0])
+        ET.SubElement(bnds_e, 'ymax').text = str(target_bounds[1][1])
         annotation_xml.write(os.path.join(dest_dir, im_filename + '.xml'))
+
+        # Draw a bounding box
+        if draw_box:
+            draw = ImageDraw.Draw(background)
+            draw.rectangle(target_bounds, outline=(255, 255, 255, 255))
 
         # Paste the target and save
         result = background.crop(box=(0, 0, i_size[0], i_size[1]))
@@ -154,6 +163,11 @@ if __name__ == '__main__':
         default=[],
         choices=TRANSFORMS,
         help='transformations to apply to the targets and images')
+    parser.add_argument(
+        '--draw-box',
+        action='store_true',
+        dest='draw_box',
+        help='draw a bounding box around the target')
 
     args = parser.parse_args()
 
@@ -213,4 +227,5 @@ if __name__ == '__main__':
         i_size=args.image_size,
         bg_dir=args.backgrounds,
         dest_dir=args.dest,
-        transforms=args.transforms)
+        transforms=args.transforms,
+        draw_box=args.draw_box)
