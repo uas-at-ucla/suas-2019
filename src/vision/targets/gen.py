@@ -33,7 +33,7 @@ TRANSFORMS = ('rotate', 'perspective', 'affine')
 
 
 def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
-               draw_box):
+               draw_box, rescale_ratio):
     background_files = os.scandir(bg_dir)
     field_width = math.trunc(math.log10(n))
     for i in range(n):
@@ -47,6 +47,13 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
             background_files = os.scandir(bg_dir)
             background_file = next(background_files).path
         background = Image.open(background_file)
+
+        # Rescale background
+        if rescale_ratio != 1:
+            background = background.resize(
+                (int(background.width * rescale_ratio),
+                 int(background.height * rescale_ratio)),
+                resample=Image.BICUBIC)
 
         # Choose some colors
         shape_color = random.choice(list(COLORS.values()))
@@ -168,6 +175,12 @@ if __name__ == '__main__':
         action='store_true',
         dest='draw_box',
         help='draw a bounding box around the target')
+    parser.add_argument(
+        '--rescale-bg',
+        type=float,
+        default=1,
+        dest='rescale_ratio',
+        help='rescale the source image before using it as a background')
 
     args = parser.parse_args()
 
@@ -228,4 +241,5 @@ if __name__ == '__main__':
         bg_dir=args.backgrounds,
         dest_dir=args.dest,
         transforms=args.transforms,
-        draw_box=args.draw_box)
+        draw_box=args.draw_box,
+        rescale_ratio=args.rescale_ratio)
