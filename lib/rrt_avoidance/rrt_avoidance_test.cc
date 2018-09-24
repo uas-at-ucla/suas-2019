@@ -262,12 +262,12 @@ int main(int argc, char **argv) {
       break;
 
     switch (opt) {
-    case 'p':
-      ::lib::rrt_avoidance::testing::plot = true;
-      break;
-    default:
-      exit(1);
-      break;
+      case 'p':
+        ::lib::rrt_avoidance::testing::plot = true;
+        break;
+      default:
+        exit(1);
+        break;
     }
   }
 
