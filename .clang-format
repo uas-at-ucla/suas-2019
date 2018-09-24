@@ -1,3 +1,5 @@
-AccessModifierOffset: -1
-TabWidth: 2
-UseTab: Never
+AccessModifierOffset:                           -1
+TabWidth:                                       2
+UseTab:                                         Never
+ConstructorInitializerAllOnOneLineOrOnePerLine: true
+IndentCaseLabels:                               true

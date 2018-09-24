@@ -139,24 +139,24 @@ void AutopilotSensorReader::RunIteration() {
     AutopilotState autopilot_state = UNKNOWN;
 
     switch (heartbeat.custom_mode) {
-    case 0b00000010000001000000000000000000:
-      autopilot_state = TAKEOFF;
-      break;
-    case 0b00000100000001000000000000000000:
-    case 0b00000011000001000000000000000000:
-      autopilot_state = HOLD;
-      break;
-    case 0b00000000000001100000000000000000:
-      autopilot_state = OFFBOARD;
-      break;
-    case 0b00000101000001000000000000000000:
-      autopilot_state = RTL;
-      break;
-    case 0b00000110000001000000000000000000:
-      autopilot_state = LAND;
-      break;
-    default:
-      autopilot_state = UNKNOWN;
+      case 0b00000010000001000000000000000000:
+        autopilot_state = TAKEOFF;
+        break;
+      case 0b00000100000001000000000000000000:
+      case 0b00000011000001000000000000000000:
+        autopilot_state = HOLD;
+        break;
+      case 0b00000000000001100000000000000000:
+        autopilot_state = OFFBOARD;
+        break;
+      case 0b00000101000001000000000000000000:
+        autopilot_state = RTL;
+        break;
+      case 0b00000110000001000000000000000000:
+        autopilot_state = LAND;
+        break;
+      default:
+        autopilot_state = UNKNOWN;
     }
 
     sensors.set_autopilot_state(autopilot_state);

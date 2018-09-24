@@ -235,93 +235,93 @@ void GroundCommunicator::SetGoal(GoalState new_state) {
   goal_.set_run_mission(false);
 
   switch (new_state) {
-  case INIT:
-    goal_.set_run_mission(false);
-    goal_.set_trigger_failsafe(false);
-    goal_.set_trigger_throttle_cut(false);
-    goal_.set_trigger_takeoff(0);
-    goal_.set_trigger_hold(0);
-    goal_.set_trigger_offboard(0);
-    goal_.set_trigger_rtl(0);
-    goal_.set_trigger_land(0);
-    goal_.set_trigger_arm(0);
-    goal_.set_trigger_disarm(0);
-    goal_.set_trigger_alarm(0);
-    goal_.set_trigger_bomb_drop(0);
-    goal_.set_trigger_dslr(0);
-    SetGoal(STANDBY);
-    break;
+    case INIT:
+      goal_.set_run_mission(false);
+      goal_.set_trigger_failsafe(false);
+      goal_.set_trigger_throttle_cut(false);
+      goal_.set_trigger_takeoff(0);
+      goal_.set_trigger_hold(0);
+      goal_.set_trigger_offboard(0);
+      goal_.set_trigger_rtl(0);
+      goal_.set_trigger_land(0);
+      goal_.set_trigger_arm(0);
+      goal_.set_trigger_disarm(0);
+      goal_.set_trigger_alarm(0);
+      goal_.set_trigger_bomb_drop(0);
+      goal_.set_trigger_dslr(0);
+      SetGoal(STANDBY);
+      break;
 
-  case STANDBY:
-    goal_.set_run_mission(false);
-    break;
+    case STANDBY:
+      goal_.set_run_mission(false);
+      break;
 
-  case RUN_MISSION:
-    goal_.set_run_mission(true);
-    break;
+    case RUN_MISSION:
+      goal_.set_run_mission(true);
+      break;
 
-  case LAND:
-    goal_.set_run_mission(false);
-    goal_.set_trigger_land(time);
-    LOG_LINE("GOT LAND @ TIME " << time);
-    break;
+    case LAND:
+      goal_.set_run_mission(false);
+      goal_.set_trigger_land(time);
+      LOG_LINE("GOT LAND @ TIME " << time);
+      break;
 
-  case FAILSAFE:
-    goal_.set_run_mission(false);
-    goal_.set_trigger_failsafe(true);
-    goal_.set_trigger_throttle_cut(false);
-    break;
+    case FAILSAFE:
+      goal_.set_run_mission(false);
+      goal_.set_trigger_failsafe(true);
+      goal_.set_trigger_throttle_cut(false);
+      break;
 
-  case THROTTLE_CUT:
-    goal_.set_run_mission(false);
-    goal_.set_trigger_failsafe(false);
-    goal_.set_trigger_throttle_cut(true);
-    break;
+    case THROTTLE_CUT:
+      goal_.set_run_mission(false);
+      goal_.set_trigger_failsafe(false);
+      goal_.set_trigger_throttle_cut(true);
+      break;
 
-  case TAKEOFF:
-    goal_.set_trigger_takeoff(time);
-    LOG_LINE("GOT TAKEOFF @ TIME " << time);
-    break;
+    case TAKEOFF:
+      goal_.set_trigger_takeoff(time);
+      LOG_LINE("GOT TAKEOFF @ TIME " << time);
+      break;
 
-  case HOLD:
-    goal_.set_trigger_hold(time);
-    LOG_LINE("GOT HOLD @ TIME " << time);
-    break;
+    case HOLD:
+      goal_.set_trigger_hold(time);
+      LOG_LINE("GOT HOLD @ TIME " << time);
+      break;
 
-  case OFFBOARD:
-    goal_.set_trigger_offboard(time);
-    LOG_LINE("GOT OFFBOARD @ TIME " << time);
-    break;
+    case OFFBOARD:
+      goal_.set_trigger_offboard(time);
+      LOG_LINE("GOT OFFBOARD @ TIME " << time);
+      break;
 
-  case RTL:
-    goal_.set_trigger_rtl(time);
-    LOG_LINE("GOT RTL @ TIME " << time);
-    break;
+    case RTL:
+      goal_.set_trigger_rtl(time);
+      LOG_LINE("GOT RTL @ TIME " << time);
+      break;
 
-  case ARM:
-    goal_.set_trigger_arm(time);
-    LOG_LINE("GOT ARM @ TIME " << time);
-    break;
+    case ARM:
+      goal_.set_trigger_arm(time);
+      LOG_LINE("GOT ARM @ TIME " << time);
+      break;
 
-  case DISARM:
-    goal_.set_trigger_disarm(time);
-    LOG_LINE("GOT DISARM @ TIME " << time);
-    break;
+    case DISARM:
+      goal_.set_trigger_disarm(time);
+      LOG_LINE("GOT DISARM @ TIME " << time);
+      break;
 
-  case ALARM:
-    goal_.set_trigger_alarm(time);
-    LOG_LINE("GOT ALARM @ TIME " << time);
-    break;
+    case ALARM:
+      goal_.set_trigger_alarm(time);
+      LOG_LINE("GOT ALARM @ TIME " << time);
+      break;
 
-  case BOMB_DROP:
-    goal_.set_trigger_bomb_drop(time);
-    LOG_LINE("GOT BOMB DROP @ TIME " << time);
-    break;
+    case BOMB_DROP:
+      goal_.set_trigger_bomb_drop(time);
+      LOG_LINE("GOT BOMB DROP @ TIME " << time);
+      break;
 
-  case DSLR:
-    goal_.set_trigger_dslr(time);
-    LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
-    break;
+    case DSLR:
+      goal_.set_trigger_dslr(time);
+      LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
+      break;
   }
 }
 

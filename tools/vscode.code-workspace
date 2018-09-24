@@ -1,0 +1,28 @@
+{
+  "folders": [
+    {
+      "path": ".."
+    }
+  ],
+  "settings": {
+    // All available settings for VS Code are available here:
+    // https://gist.github.com/xgqfrms-GitHub/baa25e374f4282f52b3ab5fcb7b930ca
+
+    "editor.rulers": [80]
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.roundedSelection": true,
+    "editor.wordWrap": "off",
+    "editor.lineNumbers": "relative",
+    "editor.autoClosingBrackets": "always",
+    "editor.formatOnPaste": false,
+    "editor.dragAndDrop": false,
+    "editor.cursorBlinking": "blink",
+
+    "workbench.editor.showTabs": true,
+
+    "git.enabled": true,
+    "git.countBadge": "all",
+    "git.checkoutType": "all",
+  }
+}
