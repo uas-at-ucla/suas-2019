@@ -4,6 +4,7 @@ import signal
 import time
 import argparse
 import textwrap
+import platform
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir("../..")
@@ -139,11 +140,14 @@ def kill_processes_in_uas_env_container():
 
 
 def kill_docker_container(name):
-    return processes.spawn_process_wait_for_code("docker kill $(docker ps " \
-            "--filter status=running " \
-            "--format \"{{.ID}}\" " \
-            "--filter name="+name+" " \
-            "--latest)", show_output=False, allow_input=False)
+    command = "docker kill $(docker ps " \
+              "--filter status=running " \
+              "--format \"{{.ID}}\" " \
+              "--filter name="+name+" " \
+              "--latest)"
+    if platform.system() == "Darwin":
+        command = "eval $(docker-machine env uas-env); " + command
+    return processes.spawn_process_wait_for_code(command, show_output=False, allow_input=False)
 
 
 def kill_simulator():
