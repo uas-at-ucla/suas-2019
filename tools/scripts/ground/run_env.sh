@@ -50,20 +50,16 @@ fi
 # Create network for docker container to use.
 docker network create -d bridge uas_bridge > /dev/null 2>&1 || true
 
-mkdir -p tools/cache/bazel
-
 # Start docker container and let it run forever.
 PLATFORM=$(uname -s)
 DOCKER_RUN_CMD="set -x; \
   getent group $(id -g) || groupadd -g $(id -g) host_group; \
+  mkdir -p /tmp/home/uas; \
+  usermod -d /tmp/home/uas uas; \
   usermod -u $(id -u) -g $(id -g) uas; \
+  usermod -d /home/uas uas
+  echo STARTED > /tmp/uas_init; \
   sudo -u uas bash -c \"
-  cd src/ground/interface
-  if [ ! -d \\\"node_modules\\\" ]
-  then
-    npm install
-  fi
-  npm start
   sleep infinity\""
 
 # Set root path of the repository volume on the host machine.
@@ -80,7 +76,7 @@ fi
 echo "Root path is $ROOT_PATH"
 
 docker run \
-  -it \
+  -d \
   --rm \
   --net uas_bridge \
   -v $ROOT_PATH:/home/uas/code_env \
@@ -104,3 +100,6 @@ do
 
   sleep 0.25
 done
+
+# Wait for permission scripts to execute.
+./tools/scripts/ground/exec.sh "while [ ! -f /tmp/uas_init ];do sleep 0.25;done"

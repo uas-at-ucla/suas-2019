@@ -14,7 +14,7 @@ RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
   "deb-src http://deb.debian.org/debian sid main" > \
   /etc/apt/sources.list
 
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 
 RUN apt update     -qq                                                      && \
     apt upgrade -y -qq
@@ -26,9 +26,9 @@ RUN apt install -y -qq                                                         \
   git                                                                          \
   htop                                                                         \
   nodejs                                                                       \
-  python3.6                                                                    \
-  python3.6-dev                                                                \
-  python3.6-distutils                                                          \
+  python3.7                                                                    \
+  python3.7-dev                                                                \
+  python3.7-distutils                                                          \
   sudo                                                                         \
   tmux                                                                         \
   vim
@@ -36,8 +36,8 @@ RUN apt install -y -qq                                                         \
 RUN apt upgrade -y -qq
 
 # Install pip and python dependencies. #########################################
-RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
-RUN pip3.6 install --upgrade pip
+RUN curl https://bootstrap.pypa.io/get-pip.py | python3.7
+RUN pip3.7 install --upgrade pip
 
 # Set up workspace. ############################################################
 RUN useradd -ms /bin/bash uas
@@ -57,39 +57,36 @@ ENV WORKSPACE /home/uas/code_env WORKDIR /home/uas/code_env
 WORKDIR /home/uas
 
 # Install python requirements. #################################################
-RUN pip3.6 install --user future
+RUN pip3.7 install --user future
 
-RUN pip3.6 install --user                                                      \
-  MAVProxy==1.6.1                                                              \
-  pymavlink==2.2.4                                                             \
-  pyserial==3.4                                                                \
-  websocket-client==0.44.0                                                     \
-  dronekit==2.9.1                                                              \
-  dronekit-sitl==3.2.0                                                         \
-  Pillow==4.3.0                                                                \
-  socketIO-client==0.7.2                                                       \
-  python-socketio==1.8.1                                                       \
-  Flask==0.12.2                                                                \
-  Flask-SocketIO==2.9.2                                                        \
-  futures==3.1.1                                                               \
-  socketIO-client==0.7.2                                                       \
-  numpy==1.13.1                                                                \
-  empy==3.3.2                                                                  \
-  toml==0.9.4                                                                  \
-  eventlet==0.23.0                                                             \
-  protobuf==3.5.2.post1                                                        \
-  pyzmq==17.0.0                                                                \
-  zmq==0.0.0
+# RUN pip3.7 install --user                                                      \
+#   MAVProxy==1.6.1                                                              \
+#   pymavlink==2.2.4                                                             \
+#   pyserial==3.4                                                                \
+#   websocket-client==0.44.0                                                     \
+#   dronekit==2.9.1                                                              \
+#   dronekit-sitl==3.2.0                                                         \
+#   Pillow==4.3.0                                                                \
+#   socketIO-client==0.7.2                                                       \
+#   python-socketio==1.8.1                                                       \
+#   Flask==0.12.2                                                                \
+#   Flask-SocketIO==2.9.2                                                        \
+#   futures==3.1.1                                                               \
+#   socketIO-client==0.7.2                                                       \
+#   numpy==1.13.1                                                                \
+#   empy==3.3.2                                                                  \
+#   toml==0.9.4                                                                  \
+#   eventlet==0.23.0                                                             \
+#   protobuf==3.5.2.post1                                                        \
+#   pyzmq==17.0.0                                                                \
+#   zmq==0.0.0
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
 
-RUN rm -rf /home/uas/mavlink-router
+# RUN rm -rf /home/uas/mavlink-router
 
-EXPOSE 8085/udp
-EXPOSE 8086/udp
-EXPOSE 8090/udp
-EXPOSE 8091/udp
+# EXPOSE 8085/udp
 
 # Set user to root so that we can set the appropriate permissions for file #####
 # access later on. #############################################################
