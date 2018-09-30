@@ -8,10 +8,13 @@ import process_manager
 
 processes = process_manager.ProcessManager()
 
-print("ground.py!!!")
-print(sys.argv)
+def run_command(cmd):
+    processes.spawn_process_wait_for_code(cmd)
 
-processes.spawn_process_wait_for_code("cd server && ../tools/npm_install.sh")
-processes.spawn_process_wait_for_code("cd ui && ../tools/npm_install.sh")
+# TODO: Handle command line arguments
+# print(sys.argv)
 
-print("ground.py is a work in progess!")
+run_command("cd server; ../tools/npm_install.sh")
+run_command("cd ui; ../tools/npm_install.sh")
+
+processes.run_command("cd server; npm start")
