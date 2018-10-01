@@ -69,8 +69,11 @@ echo "Root path is $ROOT_PATH"
 PLATFORM=$(uname -s)
 DOCKER_BUILD_CMD="set -x; \
   getent group $(id -g) || groupadd -g $(id -g) host_group; \
+  mkdir -p /tmp/home/uas; \
+  usermod -d /tmp/home/uas uas; \
   usermod -u $(id -u) -g $(id -g) uas; \
-  chown -R uas /home/uas/.cache/bazel; \
+  usermod -d /home/uas uas; \
+  chown uas /home/uas/.cache; \
   echo STARTED > /tmp/uas_init; \
   sudo -u uas bash -c \"bazel; \
   sleep infinity\""
