@@ -14,7 +14,7 @@ function docker_exec {
     unset UAS_AT_UCLA_IMAGE
     UAS_AT_UCLA_IMAGE=$(docker ps \
       --filter status=running \
-      --filter name=uas_env \
+      --filter name=uas-at-ucla_controls \
       --format "{{.ID}}" \
       --latest)
 

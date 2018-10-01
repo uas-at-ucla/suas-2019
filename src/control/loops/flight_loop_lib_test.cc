@@ -306,12 +306,12 @@ int main(int argc, char **argv) {
       break;
 
     switch (opt) {
-    case 'v':
-      ::src::control::loops::testing::verbose = true;
-      break;
-    default:
-      exit(1);
-      break;
+      case 'v':
+        ::src::control::loops::testing::verbose = true;
+        break;
+      default:
+        exit(1);
+        break;
     }
   }
 

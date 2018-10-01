@@ -4,6 +4,7 @@ import signal
 import time
 import argparse
 import textwrap
+import platform
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir("../..")
@@ -127,23 +128,20 @@ def kill_tmux_session_uas_env():
 
 
 def kill_processes_in_uas_env_container():
-    # DOCKER_PREFIX_CMD = "docker exec -t $(docker ps " \
-    #         "--filter status=running " \
-    #         "--filter name=uas_env " \
-    #         "--format \"{{.ID}}\" " \
-    #         "--latest) "
-
     if processes.spawn_process_wait_for_code(DOCKER_EXEC_KILL_SCRIPT) == 0:
         return "Killed all spawned processes in docker image.\n"
     return ""
 
 
 def kill_docker_container(name):
-    return processes.spawn_process_wait_for_code("docker kill $(docker ps " \
-            "--filter status=running " \
-            "--format \"{{.ID}}\" " \
-            "--filter name="+name+" " \
-            "--latest)", show_output=False, allow_input=False)
+    command = "docker kill $(docker ps " \
+              "--filter status=running " \
+              "--format \"{{.ID}}\" " \
+              "--filter name="+name+" " \
+              "--latest)"
+    if platform.system() == "Darwin":
+        command = "eval $(docker-machine env uas-env); " + command
+    return processes.spawn_process_wait_for_code(command, show_output=False, allow_input=False)
 
 
 def kill_simulator():
@@ -240,9 +238,9 @@ def run_build(args=None, show_complete=True):
     print_update("\n\nBuilding lib directory...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//lib/...")
 
-    # print_update("\n\nBuilding src for raspi...")
-    # run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
-    #         + BAZEL_BUILD + "--cpu=raspi //src/...")
+    print_update("\n\nBuilding src for raspi...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
+            + BAZEL_BUILD + "--cpu=raspi //src/...")
 
     if show_complete:
         print_update("\n\nbuild complete :^) long live spinny!", \
@@ -338,52 +336,28 @@ def run_simulate(args):
             DOCKER_EXEC_SCRIPT + " tail -F /tmp/drone_code.csv\" C-m")
 
     # Run scripts on the right side.
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-R")
-
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-U")
-
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-U")
-
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-U")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -R")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/loops:flight_loop\" C-m")
 
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-D")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/io:io\" C-m")
 
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-D")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
             "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
 
-    run_cmd_exit_failure("tmux select-pane " \
-            "-t " \
-            "uas_env " \
-            "-D")
+    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
