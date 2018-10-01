@@ -243,8 +243,8 @@ def run_build(args=None, show_complete=True):
             + BAZEL_BUILD + "--cpu=raspi //src/...")
 
     if show_complete:
-        print_update("\n\nbuild complete :^) long live spinny!", \
-                msg_type="success")
+        print_update("\n\nBuild successful :^) LONG LIVE SPINNY!", \
+                msg_type="SUCCESS")
 
 
 def run_unittest(args=None, show_complete=True):
