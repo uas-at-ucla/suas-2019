@@ -105,4 +105,4 @@ do
 done
 
 # Wait for permission scripts to execute.
-./tools/scripts/docker/exec.sh "while [ ! -f /tmp/uas_init ];do sleep 0.25;done"
+./tools/scripts/controls/exec.sh "while [ ! -f /tmp/uas_init ];do sleep 0.25;done"
