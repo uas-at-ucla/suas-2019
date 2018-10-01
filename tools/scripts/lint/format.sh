@@ -12,5 +12,5 @@ FAILED=0
 for FILE in $CC_FILES
 do
   echo "Formatting $FILE"
-  ./tools/scripts/docker/exec.sh ./tools/scripts/lint/format_cc_file.sh $FILE
+  ./tools/scripts/controls/exec.sh ./tools/scripts/lint/format_cc_file.sh $FILE
 done
