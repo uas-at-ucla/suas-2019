@@ -29,10 +29,10 @@ UAS_AT_UCLA_TEXT = '\033[96m' + \
 
 
 # Script locations.
-DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/docker/run_env.sh "
+DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/controls/run_env.sh "
 DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/px4_simulator/start_sim.sh "
-DOCKER_EXEC_SCRIPT      = "./tools/scripts/docker/exec.sh "
-DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/docker/exec_kill.sh "
+DOCKER_EXEC_SCRIPT      = "./tools/scripts/controls/exec.sh "
+DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/controls/exec_kill.sh "
 
 JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
 LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
@@ -243,8 +243,8 @@ def run_build(args=None, show_complete=True):
             + BAZEL_BUILD + "--cpu=raspi //src/...")
 
     if show_complete:
-        print_update("\n\nbuild complete :^) long live spinny!", \
-                msg_type="success")
+        print_update("\n\nBuild successful :^) LONG LIVE SPINNY!", \
+                msg_type="SUCCESS")
 
 
 def run_unittest(args=None, show_complete=True):
