@@ -133,20 +133,20 @@ void FlightLoop::RunIteration() {
   bool run_mission = goal.run_mission();
 
   switch (state_) {
-    case STANDBY:
-      if (run_mission) {
-        next_state = ARMING;
-      }
-      break;
+  case STANDBY:
+    if (run_mission) {
+      next_state = ARMING;
+    }
+    break;
 
-    case ARMING:
-      // Check if we have GPS.
-      if (sensors.last_gps() < current_time - 0.5) {
-        LOG_LINE("can't arm; no GPS "                   //
-                 << "(last gps: " << sensors.last_gps() //
-                 << " current time: " << current_time);
+  case ARMING:
+    // Check if we have GPS.
+    if (sensors.last_gps() < current_time - 0.5) {
+      LOG_LINE("can't arm; no GPS "
+               << "(last gps: " << sensors.last_gps()
+               << " current time: " << current_time);
 
-        next_state = STANDBY;
+      next_state = STANDBY;
         break;
       }
 

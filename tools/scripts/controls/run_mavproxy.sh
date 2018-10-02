@@ -12,9 +12,9 @@ do
     SIM_IP="udpout:$SIM_IP:14557"
     echo $SIM_IP
 
-    ./tools/scripts/docker/exec.sh \
+    ./tools/scripts/controls/exec.sh \
       rm -rf /tmp/mav* && \
-      ./tools/scripts/docker/exec.sh \
+      ./tools/scripts/controls/exec.sh \
       /home/uas/.local/bin/mavproxy.py \
       --state-basedir=/tmp \
       --nowait \
