@@ -156,6 +156,11 @@ def kill_interop():
         return "Killed interop server docker container\n"
     return ""
 
+def kill_jenkins_client():
+    if kill_docker_container("uas-at-ucla_jenkins-slave") == 0:
+        return "Killed jenkins slave docker container\n"
+    return ""
+
 
 def run_and_die_if_error(command):
     if (processes.spawn_process_wait_for_code(command) != 0):
@@ -383,6 +388,8 @@ def run_jenkins_server(args):
 
 
 def run_jenkins_client(args):
+    shutdown_functions.append(kill_jenkins_client)
+
     print_update("Starting client...")
 
     # Create a Jenkins server and tunnel it to the uasatucla.org domain.
