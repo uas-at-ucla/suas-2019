@@ -1,7 +1,7 @@
 #!/bin/bash
 
 JENKINS_SLAVE_TAG=uas-at-ucla_jenkins-slave
-CRED_ID=$1
+AUTH_ID=$1
 
 docker build -t uas-at-ucla_jenkins-slave tools/dockerfiles/jenkins_slave
 
@@ -64,5 +64,5 @@ docker run \
   done
   echo \\\"USING PORT \\\$PORT\\\"
   /home/jenkins_uasatucla/scripts/start_ssh_tunnel.sh \\\$PORT &
-  /home/jenkins_uasatucla/scripts/create_jenkins_slave.sh $(hostname) \\\$PORT $(pwd)
+  /home/jenkins_uasatucla/scripts/create_jenkins_slave.sh $(hostname) \\\$PORT $(pwd) $AUTH_ID
   sleep infinity\""

@@ -393,7 +393,7 @@ def run_jenkins_client(args):
     print_update("Starting client...")
 
     # Create a Jenkins server and tunnel it to the uasatucla.org domain.
-    processes.spawn_process(JENKINS_SLAVE_START_SCRIPT, allow_input=False)
+    processes.spawn_process(JENKINS_SLAVE_START_SCRIPT + " " + args.auth, allow_input=False)
 
     print_update("Started Jenkins CI server!", msg_type="SUCCESS")
     processes.wait_for_complete()
@@ -527,6 +527,7 @@ if __name__ == '__main__':
 
     jenkins_client_parser = subparsers.add_parser('jenkins_client')
     jenkins_client_parser.set_defaults(func=run_jenkins_client)
+    jenkins_client_parser.add_argument('--auth', action='store', required=True)
 
     lint_parser = subparsers.add_parser('lint')
     lint_parser.set_defaults(func=run_lint)
