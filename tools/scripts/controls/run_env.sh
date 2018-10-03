@@ -51,6 +51,7 @@ fi
 docker network create -d bridge uas_bridge > /dev/null 2>&1 || true
 
 mkdir -p tools/cache/bazel
+pwd
 
 # Set root path of the repository volume on the host machine.
 # Note: If docker is called within another docker instance & is trying to start

@@ -38,6 +38,7 @@ VISION_DOCKER_BUILD_SCRIPT  = "./tools/scripts/docker/vision/docker_build.sh "
 VISION_DOCKER_RUN_SCRIPT    = "./tools/scripts/docker/vision/docker_run.sh "
 
 JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
+JENKINS_SLAVE_START_SCRIPT = "./tools/scripts/jenkins_slave/start_jenkins_slave.sh"
 LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
 LINT_FORMAT_SCRIPT = "./tools/scripts/lint/format.sh"
 
@@ -156,6 +157,11 @@ def kill_simulator():
 def kill_interop():
     if kill_docker_container("uas-at-ucla_interop-server") == 0:
         return "Killed interop server docker container\n"
+    return ""
+
+def kill_jenkins_client():
+    if kill_docker_container("uas-at-ucla_jenkins-slave") == 0:
+        return "Killed jenkins slave docker container\n"
     return ""
 
 
@@ -391,8 +397,18 @@ def run_jenkins_server(args):
 
     # Create a Jenkins server and tunnel it to the uasatucla.org domain.
     processes.spawn_process(JENKINS_SERVER_START_SCRIPT)
-    processes.spawn_process("while true;do " \
-        "ssh -N -R 8082:localhost:8085 uas@uasatucla.org;sleep 1;done")
+
+    print_update("Started Jenkins CI server!", msg_type="SUCCESS")
+    processes.wait_for_complete()
+
+
+def run_jenkins_client(args):
+    shutdown_functions.append(kill_jenkins_client)
+
+    print_update("Starting client...")
+
+    # Create a Jenkins server and tunnel it to the uasatucla.org domain.
+    processes.spawn_process(JENKINS_SLAVE_START_SCRIPT + " " + args.auth, allow_input=False)
 
     print_update("Started Jenkins CI server!", msg_type="SUCCESS")
     processes.wait_for_complete()
@@ -530,6 +546,10 @@ if __name__ == '__main__':
 
     jenkins_server_parser = subparsers.add_parser('jenkins_server')
     jenkins_server_parser.set_defaults(func=run_jenkins_server)
+
+    jenkins_client_parser = subparsers.add_parser('jenkins_client')
+    jenkins_client_parser.set_defaults(func=run_jenkins_client)
+    jenkins_client_parser.add_argument('--auth', action='store', required=True)
 
     lint_parser = subparsers.add_parser('lint')
     lint_parser.set_defaults(func=run_lint)
