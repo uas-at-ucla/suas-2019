@@ -23,7 +23,6 @@ sys.path.insert(0, '../../lib')
 import process_manager
 
 # Yolo dependencies
-sys.path.insert(0, './localizer')
 from darkflow.net.build import TFNet  # yolo neural net
 import cv2  # reading images
 
