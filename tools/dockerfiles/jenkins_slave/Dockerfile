@@ -63,7 +63,7 @@ RUN usermod -aG docker jenkins_uasatucla
 WORKDIR /home/jenkins_uasatucla/
 
 RUN curl -o /home/jenkins_uasatucla/jenkins-cli.jar \
-  http://uasatucla.org:8082/jnlpJars/jenkins-cli.jar
+  https://uasatucla.org/jenkins/jnlpJars/jenkins-cli.jar
 
 # Set user to root so that we can set the appropriate permissions for file #####
 # access later on. #############################################################
