@@ -33,7 +33,7 @@ fi
 DOCKER_GROUP_ID=$(getent group docker | awk -F: '{printf "%d\n", $3}')
 
 docker run \
-  -it \
+  -t \
   --rm \
   --name $JENKINS_SLAVE_TAG \
   -v ~/.ssh:/home/jenkins_uasatucla/.ssh \
