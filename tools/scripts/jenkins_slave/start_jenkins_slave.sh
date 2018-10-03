@@ -1,7 +1,7 @@
 #!/bin/bash
 
 JENKINS_SLAVE_TAG=uas-at-ucla_jenkins-slave
-CRED_ID=$1
+AUTH_ID=$1
 
 docker build -t uas-at-ucla_jenkins-slave tools/dockerfiles/jenkins_slave
 
@@ -33,7 +33,7 @@ fi
 DOCKER_GROUP_ID=$(getent group docker | awk -F: '{printf "%d\n", $3}')
 
 docker run \
-  -it \
+  -t \
   --rm \
   --name $JENKINS_SLAVE_TAG \
   -v ~/.ssh:/home/jenkins_uasatucla/.ssh \
@@ -44,13 +44,16 @@ docker run \
   bash -c "
   getent group $(id -g) || groupadd -g $(id -g) host_group;
   usermod -u $(id -u) -g $(id -g) jenkins_uasatucla;
+  echo Setting up permissions and starting SSH
   chown -R jenkins_uasatucla:jenkins_uasatucla /home/jenkins_uasatucla;
   service ssh start
+  echo Done!
   groupmod -g $DOCKER_GROUP_ID docker
   su - jenkins_uasatucla bash -c \"
   PORT=9000
   while true
   do
+    echo \\\"TRYING PORT \\\$PORT\\\"
     nc -z uasatucla.org \\\$PORT
     if [[ \\\$? == 1 ]]
     then
@@ -61,5 +64,5 @@ docker run \
   done
   echo \\\"USING PORT \\\$PORT\\\"
   /home/jenkins_uasatucla/scripts/start_ssh_tunnel.sh \\\$PORT &
-  /home/jenkins_uasatucla/scripts/create_jenkins_slave.sh $(hostname) \\\$PORT $CRED_ID $(pwd)
+  /home/jenkins_uasatucla/scripts/create_jenkins_slave.sh $(hostname) \\\$PORT $(pwd) $AUTH_ID
   sleep infinity\""

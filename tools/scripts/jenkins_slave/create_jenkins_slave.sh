@@ -1,6 +1,6 @@
 #!/bin/bash
 
-JENKINS_URL="http://uasatucla.org:8082"
+JENKINS_URL="https://uasatucla.org/jenkins/"
 NAME=$1
 USERID=jenkins_uasatucla
 NODE_NAME=uasatucla.org
@@ -8,8 +8,12 @@ NODE_SLAVE_HOME="/home/$USERID/slave"
 EXECUTORS=1
 SSH_PORT=$2
 CRED_ID="af7db496-c7b7-444e-ac32-1b4b5032d5bb"
-AUTH_ID=$3
-HOST_DOCKER_PATH=$4
+HOST_DOCKER_PATH=$3
+AUTH_ID=$4
+
+echo "NAME IS $NAME"
+echo "SSH_PORT IS $SSH_PORT"
+echo "DOCKER PATH IS $HOST_DOCKER_PATH"
 
 # Delete any existing nodes.
 java \
