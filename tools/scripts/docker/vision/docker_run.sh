@@ -1,7 +1,12 @@
 #!/bin/bash
 cd $(dirname $0)
 cd ../../../../src/vision
+if [[ $(which wslpath 2>/dev/null) = "/bin/wslpath" ]]
+then
+    true_path="$(wslpath -w $(pwd))\\data_local"
+else
+    true_path="$(pwd)/data_local"
+fi
 docker run \
-    --mount type=bind,source="$(pwd)"/data_local,target=/suas/src/vision/data_local \
+    --mount type=bind,source="$true_path",target=/suas/src/vision/data_local \
     suas_vision:latest "$@"
-
