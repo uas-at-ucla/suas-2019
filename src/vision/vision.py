@@ -124,7 +124,7 @@ class ServerWorker(threading.Thread):
         self.stop_req = threading.Event()  # listen for a stop request
 
     def run(self):
-        sql_connection = sqlite3.connect('image_types.db')
+        sql_connection = sqlite3.connect('image_info.db')
         sql_cursor = sql_connection.cursor()
         with sql_connection:
             sql_cursor.execute(
@@ -155,10 +155,11 @@ class ServerWorker(threading.Thread):
                 #     'type': 'retrieve_records'
                 # }
 
-                if task['type'] == 'add_record':
+                task_type = task['type']
+                if task_type == 'add_record':
                     with sql_connection:
                         sql_cursor.execute(task['sql_statement'])
-                if task['type'] == 'retrieve_records':
+                elif task_type == 'retrieve_records':
                     all_images = {
                         'raw': None,
                         'localized': None,
@@ -169,11 +170,13 @@ class ServerWorker(threading.Thread):
                             sql_cursor.execute(
                                 "select ImageID from Images where Type=?",
                                 (img_type, ))
-                            all_images[img_type] = sql_cursor.fetchall()
+                            all_images[img_type] = [
+                                row[0] for row in sql_cursor.fetchall()
+                            ]
                     vision_socketio_server.emit('all_images', all_images)
 
                 # check on the progress of an auction
-                elif task['type'] == 'timeout':
+                elif task_type == 'timeout':
                     if (time.time() -
                             task['time_began']) >= DEFAULT_AUCTION_TIMEOUT:
                         auction = active_auctions[task['auction_id']]
@@ -204,7 +207,7 @@ class ServerWorker(threading.Thread):
                         self.in_q.put(task)
 
                 # create a new auction
-                elif task['type'] == 'auction':
+                elif task_type == 'auction':
                     # generate a random auction id
                     auction_id = str(uuid.uuid4())
 
@@ -227,9 +230,10 @@ class ServerWorker(threading.Thread):
                     })
             except queue.Empty:
                 continue
+        else:
+            sql_connection.close()
 
     def join(self, timeout=None):
-        self.sql_connection.close()
         self.stop_req.set()
         super().join(timeout)
 
@@ -452,7 +456,7 @@ def manual_request_done(json):
 
 
 @vision_socketio_server.on('get_all_images')
-def return_all_images(json):
+def return_all_images():
     server_task_queue.put({'type': 'retrieve_records'})
 
 
