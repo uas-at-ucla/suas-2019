@@ -228,6 +228,58 @@ class ServerWorker(threading.Thread):
                         'time_began': time.time(),
                         'auction_id': auction_id
                     })
+                elif task_type == 'filter_and_snip':
+                    results = task['yolo_results']
+                    img_id = task['img_id']
+                    filtered_results = []
+                    with sql_connection:
+                        # yapf: disable
+                        real_coords = (
+                            server_img_manager.get_prop(img_id, 'lat'),
+                            server_img_manager.get_prop(img_id, 'lat'))
+                        img_dimensions = (
+                            server_img_manager.get_prop(img_id, 'width_px'),
+                            server_img_manager.get_prop(img_id, 'height_px'))
+                        altitude = server_img_manager.get_prop(
+                            img_id, 'altitude')
+                        heading = server_img_manager.get_prop(
+                            img_id, 'heading')
+                        for result in results:
+                            target_pos = (
+                                result['bottomright']['x']
+                                - result['topleft']['x'],
+                                result['bottomright']['y']
+                                - result['topleft']['y'])
+
+                            lat, lng = calculate_target_coordinates(
+                                target_pos_pixel=target_pos,
+                                parent_img_real_coords=real_coords,
+                                parent_img_dimensions_pixel=img_dimensions,
+                                altitude=altitude,
+                                heading=heading)
+                            # yapf: enable
+                            # This will select any target within ~15m square of
+                            # (lat, lng) at the latitude of the Andrews Base
+                            sql_cursor.execute(
+                                "select ImageID from Locations where (Lat \
+                                between ? and ?) and (Lng between ? and ?)",
+                                (lat - 0.01, lat + 0.01, lng - 0.01,
+                                 lng + 0.01))
+                            if sql_cursor.fetchone() is not None:
+                                sql_cursor.execute(
+                                    "insert into Locations values (?, ?, ?)",
+                                    (img_id, lat, lng))
+                                filtered_results.append(result)
+                    if len(filtered_results) > 0:
+                        server_task_queue.put({
+                            'type': 'auction',
+                            'event_name': 'snip',
+                            'args': {
+                                'img_id': task['img_id'],
+                                'yolo_results': filtered_results
+                            }
+                        })
+
             except queue.Empty:
                 continue
         else:
@@ -348,12 +400,9 @@ def snip_img(json):
     if verbose:
         print('Yolo finished; running snipper')
     server_task_queue.put({
-        'type': 'auction',
-        'event_name': 'snip',
-        'args': {
-            'img_id': json['img_id'],
-            'yolo_results': json['results']
-        }
+        'type': 'filter_and_snip',
+        'img_id': json['img_id'],
+        'yolo_results': json['results']
     })
 
 
