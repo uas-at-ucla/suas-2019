@@ -11,7 +11,7 @@ FAILED=0
 
 for FILE in $CC_FILES
 do
-  ./tools/scripts/docker/exec.sh ./tools/scripts/lint/check_cc_file.sh $FILE
+  ./tools/scripts/controls/exec.sh ./tools/scripts/lint/check_cc_file.sh $FILE
 
   if [[ $? > 0 ]]
   then

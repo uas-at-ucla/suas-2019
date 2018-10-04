@@ -29,12 +29,16 @@ UAS_AT_UCLA_TEXT = '\033[96m' + \
 
 
 # Script locations.
-DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/docker/run_env.sh "
+DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/controls/run_env.sh "
 DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/px4_simulator/start_sim.sh "
-DOCKER_EXEC_SCRIPT      = "./tools/scripts/docker/exec.sh "
-DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/docker/exec_kill.sh "
+DOCKER_EXEC_SCRIPT      = "./tools/scripts/controls/exec.sh "
+DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/controls/exec_kill.sh "
+
+VISION_DOCKER_BUILD_SCRIPT  = "./tools/scripts/docker/vision/docker_build.sh "
+VISION_DOCKER_RUN_SCRIPT    = "./tools/scripts/docker/vision/docker_run.sh "
 
 JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
+JENKINS_SLAVE_START_SCRIPT = "./tools/scripts/jenkins_slave/start_jenkins_slave.sh"
 LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
 LINT_FORMAT_SCRIPT = "./tools/scripts/lint/format.sh"
 
@@ -161,6 +165,11 @@ def kill_interop():
         return "Killed interop server docker container\n"
     return ""
 
+def kill_jenkins_client():
+    if kill_docker_container("uas-at-ucla_jenkins-slave") == 0:
+        return "Killed jenkins slave docker container\n"
+    return ""
+
 
 def run_and_die_if_error(command):
     if (processes.spawn_process_wait_for_code(command) != 0):
@@ -183,6 +192,18 @@ def kill_running_simulators():
     while kill_docker_container("uas-at-ucla_px4-simulator") == 0:
         print("killed sim")
         time.sleep(0.1)
+
+
+def run_vision_build(args):
+    print_update("Building vision docker image...")
+    run_cmd_exit_failure(VISION_DOCKER_BUILD_SCRIPT)
+    print_update(
+        "\n\nVision docker image successfully built!", msg_type="SUCCESS")
+
+
+def run_vision(args):
+    print_update("Running vision docker image...")
+    run_cmd_exit_failure(VISION_DOCKER_RUN_SCRIPT + " ".join(args.vision_args))
 
 
 def run_deploy(args):
@@ -249,8 +270,8 @@ def run_build(args=None, show_complete=True):
             + BAZEL_BUILD + "--cpu=raspi //src/...")
 
     if show_complete:
-        print_update("\n\nbuild complete :^) long live spinny!", \
-                msg_type="success")
+        print_update("\n\nBuild successful :^) LONG LIVE SPINNY!", \
+                msg_type="SUCCESS")
 
 
 def run_unittest(args=None, show_complete=True):
@@ -382,8 +403,18 @@ def run_jenkins_server(args):
 
     # Create a Jenkins server and tunnel it to the uasatucla.org domain.
     processes.spawn_process(JENKINS_SERVER_START_SCRIPT)
-    processes.spawn_process("while true;do " \
-        "ssh -N -R 8082:localhost:8085 uas@uasatucla.org;sleep 1;done")
+
+    print_update("Started Jenkins CI server!", msg_type="SUCCESS")
+    processes.wait_for_complete()
+
+
+def run_jenkins_client(args):
+    shutdown_functions.append(kill_jenkins_client)
+
+    print_update("Starting client...")
+
+    # Create a Jenkins server and tunnel it to the uasatucla.org domain.
+    processes.spawn_process(JENKINS_SLAVE_START_SCRIPT + " " + args.auth, allow_input=False)
 
     print_update("Started Jenkins CI server!", msg_type="SUCCESS")
     processes.wait_for_complete()
@@ -504,6 +535,13 @@ if __name__ == '__main__':
     build_parser = subparsers.add_parser('build')
     build_parser.set_defaults(func=run_build)
 
+    vision_parser = subparsers.add_parser('vision', help='vision help')
+    vision_subparsers = vision_parser.add_subparsers()
+    vision_subparsers.add_parser('build').set_defaults(func=run_vision_build)
+    vision_run_parser = vision_subparsers.add_parser('run')
+    vision_run_parser.set_defaults(func=run_vision)
+    vision_run_parser.add_argument('vision_args', nargs=argparse.REMAINDER)
+
     unittest_parser = subparsers.add_parser('unittest')
     unittest_parser.set_defaults(func=run_unittest)
 
@@ -512,6 +550,10 @@ if __name__ == '__main__':
 
     jenkins_server_parser = subparsers.add_parser('jenkins_server')
     jenkins_server_parser.set_defaults(func=run_jenkins_server)
+
+    jenkins_client_parser = subparsers.add_parser('jenkins_client')
+    jenkins_client_parser.set_defaults(func=run_jenkins_client)
+    jenkins_client_parser.add_argument('--auth', action='store', required=True)
 
     lint_parser = subparsers.add_parser('lint')
     lint_parser.set_defaults(func=run_lint)

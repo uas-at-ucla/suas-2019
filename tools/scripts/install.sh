@@ -6,7 +6,7 @@ unset INSTALL_REQUIRED
 unset PLATFORM
 unset NEED_TO_INSTALL
 
-PACKAGES="docker python2.7 tmux git"
+PACKAGES="docker python2.7 tmux git nodejs"
 MACOS_PACKAGES="brew docker-machine docker-machine-nfs virtualbox"
 INSTALL_REQUIRED="false"
 NEED_TO_INSTALL=""
@@ -116,12 +116,14 @@ then
      gnupg2 \
      software-properties-common
 
-    curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
 
     sudo apt-key fingerprint 0EBFCD88
 
+    ## Does not have a bionic file
+    ## Note the linux/debian, not linux/ubuntu
     sudo add-apt-repository \
-      "deb [arch=amd64] https://download.docker.com/linux/debian \
+      "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
       $(lsb_release -cs) \
       stable"
 
@@ -143,7 +145,7 @@ then
   fi
 fi
 
-install_package "tmux git"
+install_package "tmux git nodejs"
 
 if [ "$ACTION_REQUIRED" != "" ]
 then

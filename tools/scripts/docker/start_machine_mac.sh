@@ -10,7 +10,7 @@ then
     then
       echo ""
       echo "Creating uas-env docker machine:"
-      DOCKER_MACHINE_CREATE_CMD="docker-machine create -d virtualbox --virtualbox-memory 4096 --virtualbox-cpu-count 4 --virtualbox-disk-size 8000 uas-env"
+      DOCKER_MACHINE_CREATE_CMD="docker-machine create -d virtualbox --virtualbox-memory 4096 --virtualbox-cpu-count 4 --virtualbox-disk-size 16000 uas-env"
       echo "$DOCKER_MACHINE_CREATE_CMD"
       eval "$DOCKER_MACHINE_CREATE_CMD"
       VBoxManage controlvm "uas-env" natpf1 "ground_ui,tcp,,3000,,3000"
