@@ -1,5 +1,6 @@
 #!/bin/bash
 cd $(dirname $0)
+source ../start_machine_mac.sh
 cd ../../../../src/vision
 if [[ $(which wslpath 2>/dev/null) = "/bin/wslpath" ]]
 then
