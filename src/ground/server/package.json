@@ -15,7 +15,6 @@
     "check-dependencies": "^1.1.0"
   },
   "dependencies": {
-    "concurrently": "^4.0.1",
     "socket.io": "^2.1.1"
   }
 }
