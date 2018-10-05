@@ -137,6 +137,12 @@ def kill_processes_in_uas_env_container():
     return ""
 
 
+def kill_processes_in_uas_ground_container():
+    if processes.spawn_process_wait_for_code("./tools/scripts/ground/exec_kill.sh") == 0:
+        return "Killed all spawned processes in docker image.\n"
+    return ""
+
+
 def kill_docker_container(name):
     command = "docker kill $(docker ps " \
               "--filter status=running " \
@@ -423,15 +429,14 @@ def run_interop(args):
 
 
 def run_ground(args):
-    # Ground server and interface.
-    if args.device is not None:
-        processes.spawn_process("python ./src/ground/ground.py --device " \
-                + args.device, None, True, args.verbose)
-    else:
-        processes.spawn_process("python ./src/ground/ground.py", None, True, \
-                args.verbose)
+    shutdown_functions.append(kill_processes_in_uas_ground_container)
 
-    processes.wait_for_complete()
+    # Ground server and interface.
+    print_update("Starting the Ground Station Docker container...")
+    run_cmd_exit_failure("./tools/scripts/ground/run_env.sh")
+    print_update("Running the Ground Station...")
+    # Run ground.py and pass command line arguments
+    run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 ./src/ground/ground.py " + " ".join(args.ground_args))
 
 
 def run_env(args=None, show_complete=True):
@@ -524,8 +529,7 @@ if __name__ == '__main__':
     interop_parser.set_defaults(func=run_interop)
 
     ground_parser = subparsers.add_parser('ground')
-    ground_parser.add_argument('--verbose', action='store_true')
-    ground_parser.add_argument('--device', action='store', required=False)
+    ground_parser.add_argument('ground_args', nargs='*')
     ground_parser.set_defaults(func=run_ground)
 
     build_parser = subparsers.add_parser('build')
