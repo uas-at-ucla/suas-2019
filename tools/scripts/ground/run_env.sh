@@ -51,6 +51,10 @@ fi
 PLATFORM=$(uname -s)
 DOCKER_RUN_CMD="set -x; \
   echo STARTED > /tmp/uas_init; \
+  mkdir -p /tmp/home/uas; \
+  usermod -d /tmp/home/uas uas; \
+  usermod -u $(id -u) -g $(id -g) uas; \
+  usermod -d /home/uas uas; \
   sleep infinity"
 
 docker run \

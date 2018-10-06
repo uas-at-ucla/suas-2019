@@ -9,5 +9,8 @@ RUN apt-get install -y nodejs
 
 RUN npm install --global concurrently
 
+RUN useradd -ms /bin/bash uas
+RUN usermod -aG sudo uas
 RUN mkdir -p /home/uas/code_env
 WORKDIR /home/uas/code_env
+USER root
