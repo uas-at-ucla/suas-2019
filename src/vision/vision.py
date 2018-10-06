@@ -15,6 +15,8 @@ import hashlib
 import sqlite3
 import numpy as np
 import math
+from dataclasses import dataclass, field
+from types import Any
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
@@ -105,10 +107,22 @@ def signal_received(signal, frame):
 
 # Server ######################################################################
 
+
+@dataclass(order=True)
+class PriorityItem:
+    key: int
+    item: Any = field(compare=False)
+
+# - Critical database updates preempt everything. (priority = -1)
+# - Requests from the front end preempt almost all tasks. (priority = 0)
+# - Archive database updates preempt auctions. (priority = 1)
+# - Auctions and timeouts are lowest priority. (priority = 2)
+
+
 socketio_app = Flask(__name__)
 socketio_app.config['SECRET_KEY'] = SECRET_KEY
 vision_socketio_server = flask_socketio.SocketIO(socketio_app, logger=False)
-server_task_queue = queue.Queue()
+server_task_queue = queue.PriorityQueue()
 connected_clients = {'rsync': [], 'yolo': [], 'snipper': []}
 active_auctions = {}
 taken_auctions = {}
@@ -134,7 +148,7 @@ class ServerWorker(threading.Thread):
             try:
                 # Try to get an item from the queue
                 # blocking: true; timeout: 0.05
-                task = self.in_q.get(True, 0.05)
+                task = self.in_q.get(True, 0.05).item
 
                 ############ Task Format ############# # noqa: E266
                 # task = {
@@ -184,7 +198,7 @@ class ServerWorker(threading.Thread):
                         # reset the timer if no bids have been made
                         if len(auction['bids']) == 0:
                             task['time_began'] = time.time()
-                            self.in_q.put(task)
+                            self.in_q.put(PriorityItem(2, task))
                         else:
                             # choose the lowest bidder
                             lowest_bid = auction['bids'][0]
@@ -204,7 +218,7 @@ class ServerWorker(threading.Thread):
                             # check on the progress of the task TODO
                     else:
                         # check again later since not enough time passed
-                        self.in_q.put(task)
+                        self.in_q.put(PriorityItem(2, task))
 
                 # create a new auction
                 elif task_type == 'auction':
@@ -223,11 +237,13 @@ class ServerWorker(threading.Thread):
                     }
 
                     # check in on this auction at a later time
-                    self.in_q.put({
-                        'type': 'timeout',
-                        'time_began': time.time(),
-                        'auction_id': auction_id
-                    })
+                    self.in_q.put(
+                        PriorityItem(
+                            2, {
+                                'type': 'timeout',
+                                'time_began': time.time(),
+                                'auction_id': auction_id
+                            }))
                 elif task_type == 'filter_and_snip':
                     results = task['yolo_results']
                     img_id = task['img_id']
@@ -271,14 +287,16 @@ class ServerWorker(threading.Thread):
                                     (img_id, lat, lng))
                                 filtered_results.append(result)
                     if len(filtered_results) > 0:
-                        server_task_queue.put({
-                            'type': 'auction',
-                            'event_name': 'snip',
-                            'args': {
-                                'img_id': task['img_id'],
-                                'yolo_results': filtered_results
-                            }
-                        })
+                        server_task_queue.put(
+                            PriorityItem(
+                                2, {
+                                    'type': 'auction',
+                                    'event_name': 'snip',
+                                    'args': {
+                                        'img_id': task['img_id'],
+                                        'yolo_results': filtered_results
+                                    }
+                                }))
 
             except queue.Empty:
                 continue
@@ -342,7 +360,7 @@ def process_image(json, attempts=1):
     # TODO keep track of how many times rsync failed
     print("Telling rsync client to download image")
     # yapf: disable
-    server_task_queue.put({
+    server_task_queue.put(PriorityItem(2, {
         'type': 'auction',
         'event_name': 'rsync',
         'args': {
@@ -363,14 +381,17 @@ def process_image(json, attempts=1):
             'img_local_dest': [img_inc_path + '.jpg',
                                img_inc_path + '-drone.json']
         }
-    })
+    }))
     # yapf: enable
-    server_task_queue.put({
-        'type':
-        'add_record',
-        'sql_statement':
-        "insert into Images values ('{}','{}')".format(img_info['id'], 'raw')
-    })
+    server_task_queue.put(
+        PriorityItem(
+            1, {
+                'type':
+                'add_record',
+                'sql_statement':
+                "insert into Images values ('{}','{}')".format(
+                    img_info['id'], 'raw')
+            }))
     vision_socketio_server.emit('new_raw', {'img_id': img_info['id']})
     global img_count
     img_count += 1
@@ -387,13 +408,14 @@ def syncronize_img_info(img_id, new_info_file):
     server_img_manager.set_prop(img_id, 'lat', data['latitude'])
     server_img_manager.set_prop(img_id, 'lng', data['longitude'])
     server_img_manager.set_prop(img_id, 'heading', data['heading'])
-    server_task_queue.put({
-        'type': 'auction',
-        'event_name': 'yolo',
-        'args': {
-            'img_id': img_id
-        }
-    })
+    server_task_queue.put(
+        PriorityItem(2, {
+            'type': 'auction',
+            'event_name': 'yolo',
+            'args': {
+                'img_id': img_id
+            }
+        }))
 
 
 # Intermediate step
@@ -404,11 +426,13 @@ def call_next(json):
 
 def do_auction(*auctions):
     for auction in auctions:
-        server_task_queue.put({
-            'type': 'auction',
-            'event_name': auction['event_name'],
-            'args': auction['json']
-        })
+        server_task_queue.put(
+            PriorityItem(
+                2, {
+                    'type': 'auction',
+                    'event_name': auction['event_name'],
+                    'args': auction['json']
+                }))
 
 
 # Step 2 - find the targets in the image (yolo)
@@ -420,11 +444,13 @@ def snip_img(json):
     global verbose
     if verbose:
         print('Yolo finished; running snipper')
-    server_task_queue.put({
-        'type': 'filter_and_snip',
-        'img_id': json['img_id'],
-        'yolo_results': json['results']
-    })
+    server_task_queue.put(
+        PriorityItem(
+            2, {
+                'type': 'filter_and_snip',
+                'img_id': json['img_id'],
+                'yolo_results': json['results']
+            }))
 
 
 # Step 4 - run shape classification on each target
@@ -437,7 +463,7 @@ def download_snipped(json):
     # yapf: disable
     # WARNING: this auctions must occur as one event
     # to prevent duplicate "next" calls
-    server_task_queue.put({
+    server_task_queue.put(PriorityItem(2, {
         'type': 'auction',
         'event_name': 'rsync',
         'args': {
@@ -469,14 +495,16 @@ def download_snipped(json):
             'img_local_dest': [os.path.join(DEFAULT_DATA_DIR, img_id + ext)
                                for ext in ('.jpg', '.json')]
         }
-    })
+    }))
     # yapf: enable
-    server_task_queue.put({
-        'type':
-        'add_record',
-        'sql_statement':
-        "insert into Images values ('{}', 'localized')".format(img_id)
-    })
+    server_task_queue.put(
+        PriorityItem(
+            1, {
+                'type':
+                'add_record',
+                'sql_statement':
+                "insert into Images values ('{}', 'localized')".format(img_id)
+            }))
     vision_socketio_server.emit('new_localized', json)
 
 
@@ -489,13 +517,15 @@ def record_class(json):
         if server_img_manager.get_prop(img_id, check_class) is None:
             return
     # if it gets to this point without returning, then everything is done
-    server_task_queue.put({
-        'type':
-        'add_record',
-        'sql_statement':
-        "update Images set Type = 'classified' where ImageID='{}'".format(
-            img_id)
-    })
+    server_task_queue.put(
+        PriorityItem(
+            1, {
+                'type':
+                'add_record',
+                'sql_statement':
+                "update Images set Type = 'classified' where ImageID='{}'".
+                format(img_id)
+            }))
     vision_socketio_server.emit('new_classified', {'img_id': img_id})
     vision_socketio_server.emit('image_processed', {'img_id': img_id})
 
@@ -503,11 +533,13 @@ def record_class(json):
 @vision_socketio_server.on('manual_request')
 def manual_request(json):
     json['args']['manual'] = True
-    server_task_queue.put({
-        'type': 'auction',
-        'event_name': json['event_name'],
-        'args': json['args']
-    })
+    server_task_queue.put(
+        PriorityItem(
+            0, {
+                'type': 'auction',
+                'event_name': json['event_name'],
+                'args': json['args']
+            }))
 
 
 @vision_socketio_server.on('manual_request_done')
@@ -517,7 +549,7 @@ def manual_request_done(json):
 
 @vision_socketio_server.on('get_all_images')
 def return_all_images():
-    server_task_queue.put({'type': 'retrieve_records'})
+    server_task_queue.put(PriorityItem(0, {'type': 'retrieve_records'}))
 
 
 @vision_socketio_server.on('calc_target_coords')
