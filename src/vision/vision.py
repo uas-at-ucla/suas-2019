@@ -17,6 +17,8 @@ import numpy as np
 import math
 from dataclasses import dataclass, field
 from types import Any
+import subprocess
+import re
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
@@ -69,6 +71,7 @@ RSYNC_IP = '0.0.0.0'
 SNIPPER_IP = '0.0.0.0'
 CLASSIFIER_IP = '0.0.0.0'
 SNIPPER_USER = 'benlimpa'
+DRONE_IMG_FOLDER = '/path/to/images'
 
 # Client Defaults
 DEFAULT_VSN_USER = 'benlimpa'
@@ -89,6 +92,8 @@ DEFAULT_YOLO_THRESH = 0.0012
 processes = process_manager.ProcessManager()
 c_workers = []
 s_worker = None
+img_query_worker = None
+img_query_worker_stop = threading.Event()
 
 verbose = False
 
@@ -100,6 +105,9 @@ def signal_received(signal, frame):
     # Ask the workers to join us in death
     if s_worker is not None:
         s_worker.join()
+    if img_query_worker is not None:
+        img_query_worker_stop.set()
+        img_query_worker.join()
     for worker in c_workers:
         worker.join()
     sys.exit(0)
@@ -113,11 +121,11 @@ class PriorityItem:
     key: int
     item: Any = field(compare=False)
 
+
 # - Critical database updates preempt everything. (priority = -1)
 # - Requests from the front end preempt almost all tasks. (priority = 0)
 # - Archive database updates preempt auctions. (priority = 1)
 # - Auctions and timeouts are lowest priority. (priority = 2)
-
 
 socketio_app = Flask(__name__)
 socketio_app.config['SECRET_KEY'] = SECRET_KEY
@@ -143,6 +151,8 @@ class ServerWorker(threading.Thread):
         with sql_connection:
             sql_cursor.execute(
                 'create table if not exists Images (ImageID text, Type text)')
+            sql_cursor.execute('create table if not exists Locations \
+                (ImageID text, Lat real, Lng real)')
 
         while not self.stop_req.isSet():  # Exit run if stop was requested
             try:
@@ -281,10 +291,11 @@ class ServerWorker(threading.Thread):
                                 between ? and ?) and (Lng between ? and ?)",
                                 (lat - 0.01, lat + 0.01, lng - 0.01,
                                  lng + 0.01))
-                            if sql_cursor.fetchone() is not None:
+                            if sql_cursor.fetchone() is None:
                                 sql_cursor.execute(
                                     "insert into Locations values (?, ?, ?)",
                                     (img_id, lat, lng))
+                                result['coords'] = {'lat': lat, 'lng': lng}
                                 filtered_results.append(result)
                     if len(filtered_results) > 0:
                         server_task_queue.put(
@@ -408,6 +419,7 @@ def syncronize_img_info(img_id, new_info_file):
     server_img_manager.set_prop(img_id, 'lat', data['latitude'])
     server_img_manager.set_prop(img_id, 'lng', data['longitude'])
     server_img_manager.set_prop(img_id, 'heading', data['heading'])
+    server_img_manager.set_prop(img_id, 'altitude', data['altitude'])
     server_task_queue.put(
         PriorityItem(2, {
             'type': 'auction',
@@ -600,10 +612,10 @@ def calculate_target_coordinates(target_pos_pixel,
     scaling_ratio = altitude / focal_length * pixel_to_sensor_ratio
     parent_img_center = tuple(int(component / 2)
                               for component in parent_img_dimensions_pixel)
-    target_vec = np.fromiter(
-        (scaling_ratio * (parent_comp - target_comp)
-         for parent_comp in parent_img_center
-         for target_comp in target_pos_pixel),
+    target_vec = np.array([
+        (scaling_ratio * (parent_img_center[0] - target_pos_pixel[0])),
+        (scaling_ratio * (parent_img_center[1] - target_pos_pixel[1]))
+        ],
         dtype=np.float64)
     rotation_matrix = np.array([[math.cos(heading), -math.sin(heading)],
                                 [math.sin(heading),  math.cos(heading)]])
@@ -618,7 +630,61 @@ def calculate_target_coordinates(target_pos_pixel,
     return (new_lat, new_lng)
 
 
+def query_for_imgs(stop,
+                   drone_user,
+                   drone_ip,
+                   folder,
+                   server_port,
+                   interval=10,
+                   remote_encoding='utf-8'):
+    client = socketIO_client.SocketIO('0.0.0.0', server_port)
+    downloaded_files = set()
+    while not stop.is_set():  # stop running when told to do so
+        try:
+            # get a listing of all the files in the folder
+            # throws TimeoutExpired if timeout (interval in secs) runs out
+            result = subprocess.run([
+                'ssh', drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)
+            ],
+                                    timeout=interval,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.DEVNULL)
+            # throws CalledProcessError is something went wrong with ssh
+            result.check_returncode()
+            # group(1) as to not include the newline
+            # append a newline to the end in case the result does not terminate
+            # with one. Also check extension to include only json files
+            # (since those are created after the JPG)
+            new_items = set(
+                item.group(1)
+                for item in re.finditer('(.+)\n',
+                                        result.stdout.decode('utf-8') + '\n')
+                if '.' in item.group(1) and item.group(1).split('.')[1] ==
+                'json' and item.group(1) not in downloaded_files)
+            downloaded_files |= new_items
+            for item in new_items:
+                client.emit(
+                    'process_image', {
+                        'img_path':
+                        os.path.join(folder,
+                                     item.split('.')[0] + '.JPG'),
+                        'info_path':
+                        os.path.join(folder,
+                                     item.split('.')[0] + '.json')
+                    })
+        except subprocess.CalledProcessError:
+            time.sleep(interval)  # wait the interval before trying again
+        except subprocess.TimeoutExpired:
+            continue  # already waited the interval with the timeout
+
+
 def server_worker(args):
+    # setup worker to query the drone for images
+    img_query_worker = threading.Thread(
+        target=query_for_imgs,
+        args=(img_query_worker_stop, args.drone_user, DRONE_IP,
+              DRONE_IMG_FOLDER, args.port))
+    img_query_worker.start()
     # setup the database:
     global server_img_manager
     # TODO Server should not be using a client img_manager
@@ -877,8 +943,8 @@ class SnipperWorker(ClientWorker):
                 other={
                     'parent_img_id': src_img_id,
                     'location': {
-                        'lat': None,
-                        'lng': None
+                        'lat': result['coords']['lat'],
+                        'lng': result['coords']['lng']
                     }
                 })
             if verbose:
@@ -923,6 +989,7 @@ class ShapeClassifierWorker(ClientWorker):
     #   }]
     def _do_work(self, task):
         img_id = task[0]['img_id']
+        self.manager.get_img(img_id)
         img = vision_classifier.shape_img(
             os.path.join(self.data_dir, img_id + '.jpg'))
 
@@ -963,6 +1030,7 @@ class LetterClassifierWorker(ClientWorker):
     #   }]
     def _do_work(self, task):
         img_id = task[0]['img_id']
+        self.manager.get_img(img_id)
         img = vision_classifier.letter_img(
             os.path.join(self.data_dir, img_id + '.jpg'))
 
