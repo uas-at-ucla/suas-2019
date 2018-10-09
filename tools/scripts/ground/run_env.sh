@@ -62,6 +62,7 @@ docker run \
   -p 3000:3000 \
   -v $(pwd):/home/uas/code_env \
   --name uas-at-ucla_ground \
+  --dns 8.8.8.8 \
   uas-at-ucla_ground \
   bash -c "$DOCKER_RUN_CMD"
 

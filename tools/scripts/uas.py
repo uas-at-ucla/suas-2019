@@ -428,15 +428,30 @@ def run_interop(args):
     processes.wait_for_complete()
 
 
-def run_ground(args):
+def run_ground_build(args):
     shutdown_functions.append(kill_processes_in_uas_ground_container)
 
     # Ground server and interface.
     print_update("Starting the Ground Station Docker container...")
     run_cmd_exit_failure("./tools/scripts/ground/run_env.sh")
     print_update("Running the Ground Station...")
+
     # Run ground.py and pass command line arguments
-    run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 ./src/ground/ground.py " + " ".join(args.ground_args))
+    run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
+           " ./src/ground/ground.py --build " + " ".join(args.ground_args))
+
+
+def run_ground_run(args):
+    shutdown_functions.append(kill_processes_in_uas_ground_container)
+
+    # Ground server and interface.
+    print_update("Starting the Ground Station Docker container...")
+    run_cmd_exit_failure("./tools/scripts/ground/run_env.sh")
+    print_update("Running the Ground Station...")
+
+    # Run ground.py and pass command line arguments
+    run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
+           " ./src/ground/ground.py " + " ".join(args.ground_args))
 
 
 def run_env(args=None, show_complete=True):
@@ -529,8 +544,13 @@ if __name__ == '__main__':
     interop_parser.set_defaults(func=run_interop)
 
     ground_parser = subparsers.add_parser('ground')
-    ground_parser.add_argument('ground_args', nargs='*')
-    ground_parser.set_defaults(func=run_ground)
+    ground_subparsers = ground_parser.add_subparsers()
+    ground_build_parser = ground_subparsers.add_parser('build')
+    ground_build_parser.set_defaults(func=run_ground_build)
+    ground_build_parser.add_argument('ground_args', nargs='*')
+    ground_run_parser = ground_subparsers.add_parser('run')
+    ground_run_parser.add_argument('ground_args', nargs='*')
+    ground_run_parser.set_defaults(func=run_ground_run)
 
     build_parser = subparsers.add_parser('build')
     build_parser.set_defaults(func=run_build)
