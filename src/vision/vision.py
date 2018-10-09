@@ -1,11 +1,10 @@
-#!/bin/python3
 import os
 import sys
 import signal
 import argparse
-from argparse import Namespace
-from flask import Flask, render_template
-import flask_socketio, socketIO_client
+from flask import Flask
+import flask_socketio
+import socketIO_client
 import logging
 
 # Server dependencies
@@ -13,41 +12,43 @@ import time
 import uuid
 import json as json_module
 import hashlib
-import base64
 import sqlite3
 import numpy as np
+import math
+from dataclasses import dataclass, field
+from types import Any
+import subprocess
+import re
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
 sys.path.insert(0, '../../lib')
-import process_manager
+import process_manager  # noqa: E402
 
 # Yolo dependencies
-from darkflow.net.build import TFNet  # yolo neural net
-import cv2  # reading images
+from darkflow.net.build import TFNet  # noqa: E402  # yolo neural net
 
 # Classification dependencies
 sys.path.insert(0, './classifier')
-from classifier import vision_classifier
-import tensorflow as tf
+from classifier import vision_classifier  # noqa: E402
+import tensorflow as tf  # noqa: E402
 
 # Multithreading
-import threading  # multithreading library
-import queue  # input/output queues
+import threading  # noqa: E402  # multithreading library
+import queue  # noqa: E402  # input/output queues
 
 # Snipper dependencies
 # cv2 imported above # cropping and saving images
-import ntpath  # finding the name of a file (windows compatible)
 
 # Client dependency
 sys.path.insert(0, './util')
-from util.img_manager import ImgManager
+from util.img_manager import ImgManager  # noqa: E402
 
-# Constants ####################################################################
+# Constants ###################################################################
 
-R_EARTH = 6.371e6 # meters (avg radius if earth were a sphere)
+R_EARTH = 6.371e6  # meters (avg radius if earth were a sphere)
 
-# Defaults #####################################################################
+# Defaults ####################################################################
 
 # General Defaults
 DEFAULT_DATA_DIR = os.path.abspath('data_local')
@@ -55,8 +56,8 @@ print('cwd: ' + os.getcwd())
 print('dir: ' + DEFAULT_DATA_DIR)
 
 # Camera Defaults
-CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9) # mm
-LENS_FOCAL_LENGTH = 18 # mm
+CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9)  # mm
+LENS_FOCAL_LENGTH = 18  # mm
 
 # Server defaults
 DRONE_USER = 'benlimpa'
@@ -70,6 +71,7 @@ RSYNC_IP = '0.0.0.0'
 SNIPPER_IP = '0.0.0.0'
 CLASSIFIER_IP = '0.0.0.0'
 SNIPPER_USER = 'benlimpa'
+DRONE_IMG_FOLDER = '/path/to/images'
 
 # Client Defaults
 DEFAULT_VSN_USER = 'benlimpa'
@@ -90,6 +92,8 @@ DEFAULT_YOLO_THRESH = 0.0012
 processes = process_manager.ProcessManager()
 c_workers = []
 s_worker = None
+img_query_worker = None
+img_query_worker_stop = threading.Event()
 
 verbose = False
 
@@ -101,17 +105,32 @@ def signal_received(signal, frame):
     # Ask the workers to join us in death
     if s_worker is not None:
         s_worker.join()
+    if img_query_worker is not None:
+        img_query_worker_stop.set()
+        img_query_worker.join()
     for worker in c_workers:
         worker.join()
     sys.exit(0)
 
 
-# Server #######################################################################
+# Server ######################################################################
+
+
+@dataclass(order=True)
+class PriorityItem:
+    key: int
+    item: Any = field(compare=False)
+
+
+# - Critical database updates preempt everything. (priority = -1)
+# - Requests from the front end preempt almost all tasks. (priority = 0)
+# - Archive database updates preempt auctions. (priority = 1)
+# - Auctions and timeouts are lowest priority. (priority = 2)
 
 socketio_app = Flask(__name__)
 socketio_app.config['SECRET_KEY'] = SECRET_KEY
 vision_socketio_server = flask_socketio.SocketIO(socketio_app, logger=False)
-server_task_queue = queue.Queue()
+server_task_queue = queue.PriorityQueue()
 connected_clients = {'rsync': [], 'yolo': [], 'snipper': []}
 active_auctions = {}
 taken_auctions = {}
@@ -127,18 +146,21 @@ class ServerWorker(threading.Thread):
         self.stop_req = threading.Event()  # listen for a stop request
 
     def run(self):
-        sql_connection = sqlite3.connect('image_types.db')
+        sql_connection = sqlite3.connect('image_info.db')
         sql_cursor = sql_connection.cursor()
         with sql_connection:
-            sql_cursor.execute('create table if not exists Images (ImageID text, Type text)')
+            sql_cursor.execute(
+                'create table if not exists Images (ImageID text, Type text)')
+            sql_cursor.execute('create table if not exists Locations \
+                (ImageID text, Lat real, Lng real)')
 
         while not self.stop_req.isSet():  # Exit run if stop was requested
             try:
                 # Try to get an item from the queue
                 # blocking: true; timeout: 0.05
-                task = self.in_q.get(True, 0.05)
+                task = self.in_q.get(True, 0.05).item
 
-                ############ Task Format #############
+                ############ Task Format ############# # noqa: E266
                 # task = {
                 #     'type': 'timeout',
                 #     'auction_id': str,
@@ -157,10 +179,11 @@ class ServerWorker(threading.Thread):
                 #     'type': 'retrieve_records'
                 # }
 
-                if task['type'] == 'add_record':
+                task_type = task['type']
+                if task_type == 'add_record':
                     with sql_connection:
                         sql_cursor.execute(task['sql_statement'])
-                if task['type'] == 'retrieve_records':
+                elif task_type == 'retrieve_records':
                     all_images = {
                         'raw': None,
                         'localized': None,
@@ -168,12 +191,16 @@ class ServerWorker(threading.Thread):
                     }
                     with sql_connection:
                         for img_type in ('raw', 'localized', 'classified'):
-                            sql_cursor.execute("select ImageID from Images where Type=?", (img_type,))
-                            all_images[img_type] = sql_cursor.fetchall()
+                            sql_cursor.execute(
+                                "select ImageID from Images where Type=?",
+                                (img_type, ))
+                            all_images[img_type] = [
+                                row[0] for row in sql_cursor.fetchall()
+                            ]
                     vision_socketio_server.emit('all_images', all_images)
 
                 # check on the progress of an auction
-                elif task['type'] == 'timeout':
+                elif task_type == 'timeout':
                     if (time.time() -
                             task['time_began']) >= DEFAULT_AUCTION_TIMEOUT:
                         auction = active_auctions[task['auction_id']]
@@ -181,7 +208,7 @@ class ServerWorker(threading.Thread):
                         # reset the timer if no bids have been made
                         if len(auction['bids']) == 0:
                             task['time_began'] = time.time()
-                            self.in_q.put(task)
+                            self.in_q.put(PriorityItem(2, task))
                         else:
                             # choose the lowest bidder
                             lowest_bid = auction['bids'][0]
@@ -195,16 +222,16 @@ class ServerWorker(threading.Thread):
                                 lowest_bid['client_id'], auction['args'])
 
                             # remove the auction entry
-                            taken_auctions[task[
-                                'auction_id']] = active_auctions.pop(
+                            taken_auctions[
+                                task['auction_id']] = active_auctions.pop(
                                     task['auction_id'])
                             # check on the progress of the task TODO
                     else:
                         # check again later since not enough time passed
-                        self.in_q.put(task)
+                        self.in_q.put(PriorityItem(2, task))
 
                 # create a new auction
-                elif task['type'] == 'auction':
+                elif task_type == 'auction':
                     # generate a random auction id
                     auction_id = str(uuid.uuid4())
 
@@ -220,16 +247,74 @@ class ServerWorker(threading.Thread):
                     }
 
                     # check in on this auction at a later time
-                    self.in_q.put({
-                        'type': 'timeout',
-                        'time_began': time.time(),
-                        'auction_id': auction_id
-                    })
+                    self.in_q.put(
+                        PriorityItem(
+                            2, {
+                                'type': 'timeout',
+                                'time_began': time.time(),
+                                'auction_id': auction_id
+                            }))
+                elif task_type == 'filter_and_snip':
+                    results = task['yolo_results']
+                    img_id = task['img_id']
+                    filtered_results = []
+                    with sql_connection:
+                        # yapf: disable
+                        real_coords = (
+                            server_img_manager.get_prop(img_id, 'lat'),
+                            server_img_manager.get_prop(img_id, 'lat'))
+                        img_dimensions = (
+                            server_img_manager.get_prop(img_id, 'width_px'),
+                            server_img_manager.get_prop(img_id, 'height_px'))
+                        altitude = server_img_manager.get_prop(
+                            img_id, 'altitude')
+                        heading = server_img_manager.get_prop(
+                            img_id, 'heading')
+                        for result in results:
+                            target_pos = (
+                                result['bottomright']['x']
+                                - result['topleft']['x'],
+                                result['bottomright']['y']
+                                - result['topleft']['y'])
+
+                            lat, lng = calculate_target_coordinates(
+                                target_pos_pixel=target_pos,
+                                parent_img_real_coords=real_coords,
+                                parent_img_dimensions_pixel=img_dimensions,
+                                altitude=altitude,
+                                heading=heading)
+                            # yapf: enable
+                            # This will select any target within ~15m square of
+                            # (lat, lng) at the latitude of the Andrews Base
+                            sql_cursor.execute(
+                                "select ImageID from Locations where (Lat \
+                                between ? and ?) and (Lng between ? and ?)",
+                                (lat - 0.01, lat + 0.01, lng - 0.01,
+                                 lng + 0.01))
+                            if sql_cursor.fetchone() is None:
+                                sql_cursor.execute(
+                                    "insert into Locations values (?, ?, ?)",
+                                    (img_id, lat, lng))
+                                result['coords'] = {'lat': lat, 'lng': lng}
+                                filtered_results.append(result)
+                    if len(filtered_results) > 0:
+                        server_task_queue.put(
+                            PriorityItem(
+                                2, {
+                                    'type': 'auction',
+                                    'event_name': 'snip',
+                                    'args': {
+                                        'img_id': task['img_id'],
+                                        'yolo_results': filtered_results
+                                    }
+                                }))
+
             except queue.Empty:
                 continue
+        else:
+            sql_connection.close()
 
     def join(self, timeout=None):
-        self.sql_connection.close()
         self.stop_req.set()
         super().join(timeout)
 
@@ -237,20 +322,6 @@ class ServerWorker(threading.Thread):
 @vision_socketio_server.on('connect')
 def vision_socketio_server_connect():
     print("Someone connected to vision server")
-
-
-# Record Clients # not needed
-#@vision_socketio_server.on('depart')
-#def remove_client(json):
-#    if verbose:
-#        print('Removing ' + json['type'] + ' client: ' + json['id'])
-#    connected_clients[json['type']].remove(json['id'])
-#
-#@vision_socketio_server.on('announce')
-#def add_client(json):
-#    if verbose:
-#        print('Adding ' + json['type'] + ' client: ' + json['id'])
-#    connected_clients[json['type']].append(json['id'])
 
 
 @vision_socketio_server.on('bid')
@@ -280,15 +351,15 @@ def process_image(json, attempts=1):
     try:
         with open(img_inc_path + '.json', 'x') as f:
             json_module.dump(img_info, f)
-    except FileExistsError as err:
+    except FileExistsError:
         if manual_id:
             print('Manually Selected ID already exists: "{}"'.format(
                 img_info['id']))
             return
         if attempts <= 0:
-            print(
-                'Process Image Error: Double image id collision for "{}"\n What are the odds? You should by a lottery ticket.'.
-                format(img_info['id']))
+            print('Process Image Error: Double image id collision for "{}"\n \
+                What are the odds? You should by a lottery ticket.'.format(
+                img_info['id']))
             return
         # try again with a random image
         process_image(json, attempts - 1)
@@ -299,7 +370,8 @@ def process_image(json, attempts=1):
 
     # TODO keep track of how many times rsync failed
     print("Telling rsync client to download image")
-    server_task_queue.put({
+    # yapf: disable
+    server_task_queue.put(PriorityItem(2, {
         'type': 'auction',
         'event_name': 'rsync',
         'args': {
@@ -307,39 +379,72 @@ def process_image(json, attempts=1):
                 'event_name': 'process_image',
                 'json': json
             },
-            'next': [{
-                'event_name': 'yolo',
-                'json': {
-                    'img_id': img_info['id']
-                }
-            }],
+            'next': {
+                'func': 'syncronize_img_info',
+                'args': (
+                    img_info['id'],
+                    img_inc_path + '-drone.json'
+                )
+            },
             'user': DRONE_USER,
             'addr': DRONE_IP,
-            'img_remote_src': json['file_path'],
-            'img_local_dest': img_inc_path + '.jpg'
+            'img_remote_src': [json['file_path'], json['info_path']],
+            'img_local_dest': [img_inc_path + '.jpg',
+                               img_inc_path + '-drone.json']
         }
-    })
-    server_task_queue.put({
-        'type': 'add_record',
-        'sql_statement': "insert into Images values ('{}','{}')".format(img_info['id'], 'raw')
-        })
+    }))
+    # yapf: enable
+    server_task_queue.put(
+        PriorityItem(
+            1, {
+                'type':
+                'add_record',
+                'sql_statement':
+                "insert into Images values ('{}','{}')".format(
+                    img_info['id'], 'raw')
+            }))
     vision_socketio_server.emit('new_raw', {'img_id': img_info['id']})
     global img_count
     img_count += 1
 
+
+def syncronize_img_info(img_id, new_info_file):
+    data = None
+    try:
+        with open(new_info_file, 'r') as f:
+            data = json_module.load(f)
+    except OSError:
+        pass  # fail silently
+    server_img_manager.set_prop(img_id, 'time_gen', data['time'])
+    server_img_manager.set_prop(img_id, 'lat', data['latitude'])
+    server_img_manager.set_prop(img_id, 'lng', data['longitude'])
+    server_img_manager.set_prop(img_id, 'heading', data['heading'])
+    server_img_manager.set_prop(img_id, 'altitude', data['altitude'])
+    server_task_queue.put(
+        PriorityItem(2, {
+            'type': 'auction',
+            'event_name': 'yolo',
+            'args': {
+                'img_id': img_id
+            }
+        }))
+
+
 # Intermediate step
 @vision_socketio_server.on('download_complete')
 def call_next(json):
-    next_tasks = json['next']
-    global verbose
-    if verbose:
-        print("Download Complete; Next Up: " + str([next_task['event_name'] for next_task in next_tasks]))
-    for next_task in next_tasks:
-        server_task_queue.put({
-            'type': 'auction',
-            'event_name': next_task['event_name'],
-            'args': next_task['json']
-        })
+    globals()[json['next']['func']](*json['next']['args'])
+
+
+def do_auction(*auctions):
+    for auction in auctions:
+        server_task_queue.put(
+            PriorityItem(
+                2, {
+                    'type': 'auction',
+                    'event_name': auction['event_name'],
+                    'args': auction['json']
+                }))
 
 
 # Step 2 - find the targets in the image (yolo)
@@ -351,14 +456,13 @@ def snip_img(json):
     global verbose
     if verbose:
         print('Yolo finished; running snipper')
-    server_task_queue.put({
-        'type': 'auction',
-        'event_name': 'snip',
-        'args': {
-            'img_id': json['img_id'],
-            'yolo_results': json['results']
-        }
-    })
+    server_task_queue.put(
+        PriorityItem(
+            2, {
+                'type': 'filter_and_snip',
+                'img_id': json['img_id'],
+                'yolo_results': json['results']
+            }))
 
 
 # Step 4 - run shape classification on each target
@@ -368,8 +472,10 @@ def download_snipped(json):
     img_id = json['img_id']
     download_dir = json['download_dir']
     print("Telling rsync client to download snipped image")
-    # WARNING do not combine these using a for loop, otherwise duplicate next tasks will be sent
-    server_task_queue.put({
+    # yapf: disable
+    # WARNING: this auctions must occur as one event
+    # to prevent duplicate "next" calls
+    server_task_queue.put(PriorityItem(2, {
         'type': 'auction',
         'event_name': 'rsync',
         'args': {
@@ -377,64 +483,41 @@ def download_snipped(json):
                 'event_name': 'snipped',
                 'json': json
             },
-            'next': [
-                {
-                    'event_name': 'classify_shape',
-                    'json': {
-                        'img_id': json['img_id']
+            'next': {
+                'func': 'do_auction',
+                'args': (
+                    {
+                        'event_name': 'classify_shape',
+                        'json': {
+                            'img_id': json['img_id']
+                        }
+                    },
+                    {
+                        'event_name': 'classify_letter',
+                        'json': {
+                            'img_id': json['img_id']
+                        }
                     }
-                },
-                {
-                    'event_name': 'classify_letter',
-                    'json': {
-                        'img_id': json['img_id']
-                    }
-                }
-            ],
-            'user': SNIPPER_USER,
-            'addr': SNIPPER_IP,
-            'img_remote_src': os.path.join(download_dir, img_id + '.jpg'),
-            'img_local_dest': os.path.join(DEFAULT_DATA_DIR, img_id + '.jpg')
-        }
-    })
-    server_task_queue.put({
-        'type': 'auction',
-        'event_name': 'rsync',
-        'args': {
-            'prev': {
-                'event_name': 'snipped',
-                'json': json
+                )
             },
-            'next': [],
             'user': SNIPPER_USER,
             'addr': SNIPPER_IP,
-            'img_remote_src': os.path.join(download_dir, img_id + '.json'),
-            'img_local_dest': os.path.join(DEFAULT_DATA_DIR, img_id + '.json')
+            'img_remote_src': [os.path.join(download_dir, img_id + ext)
+                               for ext in ('.jpg', '.json')],
+            'img_local_dest': [os.path.join(DEFAULT_DATA_DIR, img_id + ext)
+                               for ext in ('.jpg', '.json')]
         }
-    })
-    server_task_queue.put({
-        'type': 'add_record',
-        'sql_statement': "insert into Images values ('{}', 'localized')".format(img_id)
-    })
+    }))
+    # yapf: enable
+    server_task_queue.put(
+        PriorityItem(
+            1, {
+                'type':
+                'add_record',
+                'sql_statement':
+                "insert into Images values ('{}', 'localized')".format(img_id)
+            }))
     vision_socketio_server.emit('new_localized', json)
-
-
-#@vision_socketio_server.on('classify')
-#def classify(json):
-#    server_task_queue.put({
-#        'type': 'auction',
-#        'event_name': 'classify_shape',
-#        'args': {
-#            'img_id': json['img_id']
-#        }
-#    })
-#    server_task_queue.put({
-#        'type': 'auction',
-#        'event_name': 'classify_letter',
-#        'args': {
-#            'img_id': json['img_id']
-#        }
-#    })
 
 
 @vision_socketio_server.on('classified')
@@ -446,29 +529,40 @@ def record_class(json):
         if server_img_manager.get_prop(img_id, check_class) is None:
             return
     # if it gets to this point without returning, then everything is done
-    server_task_queue.put({
-        'type': 'add_record',
-        'sql_statement': "update Images set Type = 'classified' where ImageID='{}'".format(img_id)
-    })
+    server_task_queue.put(
+        PriorityItem(
+            1, {
+                'type':
+                'add_record',
+                'sql_statement':
+                "update Images set Type = 'classified' where ImageID='{}'".
+                format(img_id)
+            }))
     vision_socketio_server.emit('new_classified', {'img_id': img_id})
     vision_socketio_server.emit('image_processed', {'img_id': img_id})
+
 
 @vision_socketio_server.on('manual_request')
 def manual_request(json):
     json['args']['manual'] = True
-    server_task_queue.put({
-        'type': 'auction',
-        'event_name': json['event_name'],
-        'args': json['args']
-        })
+    server_task_queue.put(
+        PriorityItem(
+            0, {
+                'type': 'auction',
+                'event_name': json['event_name'],
+                'args': json['args']
+            }))
+
 
 @vision_socketio_server.on('manual_request_done')
 def manual_request_done(json):
     vision_socketio_server.emit('manual_request_done', json)
 
+
 @vision_socketio_server.on('get_all_images')
-def return_all_images(json):
-    server_task_queue.put({'type': 'retrieve_records'})
+def return_all_images():
+    server_task_queue.put(PriorityItem(0, {'type': 'retrieve_records'}))
+
 
 @vision_socketio_server.on('calc_target_coords')
 def call_calc_target_coords(json):
@@ -478,7 +572,11 @@ def call_calc_target_coords(json):
         parent_img_dimensions_pixel=json['parent_img_dimensions'],
         altitude=json['altitude'],
         heading=json['heading'])
-    vision_socketio_server.emit('found_target_coords', {'lat': lat, 'lng': lng})
+    vision_socketio_server.emit('found_target_coords', {
+        'lat': lat,
+        'lng': lng
+    })
+
 
 def calculate_target_coordinates(target_pos_pixel,
                                  parent_img_real_coords,
@@ -497,10 +595,11 @@ def calculate_target_coordinates(target_pos_pixel,
     heading -- (+CW degrees) the direction of the top of the picture
     sensor_dimensions -- (mm) the dimensions of the sensor !!! ratio must match image !!!
     focal_length -- (mm) the focal_length of the lens
-    """
-    #yapf: disable
+    """  # noqa
+    # yapf: disable
 
-    # the algorithm assumes positive degrees are CCW but the heading is given with +CW
+    # the algorithm assumes positive degrees are CCW
+    # but the heading is given with +CW
     heading = -heading
 
     # get the average of ratio from the two dimensions
@@ -513,14 +612,14 @@ def calculate_target_coordinates(target_pos_pixel,
     scaling_ratio = altitude / focal_length * pixel_to_sensor_ratio
     parent_img_center = tuple(int(component / 2)
                               for component in parent_img_dimensions_pixel)
-    target_vec = np.fromiter(
-        (scaling_ratio * (parent_comp - target_comp)
-         for parent_comp in parent_img_center
-         for target_comp in target_pos_pixel),
+    target_vec = np.array([
+        (scaling_ratio * (parent_img_center[0] - target_pos_pixel[0])),
+        (scaling_ratio * (parent_img_center[1] - target_pos_pixel[1]))
+        ],
         dtype=np.float64)
     rotation_matrix = np.array([[math.cos(heading), -math.sin(heading)],
                                 [math.sin(heading),  math.cos(heading)]])
-    #yapf: enable
+    # yapf: enable
     target_vec = rotation_matrix @ target_vec
     new_lat = parent_img_real_coords[0] + (
         -target_vec[1] / R_EARTH) * 180 / math.pi
@@ -531,20 +630,61 @@ def calculate_target_coordinates(target_pos_pixel,
     return (new_lat, new_lng)
 
 
-# TODO handle autodownloading images as needed
-#@vision_socketio_server.on('download_complete')
-#def do_next_task(json):
-#    if json['next_task'] == 'echo':
-#        vision_socketio_server.emit('download_complete', json['local_file_path'])
-#    vision_socketio_server.emit(json['next_task']['event_name'], {'file_path': json['local_file_path']})
-#
-#@vision_socketio_server.on('download_failed')
-#def handle_download_failed(json):
-#    # TODO handle download failure
-#    pass
+def query_for_imgs(stop,
+                   drone_user,
+                   drone_ip,
+                   folder,
+                   server_port,
+                   interval=10,
+                   remote_encoding='utf-8'):
+    client = socketIO_client.SocketIO('0.0.0.0', server_port)
+    downloaded_files = set()
+    while not stop.is_set():  # stop running when told to do so
+        try:
+            # get a listing of all the files in the folder
+            # throws TimeoutExpired if timeout (interval in secs) runs out
+            result = subprocess.run([
+                'ssh', drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)
+            ],
+                                    timeout=interval,
+                                    stdout=subprocess.PIPE,
+                                    stderr=subprocess.DEVNULL)
+            # throws CalledProcessError is something went wrong with ssh
+            result.check_returncode()
+            # group(1) as to not include the newline
+            # append a newline to the end in case the result does not terminate
+            # with one. Also check extension to include only json files
+            # (since those are created after the JPG)
+            new_items = set(
+                item.group(1)
+                for item in re.finditer('(.+)\n',
+                                        result.stdout.decode('utf-8') + '\n')
+                if '.' in item.group(1) and item.group(1).split('.')[1] ==
+                'json' and item.group(1) not in downloaded_files)
+            downloaded_files |= new_items
+            for item in new_items:
+                client.emit(
+                    'process_image', {
+                        'img_path':
+                        os.path.join(folder,
+                                     item.split('.')[0] + '.JPG'),
+                        'info_path':
+                        os.path.join(folder,
+                                     item.split('.')[0] + '.json')
+                    })
+        except subprocess.CalledProcessError:
+            time.sleep(interval)  # wait the interval before trying again
+        except subprocess.TimeoutExpired:
+            continue  # already waited the interval with the timeout
 
 
 def server_worker(args):
+    # setup worker to query the drone for images
+    img_query_worker = threading.Thread(
+        target=query_for_imgs,
+        args=(img_query_worker_stop, args.drone_user, DRONE_IP,
+              DRONE_IMG_FOLDER, args.port))
+    img_query_worker.start()
     # setup the database:
     global server_img_manager
     # TODO Server should not be using a client img_manager
@@ -555,10 +695,11 @@ def server_worker(args):
     s_worker = ServerWorker(server_task_queue)
     s_worker.start()
     logging.getLogger('werkzeug').setLevel(logging.ERROR)
-    vision_socketio_server.run(socketio_app, '0.0.0.0', port=int(args.port), log_output=False)
+    vision_socketio_server.run(
+        socketio_app, '0.0.0.0', port=int(args.port), log_output=False)
 
 
-# Clients ######################################################################
+# Clients #####################################################################
 client_id = None
 work_queue = queue.Queue()
 vision_client = None
@@ -593,7 +734,8 @@ def client_worker(args, worker_class):
     client_id = str(uuid.uuid4())
     global work_queue
     for i in range(0, args.threads):
-        c_worker = worker_class(in_q=work_queue, socket_client=vision_client, args=args)
+        c_worker = worker_class(
+            in_q=work_queue, socket_client=vision_client, args=args)
         c_worker.start()
         c_workers.append(c_worker)
     vision_client.on(c_workers[0].get_event_name(), client_bid_for_task)
@@ -603,7 +745,8 @@ def client_worker(args, worker_class):
 
 
 class ClientWorker(threading.Thread):
-    def __init__(self, in_q, socket_client, args):  # accept args anyway even if not used
+    def __init__(self, in_q, socket_client,
+                 args):  # accept args anyway even if not used
         super(ClientWorker, self).__init__()
         self.in_q = in_q  # input queue (queue.Queue)
         self.stop_req = threading.Event()  # listen for a stop request
@@ -643,12 +786,6 @@ class ClientWorker(threading.Thread):
                 # blocking: true; timeout: 0.05
                 task = self.in_q.get(True, 0.05)
                 self._do_work(task)
-#                if task['type'] == 'download':
-#                    processes.spawn_process_wait_for_code(
-#                        'rsync -vz --progress -e "ssh -p 22" "' + self.vsn_user
-#                        + '@' + self.vsn_addr + ':' + task['remote_dir'] + '')
-#                else:
-#                    self._do_work(task)
             except queue.Empty:
                 continue
 
@@ -657,7 +794,7 @@ class ClientWorker(threading.Thread):
         super().join(timeout)
 
 
-# Rsync file synchronization ###################################################
+# Rsync file synchronization ##################################################
 class RsyncWorker(ClientWorker):
     # task format: [{'prev': {}, 'next': {}, 'user': str, 'addr': str,
     #                'img_remote_src': str, 'img_local_dest': str}]
@@ -668,18 +805,23 @@ class RsyncWorker(ClientWorker):
             print('Called rsync with args: <' + '> <'.join(map(str, task)) +
                   '>')
 
-        if 0 == processes.spawn_process_wait_for_code(
-                'rsync -vz --progress -e "ssh -p 22" "' + task_args['user'] +
-                '@' + task_args['addr'] + ':' + task_args['img_remote_src'] +
-                '" ' + task_args['img_local_dest']):
-            self._emit(task, 
-                'download_complete', {
+        success = True
+        for i in range(len(task_args['img_remote_src'])):
+            remote = task_args['img_remote_src'][i]
+            local = task_args['img_remote_dest'][i]
+            if 0 != processes.spawn_process_wait_for_code(
+                    'rsync -vz --progress -e "ssh -p 22" "' + task_args['user']
+                    + '@' + task_args['addr'] + ':' + remote + '" ' + local):
+                success = False
+        if success:
+            self._emit(
+                task, 'download_complete', {
                     'saved_path': task_args['img_local_dest'],
                     'next': task_args['next']
                 })
         else:
-            self._emit(task, 
-                'download_failed', {
+            self._emit(
+                task, 'download_failed', {
                     'attempted_path': task_args['img_local_dest'],
                     'prev': task_args['prev']
                 })
@@ -692,7 +834,7 @@ def rsync_worker(args):
     client_worker(args, RsyncWorker)
 
 
-# YOLO image classification ####################################################
+# YOLO image classification ###################################################
 class YoloWorker(ClientWorker):
     def __init__(self, in_q, socket_client, args):
         super().__init__(in_q, socket_client, args)
@@ -768,7 +910,7 @@ def yolo_worker(args):
         client_worker(args, YoloWorker)
 
 
-# Target Localization ##########################################################
+# Target Localization #########################################################
 class SnipperWorker(ClientWorker):
 
     # task format:
@@ -801,8 +943,8 @@ class SnipperWorker(ClientWorker):
                 other={
                     'parent_img_id': src_img_id,
                     'location': {
-                        'lat': None,
-                        'lng': None
+                        'lat': result['coords']['lat'],
+                        'lng': result['coords']['lng']
                     }
                 })
             if verbose:
@@ -821,7 +963,7 @@ def snipper_worker(args):
     client_worker(args, SnipperWorker)
 
 
-# Classifiers ##################################################################
+# Classifiers #################################################################
 def classifier_worker(args):
     if args.classifier_type == 'shape':
         shape_classifier_worker(args)
@@ -829,7 +971,7 @@ def classifier_worker(args):
         letter_classifier_worker(args)
 
 
-# Shape Classification #########################################################
+# Shape Classification ########################################################
 class ShapeClassifierWorker(ClientWorker):
     def __init__(self, in_q, socket_client, args):
         super().__init__(in_q, socket_client, args)
@@ -841,13 +983,13 @@ class ShapeClassifierWorker(ClientWorker):
         self.model._make_predict_function()
         self.graph = tf.get_default_graph()
 
-
     # task format:
     #   [{
     #       'img_id': str,
     #   }]
     def _do_work(self, task):
         img_id = task[0]['img_id']
+        self.manager.get_img(img_id)
         img = vision_classifier.shape_img(
             os.path.join(self.data_dir, img_id + '.jpg'))
 
@@ -870,7 +1012,7 @@ def shape_classifier_worker(args):
     client_worker(args, ShapeClassifierWorker)
 
 
-# Letter Classification ########################################################
+# Letter Classification #######################################################
 class LetterClassifierWorker(ClientWorker):
     def __init__(self, in_q, socket_client, args):
         super().__init__(in_q, socket_client, args)
@@ -888,6 +1030,7 @@ class LetterClassifierWorker(ClientWorker):
     #   }]
     def _do_work(self, task):
         img_id = task[0]['img_id']
+        self.manager.get_img(img_id)
         img = vision_classifier.letter_img(
             os.path.join(self.data_dir, img_id + '.jpg'))
 
@@ -910,7 +1053,7 @@ def letter_classifier_worker(args):
     client_worker(args, LetterClassifierWorker)
 
 
-# Parse command line arguments #################################################
+# Parse command line arguments ################################################
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
@@ -921,9 +1064,8 @@ if __name__ == '__main__':
         action='store',
         dest='data_dir',
         default=DEFAULT_DATA_DIR,
-        help=
-        'specify the working directory for images and their associated metadata'
-    )
+        help='specify the working directory for images and their associated \
+            metadata')
 
     subparsers = parser.add_subparsers(help='sub-command help')
 
@@ -931,13 +1073,12 @@ if __name__ == '__main__':
     server_port = None
     server_parser = subparsers.add_parser(
         'server', help='start the primary vision server')
-    server_parser.add_argument(
-        '-p'
-        '--port',
-        action='store',
-        dest='port',
-        default=DEFAULT_SRV_PORT,
-        help='specify server port')
+    server_parser.add_argument('-p'
+                               '--port',
+                               action='store',
+                               dest='port',
+                               default=DEFAULT_SRV_PORT,
+                               help='specify server port')
     server_parser.add_argument(
         '--drone-user',
         action='store',
@@ -1038,12 +1179,11 @@ if __name__ == '__main__':
     classifier_parser.add_argument(
         '--model',
         action='store',
-        dest=
-        'model_path',  # cannot specify default since there are two different types
+        # cannot specify default since there are two different types
+        dest='model_path',
         help='specify the classification model to load')
     classifier_parser.set_defaults(func=classifier_worker)
 
     args = parser.parse_args()
-    #global verbose
     verbose = args.verbose
     args.func(args)
