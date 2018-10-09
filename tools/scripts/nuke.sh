@@ -43,14 +43,14 @@ if [[ $(uname -s) == "Darwin" ]]
 then
   UAS_AT_UCLA_ENV_DOCKER_RUNNING_MACHINE=$(
     docker-machine ls \
-      --filter "name=uas-env" \
+      --filter "name=uas-at-ucla_controls" \
       --filter "state=Running" \
       --format "{{.Name}}"
   )
 
   UAS_AT_UCLA_ENV_DOCKER_MACHINE=$(
     docker-machine ls \
-      --filter "name=uas-env" \
+      --filter "name=uas-at-ucla_controls" \
       --format "{{.Name}}"
   )
 
@@ -58,14 +58,14 @@ then
   if [[ ! -z $UAS_AT_UCLA_ENV_DOCKER_RUNNING_MACHINE ]]
   then
     echo "Killing docker machine: $UAS_AT_UCLA_ENV_DOCKER_RUNNING_MACHINE"
-    docker-machine kill "uas-env"
+    docker-machine kill "uas-at-ucla_controls"
   fi
 
   # Delete all machines.
   if [[ ! -z $UAS_AT_UCLA_ENV_DOCKER_MACHINE ]]
   then
     echo "Removing docker machine: $UAS_AT_UCLA_ENV_DOCKER_MACHINE"
-    docker-machine rm -y "uas-env"
+    docker-machine rm -y "uas-at-ucla_controls"
   fi
 fi
 
