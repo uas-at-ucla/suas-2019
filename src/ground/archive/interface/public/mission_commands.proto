@@ -1,0 +1,109 @@
+syntax = "proto2";
+
+package lib.mission_manager;
+
+message Position2D {
+  required double latitude = 1;
+  required double longitude = 2;
+}
+
+message Position3D {
+  required double latitude = 1;
+  required double longitude = 2;
+  required double altitude = 3;
+}
+
+// Commands ####################################################################
+message WaypointCommand {
+  required Position3D goal = 1;
+}
+
+message BombDropCommand {
+  required Position2D drop_zone = 1;
+}
+
+message SurveyCommand {
+  repeated Position2D survey_polygon = 1;
+  required double altitude = 2;
+}
+
+message OffAxisCommand {
+  required Position3D photographer_location = 1;
+  required Position2D subject_location = 2;
+}
+
+
+// Primitive commands.
+message NothingCommand {}
+
+message SleepCommand {
+  required double time = 1;
+}
+
+message GotoCommand {
+  required Position3D goal = 1;
+  required bool come_to_stop = 2;
+}
+
+message GotoRawCommand {
+  required Position3D goal = 1;
+  required bool come_to_stop = 2;
+}
+
+message TriggerBombDropCommand {
+}
+
+message TriggerAlarmCommand {
+}
+
+message Command {
+  // Nested mission containing simpler, lower-level commands for executing a
+  // more complicated command.
+  // The mission preprocessor will set/modify the sub_mission to create the
+  // complete mission tree before execution, while the flight_loop will only
+  // execute the LEAVES of this command tree.
+  optional Mission sub_mission = 1;
+
+  oneof command {
+    // Only one of these can be set at a time. The type of this command is
+    // determined by which one is set.
+
+    WaypointCommand WaypointCommand = 2;
+    BombDropCommand BombDropCommand = 3;
+    SurveyCommand SurveyCommand = 4;
+    OffAxisCommand OffAxisCommand = 5;
+    NothingCommand NothingCommand = 6;
+    SleepCommand SleepCommand = 7;
+    GotoCommand GotoCommand = 8;
+    GotoRawCommand GotoRawCommand = 9;
+    TriggerBombDropCommand TriggerBombDropCommand = 10;
+    TriggerAlarmCommand TriggerAlarmCommand = 11;
+  }
+}
+
+message Mission {
+  repeated Command commands = 1;
+  optional int32 current_command = 2 [default = 0];
+}
+
+message StaticObstacle {
+  required Position2D location = 1;
+  required double cylinder_radius = 2;
+}
+
+message MovingObstacle {
+  required Position3D point = 1;
+  required double sphere_radius = 2;
+}
+
+message Obstacles {
+  repeated StaticObstacle static_obstacles = 1;
+  repeated MovingObstacle moving_obstacles = 2;
+}
+
+message GroundData {
+  oneof data {
+    Mission mission = 1;
+    Obstacles obstacles = 2;
+  }
+}
