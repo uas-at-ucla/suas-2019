@@ -11,7 +11,7 @@ do
   fi
 
   UAS_AT_UCLA_ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
-    --filter name=uas_env \
+    --filter name=uas-at-ucla_controls \
     --filter status=running \
     --format "{{.ID}}" \
     --latest \
@@ -24,7 +24,7 @@ do
   fi
 
   UAS_AT_UCLA_ENV_DOCKER_CONTAINER=$(docker ps \
-    --filter name=uas_env \
+    --filter name=uas-at-ucla_controls \
     --format "{{.ID}}" \
     --latest \
   )
