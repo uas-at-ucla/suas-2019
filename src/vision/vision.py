@@ -15,8 +15,8 @@ import hashlib
 import sqlite3
 import numpy as np
 import math
-from dataclasses import dataclass, field
-from types import Any
+# from dataclasses import dataclass, field
+# from types import Any
 import subprocess
 import re
 
@@ -115,11 +115,21 @@ def signal_received(signal, frame):
 
 # Server ######################################################################
 
-
-@dataclass(order=True)
+# use this once we have python 3.7
+# @dataclass(order=True)
+# class PriorityItem:
+#     key: int
+#     item: Any = field(compare=False)
 class PriorityItem:
-    key: int
-    item: Any = field(compare=False)
+    def __init__(self, key, item):
+        self.key = key
+        self.item = item
+
+    def __lt__(self, other):
+        return self.key < other.key
+
+    def __eq__(self, other):
+        return self.key == other.key
 
 
 # - Critical database updates preempt everything. (priority = -1)
