@@ -437,6 +437,7 @@ def run_ground_build(args):
     print_update("Running the Ground Station...")
 
     # Run ground.py and pass command line arguments
+    run_cmd_exit_failure("pwd")
     run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
            " ./src/ground/ground.py --build " + " ".join(args.ground_args))
 
