@@ -41,6 +41,11 @@ pipeline {
             sh './uas.sh vision build'
           }
         }
+        stage('BUILD GROUND') {
+          steps {
+            sh './uas.sh ground build'
+          }
+        }
       }
     }
     stage('TEST') {
