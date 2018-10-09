@@ -30,8 +30,17 @@ pipeline {
       }
     }
     stage('BUILD') {
-      steps {
-        sh './uas.sh build'
+      parallel {
+        stage('BUILD CONTROLS') {
+          steps {
+            sh './uas.sh build'
+          }
+        }
+        stage('BUILD VISION') {
+          steps {
+            sh './uas.sh vision build'
+          }
+        }
       }
     }
     stage('TEST') {

@@ -1,0 +1,20 @@
+{
+  "name": "ground_server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "ground_server.js",
+  "scripts": {
+    "start": "concurrently --kill-others \"npm:server\" \"npm:ui\"",
+    "server": "node ground_server.js",
+    "ui": "cd ../ui; npm start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "check-dependencies": "^1.1.0"
+  },
+  "dependencies": {
+    "socket.io": "^2.1.1"
+  }
+}

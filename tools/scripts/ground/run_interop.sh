@@ -32,13 +32,7 @@ then
 fi
 
 echo ""
-VM_IP=$(docker-machine ip uas-env 2> /dev/null)
-if [ $? -eq 0 ]
-then
-  echo "Starting Interop Server at http://$VM_IP:8000 (this is the IP of your uas-env docker-machine)"
-else
-  echo "Starting Interop Server at http://localhost:8000"
-fi
+echo "Starting Interop Server at http://localhost:8000"
 echo "Username: testadmin"
 echo "Password: testpass"
 echo ""
