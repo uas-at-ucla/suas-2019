@@ -1,7 +1,7 @@
 # UAS@UCLA 2018 Drone Code
 Code used on our drone competing in the AUVSI SUAS competition.
 
-| CI Tool | Status (master) |
+| CI Tool | Status of `master` |
 | ---      | ---       |
 | Jenkins | [![Jenkins Build Status](https://uasatucla.org/jenkins/buildStatus/icon?job=drone_code-master)](https://uasatucla.org/jenkins/blue/organizations/jenkins/drone_code-master/activity) |
 | Travis.CI | [![Travis.CI Build Status](https://travis-ci.com/uas-at-ucla/drone_code.svg?token=vswHzoLKgsSxcZysVnEN&branch=master)](https://travis-ci.com/uas-at-ucla/drone_code) |
