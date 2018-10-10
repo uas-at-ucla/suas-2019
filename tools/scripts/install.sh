@@ -6,7 +6,7 @@ unset INSTALL_REQUIRED
 unset PLATFORM
 unset NEED_TO_INSTALL
 
-PACKAGES="docker python2.7 tmux git nodejs"
+PACKAGES="docker python2.7 tmux git"
 MACOS_PACKAGES="brew docker-machine docker-machine-nfs virtualbox"
 INSTALL_REQUIRED="false"
 NEED_TO_INSTALL=""
