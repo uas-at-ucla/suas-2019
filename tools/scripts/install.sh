@@ -145,7 +145,9 @@ then
   fi
 fi
 
-install_package "tmux git nodejs"
+install_package "tmux"
+install_package "git"
+install_package "nodejs"
 
 if [ "$ACTION_REQUIRED" != "" ]
 then
