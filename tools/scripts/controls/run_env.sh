@@ -74,6 +74,7 @@ DOCKER_BUILD_CMD="set -x; \
   usermod -d /tmp/home/uas uas; \
   usermod -u $(id -u) -g $(id -g) uas; \
   usermod -d /home/uas uas; \
+  chown uas /home/uas; \
   chown uas /home/uas/.cache; \
   echo STARTED > /tmp/uas_init; \
   sudo -u uas bash -c \"bazel; \
