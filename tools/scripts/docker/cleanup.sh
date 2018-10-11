@@ -23,17 +23,17 @@ read ANSWER
 if [ "$ANSWER" != "${ANSWER#[Yy]}" ]
 then
   RUNNING_CONTAINERS=$(docker ps -q)
-  if [ ! -z $RUNNING_CONTAINERS ]
+  if [ ! -z "$RUNNING_CONTAINERS" ]
   then
     docker kill $RUNNING_CONTAINERS 2> /dev/null
   fi
   ALL_CONTAINERS=$(docker ps -a -q)
-  if [ ! -z $ALL_CONTAINERS ]
+  if [ ! -z "$ALL_CONTAINERS" ]
   then
     docker rm $ALL_CONTAINERS 2> /dev/null
   fi
   DANGLING_IMAGES=$(docker images -q -f dangling=true)
-  if [ ! -z $DANGLING_IMAGES ]
+  if [ ! -z "$DANGLING_IMAGES" ]
   then
     echo ""
     echo "Deleting dangling/untagged images..."
