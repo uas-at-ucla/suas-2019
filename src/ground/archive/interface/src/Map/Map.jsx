@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOMServer from 'react-dom/server';
 import './Map.css';
-import GMapCache from './GMapCache.jsx';
+// import GMapCache from './GMapCache.jsx';
 import map_style from './map_style.js';
 
 const METERS_PER_FOOT = 0.3048;
@@ -58,28 +58,29 @@ class Map extends Component {
       scaleControl: true,
       draggable: true,
       disableDoubleClickZoom: true,
-      styles: map_style
+      styles: map_style,
+      mapTypeId: 'satellite'
     });
 
-    this.gmap_cache = new GMapCache();
+    // this.gmap_cache = new GMapCache();
     let this_local = this;
 
-    this.map.mapTypes.set(
-      'offline_gmap',
-      new google.maps.ImageMapType({
-        getTileUrl: function(coord, zoom) {
-          return this_local.gmap_cache.checkTileInSprites(coord, zoom)
-            ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
-            : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
-        },
-        tileSize: new google.maps.Size(256, 256),
-        name: 'LocalMyGmap',
-        maxZoom: 21,
-        minZoom: 1
-      })
-    );
+    // this.map.mapTypes.set(
+    //   'offline_gmap',
+    //   new google.maps.ImageMapType({
+    //     getTileUrl: function(coord, zoom) {
+    //       return this_local.gmap_cache.checkTileInSprites(coord, zoom)
+    //         ? this_local.gmap_cache.getLocalTileImgSrc(coord, zoom)
+    //         : this_local.gmap_cache.getGmapTileImgSrc(coord, zoom);
+    //     },
+    //     tileSize: new google.maps.Size(256, 256),
+    //     name: 'LocalMyGmap',
+    //     maxZoom: 21,
+    //     minZoom: 1
+    //   })
+    // );
 
-    this.map.setMapTypeId('offline_gmap');
+    // this.map.setMapTypeId('offline_gmap');
 
     this.drone_marker_icon = {
       path: google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
