@@ -1,5 +1,5 @@
 # UAS@UCLA 2018 Drone Code
-Code used on our drone competing in the AUVSI SUAS competition.
+Code used on our drone competing in 
 
 | CI Tool | Status of `master` |
 | ---      | ---       |
