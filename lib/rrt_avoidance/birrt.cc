@@ -19,6 +19,7 @@ void BiRRT::Reset() {
 
   iteration_count_ = 0;
 
+
   start_solution_node_ = nullptr;
   goal_solution_node_ = nullptr;
   solution_length_ = INT_MAX;
