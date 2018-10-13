@@ -53,8 +53,6 @@ void FlightLoop::RunIteration() {
 
   // Get latest telemetry.
   if (!sensors_receiver_.HasMessages()) {
-    ::std::cout << "NO SENSORS @ " << ::std::setprecision(20) << current_time
-                << "\n";
     return;
   }
 
@@ -62,7 +60,6 @@ void FlightLoop::RunIteration() {
 
   // Get latest goal.
   if (!goal_receiver_.HasMessages()) {
-    ::std::cout << "NO GOAL!\n";
     return;
   }
 
