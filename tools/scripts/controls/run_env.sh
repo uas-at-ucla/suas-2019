@@ -86,6 +86,8 @@ docker run \
   --net uas_bridge \
   -v $ROOT_PATH:/home/uas/code_env \
   -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
+  -e DISPLAY=$DISPLAY \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
   --dns 8.8.8.8 \
   --name uas-at-ucla_controls \
   uas-at-ucla_controls \
