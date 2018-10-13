@@ -6,8 +6,6 @@ import ModalComponent from './Modal';
 import { PageHeader, ProgressBar } from 'react-bootstrap';
 
 class Images extends Component {
-  images = []; // added to prevent crashing for demonstration
-
   constructor (props) {
     super(props);
     this.state = {

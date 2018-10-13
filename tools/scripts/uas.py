@@ -165,13 +165,6 @@ def kill_interop():
         return "Killed interop server docker container\n"
     return ""
 
-
-def kill_ground():
-    if kill_docker_container("uas-at-ucla_ground") == 0:
-        return "Killed ground docker container\n"
-    return ""
-
-
 def kill_jenkins_client():
     if kill_docker_container("uas-at-ucla_jenkins-slave") == 0:
         return "Killed jenkins slave docker container\n"
@@ -436,7 +429,7 @@ def run_interop(args):
 
 
 def run_ground_build(args):
-    shutdown_functions.append(kill_ground)
+    shutdown_functions.append(kill_processes_in_uas_ground_container)
 
     # Ground server and interface.
     print_update("Starting the Ground Station Docker container...")
@@ -448,11 +441,9 @@ def run_ground_build(args):
     run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
            " ./src/ground/ground.py --build " + " ".join(args.ground_args))
 
-    kill_ground()
-
 
 def run_ground_run(args):
-    shutdown_functions.append(kill_ground)
+    shutdown_functions.append(kill_processes_in_uas_ground_container)
 
     # Ground server and interface.
     print_update("Starting the Ground Station Docker container...")
@@ -462,21 +453,6 @@ def run_ground_run(args):
     # Run ground.py and pass command line arguments
     run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
            " ./src/ground/ground.py " + " ".join(args.ground_args))
-
-    kill_ground()
-
-
-def run_ground_shell(args):
-    shutdown_functions.append(kill_ground)
-
-    # Ground server and interface.
-    print_update("Starting the Ground Station Docker container...")
-    run_cmd_exit_failure("./tools/scripts/ground/run_env.sh")
-
-    # Run interactive command line
-    processes.run_command("./tools/scripts/ground/exec_interactive.sh /bin/bash")
-
-    kill_ground()
 
 
 def run_env(args=None, show_complete=True):
@@ -576,8 +552,6 @@ if __name__ == '__main__':
     ground_run_parser = ground_subparsers.add_parser('run')
     ground_run_parser.add_argument('ground_args', nargs='*')
     ground_run_parser.set_defaults(func=run_ground_run)
-    ground_shell_parser = ground_subparsers.add_parser('shell')
-    ground_shell_parser.set_defaults(func=run_ground_shell)
 
     build_parser = subparsers.add_parser('build')
     build_parser.set_defaults(func=run_build)

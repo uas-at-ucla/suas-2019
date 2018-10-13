@@ -1,6 +1,6 @@
 import React, { Component } from "react";
 import "./DownloadMap.css";
-// import GMapCache from "../../Map/GMapCache.jsx";
+import GMapCache from "../../Map/GMapCache.jsx";
 
 const METERS_PER_FOOT = 0.3048;
 const google = window.google;
@@ -40,27 +40,26 @@ class DownloadMap extends Component {
       mapTypeControl: false,
       scaleControl: true,
       draggable: true,
-      disableDoubleClickZoom: true,
-      mapTypeId: "satellite"
+      disableDoubleClickZoom: true
     });
 
-    // this.gmap_cache = new GMapCache();
+    this.gmap_cache = new GMapCache();
     let this_local = this;
 
-    // this.map.mapTypes.set(
-    //   "offline_gmap",
-    //   new google.maps.ImageMapType({
-    //     getTileUrl: function(coord, zoom) {
-    //       return this_local.getImageTile(coord, zoom);
-    //     },
-    //     tileSize: new google.maps.Size(256, 256),
-    //     name: "LocalMyGmap",
-    //     maxZoom: 21,
-    //     minZoom: 1
-    //   })
-    // );
+    this.map.mapTypes.set(
+      "offline_gmap",
+      new google.maps.ImageMapType({
+        getTileUrl: function(coord, zoom) {
+          return this_local.getImageTile(coord, zoom);
+        },
+        tileSize: new google.maps.Size(256, 256),
+        name: "LocalMyGmap",
+        maxZoom: 21,
+        minZoom: 1
+      })
+    );
 
-    // this.map.setMapTypeId("offline_gmap");
+    this.map.setMapTypeId("offline_gmap");
 
     this.map.addListener("center_changed", function() {
       console.log("PANNED");

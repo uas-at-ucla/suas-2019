@@ -66,7 +66,6 @@ DOCKER_RUN_CMD="set -x; \
   usermod -d /tmp/home/uas uas; \
   usermod -u $(id -u) -g $(id -g) uas; \
   usermod -d /home/uas uas; \
-  chown uas /home/uas; \
   sleep infinity"
 
 docker run \

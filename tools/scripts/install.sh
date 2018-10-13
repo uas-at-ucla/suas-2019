@@ -6,7 +6,7 @@ unset INSTALL_REQUIRED
 unset PLATFORM
 unset NEED_TO_INSTALL
 
-PACKAGES="docker python2.7 tmux git node"
+PACKAGES="docker python2.7 tmux git nodejs"
 MACOS_PACKAGES="brew docker-machine docker-machine-nfs virtualbox"
 INSTALL_REQUIRED="false"
 NEED_TO_INSTALL=""
@@ -145,9 +145,7 @@ then
   fi
 fi
 
-install_package "tmux"
-install_package "git"
-install_package "nodejs"
+install_package "tmux git nodejs"
 
 if [ "$ACTION_REQUIRED" != "" ]
 then
