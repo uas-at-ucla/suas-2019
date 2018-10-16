@@ -8,7 +8,7 @@ namespace io {
 namespace autopilot_interface {
 
 uint64_t get_time_usec() {
-  static struct timeval _time_stamp;
+  static struct timeval _time_stamp; // test change
   gettimeofday(&_time_stamp, NULL);
   return _time_stamp.tv_sec * 1e6 + _time_stamp.tv_usec;
 }
