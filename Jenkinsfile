@@ -80,6 +80,7 @@ pipeline {
   post {
     always {
       sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
+      deleteDir()
     }
   }
 }
