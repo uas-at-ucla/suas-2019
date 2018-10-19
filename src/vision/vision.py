@@ -51,9 +51,9 @@ R_EARTH = 6.371e6  # meters (avg radius if earth were a sphere)
 # Defaults ####################################################################
 
 # General Defaults
-DEFAULT_DATA_DIR = os.path.abspath('data_local')
+DOCKER_DATA_DIR = os.path.abspath('data_local')
 print('cwd: ' + os.getcwd())
-print('dir: ' + DEFAULT_DATA_DIR)
+print('dir: ' + DOCKER_DATA_DIR)
 
 # Camera Defaults
 CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9)  # mm
@@ -77,7 +77,7 @@ DRONE_IMG_FOLDER = '/path/to/images'
 DEFAULT_VSN_USER = 'benlimpa'
 DEFAULT_VSN_PORT = DEFAULT_SRV_PORT
 DEFAULT_SSH_PORT = 22
-DEFAULT_REMOTE_DIR = DEFAULT_DATA_DIR
+DEFAULT_REMOTE_DIR = DOCKER_DATA_DIR
 DEFAULT_VSN_IP = DEFAULT_SRV_IP
 DEFAULT_VSN_SRV = DEFAULT_SRV_IP + ':' + str(DEFAULT_SRV_PORT)
 DEFAULT_THREADS = 1
@@ -356,7 +356,7 @@ def process_image(json, attempts=1):
         manual_id = False
 
     # TODO custom data dir
-    img_inc_path = os.path.join(DEFAULT_DATA_DIR, img_info['id'])
+    img_inc_path = os.path.join(DOCKER_DATA_DIR, img_info['id'])
 
     try:
         with open(img_inc_path + '.json', 'x') as f:
@@ -514,7 +514,7 @@ def download_snipped(json):
             'addr': SNIPPER_IP,
             'img_remote_src': [os.path.join(download_dir, img_id + ext)
                                for ext in ('.jpg', '.json')],
-            'img_local_dest': [os.path.join(DEFAULT_DATA_DIR, img_id + ext)
+            'img_local_dest': [os.path.join(DOCKER_DATA_DIR, img_id + ext)
                                for ext in ('.jpg', '.json')]
         }
     }))
@@ -698,9 +698,9 @@ def server_worker(args):
     # setup the database:
     global server_img_manager
     # TODO Server should not be using a client img_manager
-    server_img_manager = ImgManager(args.data_dir, master=True)
+    server_img_manager = ImgManager(DOCKER_DATA_DIR, master=True)
     global img_count
-    img_count = len(os.listdir(args.data_dir))
+    img_count = len(os.listdir(DOCKER_DATA_DIR))
     global s_worker
     s_worker = ServerWorker(server_task_queue)
     s_worker.start()
@@ -733,7 +733,7 @@ def client_bid_for_task(*args):
 
 def client_worker(args, worker_class):
     # Connect to vision server
-    print('Attempting to connect to server @ ' + args.vsn_addr +
+    print('Attempting to connect to server @ ' + args.vsn_addr + ':' +
           str(args.vsn_port))
     global vision_client
     vision_client = socketIO_client.SocketIO(args.vsn_addr, port=args.vsn_port)
@@ -764,11 +764,11 @@ class ClientWorker(threading.Thread):
         self.vsn_addr = args.vsn_addr
         self.vsn_port = args.vsn_port
         self.ssh_port = args.ssh_port
-        self.data_dir = args.data_dir
+        self.data_dir = DOCKER_DATA_DIR
         self.socket_client = socket_client
 
         self.manager = ImgManager(
-            args.data_dir, {
+            DOCKER_DATA_DIR, {
                 'user': args.vsn_user,
                 'addr': args.vsn_addr,
                 'port': args.ssh_port,
@@ -986,7 +986,7 @@ class ShapeClassifierWorker(ClientWorker):
     def __init__(self, in_q, socket_client, args):
         super().__init__(in_q, socket_client, args)
         self.model = vision_classifier.load_model(args.model_path)
-        self.data_dir = args.data_dir
+        self.data_dir = DOCKER_DATA_DIR
 
         # Keras w/ Tensorflow backend bug workaround
         # This is required when using keras with tensorflow on multiple threads
@@ -1027,7 +1027,7 @@ class LetterClassifierWorker(ClientWorker):
     def __init__(self, in_q, socket_client, args):
         super().__init__(in_q, socket_client, args)
         self.model = vision_classifier.load_model(args.model_path)
-        self.data_dir = args.data_dir
+        self.data_dir = DOCKER_DATA_DIR
 
         # Keras w/ Tensorflow backend bug workaround
         # This is required when using keras with tensorflow on multiple threads
@@ -1068,14 +1068,6 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--verbose', action='store_true')
-    parser.add_argument(
-        '--data-dir',
-        action='store',
-        dest='data_dir',
-        default=DEFAULT_DATA_DIR,
-        help='specify the working directory for images and their associated \
-            metadata')
 
     subparsers = parser.add_subparsers(help='sub-command help')
 
@@ -1083,6 +1075,7 @@ if __name__ == '__main__':
     server_port = None
     server_parser = subparsers.add_parser(
         'server', help='start the primary vision server')
+    server_parser.add_argument('-v', '--verbose', action='store_true')
     server_parser.add_argument('-p'
                                '--port',
                                action='store',
@@ -1100,6 +1093,7 @@ if __name__ == '__main__':
     # Client Parsers ###################################################
     client_parser = subparsers.add_parser(
         'client', help='start a worker client')
+    client_parser.add_argument('-v', '--verbose', action='store_true')
     client_parser.add_argument(
         "--vsn-addr",
         action='store',
@@ -1196,4 +1190,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     verbose = args.verbose
+    if verbose:
+        print("Running in verbose mode.")
     args.func(args)
