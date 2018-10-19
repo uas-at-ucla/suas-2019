@@ -23,6 +23,7 @@
     "eject": "react-scripts eject"
   },
   "devDependencies": {
-    "check-dependencies": "^1.1.0"
+    "check-dependencies": "^1.1.0",
+    "concurrently": "^4.0.1"
   }
 }
