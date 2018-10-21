@@ -1,12 +1,7 @@
 #!/bin/bash
 
-unset PACKAGES
-unset MACOS_PACKAGES
-unset INSTALL_REQUIRED
-unset PLATFORM
-unset NEED_TO_INSTALL
-
-PACKAGES="docker python2.7 tmux git node"
+PACKAGES="docker python2.7 tmux git"
+OPTIONAL_PACKAGES="node"
 MACOS_PACKAGES="brew docker-machine docker-machine-nfs virtualbox"
 INSTALL_REQUIRED="false"
 NEED_TO_INSTALL=""
@@ -66,6 +61,16 @@ then
 fi
 
 echo "Need to install$NEED_TO_INSTALL"
+
+sudo echo "Checking if sudo privileges work..." > /dev/null 2>&1
+if [ $? -ne 0 ]
+then
+  echo "Please run './tools/scripts/install.sh' directly to install dependencies."
+  exit 1
+fi
+
+PACKAGES="$OPTIONAL_PACKAGES $PACKAGES"
+
 
 if [ "$PLATFORM" == "Darwin" ]
 then
