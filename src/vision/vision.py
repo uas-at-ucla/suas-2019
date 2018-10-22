@@ -60,6 +60,8 @@ CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9)  # mm
 LENS_FOCAL_LENGTH = 18  # mm
 
 # Server defaults
+DRONE_HOST_KEY = '/suas/src/vision/known_hosts'
+DRONE_SSH_ID = '/suas/src/vision/id_rsa_local'
 DRONE_USER = 'benlimpa'
 SECRET_KEY = 'flappy'
 DEFAULT_SRV_IP = '0.0.0.0'
@@ -70,6 +72,8 @@ YOLO_IP = '0.0.0.0'
 RSYNC_IP = '0.0.0.0'
 SNIPPER_IP = '0.0.0.0'
 CLASSIFIER_IP = '0.0.0.0'
+SNIPPER_HOST_KEY = '/suas/src/vision/known_hosts'
+SNIPPER_SSH_ID = '/suas/src/vision/id_rsa_local'
 SNIPPER_USER = 'benlimpa'
 DRONE_IMG_FOLDER = '/path/to/images'
 
@@ -156,7 +160,7 @@ class ServerWorker(threading.Thread):
         self.stop_req = threading.Event()  # listen for a stop request
 
     def run(self):
-        sql_connection = sqlite3.connect('image_info.db')
+        sql_connection = sqlite3.connect(DOCKER_DATA_DIR + '/image_info.db')
         sql_cursor = sql_connection.cursor()
         with sql_connection:
             sql_cursor.execute(
@@ -396,6 +400,8 @@ def process_image(json, attempts=1):
                     img_inc_path + '-drone.json'
                 )
             },
+            'ssh_id_path': DRONE_SSH_ID,
+            'hosts_path': DRONE_HOST_KEY,
             'user': DRONE_USER,
             'addr': DRONE_IP,
             'img_remote_src': [json['file_path'], json['info_path']],
@@ -430,6 +436,9 @@ def syncronize_img_info(img_id, new_info_file):
     server_img_manager.set_prop(img_id, 'lng', data['longitude'])
     server_img_manager.set_prop(img_id, 'heading', data['heading'])
     server_img_manager.set_prop(img_id, 'altitude', data['altitude'])
+    img = server_img_manager.get_img(img_id)
+    server_img_manager.set_prop(img_id, 'width_px', img.shape[2])
+    server_img_manager.set_prop(img_id, 'height_px', img.shape[1])
     server_task_queue.put(
         PriorityItem(2, {
             'type': 'auction',
@@ -510,6 +519,8 @@ def download_snipped(json):
                     }
                 )
             },
+            'ssh_id_path': SNIPPER_SSH_ID,
+            'hosts_path': SNIPPER_HOST_KEY,
             'user': SNIPPER_USER,
             'addr': SNIPPER_IP,
             'img_remote_src': [os.path.join(download_dir, img_id + ext)
@@ -654,7 +665,9 @@ def query_for_imgs(stop,
             # get a listing of all the files in the folder
             # throws TimeoutExpired if timeout (interval in secs) runs out
             result = subprocess.run([
-                'ssh', drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)
+                'ssh', '-i ' + DRONE_SSH_ID,
+                '-o UserKnownHostsFile=' + DRONE_HOST_KEY,
+                drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)
             ],
                                     timeout=interval,
                                     stdout=subprocess.PIPE,
@@ -818,10 +831,20 @@ class RsyncWorker(ClientWorker):
         success = True
         for i in range(len(task_args['img_remote_src'])):
             remote = task_args['img_remote_src'][i]
-            local = task_args['img_remote_dest'][i]
-            if 0 != processes.spawn_process_wait_for_code(
-                    'rsync -vz --progress -e "ssh -p 22" "' + task_args['user']
-                    + '@' + task_args['addr'] + ':' + remote + '" ' + local):
+            local = task_args['img_local_dest'][i]
+
+            rsync_command = ('rsync -vz --progress -e "ssh -p 22 '
+                             '-i {id_file} -o UserKnownHostsFile={hosts_file}"'
+                             ' {user}@{ip}:{remote_path} {local_path}').format(
+                                 id_file=task_args['ssh_id_path'],
+                                 hosts_file=task_args['hosts_path'],
+                                 user=task_args['user'],
+                                 ip=task_args['addr'],
+                                 remote_path=remote,
+                                 local_path=local)
+            if verbose:
+                print('Spawning rsync: ' + rsync_command)
+            if 0 != processes.spawn_process_wait_for_code(rsync_command):
                 success = False
         if success:
             self._emit(
@@ -922,6 +945,9 @@ def yolo_worker(args):
 
 # Target Localization #########################################################
 class SnipperWorker(ClientWorker):
+    def __init__(self, in_q, socket_client, args):
+        super().__init__(in_q, socket_client, args)
+        self.real_data_dir = args.real_data_dir
 
     # task format:
     #   [{
@@ -962,7 +988,7 @@ class SnipperWorker(ClientWorker):
 
             self._emit(task, 'snipped', {
                 'img_id': img_id,
-                'download_dir': self.data_dir
+                'download_dir': self.real_data_dir
             })
 
     def get_event_name(self):
@@ -1171,6 +1197,12 @@ if __name__ == '__main__':
     # snipper specific args
     snipper_parser = client_subparsers.add_parser(
         'snipper', help='start a snipper worker client')
+    snipper_parser.add_argument(
+        "--real-dir",
+        action='store',
+        dest='real_data_dir',
+        required=True,
+        help='specify the directory the container volume is mounted to')
     snipper_parser.set_defaults(func=snipper_worker)
 
     # classifier specific args
