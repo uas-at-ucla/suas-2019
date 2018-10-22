@@ -37,6 +37,8 @@ DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/controls/exec_kill.sh "
 VISION_DOCKER_BUILD_SCRIPT  = "./tools/scripts/docker/vision/docker_build.sh "
 VISION_DOCKER_RUN_SCRIPT    = "./tools/scripts/docker/vision/docker_run.sh "
 
+CONTROLS_TEST_RRT_AVOIDANCE_SCRIPT = "./bazel-out/k8-fastbuild/bin/lib/rrt_avoidance/rrt_avoidance_test --plot"
+
 JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
 JENKINS_SLAVE_START_SCRIPT = "./tools/scripts/jenkins_slave/start_jenkins_slave.sh"
 LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
@@ -478,6 +480,18 @@ def run_ground_shell(args):
 
     kill_ground()
 
+def run_controls_test_rrtavoidance(args):
+    shutdown_functions.append(kill_processes_in_uas_env_container)
+
+    print_update("Testing rrt avoidance...")
+
+    run_build(show_complete=False)
+    processes.run_command(DOCKER_EXEC_SCRIPT + CONTROLS_TEST_RRT_AVOIDANCE_SCRIPT)
+
+    print_update("\n\nRRT avoidance tests passed!", \
+            msg_type="SUCCESS")
+
+
 
 def run_env(args=None, show_complete=True):
     print_update("Starting UAS@UCLA development environment...")
@@ -567,6 +581,19 @@ if __name__ == '__main__':
 
     interop_parser = subparsers.add_parser('interop')
     interop_parser.set_defaults(func=run_interop)
+
+    controls_parser = subparsers.add_parser('controls')
+    controls_subparsers = controls_parser.add_subparsers()
+    controls_simulate_parser = controls_subparsers.add_parser('simulate')
+    controls_simulate_parser.set_defaults(func=run_simulate)
+    controls_build_parser = controls_subparsers.add_parser('build')
+    controls_build_parser.set_defaults(func=run_build)
+    controls_test_parser = controls_subparsers.add_parser('test')
+    controls_test_subparsers = controls_test_parser.add_subparsers()
+    controls_test_all = controls_test_subparsers.add_parser('all')
+    controls_test_all.set_defaults(func=run_unittest)
+    controls_test_rrtavoidance_parser = controls_test_subparsers.add_parser('rrt_avoidance')
+    controls_test_rrtavoidance_parser.set_defaults(func=run_controls_test_rrtavoidance)
 
     ground_parser = subparsers.add_parser('ground')
     ground_subparsers = ground_parser.add_subparsers()
