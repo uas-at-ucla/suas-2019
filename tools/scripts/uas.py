@@ -168,6 +168,12 @@ def kill_interop():
     return ""
 
 
+def kill_controls():
+    if kill_docker_container("uas-at-ucla_controls") == 0:
+        return "Killed ground docker container\n"
+    return ""
+
+
 def kill_ground():
     if kill_docker_container("uas-at-ucla_ground") == 0:
         return "Killed ground docker container\n"
@@ -258,12 +264,7 @@ def run_build(args=None, show_complete=True):
 
     print_update("Going to build the code...")
 
-    print_update("Making sure all the necessary packages are installed.")
-    run_install()
-
-    # Start the UAS@UCLA software development docker image if it is not already
-    # running.
-    run_env(show_complete=False)
+    run_controls_docker_start(None, show_complete=False)
 
     # Execute the build commands in the running docker image.
     print_update("Downloading the dependencies...")
@@ -480,6 +481,41 @@ def run_ground_shell(args):
 
     kill_ground()
 
+
+def run_controls_docker_start(args, show_complete=True):
+    print_update("Making sure all the necessary packages are installed")
+    run_install()
+
+    # Start the UAS@UCLA software development docker image if it is not already
+    # running.
+    run_env(show_complete=False)
+
+    if show_complete:
+        print_update("\n\nControls docker container started successfully", \
+                msg_type="SUCCESS")
+
+
+def run_controls_docker_kill(args, show_complete=True):
+    result = kill_controls()
+
+    if show_complete:
+        if result == "":
+            print_update("\n\nControls docker container didn't exist in the first place", \
+                    msg_type="FAILURE")
+        else:
+            print_update("\n\nControls docker container killed successfully", \
+                    msg_type="SUCCESS")
+
+
+def run_controls_docker_shell(args):
+    # Make sure the controls docker image is running first.
+    run_controls_docker_start(None, show_complete=False)
+
+    # Run interactive command line
+    print_update("Starting shell tunnel to controls docker container")
+    processes.run_command("./tools/scripts/controls/exec_interactive.sh /bin/bash")
+
+
 def run_controls_test_rrtavoidance(args):
     shutdown_functions.append(kill_processes_in_uas_env_container)
 
@@ -584,6 +620,14 @@ if __name__ == '__main__':
 
     controls_parser = subparsers.add_parser('controls')
     controls_subparsers = controls_parser.add_subparsers()
+    controls_docker_parser = controls_subparsers.add_parser('docker')
+    controls_docker_subparsers = controls_docker_parser.add_subparsers()
+    controls_docker_start = controls_docker_subparsers.add_parser('start')
+    controls_docker_start.set_defaults(func=run_controls_docker_start)
+    controls_docker_kill = controls_docker_subparsers.add_parser('kill')
+    controls_docker_kill.set_defaults(func=run_controls_docker_kill)
+    controls_docker_shell = controls_docker_subparsers.add_parser('shell')
+    controls_docker_shell.set_defaults(func=run_controls_docker_shell)
     controls_simulate_parser = controls_subparsers.add_parser('simulate')
     controls_simulate_parser.set_defaults(func=run_simulate)
     controls_build_parser = controls_subparsers.add_parser('build')
