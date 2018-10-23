@@ -10,7 +10,7 @@ pipeline {
       steps {
         fileExists './uas.sh'
         sh './uas.sh nuke'
-        sh './uas.sh run_env'
+        sh './uas.sh controls docker start'
       }
     }
     stage('INITIAL CHECKS') {
@@ -79,7 +79,7 @@ pipeline {
   }
   post {
     always {
-      sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
+      sh './uas.sh controls docker kill'
       deleteDir()
     }
   }
