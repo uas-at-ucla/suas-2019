@@ -241,10 +241,6 @@ void AutopilotOutputWriter::Write() {
     copter_io_->Hold();
   }
 
-  if (hold_trigger_.Process(output.trigger_hold())) {
-    copter_io_->Hold();
-  }
-
   if (offboard_trigger_.Process(output.trigger_offboard())) {
     copter_io_->Offboard();
   }
