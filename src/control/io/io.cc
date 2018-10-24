@@ -179,13 +179,7 @@ AutopilotOutputWriter::AutopilotOutputWriter(
     autopilot_interface::AutopilotInterface *copter_io)
     : copter_io_(copter_io),
       output_receiver_("ipc:///tmp/uasatucla_output.ipc", 5),
-      takeoff_trigger_(kTriggerSignalTolerance),
-      hold_trigger_(kTriggerSignalTolerance),
-      offboard_trigger_(kTriggerSignalTolerance),
-      rtl_trigger_(kTriggerSignalTolerance),
-      land_trigger_(kTriggerSignalTolerance),
-      arm_trigger_(kTriggerSignalTolerance),
-      disarm_trigger_(kTriggerSignalTolerance) {
+      trigger_(kTriggerSignalTolerance) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.
@@ -233,31 +227,38 @@ void AutopilotOutputWriter::Write() {
   set_servo_pulsewidth(pigpio_, 24, gimbal_angle);
 #endif
 
-  if (takeoff_trigger_.Process(output.trigger_takeoff())) {
+  // Check for takeoff command in appropriate time frame
+  if (trigger_.Process(output.trigger_takeoff())) {
     copter_io_->Takeoff();
   }
 
-  if (hold_trigger_.Process(output.trigger_hold())) {
+  // Check for hold command in appropriate time frame
+  if (trigger_.Process(output.trigger_hold())) {
     copter_io_->Hold();
   }
 
-  if (offboard_trigger_.Process(output.trigger_offboard())) {
+  // Check for offboard command in approprate time frame
+  if (trigger_.Process(output.trigger_offboard())) {
     copter_io_->Offboard();
   }
 
-  if (offboard_trigger_.Process(output.trigger_rtl())) {
+  // Check for rtl command in appropriate time frame
+  if (trigger_.Process(output.trigger_rtl())) {
     copter_io_->ReturnToLaunch();
   }
 
-  if (land_trigger_.Process(output.trigger_land())) {
+  // Check for land command in appropriate time frame
+  if (trigger_.Process(output.trigger_land())) {
     copter_io_->Land();
   }
 
-  if (arm_trigger_.Process(output.trigger_arm())) {
+  // Check for arm command in appropriate time frame
+  if (trigger_.Process(output.trigger_arm())) {
     copter_io_->Arm();
   }
 
-  if (disarm_trigger_.Process(output.trigger_disarm())) {
+  // Check for disarm command in appropriate time frame
+  if (trigger_.Process(output.trigger_disarm())) {
     copter_io_->Disarm();
   }
 }
