@@ -77,10 +77,4 @@ pipeline {
   environment {
     PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"
   }
-  post {
-    always {
-      sh './uas.sh controls docker kill'
-      deleteDir()
-    }
-  }
 }
