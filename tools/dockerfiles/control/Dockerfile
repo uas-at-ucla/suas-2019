@@ -73,6 +73,7 @@ RUN apt-get update                                                          && \
     python3.7                                                                  \
     python3.7-dev                                                              \
     python3.7-distutils                                                        \
+    python-matplotlib                                                          \
     python-empy                                                                \
     python-jinja2                                                              \
     ruby                                                                       \
@@ -152,7 +153,7 @@ RUN pip2.7 install --user                                                      \
   Flask-SocketIO==2.9.2                                                        \
   futures==3.1.1                                                               \
   socketIO-client==0.7.2                                                       \
-  numpy==1.13.1                                                                \
+  numpy==1.15.2                                                                \
   empy==3.3.2                                                                  \
   toml==0.9.4                                                                  \
   eventlet==0.23.0                                                             \

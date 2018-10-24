@@ -29,6 +29,7 @@ cc_library(
     '//lib/logger:log_sender',
     '//lib/dslr_interface:dslr_interface',
     '//lib/proto_comms:proto_comms',
+    '//lib/trigger:trigger',
     "@WiringPi//:WiringPi",
     "@pigpio//:pigpio",
   ],

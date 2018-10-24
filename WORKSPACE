@@ -202,3 +202,14 @@ new_http_archive(
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
 boost_deps()
+
+local_repository(
+  name = "ignore_server_rxjs",
+  path = "./src/ground/server/node_modules/rxjs/src",
+)
+
+local_repository(
+  name = "ignore_ui_rxjs",
+  path = "./src/ground/ui/node_modules/rxjs/src",
+)
+

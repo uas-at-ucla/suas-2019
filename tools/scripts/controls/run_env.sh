@@ -1,6 +1,9 @@
 #!/bin/bash
 
-source tools/scripts/docker/start_machine_mac.sh
+if [ $(uname -s) == "Darwin" ]
+then
+  source tools/scripts/docker/start_machine_mac.sh
+fi
 
 unset ENV_DOCKER_RUNNING_CONTAINER
 unset ENV_DOCKER_CONTAINER
@@ -86,6 +89,8 @@ docker run \
   --net uas_bridge \
   -v $ROOT_PATH:/home/uas/code_env \
   -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
+  -e DISPLAY=$DISPLAY \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
   --dns 8.8.8.8 \
   --name uas-at-ucla_controls \
   uas-at-ucla_controls \

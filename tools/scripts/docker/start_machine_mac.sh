@@ -1,5 +1,10 @@
 #!/bin/bash
 
+if [ "$EUID" == 0 ]
+  then echo "Don't run as root."
+  exit 1
+fi
+
 if [ $(uname -s) == "Darwin" ]
 then
   docker version > /dev/null 2>&1
@@ -8,6 +13,13 @@ then
     UAS_ENV_MACHINE_STATUS="$(docker-machine status uas-env 2> /dev/null)"
     if [ $? -ne 0 ]
     then
+      # Script must be able to ask for sudo privileges to run properly.
+      if [ ! -t 1 ]
+      then
+        echo "Run ./tools/scripts/docker/start_machine_mac.sh to start docker VM."
+        exit 1
+      fi
+
       echo ""
       echo "Creating uas-env docker machine:"
       DOCKER_MACHINE_CREATE_CMD="docker-machine create -d virtualbox --virtualbox-memory 3072 --virtualbox-cpu-count 2 --virtualbox-disk-size 16000 uas-env"
@@ -31,4 +43,6 @@ then
     fi
     eval $(docker-machine env uas-env)
   fi
+else
+  echo "This script should only be run on MacOS."
 fi
