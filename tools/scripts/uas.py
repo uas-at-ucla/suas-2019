@@ -437,24 +437,13 @@ def run_interop(args):
     processes.spawn_process("./tools/scripts/ground/run_interop.sh")
     processes.wait_for_complete()
 
-
 def run_ground_build(args):
-    shutdown_functions.append(kill_ground)
-
-    # Ground server and interface.
-    print_update("Starting the Ground Station Docker container...")
-    run_cmd_exit_failure("./tools/scripts/ground/run_env.sh")
-    print_update("Running the Ground Station...")
-
-    # Run ground.py and pass command line arguments
-    run_cmd_exit_failure("pwd")
-    run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
-           " ./src/ground/ground.py --build " + " ".join(args.ground_args))
-
-    kill_ground()
-
+    run_ground("build", args)
 
 def run_ground_run(args):
+    run_ground("run", args)
+
+def run_ground(arg1, args):
     shutdown_functions.append(kill_ground)
 
     # Ground server and interface.
@@ -464,7 +453,7 @@ def run_ground_run(args):
 
     # Run ground.py and pass command line arguments
     run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
-           " ./src/ground/ground.py " + " ".join(args.ground_args))
+           " ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args))
 
     kill_ground()
 
