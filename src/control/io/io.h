@@ -58,7 +58,7 @@ class AutopilotSensorReader : public LoopHandler {
 
  private:
   virtual void RunIteration() override;
-  virtual void Stop() override {};
+  virtual void Stop() override{};
 
   autopilot_interface::AutopilotInterface *copter_io_;
   autopilot_interface::TimeStamps last_timestamps_;
