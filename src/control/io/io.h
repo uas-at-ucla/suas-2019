@@ -17,8 +17,7 @@
 #include "lib/trigger/trigger.h"
 
 #include "src/control/io/autopilot_interface/autopilot_interface.h"
-#include "src/control/io/loop_input_handler.h"
-#include "src/control/io/loop_output_handler.h"
+#include "src/control/io/loop_handler.h"
 #include "src/control/messages.pb.h"
 
 namespace src {
@@ -53,12 +52,14 @@ enum AutopilotState {
 
 void quit_handler(int sig);
 
-class AutopilotSensorReader : public LoopInputHandler {
+class AutopilotSensorReader : public LoopHandler {
  public:
   AutopilotSensorReader(autopilot_interface::AutopilotInterface *copter_io);
 
  private:
-  void RunIteration();
+  virtual void RunIteration() override;
+  virtual void Stop() override {};
+
   autopilot_interface::AutopilotInterface *copter_io_;
   autopilot_interface::TimeStamps last_timestamps_;
 
@@ -67,13 +68,12 @@ class AutopilotSensorReader : public LoopInputHandler {
   ::lib::proto_comms::ProtoSender<::src::control::UasMessage> sensors_sender_;
 };
 
-class AutopilotOutputWriter : public LoopOutputHandler {
+class AutopilotOutputWriter : public LoopHandler {
  public:
   AutopilotOutputWriter(autopilot_interface::AutopilotInterface *copter_io);
 
  private:
-  virtual void Read() override;
-  virtual void Write() override;
+  virtual void RunIteration() override;
   virtual void Stop() override;
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT

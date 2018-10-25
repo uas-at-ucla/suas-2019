@@ -199,9 +199,7 @@ AutopilotOutputWriter::AutopilotOutputWriter(
 #endif
 }
 
-void AutopilotOutputWriter::Read() {}
-
-void AutopilotOutputWriter::Write() {
+void AutopilotOutputWriter::RunIteration() {
   ::src::control::Output output;
   if (!output_receiver_.HasMessages()) {
     return;
