@@ -89,7 +89,13 @@ class AutopilotOutputWriter : public LoopHandler {
 
   ::lib::proto_comms::ProtoReceiver<::src::control::Output> output_receiver_;
 
-  ::lib::trigger::Trigger trigger_;
+  ::lib::trigger::Trigger takeoff_trigger_;
+  ::lib::trigger::Trigger hold_trigger_;
+  ::lib::trigger::Trigger offboard_trigger_;
+  ::lib::trigger::Trigger rtl_trigger_;
+  ::lib::trigger::Trigger land_trigger_;
+  ::lib::trigger::Trigger arm_trigger_;
+  ::lib::trigger::Trigger disarm_trigger_;
 };
 
 class IO {
