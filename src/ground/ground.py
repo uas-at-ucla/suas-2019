@@ -8,13 +8,7 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, 'tools')
 import npm_install
 
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--build', action='store_true')
-    parser.add_argument('--server', action='store_true')
-    parser.add_argument('--server', action='store_true')
-    args = parser.parse_args()
-
+def build():
     os.chdir("server")
     npm_install.npm_install()
     os.chdir("..")
@@ -23,8 +17,30 @@ if __name__ == '__main__':
     npm_install.npm_install()
     os.chdir("..")
 
-    # Run only if the user did not specify to just build the code.
-    if not args.build:
-        os.chdir("server")
-        subprocess.call(["npm", "start"])
-        os.chdir("..")
+    print("done building")
+
+def run_all(args):
+    subprocess.call(["npm", "start"], cwd="server")
+
+def run_server(args):
+    subprocess.call(["node", "ground_server.js"], cwd="server")
+
+def run_ui(args):
+    subprocess.call(["npm", "start"], cwd="ui")
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers()
+    subparsers.add_parser('build').set_defaults(func=lambda args: None) # do nothing
+
+    run_parser = subparsers.add_parser('run')
+    run_parser.set_defaults(func=run_all)
+    run_subparsers = run_parser.add_subparsers()
+    
+    run_subparsers.add_parser('all')
+    run_subparsers.add_parser('server').set_defaults(func=run_server)
+    run_subparsers.add_parser('ui').set_defaults(func=run_ui)
+
+    args = parser.parse_args()
+    build() # always build
+    args.func(args)
