@@ -61,7 +61,7 @@ AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
   current_messages.compid = autopilot_id;
 
   pixhawk_ = ::mavconn::MAVConnInterface::open_url(
-      "udp://172.19.0.2:8084@:8084", 0, 0);
+      "udp://172.18.0.2:8084@:8084", 0, 0);
   pixhawk_->set_protocol_version(mavconn::Protocol::V20);
   pixhawk_->message_received_cb = [this](const mavlink_message_t *msg,
                                          const ::mavconn::Framing framing) {
