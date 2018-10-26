@@ -33,7 +33,7 @@ pipeline {
       parallel {
         stage('BUILD CONTROLS') {
           steps {
-            sh './uas.sh build'
+            sh './uas.sh controls build'
           }
         }
         stage('BUILD VISION') {
