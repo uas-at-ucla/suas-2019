@@ -1,10 +1,5 @@
 #pragma once
 
-#include "src/control/io/autopilot_interface/autopilot_interface.h"
-
-#include "src/control/io/loop_input_handler.h"
-#include "src/control/io/loop_output_handler.h"
-
 #include <atomic>
 #include <iomanip>
 #include <iostream>
@@ -19,14 +14,32 @@
 #include "lib/dslr_interface/dslr_interface.h"
 #include "lib/logger/log_sender.h"
 #include "lib/proto_comms/proto_comms.h"
+#include "lib/trigger/trigger.h"
+
+#include "src/control/io/autopilot_interface/autopilot_interface.h"
+#include "src/control/io/loop_input_handler.h"
+#include "src/control/io/loop_output_handler.h"
 #include "src/control/messages.pb.h"
 
 namespace src {
 namespace control {
 namespace io {
 namespace {
+// Output GPIO pins for sending out servo PWM signals to control actuators.
 const int kAlarmGPIOPin = 2;
 const int kGimbalGPIOPin = 18;
+
+// Tolerance for the time period to accept a trigger signal edge, in seconds.
+const double kTriggerSignalTolerance = 0.1;
+
+// Bit patterns for the custom modes used by the PX4 flight controller.
+const int kTakeoffCommandMode = 0b00000010000001000000000000000000;
+const int kHoldCommandMode = 0b00000100000001000000000000000000;
+const int kHoldAlternateCommandMode = 0b00000011000001000000000000000000;
+const int kOffboardCommandMode = 0b00000000000001100000000000000000;
+const int kRtlCommandMode = 0b00000101000001000000000000000000;
+const int kLandCommandMode = 0b00000110000001000000000000000000;
+
 } // namespace
 
 enum AutopilotState {
@@ -51,7 +64,7 @@ class AutopilotSensorReader : public LoopInputHandler {
 
   double last_gps_;
 
-  ::lib::proto_comms::ProtoSender<::src::control::Sensors> sensors_sender_;
+  ::lib::proto_comms::ProtoSender<::src::control::UasMessage> sensors_sender_;
 };
 
 class AutopilotOutputWriter : public LoopOutputHandler {
@@ -74,15 +87,15 @@ class AutopilotOutputWriter : public LoopOutputHandler {
 
   autopilot_interface::AutopilotInterface *copter_io_;
 
-  bool did_takeoff_;
-  bool did_hold_;
-  bool did_offboard_;
-  bool did_rtl_;
-  bool did_land_;
-  bool did_arm_;
-  bool did_disarm_;
-
   ::lib::proto_comms::ProtoReceiver<::src::control::Output> output_receiver_;
+
+  ::lib::trigger::Trigger takeoff_trigger_;
+  ::lib::trigger::Trigger hold_trigger_;
+  ::lib::trigger::Trigger offboard_trigger_;
+  ::lib::trigger::Trigger rtl_trigger_;
+  ::lib::trigger::Trigger land_trigger_;
+  ::lib::trigger::Trigger arm_trigger_;
+  ::lib::trigger::Trigger disarm_trigger_;
 };
 
 class IO {
