@@ -96,3 +96,14 @@ message Command {
 message Mission {
   repeated Command commands                                                = 1;
 }
+
+message UasMessage {
+  required double time                                                     = 1;
+  
+  oneof payload {
+    Sensors sensors                                                        = 2;
+    Status status                                                          = 3;
+    Goal goal                                                              = 4;
+    Output output                                                          = 5;
+  }
+}
