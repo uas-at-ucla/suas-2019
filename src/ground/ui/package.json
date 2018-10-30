@@ -2,6 +2,7 @@
   "name": "flight-deck",
   "version": "0.1.0",
   "private": true,
+  "main": "src/main.js",
   "dependencies": {
     "bootstrap": "^4.1.2",
     "dot-prop-immutable": "^1.5.0",
@@ -13,16 +14,20 @@
     "reactstrap": "^6.3.0",
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
-    "socket.io-client": "^2.1.1"
+    "socket.io-client": "^2.1.1",
+    "wait-on": "^3.1.0"
   },
   "scripts": {
-    "start": "react-scripts start",
+    "react-start": "BROWSER=none react-scripts start",
+    "electron-start": "ELECTRON_DEV=1 electron .",
+    "start": "concurrently \"npm run react-start\" \"wait-on http://localhost:3000/ && npm run  electron-start\"",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject"
   },
   "devDependencies": {
     "check-dependencies": "^1.1.0",
-    "concurrently": "^4.0.1"
+    "concurrently": "^4.0.1",
+    "electron": "^3.0.6"
   }
 }
