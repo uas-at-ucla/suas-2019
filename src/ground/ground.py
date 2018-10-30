@@ -43,11 +43,6 @@ def deploy_linux(args):
     os.system("npm run package-linux")
     os.chdir("..")
 
-def deploy(args):
-    deploy_win(args)
-    deploy_mac(args)
-    deploy_linux(args)
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers()
@@ -61,13 +56,14 @@ if __name__ == '__main__':
     run_subparsers.add_parser('server').set_defaults(func=run_server)
     run_subparsers.add_parser('ui').set_defaults(func=run_ui)
 
-    deploy_parser = subparsers.add_parser('deploy')
-    deploy_parser.set_defaults(func=deploy)
-    deploy_subparsers = deploy_parser.add_subparsers()
+    deploy_win_parser = subparsers.add_parser('deploy-win')
+    deploy_win_parser.set_defaults(func=deploy_win)
 
-    deploy_subparsers.add_parser('win').set_defaults(func=deploy_win)
-    deploy_subparsers.add_parser('mac').set_defaults(func=deploy_mac)
-    deploy_subparsers.add_parser('linux').set_defaults(func=deploy_linux)
+    deploy_mac_parser = subparsers.add_parser('deploy-mac')
+    deploy_mac_parser.set_defaults(func=deploy_mac)
+
+    deploy_linux_parser = subparsers.add_parser('deploy-linux')
+    deploy_linux_parser.set_defaults(func=deploy_linux)
 
     args = parser.parse_args()
     build() # always build
