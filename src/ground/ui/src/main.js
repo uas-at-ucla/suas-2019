@@ -9,8 +9,10 @@ function createWindow () {
   // Create the browser window.
   mainWindow = new BrowserWindow({width: 800, height: 600})
 
-  // and load the index.html of the app.
-  mainWindow.loadURL('http://localhost:3000');
+  // and load the url of the app.
+  const isDev = require('electron-is-dev');
+  const path = require('path');
+  mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
