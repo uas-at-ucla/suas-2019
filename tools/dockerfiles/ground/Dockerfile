@@ -7,8 +7,6 @@ RUN apt-get install -y gnupg
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install -y nodejs
 
-RUN npm install --global concurrently
-
 RUN useradd -ms /bin/bash uas
 RUN usermod -aG sudo uas
 RUN mkdir -p /home/uas/code_env
