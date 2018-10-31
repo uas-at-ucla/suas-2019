@@ -30,7 +30,8 @@ TRANSFORMS = ('rotate', 'perspective', 'affine')
 
 
 def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
-               draw_box, rescale_ratio, shape_color_name, letter_color_name, target_pos):
+               draw_box, rescale_ratio, shape_color_name, letter_color_name,
+               target_pos_conf):
     background_files = os.scandir(bg_dir)
     field_width = math.trunc(math.log10(n))
     for i in range(n):
@@ -77,9 +78,11 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
                 random.randint(0, 359), resample=Image.BICUBIC,
                 expand=1).resize((t_size, t_size), resample=Image.BOX)
 
-        if target_pos is None:
+        if target_pos_conf is None:
             target_pos = (random.randint(0, i_size[0] - t_size),
                           random.randint(0, i_size[1] - t_size))
+        else:
+            target_pos = target_pos_conf
 
         # create annotation
         im_filename = ('{:0=' + str(field_width) + 'd}').format(i)
@@ -116,7 +119,9 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
         # Paste the target and save
         result = background.crop(box=(0, 0, i_size[0], i_size[1]))
         result.paste(target, box=target_pos, mask=target)
-        result.save(os.path.join(dest_dir, im_filename + '.' + background_file.split('.')[1]))
+        result.save(
+            os.path.join(dest_dir,
+                         im_filename + '.' + background_file.split('.')[1]))
 
 
 if __name__ == '__main__':
@@ -274,4 +279,4 @@ if __name__ == '__main__':
         rescale_ratio=args.rescale_ratio,
         shape_color_name=args.shape_color,
         letter_color_name=args.letter_color,
-        target_pos=args.target_pos)
+        target_pos_conf=args.target_pos)
