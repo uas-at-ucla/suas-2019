@@ -259,7 +259,7 @@ def run_travis(args):
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
 
 
-def run_build(args=None, show_complete=True):
+def run_controls_build(args=None, show_complete=True):
     shutdown_functions.append(kill_processes_in_uas_env_container)
 
     print_update("Going to build the code...")
@@ -308,13 +308,13 @@ def run_unittest(args=None, show_complete=True):
                 msg_type="SUCCESS")
 
 
-def run_simulate(args):
+def run_controls_simulate(args):
     shutdown_functions.append(kill_processes_in_uas_env_container)
     shutdown_functions.append(kill_simulator)
     shutdown_functions.append(kill_tmux_session_uas_env)
 
     print_update("Building the code...")
-    run_build(show_complete=False)
+    run_controls_build(show_complete=False)
 
     print_update("Build complete! Starting simulator...")
     kill_running_simulators()
@@ -510,7 +510,7 @@ def run_controls_test_rrtavoidance(args):
 
     print_update("Testing rrt avoidance...")
 
-    run_build(show_complete=False)
+    run_controls_build(show_complete=False)
     processes.run_command(DOCKER_EXEC_SCRIPT + CONTROLS_TEST_RRT_AVOIDANCE_SCRIPT)
 
     print_update("\n\nRRT avoidance tests passed!", \
@@ -600,10 +600,6 @@ if __name__ == '__main__':
     kill_dangling_parser = subparsers.add_parser('kill_dangling')
     kill_dangling_parser.set_defaults(func=run_kill_dangling)
 
-    simulate_parser = subparsers.add_parser('simulate')
-    simulate_parser.add_argument('--verbose', action='store_true')
-    simulate_parser.set_defaults(func=run_simulate)
-
     interop_parser = subparsers.add_parser('interop')
     interop_parser.set_defaults(func=run_interop)
 
@@ -618,9 +614,9 @@ if __name__ == '__main__':
     controls_docker_shell = controls_docker_subparsers.add_parser('shell')
     controls_docker_shell.set_defaults(func=run_controls_docker_shell)
     controls_simulate_parser = controls_subparsers.add_parser('simulate')
-    controls_simulate_parser.set_defaults(func=run_simulate)
+    controls_simulate_parser.set_defaults(func=run_controls_simulate)
     controls_build_parser = controls_subparsers.add_parser('build')
-    controls_build_parser.set_defaults(func=run_build)
+    controls_build_parser.set_defaults(func=run_controls_build)
     controls_test_parser = controls_subparsers.add_parser('test')
     controls_test_subparsers = controls_test_parser.add_subparsers()
     controls_test_all = controls_test_subparsers.add_parser('all')
@@ -638,9 +634,6 @@ if __name__ == '__main__':
     ground_run_parser.set_defaults(func=run_ground_run)
     ground_shell_parser = ground_subparsers.add_parser('shell')
     ground_shell_parser.set_defaults(func=run_ground_shell)
-
-    build_parser = subparsers.add_parser('build')
-    build_parser.set_defaults(func=run_build)
 
     vision_parser = subparsers.add_parser('vision', help='vision help')
     vision_subparsers = vision_parser.add_subparsers()

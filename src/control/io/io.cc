@@ -199,9 +199,7 @@ AutopilotOutputWriter::AutopilotOutputWriter(
 #endif
 }
 
-void AutopilotOutputWriter::Read() {}
-
-void AutopilotOutputWriter::Write() {
+void AutopilotOutputWriter::RunIteration() {
   ::src::control::Output output;
   if (!output_receiver_.HasMessages()) {
     return;
@@ -235,10 +233,6 @@ void AutopilotOutputWriter::Write() {
 
   if (takeoff_trigger_.Process(output.trigger_takeoff())) {
     copter_io_->Takeoff();
-  }
-
-  if (hold_trigger_.Process(output.trigger_hold())) {
-    copter_io_->Hold();
   }
 
   if (hold_trigger_.Process(output.trigger_hold())) {
