@@ -213,7 +213,8 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    args.dest = os.path.realpath(args.dest)
+    if args.dest is not None:
+        args.dest = os.path.realpath(args.dest)
     args.backgrounds = os.path.realpath(args.backgrounds)
 
     os.chdir(os.path.dirname(os.path.realpath(__file__)))
