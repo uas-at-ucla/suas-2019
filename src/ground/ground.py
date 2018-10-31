@@ -29,23 +29,18 @@ def run_ui(args):
     subprocess.call(["npm", "start"], cwd="ui")
 
 def deploy_win(args):
-    os.chdir("ui")
-    os.system("npm run package-win")
-    os.chdir("..")
+    subprocess.call(["npm", "run", "package-win"], cwd="ui")
 
 def deploy_mac(args):
-    os.chdir("ui")
-    os.system("npm run package-mac")
-    os.chdir("..")
+    subprocess.call(["npm", "run", "package-mac"], cwd="ui")
 
 def deploy_linux(args):
-    os.chdir("ui")
-    os.system("npm run package-linux")
-    os.chdir("..")
+    subprocess.call(["npm", "run", "package-linux"], cwd="ui")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers()
+    subparsers = parser.add_subparsers(dest='option')
+    subparsers.required = True
     subparsers.add_parser('build').set_defaults(func=lambda args: None) # do nothing
 
     run_parser = subparsers.add_parser('run')
