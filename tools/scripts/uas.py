@@ -37,6 +37,8 @@ DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/controls/exec_kill.sh "
 VISION_DOCKER_BUILD_SCRIPT  = "./tools/scripts/docker/vision/docker_build.sh "
 VISION_DOCKER_RUN_SCRIPT    = "./tools/scripts/docker/vision/docker_run.sh "
 
+CONTROLS_TEST_RRT_AVOIDANCE_SCRIPT = "./bazel-out/k8-fastbuild/bin/lib/rrt_avoidance/rrt_avoidance_test --plot"
+
 JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
 JENKINS_SLAVE_START_SCRIPT = "./tools/scripts/jenkins_slave/start_jenkins_slave.sh"
 LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
@@ -166,6 +168,12 @@ def kill_interop():
     return ""
 
 
+def kill_controls():
+    if kill_docker_container("uas-at-ucla_controls") == 0:
+        return "Killed ground docker container\n"
+    return ""
+
+
 def kill_ground():
     if kill_docker_container("uas-at-ucla_ground") == 0:
         return "Killed ground docker container\n"
@@ -251,17 +259,12 @@ def run_travis(args):
         "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
 
 
-def run_build(args=None, show_complete=True):
+def run_controls_build(args=None, show_complete=True):
     shutdown_functions.append(kill_processes_in_uas_env_container)
 
     print_update("Going to build the code...")
 
-    print_update("Making sure all the necessary packages are installed.")
-    run_install()
-
-    # Start the UAS@UCLA software development docker image if it is not already
-    # running.
-    run_env(show_complete=False)
+    run_controls_docker_start(None, show_complete=False)
 
     # Execute the build commands in the running docker image.
     print_update("Downloading the dependencies...")
@@ -305,13 +308,13 @@ def run_unittest(args=None, show_complete=True):
                 msg_type="SUCCESS")
 
 
-def run_simulate(args):
+def run_controls_simulate(args):
     shutdown_functions.append(kill_processes_in_uas_env_container)
     shutdown_functions.append(kill_simulator)
     shutdown_functions.append(kill_tmux_session_uas_env)
 
     print_update("Building the code...")
-    run_build(show_complete=False)
+    run_controls_build(show_complete=False)
 
     print_update("Build complete! Starting simulator...")
     kill_running_simulators()
@@ -434,24 +437,13 @@ def run_interop(args):
     processes.spawn_process("./tools/scripts/ground/run_interop.sh")
     processes.wait_for_complete()
 
-
 def run_ground_build(args):
-    shutdown_functions.append(kill_ground)
-
-    # Ground server and interface.
-    print_update("Starting the Ground Station Docker container...")
-    run_cmd_exit_failure("./tools/scripts/ground/run_env.sh")
-    print_update("Running the Ground Station...")
-
-    # Run ground.py and pass command line arguments
-    run_cmd_exit_failure("pwd")
-    run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
-           " ./src/ground/ground.py --build " + " ".join(args.ground_args))
-
-    kill_ground()
-
+    run_ground("build", args)
 
 def run_ground_run(args):
+    run_ground("run", args)
+
+def run_ground(arg1, args):
     shutdown_functions.append(kill_ground)
 
     # Ground server and interface.
@@ -461,7 +453,7 @@ def run_ground_run(args):
 
     # Run ground.py and pass command line arguments
     run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
-           " ./src/ground/ground.py " + " ".join(args.ground_args))
+           " ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args))
 
     kill_ground()
 
@@ -477,6 +469,53 @@ def run_ground_shell(args):
     processes.run_command("./tools/scripts/ground/exec_interactive.sh /bin/bash")
 
     kill_ground()
+
+
+def run_controls_docker_start(args, show_complete=True):
+    print_update("Making sure all the necessary packages are installed")
+    run_install()
+
+    # Start the UAS@UCLA software development docker image if it is not already
+    # running.
+    run_env(show_complete=False)
+
+    if show_complete:
+        print_update("\n\nControls docker container started successfully", \
+                msg_type="SUCCESS")
+
+
+def run_controls_docker_kill(args, show_complete=True):
+    result = kill_controls()
+
+    if show_complete:
+        if result == "":
+            print_update("\n\nControls docker container didn't exist in the first place", \
+                    msg_type="FAILURE")
+        else:
+            print_update("\n\nControls docker container killed successfully", \
+                    msg_type="SUCCESS")
+
+
+def run_controls_docker_shell(args):
+    # Make sure the controls docker image is running first.
+    run_controls_docker_start(None, show_complete=False)
+
+    # Run interactive command line
+    print_update("Starting shell tunnel to controls docker container")
+    processes.run_command("./tools/scripts/controls/exec_interactive.sh /bin/bash")
+
+
+def run_controls_test_rrtavoidance(args):
+    shutdown_functions.append(kill_processes_in_uas_env_container)
+
+    print_update("Testing rrt avoidance...")
+
+    run_controls_build(show_complete=False)
+    processes.run_command(DOCKER_EXEC_SCRIPT + CONTROLS_TEST_RRT_AVOIDANCE_SCRIPT)
+
+    print_update("\n\nRRT avoidance tests passed!", \
+            msg_type="SUCCESS")
+
 
 
 def run_env(args=None, show_complete=True):
@@ -561,12 +600,29 @@ if __name__ == '__main__':
     kill_dangling_parser = subparsers.add_parser('kill_dangling')
     kill_dangling_parser.set_defaults(func=run_kill_dangling)
 
-    simulate_parser = subparsers.add_parser('simulate')
-    simulate_parser.add_argument('--verbose', action='store_true')
-    simulate_parser.set_defaults(func=run_simulate)
-
     interop_parser = subparsers.add_parser('interop')
     interop_parser.set_defaults(func=run_interop)
+
+    controls_parser = subparsers.add_parser('controls')
+    controls_subparsers = controls_parser.add_subparsers()
+    controls_docker_parser = controls_subparsers.add_parser('docker')
+    controls_docker_subparsers = controls_docker_parser.add_subparsers()
+    controls_docker_start = controls_docker_subparsers.add_parser('start')
+    controls_docker_start.set_defaults(func=run_controls_docker_start)
+    controls_docker_kill = controls_docker_subparsers.add_parser('kill')
+    controls_docker_kill.set_defaults(func=run_controls_docker_kill)
+    controls_docker_shell = controls_docker_subparsers.add_parser('shell')
+    controls_docker_shell.set_defaults(func=run_controls_docker_shell)
+    controls_simulate_parser = controls_subparsers.add_parser('simulate')
+    controls_simulate_parser.set_defaults(func=run_controls_simulate)
+    controls_build_parser = controls_subparsers.add_parser('build')
+    controls_build_parser.set_defaults(func=run_controls_build)
+    controls_test_parser = controls_subparsers.add_parser('test')
+    controls_test_subparsers = controls_test_parser.add_subparsers()
+    controls_test_all = controls_test_subparsers.add_parser('all')
+    controls_test_all.set_defaults(func=run_unittest)
+    controls_test_rrtavoidance_parser = controls_test_subparsers.add_parser('rrt_avoidance')
+    controls_test_rrtavoidance_parser.set_defaults(func=run_controls_test_rrtavoidance)
 
     ground_parser = subparsers.add_parser('ground')
     ground_subparsers = ground_parser.add_subparsers()
@@ -578,9 +634,6 @@ if __name__ == '__main__':
     ground_run_parser.set_defaults(func=run_ground_run)
     ground_shell_parser = ground_subparsers.add_parser('shell')
     ground_shell_parser.set_defaults(func=run_ground_shell)
-
-    build_parser = subparsers.add_parser('build')
-    build_parser.set_defaults(func=run_build)
 
     vision_parser = subparsers.add_parser('vision', help='vision help')
     vision_subparsers = vision_parser.add_subparsers()

@@ -22,40 +22,26 @@ cc_library(
     'io.h'
   ],
   deps = [
-    ':loop_output_handler',
-    ':loop_input_handler',
+    ':loop_handler',
     '//src/control/io/autopilot_interface:autopilot_interface',
     '//src/control:messages_cpp',
     '//lib/logger:log_sender',
     '//lib/dslr_interface:dslr_interface',
     '//lib/proto_comms:proto_comms',
+    '//lib/trigger:trigger',
     "@WiringPi//:WiringPi",
     "@pigpio//:pigpio",
   ],
 )
 
 cc_library(
-  name = 'loop_output_handler',
+  name = 'loop_handler',
   visibility = ['//visibility:public'],
   srcs = [
-    'loop_output_handler.cc'
+    'loop_handler.cc'
   ],
   hdrs = [
-    'loop_output_handler.h'
-  ],
-  deps = [
-    '//lib/phased_loop:phased_loop',
-  ],
-)
-
-cc_library(
-  name = 'loop_input_handler',
-  visibility = ['//visibility:public'],
-  srcs = [
-    'loop_input_handler.cc'
-  ],
-  hdrs = [
-    'loop_input_handler.h'
+    'loop_handler.h'
   ],
   deps = [
     '//lib/phased_loop:phased_loop',
