@@ -3,12 +3,12 @@
 #include <gtest/gtest.h>
 #include <iostream>
 
+#include "lib/physics_structs/physics_structs.h"
 #include "lib/rrt_avoidance/2dplane/2dplane.hpp"
 #include "lib/rrt_avoidance/2dplane/GridStateSpace.hpp"
 #include "lib/rrt_avoidance/birrt/birrt.h"
-#include "lib/physics_structs/physics_structs.h"
-#include "matplotlibcpp.h"
 #include "lib/rrt_avoidance/planning/Path.hpp"
+#include "matplotlibcpp.h"
 #include <cmath>
 #include <math.h>
 #include <stdio.h>
