@@ -1,5 +1,5 @@
 import targets
-from PIL import Image, ImageDraw, ImageEnhance
+from PIL import Image, ImageDraw
 from argparse import ArgumentParser
 import random
 import os
