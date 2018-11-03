@@ -194,7 +194,8 @@ if __name__ == '__main__':
         default=None,
         dest='origin_pos',
         help='x, y coordinate of the alternative origin to crop the image as a \
-        tuple. By default it is (0,0)')
+        tuple. By default it is (0,0) and max they can get is the width and \
+        height of the background minus image_size')
 
     args = parser.parse_args()
 
