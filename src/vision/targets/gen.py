@@ -33,7 +33,7 @@ TRANSFORMS = ('rotate', 'perspective', 'affine')
 
 
 def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
-               draw_box, rescale_ratio):
+               draw_box, rescale_ratio, origin_pos):
     background_files = os.scandir(bg_dir)
     field_width = math.trunc(math.log10(n))
     for i in range(n):
@@ -73,6 +73,7 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
                 random.randint(0, 359), resample=Image.BICUBIC,
                 expand=1).resize((t_size, t_size), resample=Image.BOX)
 
+
         target_pos = (random.randint(0, i_size[0] - t_size),
                       random.randint(0, i_size[1] - t_size))
 
@@ -109,7 +110,12 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
             draw.rectangle(target_bounds, outline=(255, 255, 255, 255))
 
         # Paste the target and save
-        result = background.crop(box=(0, 0, i_size[0], i_size[1]))
+        ori_x, ori_y = origin_pos[0], origin_pos[1]
+        if ori_x + i_size[0] > background.width:
+            ori_x = background.width - i_size[0]
+        if ori_y + i_size[1] > background.height:
+            ori_y = background.height - i_size[1]
+        result = background.crop(box=(ori_x, ori_y, ori_x + i_size[0], ori_y + i_size[1]))
         result.paste(target, box=target_pos, mask=target)
         result.save(os.path.join(dest_dir, im_filename + '.jpg'))
 
@@ -181,6 +187,14 @@ if __name__ == '__main__':
         default=1,
         dest='rescale_ratio',
         help='rescale the source image before using it as a background')
+    parser.add_argument(
+        '--origin_pos',
+        type=int,
+        nargs=2,
+        default=None,
+        dest='origin_pos',
+        help='x, y coordinate of the alternative origin to crop the image as a \
+        tuple. By default it is (0,0)')
 
     args = parser.parse_args()
 
@@ -203,6 +217,8 @@ if __name__ == '__main__':
         default_dest = os.path.join('output', args.target_shape)
         os.makedirs(default_dest, exist_ok=True)
         args.dest = default_dest
+    if args.origin_pos is None:
+        args.origin_pos = (0,0)
 
     class TargetSelector:
         def __init__(self, target_names, font):
@@ -242,4 +258,5 @@ if __name__ == '__main__':
         dest_dir=args.dest,
         transforms=args.transforms,
         draw_box=args.draw_box,
-        rescale_ratio=args.rescale_ratio)
+        rescale_ratio=args.rescale_ratio,
+        origin_pos=args.origin_pos)
