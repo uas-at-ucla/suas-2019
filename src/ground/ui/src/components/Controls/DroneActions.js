@@ -12,11 +12,11 @@ class DroneActions extends Component {
   render() {
     return (
       <div>
-         <span>Change Drone State</span>
-         <button onClick={this.props.droneTakeoff}>TAKEOFF</button>
-         <button onClick={this.props.droneLand}>LAND</button>
-         <button onClick={this.props.droneFailsafe}>FAILSAFE</button>
-         <button onClick={this.props.droneThrottleCut}>THROTTLE_CUT</button>
+        <span>Change Drone State</span>
+        <button onClick={this.props.droneTakeoff}>TAKEOFF</button>
+        <button onClick={this.props.droneLand}>LAND</button>
+        <button onClick={this.props.droneFailsafe}>FAILSAFE</button>
+        <button onClick={this.props.droneThrottleCut}>THROTTLE_CUT</button>
       </div>
     );
   }
