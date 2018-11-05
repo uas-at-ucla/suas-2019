@@ -22,4 +22,6 @@ EXPOSE 8099 22
 VOLUME ["/suas/src/vision/data_local"]
 
 WORKDIR /suas/src/vision
-ENTRYPOINT ["python3", "vision.py"]
+# if you leave out the -u argument, sometimes print statements are deferred
+# until after the docker container is killed
+ENTRYPOINT ["python3", "-u", "vision.py"]
