@@ -1,3 +1,43 @@
 #jumbotron {
   margin: 20px;
 }
+
+ul {
+  list-style-type: none;
+  margin: 0;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  overflow: hidden;
+  background-color: #808080;
+  color: black;
+}
+
+li {
+  display: inline;
+  text-decoration: none;
+}
+
+li a {
+  text-align: center;
+  padding: 135px;
+  color: black;
+  font-family: 'Georgia';
+  text-decoration: none;
+}
+
+li a :hover, a :visited, a :link, a :active {
+  text-decoration: none;
+  color: black;
+  all: unset;
+}
+
+li :hover{
+    text-decoration: none;
+    color: white;
+    background-color: black;
+}
+
+a :hover {
+  text-decoration: none;
+  all: unset;
+}
