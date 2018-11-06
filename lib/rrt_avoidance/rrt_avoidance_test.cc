@@ -1,7 +1,8 @@
 #include "getopt.h"
+#include <cmath>
 #include <gtest/gtest.h>
-#include <vector>
 #include <unordered_map>
+#include <vector>
 
 #include "matplotlibcpp.h"
 
@@ -14,11 +15,11 @@ namespace testing {
 
 bool plot = false;
 
-//
-// TEST(RRTAvoidance, NoObstacles) {
+//// TEST(RRTAvoidance, NoObstacles) {
 //   // Check that RRT takes a straight line path from position to goal.
 //
-//   // TODO(comran): Write something to check that final path is the shortest it
+//   // TODO(comran): Write something to check that final path is the shortest
+//   it
 //   // can be.
 //
 //   RRTAvoidance rrt_avoidance;
@@ -47,7 +48,8 @@ bool plot = false;
 // TEST(RRTAvoidance, DodgeObstacles) {
 //   // Check that RRT does not intersect with obstacles.
 //
-//   // TODO(comran): Write something to check that final path does not intersect
+//   // TODO(comran): Write something to check that final path does not
+//   intersect
 //   // with obstacles (both vertices and edges).
 //
 //   RRTAvoidance rrt_avoidance;
@@ -108,7 +110,8 @@ bool plot = false;
 //     //      0});
 //
 //     //      double projFactor =
-//     //          (AC.at(0) * AB.at(0) + AC.at(1) * AB.at(1)) / (magAB * magAB);
+//     //          (AC.at(0) * AB.at(0) + AC.at(1) * AB.at(1)) / (magAB *
+//     magAB);
 //     //      ::std::vector<double> AD;
 //     //      AD.push_back(projFactor * AB.at(0));
 //     //      AD.push_back(projFactor * AB.at(1));
@@ -142,7 +145,8 @@ bool plot = false;
 //     ::std::cout << "Running calculation #" << calcs << ::std::endl;
 //
 //     Position3D start = {0.0, 0.0, 0};
-//     Position3D end = {1e3 / coordinate_to_meter, 1e3 / coordinate_to_meter, 0};
+//     Position3D end = {1e3 / coordinate_to_meter, 1e3 / coordinate_to_meter,
+//     0};
 //     ::lib::mission_manager::Obstacles obstacles;
 //     ::lib::mission_manager::StaticObstacle *obstacle =
 //         obstacles.add_static_obstacles();
@@ -166,7 +170,8 @@ bool plot = false;
 //                           pow(x - obstacle_position->latitude(), 2));
 //
 //       for (double y = obstacle_position->longitude() - y_max;
-//            y < obstacle_position->longitude() + y_max; y += coord_radius / 20) {
+//            y < obstacle_position->longitude() + y_max; y += coord_radius /
+//            20) {
 //         obs_x.push_back(x);
 //         obs_y.push_back(y);
 //       }
@@ -201,92 +206,6 @@ bool plot = false;
 //   }
 // }
 //
-
-::std::vector<double> normalizeWaypoints(::std::vector<double>& waypoint, double FACTOR) {
-  ::std::vector<double> normalized;
-  for (int i = 0; i < waypoint.size(); i++) {
-    normalized.push_back(waypoint[i] - FACTOR);
-  }
-
-  return normalized;
-}
-
-::std::vector<int> mapToGridWaypoints(::std::vector<double>& normalized_waypoint, ::std::string dim) {
-  if (dim != "x" && dim != "y") {
-    ::std::cout << "Incorrect dimension specified... quitting" << ::std::endl;
-    exit(69);
-  }
-
-  double real_range = 0.001;
-  double map_range = dim == "x" ? 40.0 : 20.0;
-
-  ::std::cout << "Dimension specified: " << dim << ::std::endl;
-  ::std::cout << "Mapping to new range: " << map_range << ::std::endl;
-
-  ::std::vector<int> gridpoints;
-  for (int i = 0; i < normalized_waypoint.size(); i++) {
-    double normalized_pos = normalized_waypoint[i] / real_range;
-    // ::std::cout << "Computed ratio: " << normalized_pos << ::std::endl;
-    int grid_val = static_cast<int>(map_range * normalized_pos);
-    gridpoints.push_back(grid_val);
-  }
-
-  return gridpoints;
-}
-
-void printAsciiTable(::std::vector<double>& waypoint_x, ::std::vector<double>& waypoint_y,
-  double range_x, double range_y) {
-  ::std::cout << "============== ASCII MAP ================" << ::std::endl;
-  // Map to 40x80 matrix since gives best appearance of square. Severe loss of
-  // precision in y direction
-  ::std::cout << "Map x: [" << -range_x << " ," << range_x << "] --> "
-    << "[" << -40 << " ," << 40 << "]" << ::std::endl;
-  ::std::cout << "Map y: [" << -range_y << " ," << range_y << "] --> "
-    << "[" << -20 << " ," << 20 << "]" << ::std::endl;
-
-  // Normlize waypoints
-  ::std::vector<double> normalized_waypoint_x = normalizeWaypoints(waypoint_x, 34.1747796812899);
-  ::std::vector<double> normalized_waypoint_y = normalizeWaypoints(waypoint_y, -118.48062618357);
-  ::std::cout << "Printing normalized waypoints" << ::std::endl;
-  for (int i = 0; i < normalized_waypoint_x.size(); i++) {
-    ::std::cout << normalized_waypoint_x[i] << ", " << normalized_waypoint_y[i] << ::std::endl;
-  }
-  // Map to grid points and put in hashmap
-  ::std::vector<int> grid_waypoint_x = mapToGridWaypoints(normalized_waypoint_x, "x");
-  ::std::vector<int> grid_waypoint_y = mapToGridWaypoints(normalized_waypoint_y, "y");
-  ::std::unordered_map<::std::string, bool> waypoint_hash;
-  ::std::cout << "Printing grid waypoints" << ::std::endl;
-  for (int i = 0; i < grid_waypoint_x.size(); i++) {
-    ::std::cout << grid_waypoint_x[i] << ", " << grid_waypoint_y[i] << ::std::endl;
-    // Store in map
-    ::std::string key = ::std::to_string(grid_waypoint_x[i]) + ::std::to_string(grid_waypoint_y[i]);
-    ::std::cout << "Generated key: " << key << ::std::endl;
-    waypoint_hash[key] = true;
-  }
-
-
-
-  // Display on grid
-  for (int i = 20; i > -21; i--) {
-    for (int j = -40; j < 41; j++) {
-      ::std::string key = ::std::to_string(j) + ::std::to_string(i);
-      auto p = waypoint_hash.find(key);
-
-      // TODO: check if in obstacle hash
-      if (false) {
-        ::std:: cout << 'O';
-      }
-      else if (p != waypoint_hash.end()) {
-        ::std:: cout << 'x';
-      }
-      else {
-        ::std:: cout << '.';
-      }
-    }
-    ::std::cout << ::std::endl;
-  }
-}
-
 /**
  * Normalize waypoint values by subtracting the FACTOR from the each waypoint
  * value. Handles 1 dimension vector. To use with both x and y, call separately
@@ -296,7 +215,8 @@ void printAsciiTable(::std::vector<double>& waypoint_x, ::std::vector<double>& w
  * @return vector<double>:  Normalized vector of doubles containing
  *                          values between -0.001 and 0.001
  */
-::std::vector<double> normalizeWaypoints(::std::vector<double>& waypoint, double FACTOR) {
+::std::vector<double> normalizeWaypoints(::std::vector<double> &waypoint,
+                                         double FACTOR) {
   ::std::vector<double> normalized;
   for (int i = 0; i < waypoint.size(); i++) {
     normalized.push_back(waypoint[i] - FACTOR);
@@ -311,7 +231,9 @@ void printAsciiTable(::std::vector<double>& waypoint_x, ::std::vector<double>& w
  * @param  dim                  "x" or "y"
  * @return vector<int>          vector of gridpoints for this dim
  */
-::std::vector<int> mapToGridWaypoints(::std::vector<double>& normalized_waypoint, ::std::string dim) {
+::std::vector<int>
+mapToGridWaypoints(::std::vector<double> &normalized_waypoint,
+                   ::std::string dim) {
   if (dim != "x" && dim != "y") {
     ::std::cout << "Incorrect dimension specified... quitting" << ::std::endl;
     exit(69);
@@ -334,6 +256,53 @@ void printAsciiTable(::std::vector<double>& waypoint_x, ::std::vector<double>& w
   return gridpoints;
 }
 
+::std::string getPosHashKey(int x, int y) {
+  return ::std::to_string(x) + ::std::to_string(y);
+}
+
+// Scale very ambiguous at the moment, for now treating as -0.001, 0.001
+double normalizeToScale(double value) {
+  double scaling_factor = 0.001;
+  double normalized_scale = 2000.0;
+  return (value * scaling_factor / normalized_scale);
+}
+
+::std::unordered_map<::std::string, bool>
+getObstacleDisplayHash(::lib::mission_manager::Position2D *obstacle_position,
+                       double obstacle_radius) {
+  // TODO: change this to get real radius
+  double r = normalizeToScale(obstacle_radius);
+
+  ::std::cout << "Called getObstacleDisplayHash, obstacle: "
+              << obstacle_position->latitude() << ::std::endl;
+  // convert obstacle hash into a circle
+  // store obstacles as O in graph
+  ::std::unordered_map<::std::string, bool> obstacle_display_hash;
+  return obstacle_display_hash;
+}
+
+/**
+ * Creates and returns an hash of drone path and obstacle locations.
+ * @param grid_waypoint_x: vector of grid pos of x waypoints
+ * @param grid_waypoint_y: vector of grid pos of y waypoints
+ * @param grid_obstacle_x: vector of grid pos of x obstacles
+ * @param grid_obstacle_y: vector of grid pos of y obstacles
+ */
+// ::std::unordered_map<::std::string, int>
+// getDisplayHash(::std::vector<double> &grid_waypoint_x,
+//                ::std::vector<double> &grid_waypoint_y,
+//                ::std::vector<double> &grid_obstacle_x,
+//                ::std::vector<double> &grid_obstacle_y) {
+//   // add obstacles to hash
+//
+//   // for index starting at 0 and iterating up to but not including n-1,
+//   identify
+//   // and store in hash the shortest/direct path not colliding with obstacle
+//   from
+//   // index i to i+1.
+//   // probably handle with a helper function, passing in hash by reference
+// }
+
 /**
  * Print the ascii table map
  * @param waypoint_x: non normalized waypoints for x
@@ -341,37 +310,44 @@ void printAsciiTable(::std::vector<double>& waypoint_x, ::std::vector<double>& w
  * @param range_x     range size for x dim
  * @param range_y     range size for y dim
  */
-void printAsciiTable(::std::vector<double>& waypoint_x, ::std::vector<double>& waypoint_y,
-  double range_x, double range_y) {
+void printAsciiTable(::std::vector<double> &waypoint_x,
+                     ::std::vector<double> &waypoint_y, double range_x,
+                     double range_y) {
   ::std::cout << "============== ASCII MAP ================" << ::std::endl;
   // Map to 40x80 matrix since gives best appearance of square. Severe loss of
   // precision in y direction
   ::std::cout << "Map x: [" << -range_x << " ," << range_x << "] --> "
-    << "[" << -40 << " ," << 40 << "]" << ::std::endl;
+              << "[" << -40 << " ," << 40 << "]" << ::std::endl;
   ::std::cout << "Map y: [" << -range_y << " ," << range_y << "] --> "
-    << "[" << -20 << " ," << 20 << "]" << ::std::endl;
+              << "[" << -20 << " ," << 20 << "]" << ::std::endl;
 
-  // Normlize waypoints
-  ::std::vector<double> normalized_waypoint_x = normalizeWaypoints(waypoint_x, 34.1747796812899);
-  ::std::vector<double> normalized_waypoint_y = normalizeWaypoints(waypoint_y, -118.48062618357);
+  // Normlize waypoints to be between [-0.001, 0.001]
+  ::std::vector<double> normalized_waypoint_x =
+      normalizeWaypoints(waypoint_x, 34.1747796812899);
+  ::std::vector<double> normalized_waypoint_y =
+      normalizeWaypoints(waypoint_y, -118.48062618357);
   ::std::cout << "Printing normalized waypoints" << ::std::endl;
   for (int i = 0; i < normalized_waypoint_x.size(); i++) {
-    ::std::cout << normalized_waypoint_x[i] << ", " << normalized_waypoint_y[i] << ::std::endl;
+    ::std::cout << normalized_waypoint_x[i] << ", " << normalized_waypoint_y[i]
+                << ::std::endl;
   }
+
   // Map to grid points and put in hashmap
-  ::std::vector<int> grid_waypoint_x = mapToGridWaypoints(normalized_waypoint_x, "x");
-  ::std::vector<int> grid_waypoint_y = mapToGridWaypoints(normalized_waypoint_y, "y");
+  ::std::vector<int> grid_waypoint_x =
+      mapToGridWaypoints(normalized_waypoint_x, "x");
+  ::std::vector<int> grid_waypoint_y =
+      mapToGridWaypoints(normalized_waypoint_y, "y");
   ::std::unordered_map<::std::string, bool> waypoint_hash;
   ::std::cout << "Printing grid waypoints" << ::std::endl;
   for (int i = 0; i < grid_waypoint_x.size(); i++) {
-    ::std::cout << grid_waypoint_x[i] << ", " << grid_waypoint_y[i] << ::std::endl;
+    ::std::cout << grid_waypoint_x[i] << ", " << grid_waypoint_y[i]
+                << ::std::endl;
     // Store in map
-    ::std::string key = ::std::to_string(grid_waypoint_x[i]) + ::std::to_string(grid_waypoint_y[i]);
+    ::std::string key = ::std::to_string(grid_waypoint_x[i]) +
+                        ::std::to_string(grid_waypoint_y[i]);
     ::std::cout << "Generated key: " << key << ::std::endl;
     waypoint_hash[key] = true;
   }
-
-
 
   // Display on grid
   for (int i = 20; i > -21; i--) {
@@ -381,17 +357,42 @@ void printAsciiTable(::std::vector<double>& waypoint_x, ::std::vector<double>& w
 
       // TODO: check if in obstacle hash
       if (false) {
-        ::std:: cout << 'O';
-      }
-      else if (p != waypoint_hash.end()) {
-        ::std:: cout << 'x';
-      }
-      else {
-        ::std:: cout << '.';
+        ::std::cout << 'O';
+      } else if (p != waypoint_hash.end()) {
+        ::std::cout << 'x';
+      } else {
+        ::std::cout << '.';
       }
     }
     ::std::cout << ::std::endl;
   }
+}
+
+::std::vector<::std::vector<double>>
+obstacle_plot(double center_x, double center_y, double radius) {
+  // compute some points for the circle centered about zero, then translate it
+  // via center
+  int n = 100;
+  int min = -n / 2;
+  int max = n / 2;
+
+  std::vector<double> x_points, y_points;
+  double step_size = radius * 2 / n;
+
+  for (double i = -radius; i <= radius; i += step_size) {
+    x_points.push_back(i + center_x);
+    y_points.push_back(sqrt(pow(radius, 2) - pow(i, 2)) + center_y);
+  }
+
+  for (double i = radius; i >= -radius; i -= step_size) {
+    x_points.push_back(i + center_x);
+    y_points.push_back(-sqrt(pow(radius, 2) - pow(i, 2)) + center_y);
+  }
+
+  ::std::vector<::std::vector<double>> circle_points;
+  circle_points.push_back(x_points);
+  circle_points.push_back(y_points);
+  return circle_points;
 }
 
 TEST(RRTAvoidance, RealObstacles) {
@@ -434,7 +435,6 @@ TEST(RRTAvoidance, RealObstacles) {
     final_y.push_back(avoidance_path[i].longitude);
   }
 
-
   // Plot travel data in ascii table
   if (plot) {
     ::std::cout << "---- ----" << ::std::endl;
@@ -443,24 +443,28 @@ TEST(RRTAvoidance, RealObstacles) {
     }
 
     ::std::cout << "Printing obstacle position" << ::std::endl;
-    ::std::cout << obstacle_position->latitude() << ", " << obstacle_position->longitude() << ::std::endl;
+    ::std::cout << obstacle_position->latitude() << ", "
+                << obstacle_position->longitude() << ::std::endl;
 
+    // getObstacleDisplayHash(obstacle_position, 20);
     // Store obstacles the same way we store drone waypoints
-    ::std::vector<double> obstacle_x, obstacle_y;
-    obstacle_x.push_back(obstacle_position->latitude());
-    obstacle_y.push_back(obstacle_position->longitude());
-
+    // ::std::vector<double> obstacle_x, obstacle_y;
+    // obstacle_x.push_back(obstacle_position->latitude());
+    // obstacle_y.push_back(obstacle_position->longitude());
 
     // Figure out the range, scale down to 80 characters
     // Map the range to screen coordinates for ascii
 
-    printAsciiTable(final_x, final_y, 1e-3, 1e-3);
-
+    // printAsciiTable(final_x, final_y, 1e-3, 1e-3);
   }
+
+  std::vector<std::vector<double>> obstacle_points = obstacle_plot(
+      obstacle_position->latitude(), obstacle_position->longitude(), 0.000225);
 
   if (plot) {
     ::matplotlibcpp::xkcd();
     ::matplotlibcpp::plot(final_x, final_y);
+    matplotlibcpp::plot(obstacle_points[0], obstacle_points[1]);
     ::matplotlibcpp::show();
   }
 }
