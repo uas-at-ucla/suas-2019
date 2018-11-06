@@ -1,28 +1,65 @@
 import os
 import sys
 import argparse
+import subprocess
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 sys.dont_write_bytecode = True
-sys.path.insert(0, '../../lib')
-import process_manager
+sys.path.insert(0, 'tools')
+import npm_install
 
-processes = process_manager.ProcessManager()
+def build():
+    os.chdir("server")
+    npm_install.npm_install()
+    os.chdir("..")
 
-def run_command(cmd):
-    processes.spawn_process_wait_for_code(cmd)
+    os.chdir("ui")
+    npm_install.npm_install()
+    os.chdir("..")
 
-# TODO: Handle command line arguments
-# print(sys.argv)
+    print("done building")
+
+def run_all(args):
+    subprocess.call(["npm", "start"], cwd="server")
+
+def run_server(args):
+    subprocess.call(["node", "ground_server.js"], cwd="server")
+
+def run_ui(args):
+    subprocess.call(["npm", "start"], cwd="ui")
+
+def deploy_win(args):
+    subprocess.call(["npm", "run", "package-win"], cwd="ui")
+
+def deploy_mac(args):
+    subprocess.call(["npm", "run", "package-mac"], cwd="ui")
+
+def deploy_linux(args):
+    subprocess.call(["npm", "run", "package-linux"], cwd="ui")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--build', action='store_true')
+    subparsers = parser.add_subparsers(dest='option')
+    subparsers.required = True
+    subparsers.add_parser('build').set_defaults(func=lambda args: None) # do nothing
+
+    run_parser = subparsers.add_parser('run')
+    run_parser.set_defaults(func=run_all)
+    run_subparsers = run_parser.add_subparsers()
+    
+    run_subparsers.add_parser('all')
+    run_subparsers.add_parser('server').set_defaults(func=run_server)
+    run_subparsers.add_parser('ui').set_defaults(func=run_ui)
+
+    deploy_win_parser = subparsers.add_parser('deploy-win')
+    deploy_win_parser.set_defaults(func=deploy_win)
+
+    deploy_mac_parser = subparsers.add_parser('deploy-mac')
+    deploy_mac_parser.set_defaults(func=deploy_mac)
+
+    deploy_linux_parser = subparsers.add_parser('deploy-linux')
+    deploy_linux_parser.set_defaults(func=deploy_linux)
+
     args = parser.parse_args()
-
-    run_command("cd server; ../tools/npm_install.sh")
-    run_command("cd ui; ../tools/npm_install.sh")
-
-    # Run only if the user did not specify to just build the code.
-    if not args.build:
-        processes.run_command("cd server; npm start")
+    build() # always build
+    args.func(args)

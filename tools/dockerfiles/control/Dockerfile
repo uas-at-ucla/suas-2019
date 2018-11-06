@@ -13,13 +13,13 @@ RUN apt update     -qq                                                      && \
     apt install -y -qq gnupg
 
 # Add apt repositories containing required packages. ###########################
-RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
-  "deb-src http://deb.debian.org/debian buster main\n\n" \
-  "deb http://deb.debian.org/debian buster-updates main contrib non-free\n" \
-  "deb-src http://deb.debian.org/debian buster-updates main\n\n" \
-  "deb http://deb.debian.org/debian sid main contrib non-free\n" \
-  "deb-src http://deb.debian.org/debian sid main" > \
-  /etc/apt/sources.list
+#RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
+#  "deb-src http://deb.debian.org/debian buster main\n\n" \
+#  "deb http://deb.debian.org/debian buster-updates main contrib non-free\n" \
+#  "deb-src http://deb.debian.org/debian buster-updates main\n\n" \
+#  "deb http://deb.debian.org/debian sid main contrib non-free\n" \
+#  "deb-src http://deb.debian.org/debian sid main" > \
+#  /etc/apt/sources.list
 
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
@@ -73,6 +73,7 @@ RUN apt-get update                                                          && \
     python3.7                                                                  \
     python3.7-dev                                                              \
     python3.7-distutils                                                        \
+    python-matplotlib                                                          \
     python-empy                                                                \
     python-jinja2                                                              \
     ruby                                                                       \
@@ -152,7 +153,7 @@ RUN pip2.7 install --user                                                      \
   Flask-SocketIO==2.9.2                                                        \
   futures==3.1.1                                                               \
   socketIO-client==0.7.2                                                       \
-  numpy==1.13.1                                                                \
+  numpy==1.15.2                                                                \
   empy==3.3.2                                                                  \
   toml==0.9.4                                                                  \
   eventlet==0.23.0                                                             \
