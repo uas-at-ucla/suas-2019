@@ -8,8 +8,7 @@ import urllib.request
 import subprocess
 import xml.etree.ElementTree as ET
 
-COLORS = {
-    'white': (255, 255, 255),
+COLORS = { 'white': (255, 255, 255),
     'black': (0, 0, 0),
     'gray': (128, 128, 128),
     'red': (255, 0, 0),
@@ -22,18 +21,18 @@ COLORS = {
 }
 
 KELVIN_TEMP = {
-    4500: (255,219,186),
-    5000: (255,228,206),
-    5500: (255,236,224),
-    6000: (255,243,239),
-    6500: (255,249,253),
-    7000: (245,243,255),
-    7500: (235,238,255),
-    8000: (227,233,255),
-    8500: (220,229,255),
-    9000: (214,225,255),
-    9500: (208,222,255),
-    10000: (204,219,255)
+    4500: (255, 219, 186),
+    5000: (255, 228, 206),
+    5500: (255, 236, 224),
+    6000: (255, 243, 239),
+    6500: (255, 249, 253),
+    7000: (245, 243, 255),
+    7500: (235, 238, 255),
+    8000: (227, 233, 255),
+    8500: (220, 229, 255),
+    9000: (214, 225, 255),
+    9500: (208, 222, 255),
+    10000: (204, 219, 255)
 }
 
 LETTERS = [
@@ -76,10 +75,11 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
         pure_letter_color = random.choice(list(COLORS.values(
         ))) if letter_color_name == 'random' else COLORS[letter_color_name]
 
-        while (pure_letter_color == pure_shape_color and shape_color_name == 'random'
+        while (pure_letter_color == pure_shape_color
+               and shape_color_name == 'random'
                and letter_color_name == 'random'):
             pure_shape_color = random.choice(list(COLORS.values()))
-        
+
         #randomize rgb values for the colors chosen
         shape_color_lst = []
         for value in pure_shape_color:
@@ -98,10 +98,10 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
                 letter_color_lst.append(value + int(random.uniform(0, 15)))
             else:
                 letter_color_lst.append(value + int(random.uniform(-15, 15)))
-        
-        shape_color = tuple(shape_color_lst)        
+
+        shape_color = tuple(shape_color_lst)
         letter_color = tuple(letter_color_lst)
-       
+
         # Draw a target with a generator decided by the iterator
         generator = next(t_gen)
         target = generator.draw_target(
@@ -155,17 +155,14 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
         # Paste the target, simulate incorrect white balance, and save
         result = background.crop(box=(0, 0, i_size[0], i_size[1]))
         result.paste(target, box=target_pos, mask=target)
+        if white_balance:
+            r, g, b = random.choice(tuple(KELVIN_TEMP.values()))
+            convert_temp = (r / 255.0, 0.0, 0.0, 0.0, 0.0, g / 255.0, 0.0, 0.0,
+                            0.0, 0.0, b / 255.0, 0.0)
+            result = result.convert('RGB', convert_temp)
         result.save(
             os.path.join(dest_dir,
                          im_filename + '.' + background_file.split('.')[1]))
-        if white_balance == '1':  
-            r, g, b = random.choice(tuple(KELVIN_TEMP.values()))
-            convert_temp = ( r / 255.0, 0.0, 0.0, 0.0,
-                             0.0, g / 255.0, 0.0, 0.0,
-                             0.0, 0.0, b / 255.0, 0.0 )
-            result = result.convert('RGB', convert_temp)
-            
-        result.save(os.path.join(dest_dir, im_filename + '.jpg'))
 
 
 if __name__ == '__main__':
@@ -199,9 +196,9 @@ if __name__ == '__main__':
     parser.add_argument(
         '-w',
         '--white-balance',
-        default=0,
         dest='white_balance',
-        help='option to simulate incorrect white balance; 0 for OFF, 1 for ON')
+        action='store_true',
+        help='simulate incorrect white balance')
     parser.add_argument(
         '--target-size',
         type=int,
