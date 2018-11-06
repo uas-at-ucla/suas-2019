@@ -52,11 +52,17 @@ AutopilotSensorReader::AutopilotSensorReader(
     autopilot_interface::AutopilotInterface *copter_io)
     : copter_io_(copter_io),
       last_gps_(-::std::numeric_limits<double>::infinity()),
-      sensors_sender_("ipc:///tmp/uasatucla_sensors.ipc") {
+      sensors_sender_("ipc:///tmp/uasatucla_sensors->ipc") {
   last_timestamps_.reset_timestamps();
 }
 
 void AutopilotSensorReader::RunIteration() {
+  double current_time =
+      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+          ::std::chrono::system_clock::now().time_since_epoch())
+          .count() *
+      1e-9;
+
   autopilot_interface::TimeStamps current_timestamps =
       copter_io_->current_messages.time_stamps;
 
@@ -70,106 +76,116 @@ void AutopilotSensorReader::RunIteration() {
 
   last_timestamps_ = current_timestamps;
 
-  ::src::control::Sensors sensors = ::src::control::Sensors();
+  ::src::control::Sensors *sensors = new ::src::control::Sensors();
 
   // GPS data.
   {
     mavlink_global_position_int_t gps =
         copter_io_->current_messages.global_position_int;
 
-    sensors.set_latitude(static_cast<double>(gps.lat) / 1e7);
-    sensors.set_longitude(static_cast<double>(gps.lon) / 1e7);
-    sensors.set_altitude(static_cast<float>(gps.alt) / 1e3);
+    sensors->set_latitude(static_cast<double>(gps.lat) / 1e7);
+    sensors->set_longitude(static_cast<double>(gps.lon) / 1e7);
+    sensors->set_altitude(static_cast<float>(gps.alt) / 1e3);
 
-    sensors.set_relative_altitude(static_cast<float>(gps.relative_alt) / 1e3);
+    sensors->set_relative_altitude(static_cast<float>(gps.relative_alt) / 1e3);
 
-    sensors.set_velocity_x(static_cast<float>(gps.vx) / 1e2);
-    sensors.set_velocity_y(static_cast<float>(gps.vy) / 1e2);
-    sensors.set_velocity_z(static_cast<float>(gps.vz) / 1e2);
+    sensors->set_velocity_x(static_cast<float>(gps.vx) / 1e2);
+    sensors->set_velocity_y(static_cast<float>(gps.vy) / 1e2);
+    sensors->set_velocity_z(static_cast<float>(gps.vz) / 1e2);
   }
 
-  sensors.set_heading(
+  sensors->set_heading(
       static_cast<float>(copter_io_->current_messages.vfr_hud.heading));
 
   // GPS raw data.
   {
     mavlink_gps_raw_int_t gps_raw = copter_io_->current_messages.gps_raw_int;
 
-    sensors.set_gps_satellite_count(gps_raw.satellites_visible);
-    sensors.set_gps_eph(gps_raw.eph);
-    sensors.set_gps_epv(gps_raw.epv);
-    sensors.set_gps_ground_speed(static_cast<float>(gps_raw.vel) / 1e2);
+    sensors->set_gps_satellite_count(gps_raw.satellites_visible);
+    sensors->set_gps_eph(gps_raw.eph);
+    sensors->set_gps_epv(gps_raw.epv);
+    sensors->set_gps_ground_speed(static_cast<float>(gps_raw.vel) / 1e2);
   }
 
   // IMU data.
   {
     mavlink_highres_imu_t imu = copter_io_->current_messages.highres_imu;
 
-    sensors.set_accelerometer_x(imu.xacc);
-    sensors.set_accelerometer_y(imu.yacc);
-    sensors.set_accelerometer_z(imu.zacc);
+    sensors->set_accelerometer_x(imu.xacc);
+    sensors->set_accelerometer_y(imu.yacc);
+    sensors->set_accelerometer_z(imu.zacc);
 
-    sensors.set_gyro_x(imu.xgyro);
-    sensors.set_gyro_y(imu.ygyro);
-    sensors.set_gyro_z(imu.zgyro);
+    sensors->set_gyro_x(imu.xgyro);
+    sensors->set_gyro_y(imu.ygyro);
+    sensors->set_gyro_z(imu.zgyro);
 
-    sensors.set_absolute_pressure(imu.abs_pressure);
-    sensors.set_relative_pressure(imu.diff_pressure);
-    sensors.set_pressure_altitude(imu.pressure_alt);
-    sensors.set_temperature(imu.temperature);
+    sensors->set_absolute_pressure(imu.abs_pressure);
+    sensors->set_relative_pressure(imu.diff_pressure);
+    sensors->set_pressure_altitude(imu.pressure_alt);
+    sensors->set_temperature(imu.temperature);
   }
 
-  sensors.set_last_gps(last_gps_);
+  sensors->set_last_gps(last_gps_);
 
   // Battery data.
   {
     mavlink_sys_status_t sys_status = copter_io_->current_messages.sys_status;
 
-    sensors.set_battery_voltage(static_cast<float>(sys_status.voltage_battery) /
-                                1e3);
-    sensors.set_battery_current(static_cast<float>(sys_status.current_battery) /
-                                1e3);
+    sensors->set_battery_voltage(
+        static_cast<float>(sys_status.voltage_battery) / 1e3);
+    sensors->set_battery_current(
+        static_cast<float>(sys_status.current_battery) / 1e3);
   }
 
   // Armed?
   {
     mavlink_heartbeat_t heartbeat = copter_io_->current_messages.heartbeat;
-    sensors.set_armed(!!(heartbeat.base_mode >> 7));
+    sensors->set_armed(!!(heartbeat.base_mode >> 7));
 
     AutopilotState autopilot_state = UNKNOWN;
 
     switch (heartbeat.custom_mode) {
-      case 0b00000010000001000000000000000000:
+      case kTakeoffCommandMode:
         autopilot_state = TAKEOFF;
         break;
-      case 0b00000100000001000000000000000000:
-      case 0b00000011000001000000000000000000:
+      case kHoldCommandMode:
+      case kHoldAlternateCommandMode:
         autopilot_state = HOLD;
         break;
-      case 0b00000000000001100000000000000000:
+      case kOffboardCommandMode:
         autopilot_state = OFFBOARD;
         break;
-      case 0b00000101000001000000000000000000:
+      case kRtlCommandMode:
         autopilot_state = RTL;
         break;
-      case 0b00000110000001000000000000000000:
+      case kLandCommandMode:
         autopilot_state = LAND;
         break;
       default:
         autopilot_state = UNKNOWN;
     }
 
-    sensors.set_autopilot_state(autopilot_state);
+    sensors->set_autopilot_state(autopilot_state);
   }
 
   // Serialize sensor protobuf and send it over ZMQ.
-  sensors_sender_.Send(sensors);
+  UasMessage message = ::src::control::UasMessage();
+  message.set_time(current_time);
+  message.set_allocated_sensors(sensors);
+  sensors_sender_.Send(message);
 }
 
 AutopilotOutputWriter::AutopilotOutputWriter(
     autopilot_interface::AutopilotInterface *copter_io)
     : copter_io_(copter_io),
-      output_receiver_("ipc:///tmp/uasatucla_output.ipc", 5) {
+      output_receiver_("ipc:///tmp/uasatucla_output.ipc", 5),
+      takeoff_trigger_(kTriggerSignalTolerance),
+      hold_trigger_(kTriggerSignalTolerance),
+      offboard_trigger_(kTriggerSignalTolerance),
+      rtl_trigger_(kTriggerSignalTolerance),
+      land_trigger_(kTriggerSignalTolerance),
+      arm_trigger_(kTriggerSignalTolerance),
+      disarm_trigger_(kTriggerSignalTolerance) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.
@@ -183,19 +199,9 @@ AutopilotOutputWriter::AutopilotOutputWriter(
 #endif
 }
 
-void AutopilotOutputWriter::Read() {}
-
-void AutopilotOutputWriter::Write() {
-  double current_time =
-      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
-          ::std::chrono::system_clock::now().time_since_epoch())
-          .count() *
-      1e-9;
-
+void AutopilotOutputWriter::RunIteration() {
   ::src::control::Output output;
   if (!output_receiver_.HasMessages()) {
-    ::std::cout << "NO OUTPUT @ " << ::std::setprecision(20) << current_time
-                << "\n";
     return;
   }
 
@@ -225,68 +231,32 @@ void AutopilotOutputWriter::Write() {
   set_servo_pulsewidth(pigpio_, 24, gimbal_angle);
 #endif
 
-  if (output.trigger_takeoff() + 0.1 > current_time) {
-    ::std::cout << "taking off!" << ::std::endl;
-    if (!did_takeoff_) {
-      did_takeoff_ = true;
-      copter_io_->Takeoff();
-    }
-  } else {
-    did_takeoff_ = false;
+  if (takeoff_trigger_.Process(output.trigger_takeoff())) {
+    copter_io_->Takeoff();
   }
 
-  if (output.trigger_hold() + 0.1 > current_time) {
-    if (!did_hold_) {
-      did_hold_ = true;
-      copter_io_->Hold();
-    }
-  } else {
-    did_hold_ = false;
+  if (hold_trigger_.Process(output.trigger_hold())) {
+    copter_io_->Hold();
   }
 
-  if (output.trigger_offboard() + 0.1 > current_time) {
-    if (!did_offboard_) {
-      did_offboard_ = true;
-      copter_io_->Offboard();
-    }
-  } else {
-    did_offboard_ = false;
+  if (offboard_trigger_.Process(output.trigger_offboard())) {
+    copter_io_->Offboard();
   }
 
-  if (output.trigger_rtl() + 0.1 > current_time) {
-    if (!did_rtl_) {
-      did_rtl_ = true;
-      copter_io_->ReturnToLaunch();
-    }
-  } else {
-    did_rtl_ = false;
+  if (offboard_trigger_.Process(output.trigger_rtl())) {
+    copter_io_->ReturnToLaunch();
   }
 
-  if (output.trigger_land() + 0.1 > current_time) {
-    if (!did_land_) {
-      did_land_ = true;
-      copter_io_->Land();
-    }
-  } else {
-    did_land_ = false;
+  if (land_trigger_.Process(output.trigger_land())) {
+    copter_io_->Land();
   }
 
-  if (output.trigger_arm() + 0.1 > current_time) {
-    if (!did_arm_) {
-      did_arm_ = true;
-      copter_io_->Arm();
-    }
-  } else {
-    did_arm_ = false;
+  if (arm_trigger_.Process(output.trigger_arm())) {
+    copter_io_->Arm();
   }
 
-  if (output.trigger_disarm() + 0.1 > current_time) {
-    if (!did_disarm_) {
-      did_disarm_ = true;
-      copter_io_->Disarm();
-    }
-  } else {
-    did_disarm_ = false;
+  if (disarm_trigger_.Process(output.trigger_disarm())) {
+    copter_io_->Disarm();
   }
 }
 

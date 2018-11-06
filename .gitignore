@@ -11,6 +11,7 @@ mav.tlog.raw
 package-lock.json
 **/node_modules
 core
+.vscode
 
 /src/vision/target_generator/*.egg-info/
 /src/vision/target_generator/.installed.cfg
