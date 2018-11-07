@@ -1,5 +1,4 @@
-import { createStore, applyMiddleware } from 'redux';
-import { combineReducers } from 'redux-immutable';
+import { createStore, applyMiddleware, combineReducers } from 'redux';
 import { createLogger } from 'redux-logger'
 
 import communicator from './communicator';
@@ -14,7 +13,6 @@ const logger = createLogger({
   	let shouldLog = (action.type === 'TELEMETRY');
     return shouldLog;
   },
-  stateTransformer: (state) => state.toJS(),
   collapsed: true
 });
 

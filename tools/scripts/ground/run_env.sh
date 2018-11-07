@@ -70,6 +70,7 @@ DOCKER_RUN_CMD="set -x; \
   sleep infinity"
 
 docker run \
+  --rm \
   -d \
   -p 3000:3000 \
   -v $ROOT_PATH:/home/uas/code_env \

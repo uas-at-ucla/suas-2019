@@ -41,8 +41,8 @@ and reliability for the control software.
 automatically build every commit that is pushed to this Github repository.
 
 ### Installation
-Install docker, tmux, and python2.7. After that, "./uas.sh" will list all of the
-possible commands that can be run. Use "./uas.sh build" to build the code.
+Install docker, tmux, and python2.7. After that, `./uas.sh` will list all of the
+possible commands that can be run. Use `./uas.sh controls build` to build the controls code.
 
 ### Platforms and Libraries Used
  * [PX4 Firmware](https://github.com/PX4/Firmware) as the flight controller software stack and simulator.
