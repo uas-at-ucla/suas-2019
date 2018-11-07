@@ -51,15 +51,17 @@ R_EARTH = 6.371e6  # meters (avg radius if earth were a sphere)
 # Defaults ####################################################################
 
 # General Defaults
-DEFAULT_DATA_DIR = os.path.abspath('data_local')
+DOCKER_DATA_DIR = os.path.abspath('data_local')
 print('cwd: ' + os.getcwd())
-print('dir: ' + DEFAULT_DATA_DIR)
+print('dir: ' + DOCKER_DATA_DIR)
 
 # Camera Defaults
 CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9)  # mm
 LENS_FOCAL_LENGTH = 18  # mm
 
 # Server defaults
+DRONE_HOST_KEY = '/suas/src/vision/known_hosts'
+DRONE_SSH_ID = '/suas/src/vision/id_rsa_local'
 DRONE_USER = 'benlimpa'
 SECRET_KEY = 'flappy'
 DEFAULT_SRV_IP = '0.0.0.0'
@@ -70,6 +72,8 @@ YOLO_IP = '0.0.0.0'
 RSYNC_IP = '0.0.0.0'
 SNIPPER_IP = '0.0.0.0'
 CLASSIFIER_IP = '0.0.0.0'
+SNIPPER_HOST_KEY = '/suas/src/vision/known_hosts'
+SNIPPER_SSH_ID = '/suas/src/vision/id_rsa_local'
 SNIPPER_USER = 'benlimpa'
 DRONE_IMG_FOLDER = '/path/to/images'
 
@@ -77,7 +81,7 @@ DRONE_IMG_FOLDER = '/path/to/images'
 DEFAULT_VSN_USER = 'benlimpa'
 DEFAULT_VSN_PORT = DEFAULT_SRV_PORT
 DEFAULT_SSH_PORT = 22
-DEFAULT_REMOTE_DIR = DEFAULT_DATA_DIR
+DEFAULT_REMOTE_DIR = DOCKER_DATA_DIR
 DEFAULT_VSN_IP = DEFAULT_SRV_IP
 DEFAULT_VSN_SRV = DEFAULT_SRV_IP + ':' + str(DEFAULT_SRV_PORT)
 DEFAULT_THREADS = 1
@@ -156,7 +160,7 @@ class ServerWorker(threading.Thread):
         self.stop_req = threading.Event()  # listen for a stop request
 
     def run(self):
-        sql_connection = sqlite3.connect('image_info.db')
+        sql_connection = sqlite3.connect(DOCKER_DATA_DIR + '/image_info.db')
         sql_cursor = sql_connection.cursor()
         with sql_connection:
             sql_cursor.execute(
@@ -356,7 +360,7 @@ def process_image(json, attempts=1):
         manual_id = False
 
     # TODO custom data dir
-    img_inc_path = os.path.join(DEFAULT_DATA_DIR, img_info['id'])
+    img_inc_path = os.path.join(DOCKER_DATA_DIR, img_info['id'])
 
     try:
         with open(img_inc_path + '.json', 'x') as f:
@@ -396,6 +400,8 @@ def process_image(json, attempts=1):
                     img_inc_path + '-drone.json'
                 )
             },
+            'ssh_id_path': DRONE_SSH_ID,
+            'hosts_path': DRONE_HOST_KEY,
             'user': DRONE_USER,
             'addr': DRONE_IP,
             'img_remote_src': [json['file_path'], json['info_path']],
@@ -430,6 +436,9 @@ def syncronize_img_info(img_id, new_info_file):
     server_img_manager.set_prop(img_id, 'lng', data['longitude'])
     server_img_manager.set_prop(img_id, 'heading', data['heading'])
     server_img_manager.set_prop(img_id, 'altitude', data['altitude'])
+    img = server_img_manager.get_img(img_id)
+    server_img_manager.set_prop(img_id, 'width_px', img.shape[2])
+    server_img_manager.set_prop(img_id, 'height_px', img.shape[1])
     server_task_queue.put(
         PriorityItem(2, {
             'type': 'auction',
@@ -510,11 +519,13 @@ def download_snipped(json):
                     }
                 )
             },
+            'ssh_id_path': SNIPPER_SSH_ID,
+            'hosts_path': SNIPPER_HOST_KEY,
             'user': SNIPPER_USER,
             'addr': SNIPPER_IP,
             'img_remote_src': [os.path.join(download_dir, img_id + ext)
                                for ext in ('.jpg', '.json')],
-            'img_local_dest': [os.path.join(DEFAULT_DATA_DIR, img_id + ext)
+            'img_local_dest': [os.path.join(DOCKER_DATA_DIR, img_id + ext)
                                for ext in ('.jpg', '.json')]
         }
     }))
@@ -654,7 +665,9 @@ def query_for_imgs(stop,
             # get a listing of all the files in the folder
             # throws TimeoutExpired if timeout (interval in secs) runs out
             result = subprocess.run([
-                'ssh', drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)
+                'ssh', '-i ' + DRONE_SSH_ID,
+                '-o UserKnownHostsFile=' + DRONE_HOST_KEY,
+                drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)
             ],
                                     timeout=interval,
                                     stdout=subprocess.PIPE,
@@ -698,9 +711,9 @@ def server_worker(args):
     # setup the database:
     global server_img_manager
     # TODO Server should not be using a client img_manager
-    server_img_manager = ImgManager(args.data_dir, master=True)
+    server_img_manager = ImgManager(DOCKER_DATA_DIR, master=True)
     global img_count
-    img_count = len(os.listdir(args.data_dir))
+    img_count = len(os.listdir(DOCKER_DATA_DIR))
     global s_worker
     s_worker = ServerWorker(server_task_queue)
     s_worker.start()
@@ -733,7 +746,7 @@ def client_bid_for_task(*args):
 
 def client_worker(args, worker_class):
     # Connect to vision server
-    print('Attempting to connect to server @ ' + args.vsn_addr +
+    print('Attempting to connect to server @ ' + args.vsn_addr + ':' +
           str(args.vsn_port))
     global vision_client
     vision_client = socketIO_client.SocketIO(args.vsn_addr, port=args.vsn_port)
@@ -764,11 +777,11 @@ class ClientWorker(threading.Thread):
         self.vsn_addr = args.vsn_addr
         self.vsn_port = args.vsn_port
         self.ssh_port = args.ssh_port
-        self.data_dir = args.data_dir
+        self.data_dir = DOCKER_DATA_DIR
         self.socket_client = socket_client
 
         self.manager = ImgManager(
-            args.data_dir, {
+            DOCKER_DATA_DIR, {
                 'user': args.vsn_user,
                 'addr': args.vsn_addr,
                 'port': args.ssh_port,
@@ -818,10 +831,20 @@ class RsyncWorker(ClientWorker):
         success = True
         for i in range(len(task_args['img_remote_src'])):
             remote = task_args['img_remote_src'][i]
-            local = task_args['img_remote_dest'][i]
-            if 0 != processes.spawn_process_wait_for_code(
-                    'rsync -vz --progress -e "ssh -p 22" "' + task_args['user']
-                    + '@' + task_args['addr'] + ':' + remote + '" ' + local):
+            local = task_args['img_local_dest'][i]
+
+            rsync_command = ('rsync -vz --progress -e "ssh -p 22 '
+                             '-i {id_file} -o UserKnownHostsFile={hosts_file}"'
+                             ' {user}@{ip}:{remote_path} {local_path}').format(
+                                 id_file=task_args['ssh_id_path'],
+                                 hosts_file=task_args['hosts_path'],
+                                 user=task_args['user'],
+                                 ip=task_args['addr'],
+                                 remote_path=remote,
+                                 local_path=local)
+            if verbose:
+                print('Spawning rsync: ' + rsync_command)
+            if 0 != processes.spawn_process_wait_for_code(rsync_command):
                 success = False
         if success:
             self._emit(
@@ -922,6 +945,9 @@ def yolo_worker(args):
 
 # Target Localization #########################################################
 class SnipperWorker(ClientWorker):
+    def __init__(self, in_q, socket_client, args):
+        super().__init__(in_q, socket_client, args)
+        self.real_data_dir = args.real_data_dir
 
     # task format:
     #   [{
@@ -962,7 +988,7 @@ class SnipperWorker(ClientWorker):
 
             self._emit(task, 'snipped', {
                 'img_id': img_id,
-                'download_dir': self.data_dir
+                'download_dir': self.real_data_dir
             })
 
     def get_event_name(self):
@@ -986,7 +1012,7 @@ class ShapeClassifierWorker(ClientWorker):
     def __init__(self, in_q, socket_client, args):
         super().__init__(in_q, socket_client, args)
         self.model = vision_classifier.load_model(args.model_path)
-        self.data_dir = args.data_dir
+        self.data_dir = DOCKER_DATA_DIR
 
         # Keras w/ Tensorflow backend bug workaround
         # This is required when using keras with tensorflow on multiple threads
@@ -1027,7 +1053,7 @@ class LetterClassifierWorker(ClientWorker):
     def __init__(self, in_q, socket_client, args):
         super().__init__(in_q, socket_client, args)
         self.model = vision_classifier.load_model(args.model_path)
-        self.data_dir = args.data_dir
+        self.data_dir = DOCKER_DATA_DIR
 
         # Keras w/ Tensorflow backend bug workaround
         # This is required when using keras with tensorflow on multiple threads
@@ -1068,14 +1094,6 @@ if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-v', '--verbose', action='store_true')
-    parser.add_argument(
-        '--data-dir',
-        action='store',
-        dest='data_dir',
-        default=DEFAULT_DATA_DIR,
-        help='specify the working directory for images and their associated \
-            metadata')
 
     subparsers = parser.add_subparsers(help='sub-command help')
 
@@ -1083,6 +1101,7 @@ if __name__ == '__main__':
     server_port = None
     server_parser = subparsers.add_parser(
         'server', help='start the primary vision server')
+    server_parser.add_argument('-v', '--verbose', action='store_true')
     server_parser.add_argument('-p'
                                '--port',
                                action='store',
@@ -1100,6 +1119,7 @@ if __name__ == '__main__':
     # Client Parsers ###################################################
     client_parser = subparsers.add_parser(
         'client', help='start a worker client')
+    client_parser.add_argument('-v', '--verbose', action='store_true')
     client_parser.add_argument(
         "--vsn-addr",
         action='store',
@@ -1177,6 +1197,12 @@ if __name__ == '__main__':
     # snipper specific args
     snipper_parser = client_subparsers.add_parser(
         'snipper', help='start a snipper worker client')
+    snipper_parser.add_argument(
+        "--real-dir",
+        action='store',
+        dest='real_data_dir',
+        required=True,
+        help='specify the directory the container volume is mounted to')
     snipper_parser.set_defaults(func=snipper_worker)
 
     # classifier specific args
@@ -1196,4 +1222,6 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     verbose = args.verbose
+    if verbose:
+        print("Running in verbose mode.")
     args.func(args)
