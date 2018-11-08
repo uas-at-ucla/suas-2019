@@ -49,6 +49,7 @@ RUN apt-get update                                                          && \
     cmake                                                                      \
     g++                                                                        \
     git                                                                        \
+    google-perftools                                                           \
     gphoto2                                                                    \
     gphotofs                                                                   \
     htop                                                                       \
@@ -56,6 +57,7 @@ RUN apt-get update                                                          && \
     libc++abi-dev                                                              \
     lib32z1-dev                                                                \
     libc6-dev-i386                                                             \
+    libgoogle-perftools-dev                                                    \
     librsync-dev                                                               \
     libssl-dev                                                                 \
     lsb-release                                                                \
