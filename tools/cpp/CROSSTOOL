@@ -73,6 +73,7 @@ toolchain {
   linker_flag: "-lstdc++"
   linker_flag: "-lc++"
   compiler_flag: "-Wno-error=unused-command-line-argument"
+  linker_flag: "-lprofiler"
   linker_flag: "-B/usr/bin/"
 
   feature {
