@@ -8,7 +8,8 @@ import urllib.request
 import subprocess
 import xml.etree.ElementTree as ET
 
-COLORS = { 'white': (255, 255, 255),
+COLORS = {
+    'white': (255, 255, 255),
     'black': (0, 0, 0),
     'gray': (128, 128, 128),
     'red': (255, 0, 0),
@@ -80,7 +81,7 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
                and letter_color_name == 'random'):
             pure_shape_color = random.choice(list(COLORS.values()))
 
-        #randomize rgb values for the colors chosen
+        # randomize rgb values for the colors chosen
         shape_color_lst = []
         for value in pure_shape_color:
             if value == 255:
@@ -113,7 +114,6 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
             target = target.rotate(
                 random.randint(0, 359), resample=Image.BICUBIC,
                 expand=1).resize((t_size, t_size), resample=Image.BOX)
-
 
         if target_pos_conf is None:
             target_pos = (random.randint(0, i_size[0] - t_size),
@@ -154,12 +154,13 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
             draw.rectangle(target_bounds, outline=(255, 255, 255, 255))
 
         # Paste the target and save
-        ori_x, ori_y = origin_pos[0], origin_pos[1]
+        ori_x, ori_y = origin_pos
         if ori_x + i_size[0] > background.width:
             ori_x = background.width - i_size[0]
         if ori_y + i_size[1] > background.height:
             ori_y = background.height - i_size[1]
-        result = background.crop(box=(ori_x, ori_y, ori_x + i_size[0], ori_y + i_size[1]))
+        result = background.crop(
+            box=(ori_x, ori_y, ori_x + i_size[0], ori_y + i_size[1]))
 
         result.paste(target, box=target_pos, mask=target)
         if white_balance:
@@ -268,7 +269,7 @@ if __name__ == '__main__':
         '--origin_pos',
         type=int,
         nargs=2,
-        default=None,
+        default=(0, 0),
         dest='origin_pos',
         help='x, y coordinate of the alternative origin to crop the image as a \
         tuple. By default it is (0,0) and max they can get is the width and \
@@ -301,8 +302,6 @@ if __name__ == '__main__':
         default_dest = os.path.join('output', args.target_shape)
         os.makedirs(default_dest, exist_ok=True)
         args.dest = default_dest
-    if args.origin_pos is None:
-        args.origin_pos = (0,0)
 
     class TargetSelector:
         def __init__(self, target_names, font):
@@ -344,7 +343,7 @@ if __name__ == '__main__':
         transforms=args.transforms,
         draw_box=args.draw_box,
         rescale_ratio=args.rescale_ratio,
-        origin_pos=args.origin_pos
+        origin_pos=args.origin_pos,
         shape_color_name=args.shape_color,
         letter_color_name=args.letter_color,
         target_pos_conf=args.target_pos)
