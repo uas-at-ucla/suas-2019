@@ -13,13 +13,13 @@ RUN apt update     -qq                                                      && \
     apt install -y -qq gnupg
 
 # Add apt repositories containing required packages. ###########################
-RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
-  "deb-src http://deb.debian.org/debian buster main\n\n" \
-  "deb http://deb.debian.org/debian buster-updates main contrib non-free\n" \
-  "deb-src http://deb.debian.org/debian buster-updates main\n\n" \
-  "deb http://deb.debian.org/debian sid main contrib non-free\n" \
-  "deb-src http://deb.debian.org/debian sid main" > \
-  /etc/apt/sources.list
+#RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
+#  "deb-src http://deb.debian.org/debian buster main\n\n" \
+#  "deb http://deb.debian.org/debian buster-updates main contrib non-free\n" \
+#  "deb-src http://deb.debian.org/debian buster-updates main\n\n" \
+#  "deb http://deb.debian.org/debian sid main contrib non-free\n" \
+#  "deb-src http://deb.debian.org/debian sid main" > \
+#  /etc/apt/sources.list
 
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
