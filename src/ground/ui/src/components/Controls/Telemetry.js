@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 const mapStateToProps = state => {
   return {
-    telemetry: state.get('telemetry')
+    telemetry: state.telemetry
   };
 };
 

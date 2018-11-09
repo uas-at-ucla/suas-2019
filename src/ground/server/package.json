@@ -6,7 +6,7 @@
   "scripts": {
     "start": "concurrently --kill-others \"npm:server\" \"npm:ui\"",
     "server": "node ground_server.js",
-    "ui": "cd ../ui; npm start",
+    "ui": "cd ../ui && npm start",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
