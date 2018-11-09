@@ -21,7 +21,7 @@ do
       --show-errors \
       --master $SIM_IP \
       --out udp:0.0.0.0:8084 \
-      --out tcp:172.19.0.2:8090 \
+      --out tcp:172.18.0.2:8090 \
       --baud 921600
 
     exit 0
