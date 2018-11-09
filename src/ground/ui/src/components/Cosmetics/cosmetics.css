@@ -1,0 +1,14 @@
+.component-background 
+{
+    position: absolute;
+    margin: 10px;
+
+    background-color: rgba(0 , 0 , 0 , .7);
+}
+
+.logo-img
+{
+    position: relative;
+    width: 20vw;
+    margin: 10px;
+}
