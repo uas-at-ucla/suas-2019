@@ -16,7 +16,7 @@ class App extends Component {
     return (
       <Router>
         <div>
-          <nav>
+          <nav className="viewNav">
             <ul>
               <li>
                 <Link to = "/">CONTROLS</Link>
@@ -33,6 +33,7 @@ class App extends Component {
           <Route path = "/" exact component = {Controls} />
           <Route path = "/vision" component = {Vision} />
           <Route path = "/settings" component = {Settings} />
+          <Route path = "/" exact component = {Cosmetics} />
         </div>
       </Router>
     );

@@ -13,3 +13,58 @@
 .Controls .Telemetry {
   background: rgba(0, 0, 0, 0.6)
 }
+
+.droneActions
+{
+  position: absolute;
+  bottom: 0px;
+  margin: 10px 10px;
+
+  background-color: rgba(0 , 0 , 0 , .6);
+
+  display: flex;
+  flex-direction: column;
+}
+
+.droneActions > span
+{
+  margin: 0 10px;
+  margin-top: 10px;
+}
+
+.buttonArray > button
+{
+  border-width: 2px;
+  border-color: #000000;
+  border-radius: 5px;
+  border-style: solid;
+
+  margin: 10px 5px;
+  padding: auto auto;
+
+  background-color: rgba(0 , 0 , 0 , .6)
+}
+
+#takeoffButton 
+{
+  color: #56a54f;
+  border-color: #56a54f;
+}
+
+#landButton
+{
+  color: #0ea5d3;
+  border-color: #0ea5d3;
+}
+
+#failsafeButton
+{
+  color: #f4a107;
+  border-color: #f4a107;
+}
+
+#throttleCutButton
+{
+  color: #ff0000;
+  border-color: #ff0000;
+}
