@@ -266,7 +266,7 @@ if __name__ == '__main__':
         dest='rescale_ratio',
         help='rescale the source image before using it as a background')
     parser.add_argument(
-        '--origin_pos',
+        '--origin-pos',
         type=int,
         nargs=2,
         default=(0, 0),
