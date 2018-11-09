@@ -27,16 +27,12 @@ class App extends Component {
               <li>
                 <Link to = "/settings">SETTINGS</Link>
               </li>
-              <li>
-                <Link to = "/">COSMETICS</Link>
-              </li>
             </ul>
           </nav>
 
           <Route path = "/" exact component = {Controls} />
           <Route path = "/vision" component = {Vision} />
           <Route path = "/settings" component = {Settings} />
-          <Route path = "/" exact component = {Cosmetics} />
         </div>
       </Router>
     );
