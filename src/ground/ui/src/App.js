@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import './App.css';
 
 import Controls from './components/Controls/Controls';
+import Cosmetics from './components/Cosmetics/Cosmetics';
 
 class App extends Component {
   componentDidMount() {
@@ -12,6 +13,7 @@ class App extends Component {
     return (
       <div className="App">
         <Controls/>
+        <Cosmetics/>
       </div>
     );
   }
