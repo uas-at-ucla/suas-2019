@@ -37,3 +37,19 @@ a :hover {
   text-decoration: none;
   all: unset;
 }
+
+
+.viewNav > ul
+{
+  width: 100vw;
+  margin: auto 0;
+
+  background-color: rgba(0 , 0 , 0 , .6);
+
+  text-align: center;
+}
+
+.viewNav > ul > li 
+{
+
+}
