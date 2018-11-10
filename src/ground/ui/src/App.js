@@ -8,7 +8,6 @@ import Analytics from './components/Analytics/Analytics';
 import Settings from './components/Settings/Settings';
 
 const defaultPage = "/controls" // "/vision"
-const DefaultPage = () => <Redirect to={defaultPage}/> 
 
 class App extends Component {
   render() {
@@ -32,7 +31,7 @@ class App extends Component {
             </ul>
           </nav>
 
-          <Route exact path="/" component={DefaultPage} />
+          <Redirect exact from="/" to={defaultPage}/>
           <Route path="/controls" component={Controls} />
           <Route path="/vision" component={Vision} />
           <Route path="/analytics" component={Analytics} />
