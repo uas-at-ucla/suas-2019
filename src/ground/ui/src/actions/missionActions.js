@@ -1,13 +1,16 @@
+import shortid from 'shortid';
+
 function createCommand(type, options, protoInfo) {
   // TODO: Use protoInfo to create new command using the relevant fields for this type of command
   return {
+    id: shortid.generate(),
     ...options,
-    type: type
+    type: type,
   }
 }
 
 export default {
-  addNothingCommand: (options, protoInfo) => {
+  addNothingCommand: (protoInfo) => {
     // a command that does nothing
     return {
       type: "ADD_COMMAND",
