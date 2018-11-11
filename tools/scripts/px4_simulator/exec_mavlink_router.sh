@@ -20,4 +20,4 @@ echo "PX4 simulator docker started!"
 docker exec -t $PX4_RUNNING_CONTAINER \
   su - uas bash -c "
   HOST_IP=\$(/sbin/ip route|awk '/default/ { print \$3 }')
-  mavlink-routerd -e \$HOST_IP:8086 -e 172.18.0.2:8084 0.0.0.0:14550"
+  mavlink-routerd -e \$HOST_IP:8086 -e 172.19.0.2:8084 0.0.0.0:14550"
