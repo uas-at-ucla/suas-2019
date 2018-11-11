@@ -1,0 +1,22 @@
+{
+  "name": "drone_code",
+  "version": "1.0.0",
+  "description": "Code used on our drone competing in the AUVSI SUAS competition.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uas-at-ucla/drone_code.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/uas-at-ucla/drone_code/issues"
+  },
+  "homepage": "https://github.com/uas-at-ucla/drone_code#readme",
+  "dependencies": {
+    "socket.io": "^2.1.1"
+  }
+}
