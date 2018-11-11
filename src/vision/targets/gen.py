@@ -8,7 +8,8 @@ import urllib.request
 import subprocess
 import xml.etree.ElementTree as ET
 
-COLORS = { 'white': (255, 255, 255),
+COLORS = {
+    'white': (255, 255, 255),
     'black': (0, 0, 0),
     'gray': (128, 128, 128),
     'red': (255, 0, 0),
@@ -45,7 +46,7 @@ TRANSFORMS = ('rotate', 'perspective', 'affine')
 
 def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
                draw_box, rescale_ratio, shape_color_name, letter_color_name,
-               target_pos_conf, white_balance):
+               target_pos_conf, white_balance, origin_pos):
     background_files = os.scandir(bg_dir)
     field_width = math.trunc(math.log10(n))
     for i in range(n):
@@ -80,7 +81,7 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
                and letter_color_name == 'random'):
             pure_shape_color = random.choice(list(COLORS.values()))
 
-        #randomize rgb values for the colors chosen
+        # randomize rgb values for the colors chosen
         shape_color_lst = []
         for value in pure_shape_color:
             if value == 255:
@@ -152,8 +153,15 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
             draw = ImageDraw.Draw(background)
             draw.rectangle(target_bounds, outline=(255, 255, 255, 255))
 
-        # Paste the target, simulate incorrect white balance, and save
-        result = background.crop(box=(0, 0, i_size[0], i_size[1]))
+        # Paste the target and save
+        ori_x, ori_y = origin_pos
+        if ori_x + i_size[0] > background.width:
+            ori_x = background.width - i_size[0]
+        if ori_y + i_size[1] > background.height:
+            ori_y = background.height - i_size[1]
+        result = background.crop(
+            box=(ori_x, ori_y, ori_x + i_size[0], ori_y + i_size[1]))
+
         result.paste(target, box=target_pos, mask=target)
         if white_balance:
             r, g, b = random.choice(tuple(KELVIN_TEMP.values()))
@@ -257,6 +265,15 @@ if __name__ == '__main__':
         default=1,
         dest='rescale_ratio',
         help='rescale the source image before using it as a background')
+    parser.add_argument(
+        '--origin-pos',
+        type=int,
+        nargs=2,
+        default=(0, 0),
+        dest='origin_pos',
+        help='x, y coordinate of the alternative origin to crop the image as a \
+        tuple. By default it is (0,0) and max they can get is the width and \
+        height of the background minus image_size')
 
     args = parser.parse_args()
 
@@ -326,6 +343,7 @@ if __name__ == '__main__':
         transforms=args.transforms,
         draw_box=args.draw_box,
         rescale_ratio=args.rescale_ratio,
+        origin_pos=args.origin_pos,
         shape_color_name=args.shape_color,
         letter_color_name=args.letter_color,
         target_pos_conf=args.target_pos)
