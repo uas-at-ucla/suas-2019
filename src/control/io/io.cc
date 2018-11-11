@@ -92,14 +92,6 @@ void AutopilotSensorReader::RunIteration() {
     sensors->set_velocity_x(static_cast<float>(gps.vx) / 1e2);
     sensors->set_velocity_y(static_cast<float>(gps.vy) / 1e2);
     sensors->set_velocity_z(static_cast<float>(gps.vz) / 1e2);
-
-    // TESTING
-    /*
-    printf("GPS latitude = %f, longitude = %f\n", static_cast<double>(gps.lat) /
-    1e7
-                                              , static_cast<double>(gps.lon) /
-    1e7);
-    */
   }
 
   sensors->set_heading(
