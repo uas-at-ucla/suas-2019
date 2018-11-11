@@ -4,8 +4,7 @@ namespace src {
 namespace control {
 namespace ground_server {
 
-GroundServer::GroundServer() {
-}
+GroundServer::GroundServer() {}
 
 } // namespace ground_communicator
 } // namespace control
