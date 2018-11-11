@@ -171,8 +171,9 @@ void AutopilotInterface::start() {
   // Wait for initial position ned
   while (not(current_messages.time_stamps.local_position_ned &&
              current_messages.time_stamps.attitude)) {
-    if (time_to_exit_)
+    if (time_to_exit_) {
       return;
+    }
     usleep(1e6 / 2);
   }
 
