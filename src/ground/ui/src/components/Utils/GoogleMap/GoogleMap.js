@@ -10,9 +10,9 @@ const GoogleMapComponent = withScriptjs(withGoogleMap((props) => (
 const GoogleMapWrapperComponent = (props) => (
   <GoogleMapComponent
     googleMapURL="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,visualization&key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c"
-    loadingElement={<div style={{ height: `100%` }} />}
-    containerElement={<div style={{ height: `100%` }} />}
-    mapElement={<div style={{ height: `100%` }} />}
+    loadingElement={<div style={{ height: `100%`, minHeight: `500px` }} />}
+    containerElement={<div style={{ height: `100%`, minHeight: `500px` }} />}
+    mapElement={<div style={{ height: `100%`, minHeight: `500px` }} />}
     {...props}
   />
 );

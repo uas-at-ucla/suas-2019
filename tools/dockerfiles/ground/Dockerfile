@@ -6,6 +6,7 @@ RUN apt-get install -y gnupg
 
 RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
 RUN apt-get install -y nodejs
+RUN apt-get install -y libgtk-3-0 libxss-dev libnss3-dev libasound2-dev
 
 RUN useradd -ms /bin/bash uas
 RUN usermod -aG sudo uas

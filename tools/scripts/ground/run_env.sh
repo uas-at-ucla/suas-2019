@@ -75,6 +75,8 @@ docker run \
   -p 3000:3000 \
   -v $ROOT_PATH:/home/uas/code_env \
   --name uas-at-ucla_ground \
+  -e DISPLAY=$DISPLAY \
+  -v /tmp/.X11-unix:/tmp/.X11-unix \
   --dns 8.8.8.8 \
   uas-at-ucla_ground \
   bash -c "$DOCKER_RUN_CMD"
