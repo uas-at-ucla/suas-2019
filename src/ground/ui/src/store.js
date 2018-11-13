@@ -3,9 +3,10 @@ import { combineReducersAndSelectors } from './utils/reduxUtils';
 import { createLogger } from 'redux-logger';
 
 import communicator from './communicator';
+import loadGroundLanguage from './protobuf/loadGroundLanguage';
+
 import telemetryReducer from './reducers/telemetryReducer';
 import missionReducer from './reducers/missionReducer';
-import loadGroundLanguage from './protobuf/loadGroundLanguage';
 
 const reducerAndSelectors = combineReducersAndSelectors({
   telemetry: telemetryReducer,

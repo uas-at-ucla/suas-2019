@@ -16,7 +16,7 @@ export default {
       }
     }
   },
-  selectors: {
+  selector: createStructuredSelector({
     getMissionProtoInfo: createSelector(
       [state => state.missionProto],
       (missionProto) => {
@@ -34,5 +34,5 @@ export default {
         };
       }
     )
-  }
+  })
 };
