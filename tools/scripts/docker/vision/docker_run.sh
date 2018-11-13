@@ -18,11 +18,8 @@ else
     extra_parameters="-p 8099:8099" # allows clients to connect
 fi
 
-# generate a random id
-vision_container_id=$(head -c 5 /dev/urandom | base32)
-
 docker run \
     $extra_parameters \
-    --name uas-at-ucla_vision-$vision_container_id \
+    --name uas-at-ucla_vision-$RANDOM \
     --mount type=bind,source="$true_path",target=/suas/src/vision/data_local \
     uas-at-ucla_vision:latest "$@"
