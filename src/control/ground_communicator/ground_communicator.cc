@@ -74,7 +74,8 @@ void GroundCommunicator::RunIteration() {
   if (sensors_receiver_.HasMessages()) {
     send_sensors = true;
 
-    ::src::control::Sensors sensors = sensors_receiver_.GetLatest();
+    ::src::control::UasMessage message = sensors_receiver_.GetLatest();
+    ::src::control::Sensors sensors = message.sensors();
     ::std::string sensors_serialized;
     sensors.SerializeToString(&sensors_serialized);
 
