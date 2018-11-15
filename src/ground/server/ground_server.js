@@ -22,6 +22,13 @@ drone_io.on('connect', (socket) => {
 
 ui_io.on('connect', (socket) => {
   console.log("ui connected!");
+
+  socket.on("TEST", (data) =>{
+    console.log("TEST " + data);
+  })
+  socket.on("CHANGE_DRONE_STATE", (data) =>{
+    console.log("THE DRONE is asked to " + data + ". THE DRONE says no.")
+  })
 });
 
 
