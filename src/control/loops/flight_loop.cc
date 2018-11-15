@@ -56,7 +56,9 @@ void FlightLoop::RunIteration() {
     return;
   }
 
-  ::src::control::Sensors sensors = sensors_receiver_.GetLatest();
+  // Convert UasMessage to sensor
+  ::src::control::UasMessage message = sensors_receiver_.GetLatest();
+  ::src::control::Sensors sensors = message.sensors();
 
   // Get latest goal.
   if (!goal_receiver_.HasMessages()) {

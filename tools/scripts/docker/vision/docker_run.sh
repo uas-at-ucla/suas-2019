@@ -1,6 +1,9 @@
 #!/bin/bash
 cd $(dirname $0)
-source ../start_machine_mac.sh
+if [ $(uname -s) == "Darwin" ]
+then
+    source ../start_machine_mac.sh
+fi
 cd ../../../../src/vision
 
 # docker running on windows expects a windows-style path
@@ -18,11 +21,17 @@ else
     extra_parameters="-p 8099:8099" # allows clients to connect
 fi
 
-# generate a random id
-vision_container_id=$(head -c 5 /dev/urandom | base32)
+container_id=$(head -c 6 /dev/urandom | base64 | tr '+/' '-_')
+
+# check for collision
+while [[ $(docker ps --filter name=uas-at-ucla_vision-$container_id \
+    --format "{{.ID}}") ]]
+do
+    container_id=$(head -c 6 /dev/urandom | base64 | tr '+/' '-_')
+done
 
 docker run \
     $extra_parameters \
-    --name uas-at-ucla_vision-$vision_container_id \
+    --name uas-at-ucla_vision-$container_id \
     --mount type=bind,source="$true_path",target=/suas/src/vision/data_local \
     uas-at-ucla_vision:latest "$@"
