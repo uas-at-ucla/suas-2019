@@ -9,12 +9,12 @@ default_toolchain {
 
 default_toolchain {
   cpu: "k8"
-  toolchain_identifier: "k8_linux"
+  toolchain_identifier: "local"
 }
 
 default_toolchain {
   cpu: "darwin"
-  toolchain_identifier: "k8_linux"
+  toolchain_identifier: "local"
 }
 
 toolchain {
@@ -34,7 +34,7 @@ toolchain {
   target_libc: "local"
   target_cpu: "k8"
   target_system_name: "k8"
-  toolchain_identifier: "k8_linux"
+  toolchain_identifier: "local"
 
   tool_path { name: "ar" path: "/usr/bin/ar" }
   tool_path { name: "compat-ld" path: "/usr/bin/ld" }
