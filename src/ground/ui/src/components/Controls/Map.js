@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
-import { Marker, Polyline } from 'react-google-maps';
-import { Circle } from 'react-google-maps';
+import { Marker, Polyline, Circle } from 'react-google-maps';
 
 import GoogleMap from '../Utils/GoogleMap/GoogleMap';
 
