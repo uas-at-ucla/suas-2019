@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import './Controls.css';
 import Map from './Map';
-import Telemetry from './Telemetry';
+import Telemetry from './Telemetry/Telemetry';
 import DroneActions from './DroneActions';
 
 class Controls extends Component {

@@ -9,7 +9,3 @@
   height: 100vh;
   z-index: -1;
 }
-
-.Controls .Telemetry {
-  background: rgba(0, 0, 0, 0.6)
-}
