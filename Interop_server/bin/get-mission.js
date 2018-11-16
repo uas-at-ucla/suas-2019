@@ -1,8 +1,9 @@
 #! /usr/bin/env node
 
 const axios = require('axios');
-const getCookie = requre('./login.js')
-//var readline = require('readline-sync');
+const getCookie = require('./login.js')
+import {gc} from './login'
+//var read line = require('readline-sync');
 
 var coockiePlus = "";
 var cookie;
@@ -52,10 +53,11 @@ axios ({
      var j = test.search(";")
      var cookie =  test.substring(i+3, j);
      response.cookie= cookie;
-     console.log (response.data + response.cookie)
+     
      getMissions(response.cookie);
 })
 
 .catch(function (error) {
     console.log(error);
 })
+gc(cookie)
