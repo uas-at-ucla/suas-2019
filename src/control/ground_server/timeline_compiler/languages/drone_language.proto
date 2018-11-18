@@ -1,0 +1,55 @@
+syntax = "proto2";
+
+package src.control.ground_server.timeline_compiler.languages;
+
+message Position2D {
+  required double latitude = 1;
+  required double longitude = 2;
+}
+
+message Position3D {
+  required double latitude = 1;
+  required double longitude = 2;
+  required double altitude = 3;
+}
+
+// Commands ####################################################################
+message NothingCommand {}
+
+message SleepCommand {
+  required double time = 1;
+}
+
+message GotoCommand {
+  required Position3D goal = 1;
+  required bool come_to_stop = 2;
+}
+
+message GotoRawCommand {
+  required Position3D goal = 1;
+  required bool come_to_stop = 2;
+}
+
+message TriggerBombDropCommand {
+}
+
+message TriggerAlarmCommand {
+}
+
+message Command {
+  oneof command {
+    // Only one of these can be set at a time. The type of this command is
+    // determined by which one is set.
+
+    NothingCommand NothingCommand = 1;
+    SleepCommand SleepCommand = 2;
+    GotoCommand GotoCommand = 3;
+    GotoRawCommand GotoRawCommand = 4;
+    TriggerBombDropCommand TriggerBombDropCommand = 5;
+    TriggerAlarmCommand TriggerAlarmCommand = 6;
+  }
+}
+
+message DroneProgram {
+  repeated Command commands = 1;
+}

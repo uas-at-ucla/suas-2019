@@ -43,6 +43,4 @@ then
     fi
     eval $(docker-machine env uas-env)
   fi
-else
-  echo "This script should only be run on MacOS."
 fi

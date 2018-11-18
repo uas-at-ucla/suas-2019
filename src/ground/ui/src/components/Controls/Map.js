@@ -8,8 +8,8 @@ class Map extends Component {
     return (
       <div className="Map">
         <GoogleMap
-          defaultZoom={8}
-          defaultCenter={{ lat: -34.397, lng: 150.644 }}
+          defaultZoom={16}
+          defaultCenter={{ lat: 38.147483, lng: -76.427778 }}
           defaultMapTypeId="satellite"
           defaultOptions={{
             disableDefaultUI: true,

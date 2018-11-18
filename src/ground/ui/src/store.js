@@ -1,11 +1,16 @@
-import { createStore, applyMiddleware, combineReducers } from 'redux';
-import { createLogger } from 'redux-logger'
+import { createStore, applyMiddleware } from 'redux';
+import { combineReducersAndSelectors } from './utils/reduxUtils';
+import { createLogger } from 'redux-logger';
 
 import communicator from './communicator';
-import telemetryReducer from './reducers/telemetryReducer';
+import loadGroundLanguage from './protobuf/loadGroundLanguage';
 
-const reducers = combineReducers({
-  telemetry: telemetryReducer
+import telemetryReducer from './reducers/telemetryReducer';
+import missionReducer from './reducers/missionReducer';
+
+export const { reducer, selector } = combineReducersAndSelectors({
+  telemetry: telemetryReducer,
+  missionPlan: missionReducer
 });
 
 const logger = createLogger({
@@ -18,4 +23,8 @@ const logger = createLogger({
 
 const middleware = applyMiddleware(logger, communicator);
 
-export default createStore(reducers, middleware);
+const store = createStore(reducer, middleware);
+
+loadGroundLanguage(store.dispatch);
+
+export default store;
