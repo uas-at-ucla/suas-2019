@@ -19,9 +19,9 @@ class MissionPlanner extends Component {
     return (
       <div className="MissionPlanner">
         <Button onClick={this.addCommand}>Add Command</Button>
-        {this.props.missionPlan.commands.map((command) => 
+        {this.props.missionPlan.commands.map((command, index) => 
           <div key={command.id}>
-            Id: <span>{JSON.stringify(command)}</span>
+            <span>{`${index}: ${JSON.stringify(command)}`}</span>
           </div>
         )}
       </div>
@@ -29,7 +29,12 @@ class MissionPlanner extends Component {
   }
 
   addCommand = () => {
-    this.props.addWaypointCommand(null, this.props.protoInfo);
+    let defaultWaypointCommand = { goal: {
+      latitude: 38.147483,
+      longitude: -76.427778,
+      altitude: 100
+    }}
+    this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
   }
 }
 

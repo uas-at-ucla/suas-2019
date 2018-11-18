@@ -24,15 +24,6 @@ export default function loadGroundLanguage(dispatch) {
   });
 }
 
-export function verifyMessage(type, payload) {
-  let messageType = root.lookupType(packageName + type);
-  var errMsg = messageType.verify(payload);
-  if (errMsg)
-    throw Error(errMsg);
-
-  return messageType.create(payload);
-}
-
 export function createMessage(type, payload) {
   let messageType = root.lookupType(packageName + type);
   var errMsg = messageType.verify(payload);
