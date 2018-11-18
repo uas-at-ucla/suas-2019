@@ -441,7 +441,7 @@ def run_ground_build(args):
     run_ground("build", args)
 
 def run_ground_run(args):
-    run_ground("run", args)
+    run_ground("run --web", args)
 
 def run_ground(arg1, args):
     shutdown_functions.append(kill_ground)
