@@ -9,3 +9,7 @@
   height: 100vh;
   z-index: -1;
 }
+
+.MissionPlanner {
+  background: rgba(0, 0, 0, 0.6)
+}
