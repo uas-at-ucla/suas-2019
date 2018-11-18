@@ -8,11 +8,10 @@ import loadGroundLanguage from './protobuf/loadGroundLanguage';
 import telemetryReducer from './reducers/telemetryReducer';
 import missionReducer from './reducers/missionReducer';
 
-const reducerAndSelectors = combineReducersAndSelectors({
+export const { reducer, selector } = combineReducersAndSelectors({
   telemetry: telemetryReducer,
   missionPlan: missionReducer
 });
-export const selectors = reducerAndSelectors.selectors;
 
 const logger = createLogger({
   predicate: (getState, action) => {
@@ -24,7 +23,7 @@ const logger = createLogger({
 
 const middleware = applyMiddleware(logger, communicator);
 
-const store = createStore(reducerAndSelectors.reducer, middleware);
+const store = createStore(reducer, middleware);
 
 loadGroundLanguage(store.dispatch);
 
