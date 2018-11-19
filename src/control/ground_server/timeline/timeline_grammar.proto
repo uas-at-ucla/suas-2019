@@ -1,0 +1,108 @@
+syntax = "proto2";
+
+package src.control.ground_server.timeline;
+
+// Useful structs //////////////////////////////////////////////////////////////
+message Position2D {
+  required double            latitude                                      = 1;
+  required double            longitude                                     = 2;
+}
+
+message Position3D {
+  required double            latitude                                      = 1;
+  required double            longitude                                     = 2;
+  required double            altitude                                      = 3;
+}
+
+message StaticObstacle {
+  required Position2D        location                                      = 1;
+  required double            cylinder_radius                               = 2;
+}
+
+// Ground language /////////////////////////////////////////////////////////////
+// This is the timeline representation for a mission, as received from the
+// ground. Ground timeline commands are abstract and should only convey the
+// high objectives of what the mission requires and the current state of the
+// field.
+
+// GroundProgram is the message that is created by the groundstation,
+// serialized, and sent to the timeline compiler. It contains the list of
+// commands to execute and characteristics of the field, as received by the
+// interop server.
+message GroundProgram {
+  repeated GroundCommand     commands                                      = 1;
+  repeated StaticObstacle    static_obstacles                              = 2;
+  repeated Position2D        field_boundary                                = 3;
+}
+
+// GroundCommand wraps all of the valid commands that are possible for ground
+// language. Only one of the fields for the oneof command can be set at a time,
+// so whichever one is set will determine the type of this command.
+message GroundCommand {
+  oneof command {
+    WaypointCommand          waypoint_command                              = 1;
+    BombDropCommand          bomb_drop_command                             = 2;
+    SurveyCommand            survey_command                                = 3;
+    OffAxisCommand           off_axis_command                              = 4;
+  }
+}
+
+message WaypointCommand {
+  required Position3D        goal                                          = 1;
+}
+
+message BombDropCommand {
+  required Position2D        ground_target                                 = 1;
+  required double            drop_height                                   = 2;
+}
+
+message SurveyCommand {
+  repeated Position2D        survey_polygon                                = 1;
+  required double altitude                                                 = 2;
+}
+
+message OffAxisCommand {
+  required Position3D        photographer_location                         = 1;
+  required Position2D        subject_location                              = 2;
+}
+
+// Drone language //////////////////////////////////////////////////////////////
+message NothingCommand {}
+
+message SleepCommand {
+  required double time = 1;
+}
+
+message GotoCommand {
+  required Position3D goal = 1;
+  required bool come_to_stop = 2;
+}
+
+message GotoRawCommand {
+  required Position3D goal = 1;
+  required bool come_to_stop = 2;
+}
+
+message TriggerBombDropCommand {
+}
+
+message TriggerAlarmCommand {
+}
+
+message Command {
+  oneof command {
+    // Only one of these can be set at a time. The type of this command is
+    // determined by which one is set.
+
+    NothingCommand NothingCommand = 1;
+    SleepCommand SleepCommand = 2;
+    GotoCommand GotoCommand = 3;
+    GotoRawCommand GotoRawCommand = 4;
+    TriggerBombDropCommand TriggerBombDropCommand = 5;
+    TriggerAlarmCommand TriggerAlarmCommand = 6;
+  }
+}
+
+message DroneProgram {
+  repeated Command commands = 1;
+}

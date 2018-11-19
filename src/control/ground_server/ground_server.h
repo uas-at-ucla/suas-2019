@@ -9,6 +9,6 @@ class GroundServer {
   GroundServer();
 };
 
-} // namespace drone_communicator
+} // namespace ground_server
 } // namespace control
 } // namespace src
