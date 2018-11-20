@@ -25,7 +25,7 @@ cc_library(
 cc_test(
   name = 'rrt_avoidance_test',
   srcs = [
-    'rrt_avoidance_test.cc',
+    'testing/rrt_avoidance_test.cc',
   ],
   deps = [
     ':rrt_avoidance',
@@ -45,13 +45,13 @@ cc_test(
 cc_library(
   name = 'rrt_avoidance_tools',
   srcs = [
-    'birrt.cc',
+    'birrt/birrt.cc',
     '2dplane/2dplane.cpp',
     '2dplane/GridStateSpace.cpp',
     '2dplane/ObstacleGrid.cpp',
   ],
   hdrs = [
-    'birrt.h',
+    'birrt/birrt.h',
     '2dplane/2dplane.hpp',
     '2dplane/GridStateSpace.hpp',
     '2dplane/ObstacleGrid.hpp',
@@ -59,7 +59,7 @@ cc_library(
     'planning/Path.hpp',
     'StateSpace.hpp',
     'Tree.hpp',
-    'util.hpp',
+    'utils/util.hpp',
   ],
   deps = [
     '//lib/physics_structs:physics_structs',
@@ -86,7 +86,7 @@ cc_library(
 cc_test(
   name = 'bidirectional_test',
   srcs = [
-    'birrt_test.cc',
+    'testing/birrt_test.cc',
   ],
   deps = [
     ':rrt_avoidance_tools',
@@ -105,7 +105,7 @@ cc_test(
 cc_test(
   name = 'tree_test',
   srcs = [
-    'tree_test.cc',
+    'testing/tree_test.cc',
   ],
   deps = [
     ':rrt_avoidance_tools',
