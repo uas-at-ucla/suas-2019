@@ -11,3 +11,14 @@ cc_library(
     '//src/control/ground_server/timeline:timeline_grammar_cc'
   ],
 )
+
+cc_binary(
+  name = 'ground2drone_visitor_test',
+  srcs = [
+    'ground2drone_visitor_test.cc',
+  ],
+  deps = [
+    ':ground2drone_visitor',
+    '@gtest//:googletest_main',
+  ],
+)

@@ -41,9 +41,10 @@ message GroundProgram {
 message GroundCommand {
   oneof command {
     WaypointCommand          waypoint_command                              = 1;
-    BombDropCommand          bomb_drop_command                             = 2;
+    UgvDropCommand           ugv_drop_command                              = 2;
     SurveyCommand            survey_command                                = 3;
     OffAxisCommand           off_axis_command                              = 4;
+    WaitCommand              wait_command                                  = 5;
   }
 }
 
@@ -51,7 +52,7 @@ message WaypointCommand {
   required Position3D        goal                                          = 1;
 }
 
-message BombDropCommand {
+message UgvDropCommand {
   required Position2D        ground_target                                 = 1;
   required double            drop_height                                   = 2;
 }
@@ -66,43 +67,44 @@ message OffAxisCommand {
   required Position2D        subject_location                              = 2;
 }
 
-// Drone language //////////////////////////////////////////////////////////////
-message NothingCommand {}
-
-message SleepCommand {
-  required double time = 1;
+message WaitCommand {
+  required double            time                                          = 1;
 }
 
+// Intermediate language ///////////////////////////////////////////////////////
 message GotoCommand {
-  required Position3D goal = 1;
-  required bool come_to_stop = 2;
+  required Position3D        goal                                          = 1;
+  required bool              come_to_stop                                  = 2;
 }
 
-message GotoRawCommand {
-  required Position3D goal = 1;
-  required bool come_to_stop = 2;
+// Drone language //////////////////////////////////////////////////////////////
+message DroneProgram {
+  repeated DroneCommand      commands                                      = 1;
 }
 
-message TriggerBombDropCommand {
-}
-
-message TriggerAlarmCommand {
-}
-
-message Command {
+message DroneCommand {
   oneof command {
-    // Only one of these can be set at a time. The type of this command is
-    // determined by which one is set.
-
-    NothingCommand NothingCommand = 1;
-    SleepCommand SleepCommand = 2;
-    GotoCommand GotoCommand = 3;
-    GotoRawCommand GotoRawCommand = 4;
-    TriggerBombDropCommand TriggerBombDropCommand = 5;
-    TriggerAlarmCommand TriggerAlarmCommand = 6;
+    NothingCommand           nothing_command                                = 1;
+    SleepCommand             sleep_command                                  = 2;
+    GotoCommand              goto_command                                   = 3;
+    TranslateCommand         goto_raw_command                               = 4;
+    TriggerBombDropCommand   trigger_bomb_drop_command                      = 5;
+    TriggerAlarmCommand      trigger_alarm_command                          = 6;
+    TranslateCommand         translate_command                              = 7;
   }
 }
 
-message DroneProgram {
-  repeated Command commands = 1;
+message NothingCommand {}
+
+message SleepCommand {
+  required double            time                                          = 1;
 }
+
+message TranslateCommand {
+  required Position3D        goal                                          = 1;
+  required bool              come_to_stop                                  = 2;
+}
+
+message TriggerBombDropCommand {}
+
+message TriggerAlarmCommand {}

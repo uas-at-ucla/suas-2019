@@ -10,14 +10,26 @@ namespace visitors {
 
 class Ground2DroneVisitor {
  public:
-  void Visit(::src::control::ground_server::timeline::GroundProgram n);
+  Ground2DroneVisitor();
+  DroneProgram Process(GroundProgram *input_program);
 
  private:
-  void Visit(::src::control::ground_server::timeline::GroundCommand n);
-  void Visit(::src::control::ground_server::timeline::WaypointCommand n);
-  void Visit(::src::control::ground_server::timeline::BombDropCommand n);
-  void Visit(::src::control::ground_server::timeline::SurveyCommand n);
-  void Visit(::src::control::ground_server::timeline::OffAxisCommand n);
+  void ConcatenateDroneProgramCommands(DroneProgram &base_program,
+                                       DroneProgram new_program);
+
+  // Drone language visitors.
+  DroneProgram Visit(GroundProgram *n);
+  DroneProgram Visit(GroundCommand *n);
+  DroneProgram Visit(WaypointCommand *n);
+  DroneProgram Visit(UgvDropCommand *n);
+  DroneProgram Visit(SurveyCommand *n);
+  DroneProgram Visit(OffAxisCommand *n);
+  DroneProgram Visit(WaitCommand *n);
+
+  // Intermediate language visitors.
+  DroneProgram Visit(GotoCommand *n);
+
+  DroneProgram *result_;
 };
 
 } // namespace visitors
