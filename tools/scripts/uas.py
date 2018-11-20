@@ -256,7 +256,7 @@ def run_travis(args):
     run_and_die_if_error("bazel test //src/...")
     run_and_die_if_error("bazel test //lib/...")
     run_and_die_if_error(
-        "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
+        "./bazel-out/k8-fastbuild/bin/src/controls/loops/flight_loop_lib_test")
 
 
 def run_controls_build(args=None, show_complete=True):
@@ -380,19 +380,19 @@ def run_controls_simulate(args):
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
-            "bazel run //src/control/loops:flight_loop\" C-m")
+            "bazel run //src/controls/loops:flight_loop\" C-m")
 
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
-            "bazel run //src/control/io:io\" C-m")
+            "bazel run //src/controls/io:io\" C-m")
 
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
-            "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
+            "bazel run //src/controls/ground_communicator:ground_communicator\" C-m")
 
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 

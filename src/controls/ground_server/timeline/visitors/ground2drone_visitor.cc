@@ -75,7 +75,7 @@ DroneProgram Ground2DroneVisitor::Visit(WaypointCommand *n) {
 DroneProgram Ground2DroneVisitor::Visit(UgvDropCommand *n) {
   DroneProgram drone_program;
 
-  //TODO(Comran): Implement
+  // TODO(Comran): Implement
   (void)n;
 
   return drone_program;
@@ -84,7 +84,7 @@ DroneProgram Ground2DroneVisitor::Visit(UgvDropCommand *n) {
 DroneProgram Ground2DroneVisitor::Visit(SurveyCommand *n) {
   DroneProgram drone_program;
 
-  //TODO(Weber): Implement
+  // TODO(Weber): Implement
   (void)n;
 
   return drone_program;
@@ -93,7 +93,7 @@ DroneProgram Ground2DroneVisitor::Visit(SurveyCommand *n) {
 DroneProgram Ground2DroneVisitor::Visit(OffAxisCommand *n) {
   DroneProgram drone_program;
 
-  //TODO(Comran): Implement
+  // TODO(Comran): Implement
   (void)n;
 
   return drone_program;
@@ -119,7 +119,7 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
   // calculating a safe path to travel and commanding the drone to follow this
   // path using TranslateCommand.
 
-  //TODO(RyanT): Add obstacle avoidance calculations here. Currently, this
+  // TODO(RyanT): Add obstacle avoidance calculations here. Currently, this
   // flies
   // directly to the goal.
   {
