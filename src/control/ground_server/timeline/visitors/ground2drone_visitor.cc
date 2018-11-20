@@ -6,11 +6,9 @@ namespace ground_server {
 namespace timeline {
 namespace visitors {
 
-Ground2DroneVisitor::Ground2DroneVisitor() : result_(new DroneProgram()) {}
+Ground2DroneVisitor::Ground2DroneVisitor() {}
 
 DroneProgram Ground2DroneVisitor::Process(GroundProgram *input_program) {
-  result_->clear_commands();
-
   return Visit(input_program);
 }
 

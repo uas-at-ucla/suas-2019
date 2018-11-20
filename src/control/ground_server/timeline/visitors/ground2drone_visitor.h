@@ -28,8 +28,6 @@ class Ground2DroneVisitor {
 
   // Intermediate language visitors.
   DroneProgram Visit(GotoCommand *n);
-
-  DroneProgram *result_;
 };
 
 } // namespace visitors
