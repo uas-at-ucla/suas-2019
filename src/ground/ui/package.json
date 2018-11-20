@@ -2,7 +2,7 @@
   "name": "flight-deck",
   "version": "0.1.0",
   "private": true,
-  "main": "src/main.js",
+  "main": "main.js",
   "homepage": "./",
   "dependencies": {
     "bootstrap": "^4.1.2",
