@@ -31,6 +31,7 @@
     "react-start": "BROWSER=none react-scripts start",
     "electron-start": "ELECTRON_DEV=1 electron .",
     "start": "concurrently \"npm run react-start\" \"wait-on http://localhost:3000/ && npm run  electron-start\"",
+    "start-web": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
