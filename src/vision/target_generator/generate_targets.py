@@ -14,6 +14,15 @@ import os
 import argparse
 import random
 
+def convertMeterToPixel(meter1,meter2,zoomLevel):
+    if zoomLevel == 18:
+        return meter1 / 0.3, meter2 / 0.3
+    elif zoomLevel == 19:
+        return meter1 / 0.15, meter2 / 0.15
+    elif zoomLevel == 20:
+        return meter1/ 0.075, meter2 / 0.075
+    else:
+        return 0,0
 
 def main(visualize):
     # Create paths
