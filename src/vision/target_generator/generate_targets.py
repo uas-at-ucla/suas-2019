@@ -22,7 +22,7 @@ def convertMeterToPixel(meter1,meter2,zoomLevel):
     elif zoomLevel == 20:
         return meter1/ 0.075, meter2 / 0.075
     else:
-        return 0,0
+        return 0, 0
 
 def main(visualize):
     # Create paths
