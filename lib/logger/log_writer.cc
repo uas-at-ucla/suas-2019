@@ -9,12 +9,12 @@ const char *kLogFileLocation = "/home/pi/logs/uas_at_ucla/drone_code.csv";
 const char *kLogFileLocation = "/tmp/drone_code.csv";
 #endif
 
-LogWriter::LogWriter()
-    : context_(1),
-      socket_(context_, ZMQ_SUB),
-      thread_(&LogWriter::ReceiveThread, this),
-      logger_(::spdlog::rotating_logger_mt("uas-at-ucla_log", kLogFileLocation,
-                                           1024 * 1024 * 50, 3)) {
+LogWriter::LogWriter() :
+    context_(1),
+    socket_(context_, ZMQ_SUB),
+    thread_(&LogWriter::ReceiveThread, this),
+    logger_(::spdlog::rotating_logger_mt("uas-at-ucla_log", kLogFileLocation,
+                                         1024 * 1024 * 50, 3)) {
   logger_->set_pattern("%v");
 }
 

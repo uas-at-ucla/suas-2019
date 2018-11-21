@@ -47,12 +47,12 @@ void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
   sp.yaw_rate = yaw_rate;
 }
 
-AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
-    : write_tid_(0),
-      reading_status_(0),
-      writing_status_(0),
-      write_count_(0),
-      time_to_exit_(false) {
+AutopilotInterface::AutopilotInterface(const char *serial_port, int baud) :
+    write_tid_(0),
+    reading_status_(0),
+    writing_status_(0),
+    write_count_(0),
+    time_to_exit_(false) {
   system_id = 1;
   autopilot_id = 1;
   companion_id = 3;
@@ -65,7 +65,6 @@ AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
   pixhawk_->set_protocol_version(mavconn::Protocol::V20);
   pixhawk_->message_received_cb = [this](const mavlink_message_t *msg,
                                          const ::mavconn::Framing framing) {
-
     switch (msg->msgid) {
       case MAVLINK_MSG_ID_HEARTBEAT:
         mavlink_msg_heartbeat_decode(msg, &(current_messages.heartbeat));

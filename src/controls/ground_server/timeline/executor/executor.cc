@@ -1,11 +1,10 @@
-#include "pilot.h"
+#include "executor.h"
 
 namespace src {
 namespace controls {
 namespace loops {
-namespace pilot {
+namespace executor {
 namespace {
-
 constexpr double kSpeed = 4.0;
 
 // Constant for how tight we want the ramp to be for re-centering the drone
@@ -18,25 +17,25 @@ constexpr double kGotoRawWaypointTolerance = 2;
 
 } // namespace
 
-Pilot::Pilot()
-    : thrust_pid_(1 / 100.0, kSpeed, 0, 0.2, 0.4, 0, 4),
-      profile_(kSpeed, 5, 1 / 100.0),
-      cmd_set_(false),
-      position_set_(false),
-      position_semaphore_(1),
-      thread_(&Pilot::PreprocessorThread, this),
-      sleep_time_(0),
-      come_to_stop_(true),
-      come_to_stop_count_(0),
-      setpoint_reset_(true),
-      met_goal_(false) {}
+Executor::Executor() :
+    thrust_pid_(1 / 100.0, kSpeed, 0, 0.2, 0.4, 0, 4),
+    profile_(kSpeed, 5, 1 / 100.0),
+    cmd_set_(false),
+    position_set_(false),
+    position_semaphore_(1),
+    thread_(&Executor::PreprocessorThread, this),
+    sleep_time_(0),
+    come_to_stop_(true),
+    come_to_stop_count_(0),
+    setpoint_reset_(true),
+    met_goal_(false) {}
 
-Pilot::~Pilot() {
+Executor::~Executor() {
   Quit();
   thread_.join();
 }
 
-void Pilot::PreprocessorThread() {
+void Executor::PreprocessorThread() {
   while (run_) {
     if (position_set_) {
       position_semaphore_.Wait();
@@ -50,7 +49,7 @@ void Pilot::PreprocessorThread() {
   }
 }
 
-PilotOutput Pilot::VelocityNavigator() {
+ExecutorOutput Executor::VelocityNavigator() {
   if (setpoint_reset_) {
     come_to_stop_count_ = 0;
     met_goal_ = false;
@@ -216,9 +215,10 @@ PilotOutput Pilot::VelocityNavigator() {
   return {flight_direction, direction_of_travel, false, false};
 }
 
-bool Pilot::MetGoal() { return met_goal_ && !setpoint_reset_; }
+bool Executor::MetGoal() { return met_goal_ && !setpoint_reset_; }
 
-PilotOutput Pilot::Calculate(Position3D position, ::Eigen::Vector3d velocity) {
+ExecutorOutput Executor::Calculate(Position3D position,
+                                   ::Eigen::Vector3d velocity) {
   if (!position_set_) {
     start_ = position;
     end_ = position;
@@ -303,18 +303,18 @@ PilotOutput Pilot::Calculate(Position3D position, ::Eigen::Vector3d velocity) {
 
   current_physical_velocity_ = velocity;
 
-  PilotOutput pilot_output = VelocityNavigator();
-  pilot_output.bomb_drop = bomb_drop;
-  pilot_output.alarm = alarm;
+  ExecutorOutput executor_output = VelocityNavigator();
+  executor_output.bomb_drop = bomb_drop;
+  executor_output.alarm = alarm;
 
-  return pilot_output;
+  return executor_output;
 }
 
-void Pilot::SetMission(::lib::mission_manager::Mission mission) {
+void Executor::SetMission(::lib::mission_manager::Mission mission) {
   mission_message_queue_receiver_.SetMission(mission);
 }
 
-} // namespace pilot
+} // namespace executor
 } // namespace loops
 } // namespace controls
 } // namespace src

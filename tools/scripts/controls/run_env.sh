@@ -39,9 +39,9 @@ fi
 # Build docker container.
 if [[ -z $TRAVIS ]]
 then
-  docker build -t uas-at-ucla_controls tools/dockerfiles/control
+  docker build -t uas-at-ucla_controls tools/dockerfiles/controls
 else
-  docker build -t uas-at-ucla_controls tools/dockerfiles/control > /dev/null
+  docker build -t uas-at-ucla_controls tools/dockerfiles/controls > /dev/null
 fi
 
 if [ $? -ne 0 ]

@@ -51,9 +51,9 @@ double GetDistance2D(Position3D start, Position3D end) {
   double d_latitude = end.latitude - start.latitude;
   double d_longitude = end.longitude - start.longitude;
 
-  double a =
-      pow(sin(d_latitude / 2), 2) +
-      cos(start.latitude) * cos(end.latitude) * pow(sin(d_longitude / 2), 2);
+  double a = pow(sin(d_latitude / 2), 2) + cos(start.latitude) *
+                                               cos(end.latitude) *
+                                               pow(sin(d_longitude / 2), 2);
 
   double c = 2 * asin(sqrt(a));
   double r = physical_constants::kRadiusOfEarthInMeters;

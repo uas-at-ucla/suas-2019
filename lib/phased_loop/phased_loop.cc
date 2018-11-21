@@ -5,8 +5,9 @@
 namespace lib {
 namespace phased_loop {
 
-PhasedLoop::PhasedLoop(double frequency)
-    : frequency_(frequency), next_iteration_(GetCurrentTime()) {}
+PhasedLoop::PhasedLoop(double frequency) :
+    frequency_(frequency),
+    next_iteration_(GetCurrentTime()) {}
 
 void PhasedLoop::SleepUntilNext() {
   double now = GetCurrentTime();

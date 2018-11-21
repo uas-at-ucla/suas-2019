@@ -12,15 +12,15 @@ void on_fail() { socketio_ground_communicator->OnFail(); }
 
 void connect() { socketio_ground_communicator->ConnectToGround(); }
 
-GroundCommunicator::GroundCommunicator()
-    : phased_loop_(1e2),
-      running_(false),
-      last_serial_telemetry_sent_(0),
-      sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", 5),
-      goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", 5),
-      status_receiver_("ipc:///tmp/uasatucla_status.ipc", 5),
-      output_receiver_("ipc:///tmp/uasatucla_output.ipc", 5),
-      goal_sender_("ipc:///tmp/uasatucla_goal.ipc") {
+GroundCommunicator::GroundCommunicator() :
+    phased_loop_(1e2),
+    running_(false),
+    last_serial_telemetry_sent_(0),
+    sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", 5),
+    goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", 5),
+    status_receiver_("ipc:///tmp/uasatucla_status.ipc", 5),
+    output_receiver_("ipc:///tmp/uasatucla_output.ipc", 5),
+    goal_sender_("ipc:///tmp/uasatucla_goal.ipc") {
 
   socketio_ground_communicator = this;
 
