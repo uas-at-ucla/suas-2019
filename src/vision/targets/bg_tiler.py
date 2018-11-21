@@ -52,9 +52,8 @@ if __name__ == '__main__':
             exit(1)
         sources = os.scandir(args.source_file)
 
-        for source_name in sources:
-            source_path = os.path.join(args.source_file, source_name)
-            dest_path = os.path.join(args.dest_file, source_name.split)
-            tile(source_path, dest_path, args.tile, args.use_res)
+        for source in sources:
+            dest_path = os.path.join(args.dest_file, source.name)
+            tile(source.path, dest_path, args.tile, args.use_res)
     else:
         tile(args.source_file, args.dest_file, args.tile, args.use_res)
