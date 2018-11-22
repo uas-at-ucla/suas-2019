@@ -1,8 +1,7 @@
 import os
 from enum import Enum
 
-
-class CONFIG(Enum):
+class Config(Enum):
     # General Defaults
     DOCKER_DATA_DIR = os.path.abspath('data_local')
 
@@ -10,10 +9,18 @@ class CONFIG(Enum):
     CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9)  # mm
     LENS_FOCAL_LENGTH = 18  # mm
 
+    # Paths for development
+    DOCKER_HOST_KEY = '/suas/src/vision/known_hosts'
+    DOCKER_SSH_ID = '/suas/src/vision/id_rsa_local'
+    DOCKER_USER = 'benlimpa'
+    ANDY_HOST_KEY = '/Users/Andy/Andy/Undergrad/Year_1/uas/drone_code/src/vision/known_hosts'
+    ANDY_SSH_ID = '/Users/Andy/Andy/Undergrad/Year_1/uas/drone_code/src/vision/id_rsa_local'
+    ANDY_USER = 'Andy'
+
     # Server defaults
-    DRONE_HOST_KEY = '/suas/src/vision/known_hosts'
-    DRONE_SSH_ID = '/suas/src/vision/id_rsa_local'
-    DRONE_USER = 'benlimpa'
+    DRONE_HOST_KEY = ANDY_HOST_KEY
+    DRONE_SSH_ID = ANDY_SSH_ID
+    DRONE_USER = ANDY_USER
     SECRET_KEY = 'flappy'
     DEFAULT_SRV_IP = '0.0.0.0'
     DEFAULT_SRV_PORT = 8099
@@ -22,13 +29,13 @@ class CONFIG(Enum):
     RSYNC_IP = '0.0.0.0'
     SNIPPER_IP = '0.0.0.0'
     CLASSIFIER_IP = '0.0.0.0'
-    SNIPPER_HOST_KEY = '/suas/src/vision/known_hosts'
-    SNIPPER_SSH_ID = '/suas/src/vision/id_rsa_local'
-    SNIPPER_USER = 'benlimpa'
+    SNIPPER_HOST_KEY = ANDY_HOST_KEY
+    SNIPPER_SSH_ID = ANDY_SSH_ID
+    SNIPPER_USER = ANDY_USER
     DRONE_IMG_FOLDER = '/path/to/images'
 
     # Client Defaults
-    DEFAULT_VSN_USER = 'benlimpa'
+    DEFAULT_VSN_USER = ANDY_USER
     DEFAULT_VSN_PORT = DEFAULT_SRV_PORT
     DEFAULT_SSH_PORT = 22
     DEFAULT_REMOTE_DIR = DOCKER_DATA_DIR

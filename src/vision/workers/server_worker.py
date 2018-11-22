@@ -6,9 +6,13 @@ import math
 import threading
 import queue
 
-from config import CONFIG
+from config import Config
 
-
+# use this once we have python 3.7
+# @dataclass(order=True)
+# class PriorityItem:
+#     key: int
+#     item: Any = field(compare=False)
 class PriorityItem:
     def __init__(self, key, item):
         self.key = key
@@ -42,7 +46,7 @@ class ServerWorker(threading.Thread):
             self.taken_auctions = taken_auctions
 
     def run(self):
-        sql_connection = sqlite3.connect(CONFIG.DOCKER_DATA_DIR.value +
+        sql_connection = sqlite3.connect(Config.DOCKER_DATA_DIR.value +
                                          '/image_info.db')
         sql_cursor = sql_connection.cursor()
         with sql_connection:
@@ -99,7 +103,7 @@ class ServerWorker(threading.Thread):
                 # check on the progress of an auction
                 elif task_type == 'timeout':
                     if (time.time() - task['time_began']
-                        ) >= CONFIG.DEFAULT_AUCTION_TIMEOUT.value:
+                        ) >= Config.DEFAULT_AUCTION_TIMEOUT.value:
                         auction = self.active_auctions[task['auction_id']]
 
                         # reset the timer if no bids have been made
@@ -222,17 +226,20 @@ def calculate_target_coordinates(
         parent_img_dimensions_pixel,
         altitude,
         heading,
-        focal_length=CONFIG.LENS_FOCAL_LENGTH.value,
-        sensor_dimensions=CONFIG.CAMERA_SENSOR_DIMENSIONS.value):
+        focal_length=Config.LENS_FOCAL_LENGTH.value,
+        sensor_dimensions=Config.CAMERA_SENSOR_DIMENSIONS.value):
     """ Calculate the coordinates of a target in an image.
 
     Arguments:
-    target_pos_pixel -- (pixels) the tuple(x, y) position of the target (top-left origin)
-    parent_img_real_coords -- (ISO 6709, degrees) the (lat, lng) position of the center of the image
+    target_pos_pixel -- (pixels) the tuple(x, y) position of the target 
+                        (top-left origin)
+    parent_img_real_coords -- (ISO 6709, degrees) the (lat, lng) position of 
+                              the center of the image
     parent_img_dimensions_pixel -- (pixels) the dimensions of the image
     altitude -- (m) the altitude when the image was taken
     heading -- (+CW degrees) the direction of the top of the picture
-    sensor_dimensions -- (mm) the dimensions of the sensor !!! ratio must match image !!!
+    sensor_dimensions -- (mm) the dimensions of the sensor 
+                         !!! ratio must match image !!!
     focal_length -- (mm) the focal_length of the lens
     """  # noqa
     # yapf: disable
@@ -261,9 +268,9 @@ def calculate_target_coordinates(
     # yapf: enable
     target_vec = rotation_matrix @ target_vec
     new_lat = parent_img_real_coords[0] + (
-        -target_vec[1] / CONFIG.R_EARTH.value) * 180 / math.pi
+        -target_vec[1] / Config.R_EARTH.value) * 180 / math.pi
     # this is an approximation assuming the latitude remains constant
     # or is very small compared to the radius of the earth
     new_lng = parent_img_real_coords[1] + (target_vec[0] / (
-        CONFIG.R_EARTH.value / math.cos(new_lat))) * 180 / math.pi
+        Config.R_EARTH.value / math.cos(new_lat))) * 180 / math.pi
     return (new_lat, new_lng)

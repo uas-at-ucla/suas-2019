@@ -20,7 +20,9 @@ import math
 import subprocess
 import re
 
+# Module dependencies
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
+from config import Config
 sys.dont_write_bytecode = True
 sys.path.insert(0, '../../lib')
 import process_manager  # noqa: E402
@@ -50,48 +52,8 @@ R_EARTH = 6.371e6  # meters (avg radius if earth were a sphere)
 
 # Defaults ####################################################################
 
-# General Defaults
-DOCKER_DATA_DIR = os.path.abspath('data_local')
 print('cwd: ' + os.getcwd())
-print('dir: ' + DOCKER_DATA_DIR)
-
-# Camera Defaults
-CAMERA_SENSOR_DIMENSIONS = (22.3, 14.9)  # mm
-LENS_FOCAL_LENGTH = 18  # mm
-
-# Server defaults
-DRONE_HOST_KEY = '/suas/src/vision/known_hosts'
-DRONE_SSH_ID = '/suas/src/vision/id_rsa_local'
-DRONE_USER = 'benlimpa'
-SECRET_KEY = 'flappy'
-DEFAULT_SRV_IP = '0.0.0.0'
-DEFAULT_SRV_PORT = 8099
-# TODO configure drone ip addr
-DRONE_IP = '0.0.0.0'
-YOLO_IP = '0.0.0.0'
-RSYNC_IP = '0.0.0.0'
-SNIPPER_IP = '0.0.0.0'
-CLASSIFIER_IP = '0.0.0.0'
-SNIPPER_HOST_KEY = '/suas/src/vision/known_hosts'
-SNIPPER_SSH_ID = '/suas/src/vision/id_rsa_local'
-SNIPPER_USER = 'benlimpa'
-DRONE_IMG_FOLDER = '/path/to/images'
-
-# Client Defaults
-DEFAULT_VSN_USER = 'benlimpa'
-DEFAULT_VSN_PORT = DEFAULT_SRV_PORT
-DEFAULT_SSH_PORT = 22
-DEFAULT_REMOTE_DIR = DOCKER_DATA_DIR
-DEFAULT_VSN_IP = DEFAULT_SRV_IP
-DEFAULT_VSN_SRV = DEFAULT_SRV_IP + ':' + str(DEFAULT_SRV_PORT)
-DEFAULT_THREADS = 1
-DEFAULT_AUCTION_TIMEOUT = 0.3
-MAX_THREADS = 20
-
-# Yolo Defaults
-DEFAULT_YOLO_PB = 'localizer/built_graph/yolo-auvsi.pb'
-DEFAULT_YOLO_META = 'localizer/built_graph/yolo-auvsi.meta'
-DEFAULT_YOLO_THRESH = 0.0012
+print('dir: ' + Config.DOCKER_DATA_DIR.value)
 
 processes = process_manager.ProcessManager()
 c_workers = []
@@ -142,7 +104,7 @@ class PriorityItem:
 # - Auctions and timeouts are lowest priority. (priority = 2)
 
 socketio_app = Flask(__name__)
-socketio_app.config['SECRET_KEY'] = SECRET_KEY
+socketio_app.config['SECRET_KEY'] = Config.SECRET_KEY.value
 vision_socketio_server = flask_socketio.SocketIO(socketio_app, logger=False)
 server_task_queue = queue.PriorityQueue()
 connected_clients = {'rsync': [], 'yolo': [], 'snipper': []}
@@ -160,7 +122,8 @@ class ServerWorker(threading.Thread):
         self.stop_req = threading.Event()  # listen for a stop request
 
     def run(self):
-        sql_connection = sqlite3.connect(DOCKER_DATA_DIR + '/image_info.db')
+        sql_connection = sqlite3.connect(Config.DOCKER_DATA_DIR.value + 
+                                         '/image_info.db')
         sql_cursor = sql_connection.cursor()
         with sql_connection:
             sql_cursor.execute(
@@ -215,10 +178,10 @@ class ServerWorker(threading.Thread):
 
                 # check on the progress of an auction
                 elif task_type == 'timeout':
-                    if (time.time() -
-                            task['time_began']) >= DEFAULT_AUCTION_TIMEOUT:
-                        auction = active_auctions[task['auction_id']]
+                    if (time.time() - task['time_began']) >= \
+                        Config.DEFAULT_AUCTION_TIMEOUT.value:
 
+                        auction = active_auctions[task['auction_id']]
                         # reset the timer if no bids have been made
                         if len(auction['bids']) == 0:
                             task['time_began'] = time.time()
@@ -360,7 +323,7 @@ def process_image(json, attempts=1):
         manual_id = False
 
     # TODO custom data dir
-    img_inc_path = os.path.join(DOCKER_DATA_DIR, img_info['id'])
+    img_inc_path = os.path.join(Config.DOCKER_DATA_DIR.value, img_info['id'])
 
     try:
         with open(img_inc_path + '.json', 'x') as f:
@@ -400,10 +363,10 @@ def process_image(json, attempts=1):
                     img_inc_path + '-drone.json'
                 )
             },
-            'ssh_id_path': DRONE_SSH_ID,
-            'hosts_path': DRONE_HOST_KEY,
-            'user': DRONE_USER,
-            'addr': DRONE_IP,
+            'ssh_id_path': Config.DRONE_SSH_ID.value,
+            'hosts_path': Config.DRONE_HOST_KEY.value,
+            'user': Config.DRONE_USER.value,
+            'addr': Config.DRONE_IP.value,
             'img_remote_src': [json['file_path'], json['info_path']],
             'img_local_dest': [img_inc_path + '.jpg',
                                img_inc_path + '-drone.json']
@@ -519,13 +482,14 @@ def download_snipped(json):
                     }
                 )
             },
-            'ssh_id_path': SNIPPER_SSH_ID,
-            'hosts_path': SNIPPER_HOST_KEY,
-            'user': SNIPPER_USER,
-            'addr': SNIPPER_IP,
+            'ssh_id_path': Config.SNIPPER_SSH_ID.value,
+            'hosts_path': Config.SNIPPER_HOST_KEY.value,
+            'user': Config.SNIPPER_USER.value,
+            'addr': Config.SNIPPER_IP.value,
             'img_remote_src': [os.path.join(download_dir, img_id + ext)
                                for ext in ('.jpg', '.json')],
-            'img_local_dest': [os.path.join(DOCKER_DATA_DIR, img_id + ext)
+            'img_local_dest': [os.path.join(Config.DOCKER_DATA_DIR.value, 
+                                            img_id + ext)
                                for ext in ('.jpg', '.json')]
         }
     }))
@@ -604,8 +568,9 @@ def calculate_target_coordinates(target_pos_pixel,
                                  parent_img_dimensions_pixel,
                                  altitude,
                                  heading,
-                                 focal_length=LENS_FOCAL_LENGTH,
-                                 sensor_dimensions=CAMERA_SENSOR_DIMENSIONS):
+                                 focal_length=Config.LENS_FOCAL_LENGTH.value,
+                                 sensor_dimensions=
+                                    Config.CAMERA_SENSOR_DIMENSIONS.value):
     """ Calculate the coordinates of a target in an image.
 
     Arguments:
@@ -665,8 +630,8 @@ def query_for_imgs(stop,
             # get a listing of all the files in the folder
             # throws TimeoutExpired if timeout (interval in secs) runs out
             result = subprocess.run([
-                'ssh', '-i ' + DRONE_SSH_ID,
-                '-o UserKnownHostsFile=' + DRONE_HOST_KEY,
+                'ssh', '-i ' + Config.DRONE_SSH_ID.value,
+                '-o UserKnownHostsFile=' + Config.DRONE_HOST_KEY.value,
                 drone_user + '@' + drone_ip, 'ls -1 {}'.format(folder)
             ],
                                     timeout=interval,
@@ -705,15 +670,15 @@ def server_worker(args):
     # setup worker to query the drone for images
     img_query_worker = threading.Thread(
         target=query_for_imgs,
-        args=(img_query_worker_stop, args.drone_user, DRONE_IP,
-              DRONE_IMG_FOLDER, args.port))
+        args=(img_query_worker_stop, args.drone_user, Config.DRONE_IP.value,
+              Config.DRONE_IMG_FOLDER.value, args.port))
     img_query_worker.start()
     # setup the database:
     global server_img_manager
     # TODO Server should not be using a client img_manager
-    server_img_manager = ImgManager(DOCKER_DATA_DIR, master=True)
+    server_img_manager = ImgManager(Config.DOCKER_DATA_DIR.value, master=True)
     global img_count
-    img_count = len(os.listdir(DOCKER_DATA_DIR))
+    img_count = len(os.listdir(Config.DOCKER_DATA_DIR.value))
     global s_worker
     s_worker = ServerWorker(server_task_queue)
     s_worker.start()
@@ -777,11 +742,11 @@ class ClientWorker(threading.Thread):
         self.vsn_addr = args.vsn_addr
         self.vsn_port = args.vsn_port
         self.ssh_port = args.ssh_port
-        self.data_dir = DOCKER_DATA_DIR
+        self.data_dir = Config.DOCKER_DATA_DIR.value
         self.socket_client = socket_client
 
         self.manager = ImgManager(
-            DOCKER_DATA_DIR, {
+            Config.DOCKER_DATA_DIR.value, {
                 'user': args.vsn_user,
                 'addr': args.vsn_addr,
                 'port': args.ssh_port,
@@ -960,6 +925,7 @@ class SnipperWorker(ClientWorker):
     #       'yolo_results': [],
     #   }]
     def _do_work(self, task):
+        print('Snipper called')
         src_img_id = task[0]['img_id']
         yolo_results = task[0]['yolo_results']
 
@@ -1012,7 +978,7 @@ class ShapeClassifierWorker(ClientWorker):
     def __init__(self, in_q, socket_client, args):
         super().__init__(in_q, socket_client, args)
         self.model = vision_classifier.load_model(args.model_path)
-        self.data_dir = DOCKER_DATA_DIR
+        self.data_dir = Config.DOCKER_DATA_DIR.value
 
         # Keras w/ Tensorflow backend bug workaround
         # This is required when using keras with tensorflow on multiple threads
@@ -1053,7 +1019,7 @@ class LetterClassifierWorker(ClientWorker):
     def __init__(self, in_q, socket_client, args):
         super().__init__(in_q, socket_client, args)
         self.model = vision_classifier.load_model(args.model_path)
-        self.data_dir = DOCKER_DATA_DIR
+        self.data_dir = Config.DOCKER_DATA_DIR.value
 
         # Keras w/ Tensorflow backend bug workaround
         # This is required when using keras with tensorflow on multiple threads
@@ -1106,13 +1072,13 @@ if __name__ == '__main__':
                                '--port',
                                action='store',
                                dest='port',
-                               default=DEFAULT_SRV_PORT,
+                               default=Config.DEFAULT_SRV_PORT.value,
                                help='specify server port')
     server_parser.add_argument(
         '--drone-user',
         action='store',
         dest='drone_user',
-        default=DRONE_USER,
+        default=Config.DRONE_USER.value,
         help='specify username for drone companion computer')
     server_parser.set_defaults(func=server_worker)
 
@@ -1124,38 +1090,38 @@ if __name__ == '__main__':
         "--vsn-addr",
         action='store',
         dest='vsn_addr',
-        default=DEFAULT_VSN_IP,
+        default=Config.DEFAULT_VSN_IP.value,
         help='ip address of the primary vision server')
     client_parser.add_argument(
         "--vsn-port",
         action='store',
         dest='vsn_port',
-        default=DEFAULT_VSN_PORT,
+        default=Config.DEFAULT_VSN_PORT.value,
         help='SocketIO port of the primary vision server')
     client_parser.add_argument(
         "--ssh-port",
         action='store',
         dest='ssh_port',
-        default=DEFAULT_SSH_PORT,
+        default=Config.DEFAULT_SSH_PORT.value,
         help='SocketIO port of the primary vision server')
     client_parser.add_argument(
         "--remote-data-dir",
         action='store',
         dest='remote_dir',
-        default=DEFAULT_REMOTE_DIR,
+        default=Config.DEFAULT_REMOTE_DIR.value,
         help='data directory of the primary vision server')
     client_parser.add_argument(
         '--user',
         action='store',
         dest='vsn_user',
-        default=DEFAULT_VSN_USER,
+        default=Config.DEFAULT_VSN_USER.value,
         help='ssh user for rsync to the primary vision server')
     client_parser.add_argument(
         "--threads",
         action='store',
         dest='threads',
-        default=DEFAULT_THREADS,
-        choices=range(1, MAX_THREADS + 1),
+        default=Config.DEFAULT_THREADS.value,
+        choices=range(1, Config.MAX_THREADS.value + 1),
         help='number of threads to run the client worker with')
     client_parser.add_argument(
         '--mock',
@@ -1178,19 +1144,19 @@ if __name__ == '__main__':
         "--protobuf",
         action='store',
         dest='yolo_pb',
-        default=DEFAULT_YOLO_PB,
+        default=Config.DEFAULT_YOLO_PB.value,
         help='specify the protobuf file of the built graph to load')
     yolo_parser.add_argument(
         "--meta",
         action='store',
         dest='yolo_meta',
-        default=DEFAULT_YOLO_META,
+        default=Config.DEFAULT_YOLO_META.value,
         help='specify the meta file of the built graph to load')
     yolo_parser.add_argument(
         "--thresh",
         action='store',
         dest='yolo_threshold',
-        default=DEFAULT_YOLO_THRESH,
+        default=Config.DEFAULT_YOLO_THRESH.value,
         help='specify the threshold for recognizing a target')
     yolo_parser.set_defaults(func=yolo_worker)
 
