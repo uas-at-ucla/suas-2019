@@ -34,7 +34,7 @@ var cookie;
         
     })
     .then(function lol () {
-        //console.log(Cookie_1)
+        console.log("in function: " + Cookie_1)
         return Cookie_1;
     })
     .catch(function (error) {
@@ -59,9 +59,10 @@ function sleep(milliseconds) {
       }
     }
 }
-var ish = gc(Cookie_1)
+console.log("outside function(first): " + gc(Cookie_1))
+var ish =  gc(Cookie_1)
 sleep(2000000)
-    console.log(ish)
+    console.log("outside function(second): "+ish)
 //var i = c(a,gc,Cookie_1)
 /*sleep(1100000)
 var b = c(a, gc, Cookie_1)
