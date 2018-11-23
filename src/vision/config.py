@@ -49,3 +49,6 @@ class Config(Enum):
     DEFAULT_YOLO_PB = 'localizer/built_graph/yolo-auvsi.pb'
     DEFAULT_YOLO_META = 'localizer/built_graph/yolo-auvsi.meta'
     DEFAULT_YOLO_THRESH = 0.0012
+
+    # Constants
+    R_EARTH = 6.371e6  # meters (avg radius if earth were a sphere)
