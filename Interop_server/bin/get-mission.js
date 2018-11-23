@@ -2,17 +2,16 @@
 
 const axios = require('axios');
 const getCookie = require('./login.js')
-import {gc} from './login'
 //var read line = require('readline-sync');
 
 var coockiePlus = "";
 var cookie;
 
-function getMissions(cookie){
+/*function getMissions(cookie){
     axios.get('localhost:8000/api/missions/1', {
-        /* params: {
+         params: {
            Cookie: response.cookie
-         },*/
+         },
          proxy: {
             host: '127.0.0.1',
             port: 8000
@@ -23,14 +22,15 @@ function getMissions(cookie){
          timeout: 5000
        })
     .then(function (response) {
+     console.log("this is a joke, right?" + cookie + "\n\n\n");
      console.log(response.data);
     })
     .catch(function (error) {
      console.log(error);
     });
-}
+}*/
 
-axios ({
+/*axios ({
     method: 'post',
     url: "localhost:8000/api/login",
     proxy: {
@@ -59,5 +59,5 @@ axios ({
 
 .catch(function (error) {
     console.log(error);
-})
-gc(cookie)
+})}*/
+console.log("log "+ getCookie.ish)

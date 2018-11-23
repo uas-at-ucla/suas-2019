@@ -5,7 +5,7 @@ const axios = require('axios');
 var coockiePlus = "";
 let a = "";
 var cookie;
-    export function gc (Cookie_1){axios ({
+    function gc (Cookie_1){axios ({
         method: 'post',
         url: "localhost:8000/api/login",
         proxy: {
@@ -34,7 +34,7 @@ var cookie;
         
     })
     .then(function lol () {
-        console.log(Cookie_1)
+        //console.log(Cookie_1)
         return Cookie_1;
     })
     .catch(function (error) {
@@ -43,10 +43,11 @@ var cookie;
    
     })
 }
+
 function c (a,gc,Cookie_1)
 {
     a = gc(Cookie_1)
-    console.log(a) 
+   
     return a;
 }
 
@@ -58,9 +59,13 @@ function sleep(milliseconds) {
       }
     }
 }
-sleep(1100000)
+var ish = gc(Cookie_1)
+sleep(2000000)
+    console.log(ish)
+//var i = c(a,gc,Cookie_1)
+/*sleep(1100000)
 var b = c(a, gc, Cookie_1)
 console.log(b)
 sleep(100000)
 var d = gc(Cookie_1)
-console.log(d)
+console.log(d)*/
