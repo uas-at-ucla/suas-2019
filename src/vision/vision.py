@@ -19,31 +19,27 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, '../../lib')
 import process_manager  # noqa: E402
 
-# Yolo dependencies
-from darkflow.net.build import TFNet  # noqa: E402  # yolo neural net
-
 # Classification dependencies
 sys.path.insert(0, './classifier')
-from classifier import vision_classifier  # noqa: E402
-import tensorflow as tf  # noqa: E402
 
 # Multithreading
 import threading  # noqa: E402  # multithreading library
 import queue  # noqa: E402  # input/output queues
 
-# Snipper dependencies
-# cv2 imported above # cropping and saving images
-
 # Client dependency
 sys.path.insert(0, './util')
-from util.img_manager import ImgManager  # noqa: E402
+from img_manager import ImgManager  # noqa: E402
 import coordinates
 
-# Module dependencies
 from config import Config
+
+# Worker dependencies
 sys.path.insert(0, './workers')
 from server_worker import PriorityItem, ServerWorker
-
+from rsync_worker import RsyncWorker
+from yolo_worker import YoloWorker, MockYoloWorker
+from snipper_worker import SnipperWorker
+from classifier_workers import ShapeClassifierWorker, LetterClassifierWorker
 
 # Defaults ####################################################################
 
@@ -431,6 +427,7 @@ def setup_server_worker(args):
 
 
 # Clients #####################################################################
+
 client_id = None
 work_queue = queue.Queue()
 vision_client = None
@@ -464,9 +461,10 @@ def client_worker(args, worker_class):
     global client_id
     client_id = str(uuid.uuid4())
     global work_queue
+    global verbose
     for i in range(0, args.threads):
-        c_worker = worker_class(
-            in_q=work_queue, socket_client=vision_client, args=args)
+        c_worker = worker_class(in_q=work_queue, socket_client=vision_client, 
+                                processes=processes, args=args, verbose=verbose)
         c_worker.start()
         c_workers.append(c_worker)
     vision_client.on(c_workers[0].get_event_name(), client_bid_for_task)
@@ -475,174 +473,13 @@ def client_worker(args, worker_class):
     vision_client.wait()
 
 
-class ClientWorker(threading.Thread):
-    def __init__(self, in_q, socket_client,
-                 args):  # accept args anyway even if not used
-        super(ClientWorker, self).__init__()
-        self.in_q = in_q  # input queue (queue.Queue)
-        self.stop_req = threading.Event()  # listen for a stop request
-        self.vsn_user = args.vsn_user
-        self.vsn_addr = args.vsn_addr
-        self.vsn_port = args.vsn_port
-        self.ssh_port = args.ssh_port
-        self.data_dir = Config.DOCKER_DATA_DIR.value
-        self.socket_client = socket_client
-
-        self.manager = ImgManager(
-            Config.DOCKER_DATA_DIR.value, {
-                'user': args.vsn_user,
-                'addr': args.vsn_addr,
-                'port': args.ssh_port,
-                'remote_dir': args.remote_dir,
-                'os_type': os.name
-            })
-
-    def _emit(self, task, event_name, args):
-        if 'manual' in task[0] and task[0]['manual']:
-            args['event_name'] = event_name
-            self.socket_client.emit('manual_request_done', args)
-        else:
-            self.socket_client.emit(event_name, args)
-
-    def _do_work(self, task):
-        raise NotImplementedError("Client Worker doesn't know what to do.")
-
-    def get_event_name(self):
-        raise NotImplementedError("Client Worker needs a name.")
-
-    def run(self):
-        while not self.stop_req.isSet():  # Exit run if stop was requested
-            try:
-                # Try to get an item from the queue
-                # blocking: true; timeout: 0.05
-                task = self.in_q.get(True, 0.05)
-                self._do_work(task)
-            except queue.Empty:
-                continue
-
-    def join(self, timeout=None):
-        self.stop_req.set()
-        super().join(timeout)
-
-
 # Rsync file synchronization ##################################################
-class RsyncWorker(ClientWorker):
-    # task format: [{'prev': {}, 'next': {}, 'user': str, 'addr': str,
-    #                'img_remote_src': str, 'img_local_dest': str}]
-    def _do_work(self, task):
-        task_args = task[0]
-        global verbose
-        if verbose:
-            print('Called rsync with args: <' + '> <'.join(map(str, task)) +
-                  '>')
-
-        success = True
-        for i in range(len(task_args['img_remote_src'])):
-            remote = task_args['img_remote_src'][i]
-            local = task_args['img_local_dest'][i]
-
-            rsync_command = ('rsync -vz --progress -e "ssh -p 22 '
-                             '-i {id_file} -o UserKnownHostsFile={hosts_file}"'
-                             ' {user}@{ip}:{remote_path} {local_path}').format(
-                                 id_file=task_args['ssh_id_path'],
-                                 hosts_file=task_args['hosts_path'],
-                                 user=task_args['user'],
-                                 ip=task_args['addr'],
-                                 remote_path=remote,
-                                 local_path=local)
-            if verbose:
-                print('Spawning rsync: ' + rsync_command)
-            if 0 != processes.spawn_process_wait_for_code(rsync_command):
-                success = False
-        if success:
-            self._emit(
-                task, 'download_complete', {
-                    'saved_path': task_args['img_local_dest'],
-                    'next': task_args['next']
-                })
-        else:
-            self._emit(
-                task, 'download_failed', {
-                    'attempted_path': task_args['img_local_dest'],
-                    'prev': task_args['prev']
-                })
-
-    def get_event_name(self):
-        return 'rsync'
-
 
 def rsync_worker(args):
     client_worker(args, RsyncWorker)
 
 
 # YOLO image classification ###################################################
-class YoloWorker(ClientWorker):
-    def __init__(self, in_q, socket_client, args):
-        super().__init__(in_q, socket_client, args)
-
-        # load model
-        yolo_options = {
-            "pbLoad": args.yolo_pb,
-            "metaLoad": args.yolo_meta,
-            "threshold": args.yolo_threshold
-        }
-        self.tfnet = TFNet(yolo_options)
-
-    # task format: [{'file_path': str}]
-    def _do_work(self, task):
-        img_id = task[0]['img_id']
-        global verbose
-        if verbose:
-            print('Called yolo with args: <' + '> <'.join(map(str, task)) +
-                  '>')
-
-        img = self.manager.get_img(img_id)
-        results = self.tfnet.return_predict(img)
-
-        for result in results:
-            result['confidence'] = float(result['confidence'])
-
-        if verbose:
-            print('yolo_results: ' + str(results))
-
-        # TODO Calculate the coordinates
-        #        for result in results:
-        #            result
-        self._emit(task, 'yolo_done', {'img_id': img_id, 'results': results})
-
-        # Result format: [{'label': str, 'confidence': int,
-        #                  'topleft': {'x': int, 'y': int},
-        #              'bottomright': {'x': int, 'y': int},
-        #                   'coords': {'lat': float, 'lng': float}}]
-
-    def get_event_name(self):
-        return 'yolo'
-
-
-class MockYoloWorker(ClientWorker):
-    def __init__(self, in_q, socket_client, args):
-        super().__init__(in_q, socket_client, args)
-
-    def get_event_name(self):
-        return 'yolo'
-
-    def _do_work(self, task):
-        img_id = task[0]['img_id']
-        img = self.manager.get_img(img_id)
-        results = [{
-            'label': 'rectangle',
-            'confidence': 5,
-            'topleft': {
-                'x': img.shape[1] / 2 - 10,
-                'y': img.shape[0] / 2 - 10
-            },
-            'bottomright': {
-                'x': img.shape[1] / 2 + 10,
-                'y': img.shape[0] / 2 + 10
-            }
-        }]
-        self._emit(task, 'yolo_done', {'img_id': img_id, 'results': results})
-
 
 def yolo_worker(args):
     if args.mock:
@@ -652,63 +489,13 @@ def yolo_worker(args):
 
 
 # Target Localization #########################################################
-class SnipperWorker(ClientWorker):
-    def __init__(self, in_q, socket_client, args):
-        super().__init__(in_q, socket_client, args)
-        self.real_data_dir = args.real_data_dir
-
-    # task format:
-    #   [{
-    #       'src_img_id': str,
-    #       'loc_info': {
-    #           'lat': float,
-    #           'lng': float,
-    #           'alt': float
-    #       },
-    #       'yolo_results': [],
-    #   }]
-    def _do_work(self, task):
-        print('Snipper called')
-        src_img_id = task[0]['img_id']
-        yolo_results = task[0]['yolo_results']
-
-        src_img = self.manager.get_img(src_img_id)
-
-        for result in yolo_results:
-            xmin = result['topleft']['x']
-            xmax = result['bottomright']['x']
-            ymin = result['topleft']['y']
-            ymax = result['bottomright']['y']
-
-            # Crop the image
-            # TODO calculate location
-            cropped_img = src_img[ymin:ymax, xmin:xmax]
-            img_id = self.manager.create_new_img(
-                cropped_img,
-                other={
-                    'parent_img_id': src_img_id,
-                    'location': {
-                        'lat': result['coords']['lat'],
-                        'lng': result['coords']['lng']
-                    }
-                })
-            if verbose:
-                print('Snipped {} -> {}'.format(src_img_id, img_id))
-
-            self._emit(task, 'snipped', {
-                'img_id': img_id,
-                'download_dir': self.real_data_dir
-            })
-
-    def get_event_name(self):
-        return 'snip'
-
 
 def snipper_worker(args):
     client_worker(args, SnipperWorker)
 
 
 # Classifiers #################################################################
+
 def classifier_worker(args):
     if args.classifier_type == 'shape':
         shape_classifier_worker(args)
@@ -717,88 +504,19 @@ def classifier_worker(args):
 
 
 # Shape Classification ########################################################
-class ShapeClassifierWorker(ClientWorker):
-    def __init__(self, in_q, socket_client, args):
-        super().__init__(in_q, socket_client, args)
-        self.model = vision_classifier.load_model(args.model_path)
-        self.data_dir = Config.DOCKER_DATA_DIR.value
-
-        # Keras w/ Tensorflow backend bug workaround
-        # This is required when using keras with tensorflow on multiple threads
-        self.model._make_predict_function()
-        self.graph = tf.get_default_graph()
-
-    # task format:
-    #   [{
-    #       'img_id': str,
-    #   }]
-    def _do_work(self, task):
-        img_id = task[0]['img_id']
-        self.manager.get_img(img_id)
-        img = vision_classifier.shape_img(
-            os.path.join(self.data_dir, img_id + '.jpg'))
-
-        # Keras w/ Tensorflow backend bug workaround
-        with self.graph.as_default():
-            prediction = vision_classifier.predict_shape(self.model, img)
-            if verbose:
-                print('Classified {} as a {}'.format(img_id, prediction))
-            self._emit(task, 'classified', {
-                'img_id': img_id,
-                'type': 'shape',
-                'shape': prediction
-            })
-
-    def get_event_name(self):
-        return 'classify_shape'
-
 
 def shape_classifier_worker(args):
     client_worker(args, ShapeClassifierWorker)
 
 
 # Letter Classification #######################################################
-class LetterClassifierWorker(ClientWorker):
-    def __init__(self, in_q, socket_client, args):
-        super().__init__(in_q, socket_client, args)
-        self.model = vision_classifier.load_model(args.model_path)
-        self.data_dir = Config.DOCKER_DATA_DIR.value
-
-        # Keras w/ Tensorflow backend bug workaround
-        # This is required when using keras with tensorflow on multiple threads
-        self.model._make_predict_function()
-        self.graph = tf.get_default_graph()
-
-    # task format:
-    #   [{
-    #       'img_id': str,
-    #   }]
-    def _do_work(self, task):
-        img_id = task[0]['img_id']
-        self.manager.get_img(img_id)
-        img = vision_classifier.letter_img(
-            os.path.join(self.data_dir, img_id + '.jpg'))
-
-        # Keras w/ Tensorflow backend bug workaround
-        with self.graph.as_default():
-            prediction = vision_classifier.predict_letter(self.model, img)
-            if verbose:
-                print('Classified {} as a {}'.format(img_id, prediction))
-            self._emit(task, 'classified', {
-                'img_id': img_id,
-                'type': 'letter',
-                'letter': prediction
-            })
-
-    def get_event_name(self):
-        return 'classify_letter'
-
 
 def letter_classifier_worker(args):
     client_worker(args, LetterClassifierWorker)
 
 
 # Parse command line arguments ################################################
+
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_received)
 
