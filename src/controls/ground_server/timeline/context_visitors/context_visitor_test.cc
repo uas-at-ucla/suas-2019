@@ -35,24 +35,10 @@ TEST(ContextVisitorTest, CanDetectOutOfBoundary) {
 
   context_visitors::ContextVisitor context_visitor;
   ::std::string serialized_instructions;
-  input_instructions.SerializeToString(
-      &serialized_instructions); // serialize string for ContextVisitor to
-                                 // process
-  context_visitor.Process(serialized_instructions);
-
-  // test if each test point is in flight boundary
-  for (int i = 0; i < num_test_points; i++) {
-    Position2D *p = new Position2D();
-    p->set_latitude(test_points[i][0]);
-    p->set_longitude(test_points[i][1]);
-    ASSERT_EQ(test_result[i], context_visitor.WithinBoundary(p));
-  }
 
   // test if throws the correct exception when given a waypoint goal that's out
   // of bounds
   for (int i = 0; i < num_test_points; i++) {
-    ::std::cout << "test #: " << i << ::std::endl;
-
     input_instructions.clear_commands();
     GroundCommand *cmd = input_instructions.add_commands();
     Position3D *goal = new Position3D();
@@ -73,6 +59,20 @@ TEST(ContextVisitorTest, CanDetectOutOfBoundary) {
       // if should throw exception but threw a different type
       FAIL() << "Expected going out of bounds";
     }
+  }
+}
+TEST(ContextVisitorTest, CanDetectIncorrectParsing) {
+  ContextVisitor context_visitor;
+  ::std::string serialized_instructions =
+      "abcde"; // a string that cannot be de-serialized
+
+  try {
+    context_visitor.Process(serialized_instructions);
+  } catch (const char *msg) {
+    ASSERT_EQ(msg, "cannot parse input string");
+  } catch (...) {
+    // if should throw exception but threw a different type
+    FAIL() << "Expected cannot parse input string";
   }
 }
 

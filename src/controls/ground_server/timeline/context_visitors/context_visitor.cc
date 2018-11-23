@@ -5,6 +5,9 @@ namespace controls {
 namespace ground_server {
 namespace timeline {
 namespace context_visitors {
+namespace {
+constexpr double kLatitudeInf = 10000.;
+}
 
 ContextVisitor::ContextVisitor() {}
 
@@ -15,7 +18,7 @@ void ContextVisitor::Process(::std::string input) {
       // if parsing is successful
       Visit(&input_program);
     } else {
-      throw "Cannot parse input string";
+      throw "cannot parse input string";
     }
   } catch (const char *msg) {
     throw msg;
@@ -25,9 +28,9 @@ void ContextVisitor::Process(::std::string input) {
 // Visitors ////////////////////////////////////////////////////////////////////
 void ContextVisitor::Visit(GroundProgram *n) {
   // get the obstacles from n, store into visitor
-  this->static_obstacles = n->static_obstacles();
+  this->static_obstacles_ = n->static_obstacles();
   // get field boundary from n, store into visitor
-  this->field_boundary.CopyFrom(n->field_boundary());
+  this->field_boundary_.CopyFrom(n->field_boundary());
 
   // Visit all commands.
   for (int i = 0; i < n->commands_size(); i++) {
@@ -37,9 +40,6 @@ void ContextVisitor::Visit(GroundProgram *n) {
 }
 
 void ContextVisitor::Visit(GroundCommand *n) {
-  DroneProgram drone_program;
-  DroneProgram command_program;
-
   // Select the specific command that this generic command type encloses, if
   // any.
   if (n->has_waypoint_command()) {
@@ -66,7 +66,6 @@ void ContextVisitor::Visit(WaypointCommand *n) {
       // if going out of bounds, throw exception
       throw "going out of bounds";
     }
-    Visit(goto_command);
   }
 }
 
@@ -87,34 +86,11 @@ void ContextVisitor::Visit(OffAxisCommand *n) {
   (void)n;
 }
 
-void ContextVisitor::Visit(WaitCommand *n) {
-  DroneProgram drone_program;
+void ContextVisitor::Visit(WaitCommand *n) { (void)n; }
 
-  {
-    DroneCommand *sleep_cmd = new DroneCommand();
-    SleepCommand *sleep = sleep_cmd->mutable_sleep_command();
-    sleep->set_time(n->time());
-    drone_program.mutable_commands()->AddAllocated(sleep_cmd);
-  }
-}
-
-void ContextVisitor::Visit(GotoCommand *n) {
-  DroneProgram drone_program;
-
-  // Go to a certain location on the field while avoiding obstacles by
-  // calculating a safe path to travel and commanding the drone to follow this
-  // path using TranslateCommand.
-
-  {
-    DroneCommand *translate_cmd = new DroneCommand();
-    TranslateCommand *translate = translate_cmd->mutable_translate_command();
-    translate->set_allocated_goal(n->mutable_goal());
-    drone_program.mutable_commands()->AddAllocated(translate_cmd);
-  }
-}
 bool ContextVisitor::WithinBoundary(Position2D *p1, Position2D *p2) {
   ::google::protobuf::RepeatedPtrField<Position2D> field_boundary =
-      this->field_boundary;
+      this->field_boundary_;
   // check if the line defined by p1 and p2 is within the flight boundary
   if (field_boundary.size() < 3) {
     // must have at least 3 points to form a polygon
@@ -149,7 +125,7 @@ bool ContextVisitor::WithinBoundary(Position2D *p) {
   // check if a 2D point is within the flight boundary
   // assuming that the points in flight boundary are given in CW order
   ::google::protobuf::RepeatedPtrField<Position2D> field_boundary =
-      this->field_boundary;
+      this->field_boundary_;
 
   if (field_boundary.size() < 3) {
     // must have at least 3 points to form a polygon
@@ -158,7 +134,7 @@ bool ContextVisitor::WithinBoundary(Position2D *p) {
 
   // draw a point that has the same latitude as p but infinitely large longitude
   Position2D *extreme = new Position2D();
-  extreme->set_latitude(this->LATITUDE_INF);
+  extreme->set_latitude(kLatitudeInf);
   extreme->set_longitude(p->longitude());
 
   int count = 0; // count number of sides that cross with the horizontal line
