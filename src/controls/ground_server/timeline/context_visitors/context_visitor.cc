@@ -66,6 +66,7 @@ void ContextVisitor::Visit(WaypointCommand *n) {
       // if going out of bounds, throw exception
       throw "going out of bounds";
     }
+    delete(goto_command);
   }
 }
 
@@ -119,7 +120,10 @@ bool ContextVisitor::WithinBoundary(Position3D *p) {
   p_2D->set_latitude(p->latitude());
   p_2D->set_longitude(p->longitude());
 
-  return ContextVisitor::WithinBoundary(p_2D);
+  bool within = ContextVisitor::WithinBoundary(p_2D);
+  delete(p_2D);
+  
+  return within;
 }
 bool ContextVisitor::WithinBoundary(Position2D *p) {
   // check if a 2D point is within the flight boundary
@@ -147,6 +151,7 @@ bool ContextVisitor::WithinBoundary(Position2D *p) {
       count++;
     }
   }
+  delete(extreme);
   // returns true if number of intersections is odd
   if (count % 2 == 1) {
     return true;
