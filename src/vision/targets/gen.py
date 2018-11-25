@@ -46,9 +46,12 @@ TRANSFORMS = ('rotate', 'perspective', 'affine')
 
 def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
                draw_box, rescale_ratio, shape_color_name, letter_color_name,
-               target_pos_conf, white_balance, origin_pos):
+               target_pos_conf, white_balance, origin_pos, start_num,
+               file_digits):
     background_files = os.scandir(bg_dir)
-    field_width = math.trunc(math.log10(n))
+    field_width = file_digits
+    if file_digits is None:
+        field_width = math.trunc(math.log10(n + start_num))
     for i in range(n):
         if i % 100 == 0:
             print('Generating image #{}'.format(i))
@@ -122,7 +125,7 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
             target_pos = target_pos_conf
 
         # create annotation
-        im_filename = ('{:0=' + str(field_width) + 'd}').format(i)
+        im_filename = ('{:0=' + str(field_width) + 'd}').format(i + start_num)
         annotation = ET.Element('annotation')
         annotation_xml = ET.ElementTree(element=annotation)
         ET.SubElement(annotation, 'filename').text = im_filename + '.jpg'
@@ -274,6 +277,16 @@ if __name__ == '__main__':
         help='x, y coordinate of the alternative origin to crop the image as a \
         tuple. By default it is (0,0) and max they can get is the width and \
         height of the background minus image_size')
+    parser.add_argument(
+        '--start-num',
+        type=int,
+        default=0,
+        help='numbering offset for the image file names')
+    parser.add_argument(
+        '--file-digits',
+        type=int,
+        default=None,
+        help='number of digits for the image file names')
 
     args = parser.parse_args()
 
@@ -346,4 +359,6 @@ if __name__ == '__main__':
         origin_pos=args.origin_pos,
         shape_color_name=args.shape_color,
         letter_color_name=args.letter_color,
-        target_pos_conf=args.target_pos)
+        target_pos_conf=args.target_pos,
+        start_num=args.start_num,
+        file_digits=args.file_digits)
