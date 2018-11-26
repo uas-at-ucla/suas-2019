@@ -41,6 +41,8 @@ from yolo_worker import YoloWorker, MockYoloWorker
 from snipper_worker import SnipperWorker
 from classifier_workers import ShapeClassifierWorker, LetterClassifierWorker
 
+from clients import VisionClient
+
 # Defaults ####################################################################
 
 print('cwd: ' + os.getcwd())
@@ -425,94 +427,37 @@ def setup_server_worker(args):
     vision_socketio_server.run(
         socketio_app, '0.0.0.0', port=int(args.port), log_output=False)
 
-
 # Clients #####################################################################
 
-client_id = None
-work_queue = queue.Queue()
-vision_client = None
+def setup_client(worker_class):
+    VisionClient(args=args, worker_class=worker_class, client_workers=c_workers,
+                 processes=processes, verbose=verbose)
 
 
-def client_add_task(*args):
-    work_queue.put(args)
-
-
-def client_bid_for_task(*args):
-    auction = args[0]
-    vision_client.emit(
-        'bid', {
-            'auction_id': auction['auction_id'],
-            'bid': {
-                'client_id': client_id,
-                'workload': work_queue.qsize()
-            }
-        })
-
-
-def client_worker(args, worker_class):
-    # Connect to vision server
-    print('Attempting to connect to server @ ' + args.vsn_addr + ':' +
-          str(args.vsn_port))
-    global vision_client
-    vision_client = socketIO_client.SocketIO(args.vsn_addr, port=args.vsn_port)
-    print('Connected to server!')
-
-    # initialize worker and listen for tasks
-    global client_id
-    client_id = str(uuid.uuid4())
-    global work_queue
-    global verbose
-    for i in range(0, args.threads):
-        c_worker = worker_class(in_q=work_queue, socket_client=vision_client, 
-                                processes=processes, args=args, verbose=verbose)
-        c_worker.start()
-        c_workers.append(c_worker)
-    vision_client.on(c_workers[0].get_event_name(), client_bid_for_task)
-    vision_client.on(c_workers[0].get_event_name() + '_' + client_id,
-                     client_add_task)
-    vision_client.wait()
-
-
-# Rsync file synchronization ##################################################
-
+# Rsync file synchronization
 def rsync_worker(args):
-    client_worker(args, RsyncWorker)
+    setup_client(RsyncWorker)
 
 
-# YOLO image classification ###################################################
-
+# YOLO image classification
 def yolo_worker(args):
     if args.mock:
-        client_worker(args, MockYoloWorker)
+        setup_client(MockYoloWorker)
     else:
-        client_worker(args, YoloWorker)
+        setup_client(YoloWorker)
 
 
-# Target Localization #########################################################
-
+# Target Localization
 def snipper_worker(args):
-    client_worker(args, SnipperWorker)
+    setup_client(SnipperWorker)
 
 
-# Classifiers #################################################################
-
+# Classifiers
 def classifier_worker(args):
     if args.classifier_type == 'shape':
-        shape_classifier_worker(args)
+        setup_client(ShapeClassifierWorker)
     elif args.classifier_type == 'letter':
-        letter_classifier_worker(args)
-
-
-# Shape Classification ########################################################
-
-def shape_classifier_worker(args):
-    client_worker(args, ShapeClassifierWorker)
-
-
-# Letter Classification #######################################################
-
-def letter_classifier_worker(args):
-    client_worker(args, LetterClassifierWorker)
+        setup_client(LetterClassifierWorker)
 
 
 # Parse command line arguments ################################################

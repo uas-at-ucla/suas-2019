@@ -1,6 +1,5 @@
 import os
 import socketIO_client
-import uuid
 import threading
 import queue
 
