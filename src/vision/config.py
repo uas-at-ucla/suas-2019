@@ -13,14 +13,16 @@ class Config(Enum):
     DOCKER_HOST_KEY = '/suas/src/vision/known_hosts'
     DOCKER_SSH_ID = '/suas/src/vision/id_rsa_local'
     DOCKER_USER = 'benlimpa'
-    ANDY_HOST_KEY = '/Users/Andy/Andy/Undergrad/Year_1/uas/drone_code/src/vision/known_hosts'
-    ANDY_SSH_ID = '/Users/Andy/Andy/Undergrad/Year_1/uas/drone_code/src/vision/id_rsa_local'
+    ANDY_HOST_KEY = '/Users/Andy/Andy/Undergrad/Year_1/uas/drone_code/ \
+                     src/vision/known_hosts'
+    ANDY_SSH_ID = '/Users/Andy/Andy/Undergrad/Year_1/uas/drone_code/ \
+                   src/vision/id_rsa_local'
     ANDY_USER = 'Andy'
 
     # Server defaults
-    DRONE_HOST_KEY = ANDY_HOST_KEY
-    DRONE_SSH_ID = ANDY_SSH_ID
-    DRONE_USER = ANDY_USER
+    DRONE_HOST_KEY = DOCKER_HOST_KEY
+    DRONE_SSH_ID = DOCKER_SSH_ID
+    DRONE_USER = DOCKER_USER
     SECRET_KEY = 'flappy'
     DEFAULT_SRV_IP = '0.0.0.0'
     DEFAULT_SRV_PORT = 8099
@@ -29,13 +31,13 @@ class Config(Enum):
     RSYNC_IP = '0.0.0.0'
     SNIPPER_IP = '0.0.0.0'
     CLASSIFIER_IP = '0.0.0.0'
-    SNIPPER_HOST_KEY = ANDY_HOST_KEY
-    SNIPPER_SSH_ID = ANDY_SSH_ID
-    SNIPPER_USER = ANDY_USER
+    SNIPPER_HOST_KEY = DOCKER_HOST_KEY
+    SNIPPER_SSH_ID = DOCKER_SSH_ID
+    SNIPPER_USER = DOCKER_USER
     DRONE_IMG_FOLDER = '/path/to/images'
 
     # Client Defaults
-    DEFAULT_VSN_USER = ANDY_USER
+    DEFAULT_VSN_USER = DOCKER_USER
     DEFAULT_VSN_PORT = DEFAULT_SRV_PORT
     DEFAULT_SSH_PORT = 22
     DEFAULT_REMOTE_DIR = DOCKER_DATA_DIR

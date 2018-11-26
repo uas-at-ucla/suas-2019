@@ -41,8 +41,8 @@ print('cwd: ' + os.getcwd())
 print('dir: ' + Config.DOCKER_DATA_DIR.value)
 
 processes = process_manager.ProcessManager()
-s_workers = [] # to make the server worker accessible by server.py
-c_workers = []
+vision_server = None
+vision_client = None
 img_query_worker = None
 img_query_worker_stop = threading.Event()
 
@@ -53,13 +53,13 @@ def signal_received(signal, frame):
     processes.killall()
 
     # Ask the workers to join us in death
-    for worker in s_workers:
-        worker.join()
     if img_query_worker is not None:
         img_query_worker_stop.set()
         img_query_worker.join()
-    for worker in c_workers:
-        worker.join()
+    if vision_server is not None:
+        vision_server.kill_workers()
+    if vision_client is not None:
+        vision_client.kill_workers()
     sys.exit(0)
 
 
@@ -117,13 +117,15 @@ def setup_server(args):
         args=(img_query_worker_stop, args.drone_user, Config.DRONE_IP.value,
               Config.DRONE_IMG_FOLDER.value, args.port))
     img_query_worker.start()
-    VisionServer(args=args, server_workers=s_workers, verbose=verbose)
+    global vision_server
+    vision_server = VisionServer(args=args, verbose=verbose)
 
 
 # Clients #####################################################################
 
 def setup_client(worker_class):
-    VisionClient(args=args, worker_class=worker_class, client_workers=c_workers,
+    global vision_client
+    vision_client = VisionClient(args=args, worker_class=worker_class, 
                  processes=processes, verbose=verbose)
 
 

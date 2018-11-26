@@ -4,10 +4,10 @@ import queue
 
 
 class VisionClient:
-    def __init__(self, args, worker_class, client_workers, processes, verbose):
+    def __init__(self, args, worker_class, processes, verbose):
         self.id = str(uuid.uuid4())
         self.work_queue = queue.Queue()
-        self.client_workers = client_workers
+        self.client_workers = []
         self.processes = processes
         self.verbose = verbose
 
@@ -31,6 +31,11 @@ class VisionClient:
         self.socket_client.on(self.client_workers[0].get_event_name() 
                               + '_' + self.id, self._add_task)
         self.socket_client.wait()
+
+
+    def kill_workers(self):
+        for worker in self.client_workers:
+            worker.join()
 
 
     def _add_task(self, *args):

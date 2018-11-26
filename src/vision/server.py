@@ -17,13 +17,13 @@ from server_worker import PriorityItem, ServerWorker
 # - Auctions and timeouts are lowest priority. (priority = 2)
 
 class VisionServer:
-    def __init__(self, args, server_workers, verbose):
+    def __init__(self, args, verbose):
         self.socketio_app = Flask(__name__)
         self.socketio_app.config['SECRET_KEY'] = Config.SECRET_KEY.value
         self.socketio_server = flask_socketio.SocketIO(self.socketio_app, 
                                                        logger=False)
         self.task_queue = queue.PriorityQueue()
-        self.server_workers = server_workers
+        self.server_workers = []
         self.connected_clients = {'rsync': [], 'yolo': [], 'snipper': []}
         self.img_count = len(os.listdir(Config.DOCKER_DATA_DIR.value))
         self.hasher = hashlib.blake2b()
@@ -48,6 +48,9 @@ class VisionServer:
 
 
     # Non-listener functions
+
+    def kill_workers(self):
+        self.s_worker.join()
 
     def syncronize_img_info(self, img_id, new_info_file):
         data = None
