@@ -16,7 +16,8 @@ namespace testing {
 
 TEST(DronePlantTest, GoFromPointAToPointB) {
   const int kLoopIteration = 100;
-  // const int kPrintWidth = 12;
+  const int kPrintWidth = 12;
+  const int kPrintDecimals = 6;
 
   DronePlant plant({0, 0, 0}, kLoopIteration);
   Position3D goal = {0.001, 0.001, 100};
@@ -30,10 +31,6 @@ TEST(DronePlantTest, GoFromPointAToPointB) {
                     ::std::pow(plant.position().altitude - goal.altitude, 2));
     velocity_pid *= 0.1;
 
-    //::std::cout << velocity_pid.x << ::std::endl
-    //            << velocity_pid.y << ::std::endl
-    //            << velocity_pid.z << ::std::endl;
-
     Position3D start = plant.position();
     plant.MoveDrone(velocity_pid);
     Position3D end = plant.position();
@@ -43,21 +40,16 @@ TEST(DronePlantTest, GoFromPointAToPointB) {
                               ::std::pow(end.altitude - start.altitude, 2));
     double speed = distance_3d / (1.0 / kLoopIteration);
 
-    //::std::cout << "Time: " << ::std::setw(kPrintWidth)
-    //            << iteration * 1.0 / kLoopIteration
-    //            << " Latitude: " << ::std::setw(kPrintWidth)
-    //            << plant.position().latitude
-    //            << " Longitude: " << ::std::setw(kPrintWidth)
-    //            << plant.position().longitude
-    //            << " Altitude: " << ::std::setw(kPrintWidth)
-    //            << plant.position().altitude << " Speed: " << speed
-    //            << ::std::endl;
-
-    // Use the following for creating CSV plots of the data.
-    ::std::cout << (iteration * 1.0 / kLoopIteration) << ", "
-                << plant.position().latitude << ", "
-                << plant.position().longitude << ", "
-                << plant.position().altitude << ", " << speed << ::std::endl;
+    ::std::cout << "Time: " << ::std::fixed
+                << ::std::setprecision(kPrintDecimals)
+                << ::std::setw(kPrintWidth) << iteration * 1.0 / kLoopIteration
+                << " Latitude: " << ::std::setw(kPrintWidth)
+                << plant.position().latitude
+                << " Longitude: " << ::std::setw(kPrintWidth)
+                << plant.position().longitude
+                << " Altitude: " << ::std::setw(kPrintWidth)
+                << plant.position().altitude << " Speed: " << speed
+                << ::std::endl;
 
     if (iteration++ > 1e5) {
       FAIL() << "Simulated drone took to long to complete test!";
