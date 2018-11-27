@@ -17,12 +17,14 @@ void quit_handler(int sig) {
 
 IO::IO()
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-    : copter_io_("/dev/ttyS0", 921600),
+    :
+    copter_io_("/dev/ttyS0", 921600),
 #else
-    : copter_io_("/tmp/virtualcom0", 921600),
+    :
+    copter_io_("/tmp/virtualcom0", 921600),
 #endif
-      autopilot_sensor_reader_(&copter_io_),
-      autopilot_output_writer_(&copter_io_) {
+    autopilot_sensor_reader_(&copter_io_),
+    autopilot_output_writer_(&copter_io_) {
   copter_io_quit = &copter_io_;
   io_quit = this;
   signal(SIGINT, quit_handler);
@@ -49,10 +51,10 @@ void IO::Quit() {
 }
 
 AutopilotSensorReader::AutopilotSensorReader(
-    autopilot_interface::AutopilotInterface *copter_io)
-    : copter_io_(copter_io),
-      last_gps_(-::std::numeric_limits<double>::infinity()),
-      sensors_sender_("ipc:///tmp/uasatucla_sensors.ipc") {
+    autopilot_interface::AutopilotInterface *copter_io) :
+    copter_io_(copter_io),
+    last_gps_(-::std::numeric_limits<double>::infinity()),
+    sensors_sender_("ipc:///tmp/uasatucla_sensors.ipc") {
   last_timestamps_.reset_timestamps();
 }
 
@@ -176,16 +178,16 @@ void AutopilotSensorReader::RunIteration() {
 }
 
 AutopilotOutputWriter::AutopilotOutputWriter(
-    autopilot_interface::AutopilotInterface *copter_io)
-    : copter_io_(copter_io),
-      output_receiver_("ipc:///tmp/uasatucla_output.ipc", 5),
-      takeoff_trigger_(kTriggerSignalTolerance),
-      hold_trigger_(kTriggerSignalTolerance),
-      offboard_trigger_(kTriggerSignalTolerance),
-      rtl_trigger_(kTriggerSignalTolerance),
-      land_trigger_(kTriggerSignalTolerance),
-      arm_trigger_(kTriggerSignalTolerance),
-      disarm_trigger_(kTriggerSignalTolerance) {
+    autopilot_interface::AutopilotInterface *copter_io) :
+    copter_io_(copter_io),
+    output_receiver_("ipc:///tmp/uasatucla_output.ipc", 5),
+    takeoff_trigger_(kTriggerSignalTolerance),
+    hold_trigger_(kTriggerSignalTolerance),
+    offboard_trigger_(kTriggerSignalTolerance),
+    rtl_trigger_(kTriggerSignalTolerance),
+    land_trigger_(kTriggerSignalTolerance),
+    arm_trigger_(kTriggerSignalTolerance),
+    disarm_trigger_(kTriggerSignalTolerance) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.

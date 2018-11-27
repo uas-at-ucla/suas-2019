@@ -6,7 +6,7 @@ namespace src {
 namespace controls {
 namespace ground_server {
 namespace timeline {
-namespace visitors {
+namespace ground2drone_visitor {
 
 class Ground2DroneVisitor {
  public:
@@ -30,7 +30,7 @@ class Ground2DroneVisitor {
   DroneProgram Visit(GotoCommand *n);
 };
 
-} // namespace visitors
+} // namespace ground2drone_visitor
 } // namespace timeline
 } // namespace ground_server
 } // namespace controls

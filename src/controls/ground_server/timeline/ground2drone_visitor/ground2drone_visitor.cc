@@ -4,7 +4,7 @@ namespace src {
 namespace controls {
 namespace ground_server {
 namespace timeline {
-namespace visitors {
+namespace ground2drone_visitor {
 
 Ground2DroneVisitor::Ground2DroneVisitor() {}
 
@@ -132,7 +132,7 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
   return drone_program;
 }
 
-} // namespace visitors
+} // namespace ground2drone_visitor
 } // namespace timeline
 } // namespace ground_server
 } // namespace controls
