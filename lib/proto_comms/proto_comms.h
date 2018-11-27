@@ -50,10 +50,10 @@ template <typename T> class ProtoSender {
 
 template <class T> class ProtoReceiver {
  public:
-  ProtoReceiver(const char *bind_address, size_t max_size)
-      : socket_(context_, ZMQ_SUB),                   //
-        thread_(&ProtoReceiver::ReceiveThread, this), //
-        max_size_(max_size) {
+  ProtoReceiver(const char *bind_address, size_t max_size) :
+      socket_(context_, ZMQ_SUB),                   //
+      thread_(&ProtoReceiver::ReceiveThread, this), //
+      max_size_(max_size) {
 
     socket_.connect(bind_address);
 

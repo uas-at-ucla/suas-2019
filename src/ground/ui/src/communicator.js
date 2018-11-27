@@ -1,8 +1,11 @@
 import socketIOClient from 'socket.io-client';
 
-const socketHost = window.location.hostname; // read from browser URL
+const isWebServer = window.location.protocol.startsWith("http");
+
+const serverIP = "localhost"; // TODO: Make configurable via Settings
+const socketHost = isWebServer ? window.location.hostname : serverIP;
 const socketPort = 8081;
-const socket = socketIOClient(socketHost+':'+socketPort+'/ui', { transports: ['websocket'] });
+const socket = socketIOClient("http://"+socketHost+':'+socketPort+'/ui', { transports: ['websocket'] });
 
 export default (store) => {
   console.log("Initializing communicator");

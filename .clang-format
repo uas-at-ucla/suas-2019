@@ -1,5 +1,12 @@
-AccessModifierOffset:                           -1
 TabWidth:                                       2
 UseTab:                                         Never
-ConstructorInitializerAllOnOneLineOrOnePerLine: true
 IndentCaseLabels:                               true
+BreakConstructorInitializers:                   AfterColon
+ColumnLimit:                                    80
+IndentWidth:                                    2
+Language:                                       Cpp
+Standard:                                       Cpp11
+FixNamespaceComments:                           true
+AlignEscapedNewlinesLeft:                       false
+AccessModifierOffset:                           -1
+ConstructorInitializerAllOnOneLineOrOnePerLine: true

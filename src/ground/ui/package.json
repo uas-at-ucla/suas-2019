@@ -17,8 +17,9 @@
     "reactstrap": "^6.3.0",
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
-    "socket.io-client": "^2.1.1",
-    "three": "^0.98.0"
+    "three": "^0.98.0",
+    "shortid": "^2.2.14",
+    "socket.io-client": "^2.1.1"
   },
   "devDependencies": {
     "check-dependencies": "^1.1.0",
@@ -31,6 +32,7 @@
     "react-start": "BROWSER=none react-scripts start",
     "electron-start": "ELECTRON_DEV=1 electron .",
     "start": "concurrently \"npm run react-start\" \"wait-on http://localhost:3000/ && npm run  electron-start\"",
+    "start-web": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",

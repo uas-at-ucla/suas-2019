@@ -4,11 +4,11 @@ namespace lib {
 namespace motion_profile {
 
 MotionProfile::MotionProfile(double max_velocity, double max_acceleration,
-                             double delta_time)
-    : output_(0, 0, 0),
-      max_velocity_(max_velocity),
-      max_acceleration_(max_acceleration),
-      delta_time_(delta_time) {}
+                             double delta_time) :
+    output_(0, 0, 0),
+    max_velocity_(max_velocity),
+    max_acceleration_(max_acceleration),
+    delta_time_(delta_time) {}
 
 ::Eigen::Vector3d MotionProfile::Calculate(::Eigen::Vector3d flight_direction) {
   // Limit how fast the drone can accelerate.

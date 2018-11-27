@@ -3,8 +3,9 @@
 namespace lib {
 namespace trigger {
 
-Trigger::Trigger(double tolerance)
-    : tolerance_(tolerance), did_trigger_(false) {}
+Trigger::Trigger(double tolerance) :
+    tolerance_(tolerance),
+    did_trigger_(false) {}
 
 bool Trigger::Process(double trigger_time) {
   double current_time =

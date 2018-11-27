@@ -18,5 +18,5 @@ const ::std::string kBase64Chars = //
 ::std::string Encode(::std::string str);
 bool IsBase64(unsigned char c);
 
-} // namespace phased_loop
+} // namespace base64_tools
 } // namespace lib
