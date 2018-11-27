@@ -5,8 +5,10 @@
   "main": "ground_server.js",
   "scripts": {
     "start": "concurrently --kill-others \"npm:server\" \"npm:ui\"",
+    "start-web": "concurrently --kill-others \"npm:server\" \"npm:ui-web\"",
     "server": "node ground_server.js",
     "ui": "cd ../ui && npm start",
+    "ui-web": "cd ../ui && npm run start-web",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

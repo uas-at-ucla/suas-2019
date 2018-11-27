@@ -5,10 +5,10 @@ namespace rrt_avoidance {
 
 const int kDimension = 50;
 
-RRTAvoidance::RRTAvoidance()
-    : state_space_(::std::make_shared<GridStateSpace>(kDimension, kDimension,
-                                                      kDimension, kDimension)),
-      birrt_(state_space_, hash, dimensions) {
+RRTAvoidance::RRTAvoidance() :
+    state_space_(::std::make_shared<GridStateSpace>(kDimension, kDimension,
+                                                    kDimension, kDimension)),
+    birrt_(state_space_, hash, dimensions) {
   birrt_.set_asc_enabled(true);
   birrt_.set_min_iterations(4e2);
   birrt_.set_max_iterations(1e4);
