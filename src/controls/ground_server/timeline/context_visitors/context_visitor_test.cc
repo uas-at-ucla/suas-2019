@@ -49,7 +49,7 @@ TEST(ContextVisitorTest, CanDetectOutOfBoundary) {
     input_instructions.SerializeToString(&serialized_instructions);
     try {
       context_visitor.Process(serialized_instructions);
-      
+
       if (test_result[i] == false) {
         // if should throw exception but didn't throw
         FAIL() << "Expected going out of bounds";
