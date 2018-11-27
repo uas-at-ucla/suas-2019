@@ -16,7 +16,7 @@ namespace testing {
 
 TEST(DronePlantTest, GoFromPointAToPointB) {
   const int kLoopIteration = 100;
-  //const int kPrintWidth = 12;
+  // const int kPrintWidth = 12;
 
   DronePlant plant({0, 0, 0}, kLoopIteration);
   Position3D goal = {0.001, 0.001, 100};
