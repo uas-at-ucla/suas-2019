@@ -4,6 +4,7 @@ import './Controls.css';
 import Map from './Map';
 import Telemetry from './Telemetry';
 import DroneActions from './DroneActions';
+import Navball from './Navball/Navball';
 
 class Controls extends Component {
   render() {
@@ -12,6 +13,7 @@ class Controls extends Component {
         <Telemetry/>
         <DroneActions/>
         <Map/>
+        <Navball />
       </div>
     );
   }
