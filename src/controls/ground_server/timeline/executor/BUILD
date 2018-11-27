@@ -1,13 +1,13 @@
 package(default_visibility = ['//visibility:public'])
 
 cc_library(
-  name = 'pilot',
+  name = 'executor',
   visibility = ['//visibility:public'],
   srcs = [
-    'pilot.cc'
+    'executor.cc'
   ],
   hdrs = [
-    'pilot.h'
+    'executor.h'
   ],
   deps = [
     '//lib/physics_structs:physics_structs',
@@ -20,10 +20,10 @@ cc_library(
 )
 
 cc_test(
-  name = "pilot_test",
-  srcs = ["pilot_test.cc"],
+  name = "executor_test",
+  srcs = ["executor_test.cc"],
   deps = [
-    ":pilot",
+    ":executor",
     "@gtest//:googletest_main"
   ],
 )

@@ -49,8 +49,8 @@ class DeviceError : public std::runtime_error {
    * @breif Construct error.
    */
   template <typename T>
-  DeviceError(const char *module, T msg)
-      : std::runtime_error(make_message(module, msg)) {}
+  DeviceError(const char *module, T msg) :
+      std::runtime_error(make_message(module, msg)) {}
 
   template <typename T>
   static std::string make_message(const char *module, T msg) {

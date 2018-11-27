@@ -1,42 +1,33 @@
 #include "flight_loop.h"
 
-#include <chrono>
-#include <iomanip>
-#include <iostream>
-#include <limits>
-#include <thread>
-
-#include "zmq.hpp"
-
 namespace src {
 namespace controls {
 namespace loops {
 namespace {
 int kFlightLoopFrequency = 1e2;
 int kMaxMessageInQueues = 5;
-}
+} // namespace
 
-FlightLoop::FlightLoop()
-    : state_(STANDBY),
-      running_(false),
-      phased_loop_(kFlightLoopFrequency),
-      start_(std::chrono::system_clock::now()),
-      takeoff_ticker_(0),
-      verbose_(false),
-      previous_flights_time_(0),
-      current_flight_start_time_(0),
-      alarm_(kFlightLoopFrequency),
-      got_sensors_(false),
-      last_loop_(0),
-      did_alarm_(false),
-      did_arm_(false),
-      last_bomb_drop_(0),
-      last_dslr_(0),
-      sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc",
-                        kMaxMessageInQueues),
-      goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", kMaxMessageInQueues),
-      status_sender_("ipc:///tmp/uasatucla_status.ipc"),
-      output_sender_("ipc:///tmp/uasatucla_output.ipc") {}
+FlightLoop::FlightLoop() :
+    state_(STANDBY),
+    running_(false),
+    phased_loop_(kFlightLoopFrequency),
+    start_(std::chrono::system_clock::now()),
+    takeoff_ticker_(0),
+    verbose_(false),
+    previous_flights_time_(0),
+    current_flight_start_time_(0),
+    alarm_(kFlightLoopFrequency),
+    got_sensors_(false),
+    last_loop_(0),
+    did_alarm_(false),
+    did_arm_(false),
+    last_bomb_drop_(0),
+    last_dslr_(0),
+    sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", kMaxMessageInQueues),
+    goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", kMaxMessageInQueues),
+    status_sender_("ipc:///tmp/uasatucla_status.ipc"),
+    output_sender_("ipc:///tmp/uasatucla_output.ipc") {}
 
 void FlightLoop::Iterate() { RunIteration(); }
 
@@ -208,18 +199,20 @@ void FlightLoop::RunIteration() {
       ::Eigen::Vector3d velocity(sensors.velocity_x(), sensors.velocity_y(),
                                  sensors.velocity_z());
 
-      pilot::PilotOutput pilot_output = pilot_.Calculate(position, velocity);
+      executor::ExecutorOutput executor_output =
+          executor_.Calculate(position, velocity);
 
-      last_bomb_drop_ = pilot_output.bomb_drop ? current_time : last_bomb_drop_;
+      last_bomb_drop_ =
+          executor_output.bomb_drop ? current_time : last_bomb_drop_;
 
-      if (pilot_output.alarm) {
+      if (executor_output.alarm) {
         alarm_.AddAlert({5.0, 0.50});
       }
 
-      output.set_velocity_x(pilot_output.flight_velocities.x);
-      output.set_velocity_y(pilot_output.flight_velocities.y);
-      output.set_velocity_z(pilot_output.flight_velocities.z);
-      output.set_yaw_setpoint(pilot_output.yaw);
+      output.set_velocity_x(executor_output.flight_velocities.x);
+      output.set_velocity_y(executor_output.flight_velocities.y);
+      output.set_velocity_z(executor_output.flight_velocities.z);
+      output.set_yaw_setpoint(executor_output.yaw);
       break;
     }
 

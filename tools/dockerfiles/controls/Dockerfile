@@ -45,7 +45,7 @@ RUN apt-get update                                                          && \
     ca-certificates-java                                                       \
     check                                                                      \
     clang-3.9                                                                  \
-    clang-format-3.9                                                           \
+    clang-format-7                                                             \
     cmake                                                                      \
     g++                                                                        \
     git                                                                        \

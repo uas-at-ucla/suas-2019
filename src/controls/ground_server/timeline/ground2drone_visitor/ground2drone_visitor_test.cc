@@ -1,4 +1,4 @@
-#include "src/controls/ground_server/timeline/visitors/ground2drone_visitor.h"
+#include "src/controls/ground_server/timeline/ground2drone_visitor/ground2drone_visitor.h"
 
 #include "gtest/gtest.h"
 
@@ -6,7 +6,7 @@ namespace src {
 namespace controls {
 namespace ground_server {
 namespace timeline {
-namespace visitors {
+namespace ground2drone_visitor {
 namespace testing {
 
 TEST(Ground2DroneVisitorTest, CanVisit) {
@@ -42,7 +42,7 @@ TEST(Ground2DroneVisitorTest, CanVisit) {
 }
 
 } // namespace testing
-} // namespace visitors
+} // namespace ground2drone_visitor
 } // namespace timeline
 } // namespace ground_server
 } // namespace controls

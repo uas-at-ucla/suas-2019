@@ -54,5 +54,5 @@ class MissionMessageQueueReceiver {
   ::std::thread thread_;
 };
 
-} // mission_message_queue
+} // namespace mission_message_queue
 } // namespace lib
