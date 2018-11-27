@@ -26,17 +26,17 @@ class Navball extends React.Component {
         this.camera.lookAt(this.scene.position);
 
 
-        this.renderer = new THREE.WebGLRenderer( {antialias:true} );
+        this.renderer = new THREE.WebGLRenderer({antialias:true});
         this.renderer.setSize(WIDTH, HEIGHT);
-        document.getElementById("navball").appendChild( this.renderer.domElement );
+        document.getElementById("navball").appendChild(this.renderer.domElement);
 
-        var light = new THREE.AmbientLight( 0xffffff , 1 );;
+        var light = new THREE.AmbientLight( 0xffffff , 1.5 );;
         this.scene.add(light);
 
 
-        var sphereGeom =  new THREE.SphereGeometry( 40, 48, 32 );
+        var sphereGeom = new THREE.SphereGeometry(40 , 48 , 32);
         var texture = new THREE.TextureLoader().load(NavballImg);
-        var material = new THREE.MeshPhongMaterial( { map: texture } );
+        var material = new THREE.MeshPhongMaterial({map: texture});
         this.ball = new THREE.Mesh(sphereGeom , material);
         this.ball.position.set(0 , 0 , 0);
         this.scene.add(this.ball);
@@ -74,7 +74,7 @@ class Navball extends React.Component {
     render() {
         return(
             <div className="navballContainer">
-                <div id="navball" ref={(mount) => { this.mount = mount }}/>
+                <div id="navball" ref={(mount) => {this.mount = mount}}/>
             </div>
         );
     }
