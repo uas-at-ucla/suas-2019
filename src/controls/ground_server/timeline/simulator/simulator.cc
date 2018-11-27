@@ -6,7 +6,7 @@ namespace ground_server {
 namespace timeline {
 namespace simulator {
 
-Simulator::Simulator() : mock_drone_position_(0, 0, 0) {}
+Simulator::Simulator() {}
 
 } // namespace simulator
 } // namespace timeline

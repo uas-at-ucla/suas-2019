@@ -1,3 +1,5 @@
+#pragma once
+
 #include "drone_plant.h"
 
 #include <Eigen/Dense>

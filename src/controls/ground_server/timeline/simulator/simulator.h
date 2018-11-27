@@ -9,9 +9,6 @@ namespace simulator {
 class Simulator {
  public:
   Simulator();
-
- private:
-  ::Eigen::Vector3d mock_drone_position_;
 };
 
 } // namespace simulator
