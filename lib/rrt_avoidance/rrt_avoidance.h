@@ -4,7 +4,7 @@
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/rrt_avoidance/2dplane/2dplane.hpp"
 #include "lib/rrt_avoidance/2dplane/GridStateSpace.hpp"
-#include "lib/rrt_avoidance/birrt.h"
+#include "lib/rrt_avoidance/birrt/birrt.h"
 #include "lib/rrt_avoidance/planning/Path.hpp"
 
 namespace lib {
