@@ -17,12 +17,12 @@ const char *kDownloadPhotosBashScriptLocation =
 
 } // namespace
 
-DSLRInterface::DSLRInterface()
-    : state_(STANDBY),
-      thread_(&DSLRInterface::Run, this),
-      phased_loop_(25),
-      take_photos_triggered_(0),
-      photos_available_to_download_(true) {}
+DSLRInterface::DSLRInterface() :
+    state_(STANDBY),
+    thread_(&DSLRInterface::Run, this),
+    phased_loop_(25),
+    take_photos_triggered_(0),
+    photos_available_to_download_(true) {}
 
 void DSLRInterface::Quit() {
   exiting_ = true;
