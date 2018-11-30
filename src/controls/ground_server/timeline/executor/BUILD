@@ -1,5 +1,3 @@
-package(default_visibility = ['//visibility:public'])
-
 cc_library(
   name = 'executor',
   visibility = ['//visibility:public'],
@@ -10,20 +8,17 @@ cc_library(
     'executor.h'
   ],
   deps = [
-    '//lib/physics_structs:physics_structs',
-    '//lib/mission_message_queue:mission_message_queue',
-    '//lib/pid:pid',
-    '//lib/motion_profile:motion_profile',
-    "@cppzmq//:cppzmq",
-    "@com_google_protobuf//:protobuf",
+    '//src/controls/ground_server/timeline:timeline_grammar_cc'
   ],
 )
 
-cc_test(
-  name = "executor_test",
-  srcs = ["executor_test.cc"],
+cc_binary(
+  name = 'executor_test',
+  srcs = [
+    'executor_test.cc',
+  ],
   deps = [
-    ":executor",
-    "@gtest//:googletest_main"
+    ':executor',
+    '@gtest//:googletest_main',
   ],
 )
