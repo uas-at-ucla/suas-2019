@@ -1,14 +1,48 @@
 import React, { Component } from 'react';
-import { Marker } from 'react-google-maps';
+import { Marker, InfoWindow } from 'react-google-maps';
 
 class CustomMarker extends Component {
+
+    constructor(){
+        super();
+    
+        this.state = {
+            isOpen: false
+        }
+    
+    }
+
+    open() {
+        this.setState({
+            isOpen: true
+        });
+    }
+    
+    close() {
+        this.setState({
+            isOpen: false
+        });
+    }
+
     render() {
         console.log("creating marker");
-        let latitude = this.props.marker.position.lat;
-        let longitude = this.props.marker.position.lng;
-        console.log({latitude, longitude});
+        const pos = { lat: this.props.marker.position.lat, lng: this.props.marker.position.lng }
+        console.log(pos);
         return (
-            <Marker onClick={() => this.props.openModal(this.props.marker.data)} position={{ lat: latitude, lng: longitude }} />
+            <div>
+                <Marker
+                    key={this.props.marker.marker_i}
+                    position={pos}
+                    onClick={() => this.open()}
+                >
+                    {
+                        this.state.isOpen &&
+                        <InfoWindow onCloseClick={() => this.close()}>
+                            <p>{this.props.marker.data}</p>
+                        </InfoWindow>
+                    }
+                </Marker>
+            </div>
         );
     }
 }

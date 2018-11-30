@@ -18,7 +18,7 @@ class Map extends Component {
                         lat: -34.397,
                         lng: 150.644,
                     },
-                    marker_n: 0,
+                    marker_i: 0,
                     data: 'first'
                 },
                 {
@@ -26,24 +26,11 @@ class Map extends Component {
                         lat: -38,
                         lng: 150.644,
                     },
-                    marker_n: 1,
+                    marker_i: 1,
                     data: 'second'
                 }
             ],
-            modalIsOpen: false,
-            modalData: 'hello'
         }
-
-        this.openModal = this.openModal.bind(this);
-        this.closeModal = this.closeModal.bind(this);
-    }
-
-    openModal(data) {
-        this.setState({ modalData: data, modalIsOpen: true });
-    }
-
-    closeModal() {
-        this.setState({ modalIsOpen: false });
     }
 
     render() {
@@ -52,21 +39,13 @@ class Map extends Component {
             customMarkers = this.state.markers.map(marker => {
                 console.log(marker.position)
                 return (
-                    <CustomMarker marker={marker} openModal={this.openModal} />
+                    <CustomMarker marker={marker} />
                 )
             })
         }
         console.log(customMarkers);
         return (
             <div id="visionMap" className="Map">
-                <Modal id = "mymodal"
-                    isOpen={this.state.modalIsOpen}
-                    onRequestClose={this.closeModal}
-                >
-                    <h2 ref={subtitle => this.subtitle = subtitle}>Hello</h2>
-                    <div>click outside to exit modal</div>
-                    <div>{this.state.modalData}</div>
-                </Modal>
 
                 <GoogleMap
                     defaultZoom={8}
