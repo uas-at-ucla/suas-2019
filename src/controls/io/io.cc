@@ -15,10 +15,10 @@ void quit_handler(int sig) {
   }
 }
 
-IO::IO(const char *drone_address)
-    : copter_io_(drone_address),
-      autopilot_sensor_reader_(&copter_io_),
-      autopilot_output_writer_(&copter_io_) {
+IO::IO(const char *drone_address) :
+    copter_io_(drone_address),
+    autopilot_sensor_reader_(&copter_io_),
+    autopilot_output_writer_(&copter_io_) {
   copter_io_quit = &copter_io_;
   io_quit = this;
   signal(SIGINT, quit_handler);
