@@ -1,4 +1,4 @@
-#include "src/controls/ground_server/timeline/ground2drone_visitor/ground2drone_visitor.h"
+#include "ground2drone_visitor.h"
 
 #include "gtest/gtest.h"
 
