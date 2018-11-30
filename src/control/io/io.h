@@ -100,7 +100,7 @@ class AutopilotOutputWriter : public LoopHandler {
 
 class IO {
  public:
-  IO();
+  IO(const char* drone_address);
   void Run();
   void Quit();
 

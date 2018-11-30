@@ -47,7 +47,7 @@ void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
   sp.yaw_rate = yaw_rate;
 }
 
-AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
+AutopilotInterface::AutopilotInterface(const char *address)
     : write_tid_(0),
       reading_status_(0),
       writing_status_(0),
@@ -60,8 +60,13 @@ AutopilotInterface::AutopilotInterface(const char *serial_port, int baud)
   current_messages.sysid = system_id;
   current_messages.compid = autopilot_id;
 
+  char udp[27];
+  strcpy(udp, "udp://");
+  strcat(udp, address);
+  strcat(udp, ":8084@:8084");
+
   pixhawk_ = ::mavconn::MAVConnInterface::open_url(
-      "udp://172.18.0.2:8084@:8084", 0, 0);
+      udp, 0, 0);
   pixhawk_->set_protocol_version(mavconn::Protocol::V20);
   pixhawk_->message_received_cb = [this](const mavlink_message_t *msg,
                                          const ::mavconn::Framing framing) {

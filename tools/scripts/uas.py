@@ -5,6 +5,7 @@ import time
 import argparse
 import textwrap
 import platform
+import subprocess
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir("../..")
@@ -45,6 +46,10 @@ LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
 LINT_FORMAT_SCRIPT = "./tools/scripts/lint/format.sh"
 
 NUKE_SCRIPT = "./tools/scripts/nuke.sh"
+
+IP_SCRIPT = "./tools/scripts/controls/get_ip.sh"
+
+DOCKER_IP = subprocess.check_output(IP_SCRIPT, shell=True)
 
 # Command chains.
 if "CONTINUOUS_INTEGRATION" in os.environ \
@@ -386,7 +391,7 @@ def run_controls_simulate(args):
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
-            "bazel run //src/control/io:io\" C-m")
+            "bazel run //src/control/io:io " + DOCKER_IP + "\" C-m")
 
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
