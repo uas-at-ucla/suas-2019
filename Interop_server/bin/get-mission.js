@@ -1,11 +1,10 @@
 #! /usr/bin/env node
 
-const axios = require('axios');
-const getCookie = require('./login.js')
+const login = require('./login.js')
 //var read line = require('readline-sync');
 
-var coockiePlus = "";
-var cookie;
+
+ 
 
 /*function getMissions(cookie){
     axios.get('localhost:8000/api/missions/1', {
@@ -60,4 +59,4 @@ var cookie;
 .catch(function (error) {
     console.log(error);
 })}*/
-console.log("log "+ getCookie.ish)
+

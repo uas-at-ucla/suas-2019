@@ -1,11 +1,10 @@
 #! /usr/bin/env node
-var Cookie_1 = "isjh";
+var cookie = "false";
+var cookieobj = {};
 const axios = require('axios');
-//var readline = require('readline-sync');
-var coockiePlus = "";
-let a = "";
-var cookie;
-    function gc (Cookie_1){axios ({
+
+
+    function gc (){axios ({
         method: 'post',
         url: "localhost:8000/api/login",
         proxy: {
@@ -20,53 +19,34 @@ var cookie;
     })
     
     .then(function getCookie_1 (response, cookie,res) {
-        var res = {};
+       
        
          var test = JSON.stringify(response.headers['set-cookie']);
           
          var i = test.search("sess=");
          var j = test.search(";")
-         response.cookie=  test.substring(i+3, j);
+         cookieobj.cookie=  test.substring(i+3, j);
       
         
-        Cookie_1 = JSON.stringify(response.cookie);
+         // = JSON.stringify(response.cookie);
      
         
     })
     .then(function lol () {
-        console.log("in function: " + Cookie_1)
-        return Cookie_1;
+        
+        
     })
     .catch(function (error) {
         console.log(error);
    
-   
+  
     })
+    
+    return;
 }
+gc()
 
-function c (a,gc,Cookie_1)
-{
-    a = gc(Cookie_1)
-   
-    return a;
-}
 
-function sleep(milliseconds) {
-    var start = new Date().getTime();
-    for (var i = 0; i < 1e7; i++) {
-      if ((new Date().getTime() - start) > milliseconds){
-        break;
-      }
-    }
-}
-console.log("outside function(first): " + gc(Cookie_1))
-var ish =  gc(Cookie_1)
-sleep(2000000)
-    console.log("outside function(second): "+ish)
-//var i = c(a,gc,Cookie_1)
-/*sleep(1100000)
-var b = c(a, gc, Cookie_1)
-console.log(b)
-sleep(100000)
-var d = gc(Cookie_1)
-console.log(d)*/
+module.exports = { variableName: "variableValue" };
+setTimeout(() => console.log(cookieobj.cookie), 2000);
+setTimeout(() => (module.exports.cookie= cookieobj.cookie), 2001);
