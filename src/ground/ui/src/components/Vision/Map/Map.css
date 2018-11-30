@@ -1,0 +1,6 @@
+.Map {
+    top: 0;
+    width: 30vw;
+    height: 90vh;
+    z-index: -1;
+}
