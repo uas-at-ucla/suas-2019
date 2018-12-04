@@ -29,11 +29,9 @@ RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
   "stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 
-RUN apt-get update     -qq                                                  && \
-    apt-get upgrade -y -qq
-
 # Install apt dependencies. ####################################################
-RUN apt-get update                                                          && \
+RUN apt-get update -qq                                                      && \
+    apt-get upgrade -y -qq                                                  && \
     apt-get install -y                                                         \
     ant                                                                        \
     autoconf                                                                   \
@@ -84,15 +82,6 @@ RUN apt-get update                                                          && \
     tmux                                                                       \
     uthash-dev                                                                 \
     vim
-
-# May need these dependencies later:
-# libgazebo7-dev
-# libopencv-dev
-# libeigen3-dev
-# liblz4-dev
-# lib32stdc++6
-
-RUN apt-get upgrade -y -qq
 
 # Fix git certificate bug with open JDK. #######################################
 RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
