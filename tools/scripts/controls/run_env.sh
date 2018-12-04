@@ -35,13 +35,23 @@ then
   docker rm $ENV_DOCKER_CONTAINER
 fi
 
+BUILD_FLAGS="-t uas-at-ucla_controls"
+
+while test $# -gt 0
+do
+    case "$1" in
+        --rebuild) BUILD_FLAGS="$BUILD_FLAGS --no-cache"
+            ;;
+    esac
+    shift
+done
 
 # Build docker container.
 if [[ -z $TRAVIS ]]
 then
-  docker build -t uas-at-ucla_controls tools/dockerfiles/controls
+  docker build $BUILD_FLAGS tools/dockerfiles/controls
 else
-  docker build -t uas-at-ucla_controls tools/dockerfiles/controls > /dev/null
+  docker build $BUILD_FLAGS tools/dockerfiles/controls > /dev/null
 fi
 
 if [ $? -ne 0 ]

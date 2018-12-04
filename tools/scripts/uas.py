@@ -476,7 +476,7 @@ def run_ground_shell(args):
     kill_ground()
 
 
-def run_controls_docker_start(args, show_complete=True):
+def run_controls_docker_start(args=None, show_complete=True):
     print_update("Making sure all the necessary packages are installed")
     run_install()
 
@@ -489,7 +489,22 @@ def run_controls_docker_start(args, show_complete=True):
                 msg_type="SUCCESS")
 
 
-def run_controls_docker_kill(args, show_complete=True):
+def run_controls_docker_rebuild(args=None, show_complete=True):
+    print_update("Rebuilding docker environment.")
+    run_install()
+
+    run_controls_docker_kill(False)
+
+    # Start the UAS@UCLA software development docker image if it is not already
+    # running.
+    run_env(show_complete=False, rebuild=True)
+
+    if show_complete:
+        print_update("\n\nControls docker container started successfully", \
+                msg_type="SUCCESS")
+
+
+def run_controls_docker_kill(args=None, show_complete=True):
     result = kill_controls()
 
     if show_complete:
@@ -523,10 +538,13 @@ def run_controls_test_rrtavoidance(args):
 
 
 
-def run_env(args=None, show_complete=True):
+def run_env(args=None, show_complete=True, rebuild=False):
     print_update("Starting UAS@UCLA development environment...")
 
-    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+    if rebuild:
+        run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT + " --rebuild")
+    else:
+        run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
 
     if show_complete:
         print_update("UAS@UCLA development environment started " \
@@ -614,6 +632,8 @@ if __name__ == '__main__':
     controls_docker_subparsers = controls_docker_parser.add_subparsers()
     controls_docker_start = controls_docker_subparsers.add_parser('start')
     controls_docker_start.set_defaults(func=run_controls_docker_start)
+    controls_docker_rebuild = controls_docker_subparsers.add_parser('rebuild')
+    controls_docker_rebuild.set_defaults(func=run_controls_docker_rebuild)
     controls_docker_kill = controls_docker_subparsers.add_parser('kill')
     controls_docker_kill.set_defaults(func=run_controls_docker_kill)
     controls_docker_shell = controls_docker_subparsers.add_parser('shell')
