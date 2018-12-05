@@ -36,7 +36,8 @@ void GroundCommunicator::ConnectToGround() {
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   client_.connect("http://192.168.2.20:8081");
 #else
-  client_.connect("http://0.0.0.0:8081");
+  //client_.connect("http://0.0.0.0:8081");
+  client_.connect("http://192.168.2.20:8081");
 #endif
 }
 
@@ -155,14 +156,13 @@ void GroundCommunicator::RunIteration() {
   all_data->get_map()["telemetry"] = telemetry;
   all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
 
-  client_.socket()->emit("telemetry", all_data);
+  client_.socket("drone")->emit("telemetry", all_data);
 }
 
 void GroundCommunicator::OnConnect() {
   LOG_LINE("Someone connected to ground_communicator");
-  client_.socket()->emit("join_room", sio::string_message::create("drone"));
 
-  client_.socket()->on(
+  client_.socket("drone")->on(
       "drone_execute_commands",
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
@@ -188,7 +188,7 @@ void GroundCommunicator::OnConnect() {
             SetState("MISSION");
           }));
 
-  client_.socket()->on(
+  client_.socket("drone")->on(
       "interop_data",
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
@@ -211,7 +211,7 @@ void GroundCommunicator::OnConnect() {
             mission_message_queue_sender_.SendData(ground_data);
           }));
 
-  client_.socket()->on(
+  client_.socket("drone")->on(
       "drone_set_state",
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
