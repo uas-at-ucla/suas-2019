@@ -19,6 +19,6 @@ cc_binary(
   ],
   deps = [
     ':ground2drone_visitor',
-    '@gtest//:googletest_main',
+    '@gtest//:gtest_main',
   ],
 )

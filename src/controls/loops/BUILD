@@ -22,7 +22,7 @@ cc_binary(
   ],
   deps = [
     ':flight_loop_lib',
-    '@gtest//:googletest',
+    '@gtest//:gtest',
   ],
 )
 
