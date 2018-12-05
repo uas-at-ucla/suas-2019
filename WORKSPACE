@@ -5,7 +5,7 @@ load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_r
 new_git_repository(
   name = 'gcc_linaro_arm_linux_gnueabihf_raspbian_repo',
   remote = 'https://github.com/uas-at-ucla/raspi-toolchain.git',
-  build_file = 'tools/compilers/gcc_linaro_arm_linux_gnueabihf_raspbian.BUILD',
+  build_file = 'compilers/gcc_linaro_arm_linux_gnueabihf_raspbian.BUILD',
   commit = 'f1c0b5666ab9fdb0cf491a5e18cea312a077f34b',
 )
 
