@@ -20,6 +20,6 @@ cc_binary(
   ],
   deps = [
     ':drone_plant',
-    '@gtest//:googletest_main',
+    '@gtest//:gtest_main',
   ],
 )

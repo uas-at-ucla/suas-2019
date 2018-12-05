@@ -8,11 +8,11 @@
 FROM debian:stretch
 
 # Install compilation and testing dependencies #################################
-RUN apt update     -qq                                                      && \
-    apt install -y -qq curl                                                 && \
-    apt install -y -qq gnupg
+RUN apt-get update     -qq                                                      && \
+    apt-get install -y -qq curl                                                 && \
+    apt-get install -y -qq gnupg
 
-# Add apt repositories containing required packages. ###########################
+# Add apt-get repositories containing required packages. ###########################
 #RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
 #  "deb-src http://deb.debian.org/debian buster main\n\n" \
 #  "deb http://deb.debian.org/debian buster-updates main contrib non-free\n" \
@@ -29,12 +29,10 @@ RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
   "stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 
-RUN apt update     -qq                                                      && \
-    apt upgrade -y -qq
-
 # Install apt dependencies. ####################################################
-RUN apt-get update                                                          && \
-  apt install -y                                                               \
+RUN apt-get update -qq                                                      && \
+    apt-get upgrade -y -qq                                                  && \
+    apt-get install -y                                                         \
     ant                                                                        \
     autoconf                                                                   \
     autoconf                                                                   \
@@ -85,15 +83,6 @@ RUN apt-get update                                                          && \
     uthash-dev                                                                 \
     vim
 
-# May need these dependencies later:
-# libgazebo7-dev
-# libopencv-dev
-# libeigen3-dev
-# liblz4-dev
-# lib32stdc++6
-
-RUN apt upgrade -y -qq
-
 # Fix git certificate bug with open JDK. #######################################
 RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
   /etc/java-10-openjdk/security/java.security
@@ -119,7 +108,7 @@ RUN usermod -aG sudo uas
 # User env setup. ##############################################################
 RUN mkdir /external_libs
 
-RUN apt install -y openssh-client openssh-server
+RUN apt-get install -y openssh-client openssh-server
 
 USER uas
 RUN mkdir -p /home/uas/code_env

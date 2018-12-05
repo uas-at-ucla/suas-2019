@@ -24,6 +24,6 @@ cc_test(
   srcs = ["executor_test.cc"],
   deps = [
     ":executor",
-    "@gtest//:googletest_main"
+    "@gtest//:gtest_main"
   ],
 )

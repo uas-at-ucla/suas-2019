@@ -19,6 +19,6 @@ cc_binary(
   ],
   deps = [
     ':simulator',
-    '@gtest//:googletest_main',
+    '@gtest//:gtest_main',
   ],
 )
