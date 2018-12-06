@@ -22,6 +22,7 @@ cc_library(
     'io_sim.h'
   ],
   deps = [
+    '@boost//:asio',
     '//src/controls/io:loop_handler',
     '//src/controls:messages_cpp',
     '//lib/logger:log_sender',

@@ -73,32 +73,35 @@ void GroundCommunicator::RunIteration() {
 
   // Fetch the latest data from queues with messages.
   if (sensors_receiver_.HasMessages()) {
-    send_sensors = true;
-
     ::src::controls::UasMessage message = sensors_receiver_.GetLatest();
     ::src::controls::Sensors sensors = message.sensors();
-    ::std::string sensors_serialized;
-    sensors.SerializeToString(&sensors_serialized);
+    
+    if (sensors.has_latitude()) { // sometimes all the fields are missing???
+      send_sensors = true;
 
-    telemetry->get_map()["sensors"] = ::sio::string_message::create(
-        ::lib::base64_tools::Encode(sensors_serialized));
+      ::std::string sensors_serialized;
+      sensors.SerializeToString(&sensors_serialized);
 
-    if (current_time - last_serial_telemetry_sent_ > 0.3) {
-      // Time to send another serial telemetry message.
-      ::lib::serial_comms::SerialCommsMessage message;
-      message.set_latitude(sensors.latitude());
-      message.set_longitude(sensors.longitude());
-      message.set_altitude(sensors.relative_altitude());
-      message.set_heading(sensors.heading());
+      telemetry->get_map()["sensors"] = ::sio::string_message::create(
+          ::lib::base64_tools::Encode(sensors_serialized));
 
-      ::std::cout << "Lat: " << message.latitude()
-                  << " Lng: " << message.longitude()
-                  << " Alt: " << message.altitude()
-                  << " Heading: " << message.heading() << ::std::endl;
+      if (current_time - last_serial_telemetry_sent_ > 0.3) {
+        // Time to send another serial telemetry message.
+        ::lib::serial_comms::SerialCommsMessage message;
+        message.set_latitude(sensors.latitude());
+        message.set_longitude(sensors.longitude());
+        message.set_altitude(sensors.relative_altitude());
+        message.set_heading(sensors.heading());
 
-      serial_comms_bridge_.SendData(message);
+        ::std::cout << "Lat: " << message.latitude()
+                    << " Lng: " << message.longitude()
+                    << " Alt: " << message.altitude()
+                    << " Heading: " << message.heading() << ::std::endl;
 
-      last_serial_telemetry_sent_ = current_time;
+        serial_comms_bridge_.SendData(message);
+
+        last_serial_telemetry_sent_ = current_time;
+      }
     }
   }
 

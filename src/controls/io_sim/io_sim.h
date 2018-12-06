@@ -6,6 +6,7 @@
 #include <limits>
 #include <unistd.h>
 #include <mutex>
+#include <boost/asio.hpp>
 
 #include "lib/logger/log_sender.h"
 #include "lib/proto_comms/proto_comms.h"
