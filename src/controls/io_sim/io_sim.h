@@ -1,12 +1,12 @@
 #pragma once
 
 #include <atomic>
+#include <boost/asio.hpp>
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <unistd.h>
 #include <mutex>
-#include <boost/asio.hpp>
+#include <unistd.h>
 
 #include "lib/logger/log_sender.h"
 #include "lib/proto_comms/proto_comms.h"
@@ -32,6 +32,12 @@ struct PosInfo {
 } pos_info;
 
 std::mutex pos_info_mutex;
+
+__attribute__((constructor)) static void
+use_pos_info(void) // prevent unused variable error
+{
+  (void)pos_info;
+}
 
 } // namespace
 

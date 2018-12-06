@@ -1,5 +1,5 @@
-#include <math.h>
 #include "io_sim.h"
+#include <math.h>
 
 namespace src {
 namespace controls {
@@ -7,13 +7,11 @@ namespace io {
 
 IO *io_quit;
 void quit_handler(int sig) {
-  (void)(sig);
+  (void)sig;
   io_quit->Quit();
 }
 
-IO::IO() :
-    autopilot_sensor_reader_(),
-    autopilot_output_writer_() {
+IO::IO() : autopilot_sensor_reader_(), autopilot_output_writer_() {
   io_quit = this;
   signal(SIGINT, quit_handler);
 }
@@ -43,12 +41,11 @@ void IO::Quit() {
 
 AutopilotSensorReader::AutopilotSensorReader() :
     last_gps_(-::std::numeric_limits<double>::infinity()),
-    sensors_sender_("ipc:///tmp/uasatucla_sensors.ipc") {
-}
+    sensors_sender_("ipc:///tmp/uasatucla_sensors.ipc") {}
 
 void AutopilotSensorReader::RunIteration() {
   std::lock_guard<std::mutex> lock(pos_info_mutex);
-  
+
   double current_time =
       ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
           ::std::chrono::system_clock::now().time_since_epoch())
@@ -77,7 +74,8 @@ void AutopilotSensorReader::RunIteration() {
     sensors->set_gps_satellite_count(0);
     sensors->set_gps_eph(0);
     sensors->set_gps_epv(0);
-    sensors->set_gps_ground_speed(sqrt(pow(pos_info.velocity_x, 2) + pow(pos_info.velocity_y, 2)));
+    sensors->set_gps_ground_speed(
+        sqrt(pow(pos_info.velocity_x, 2) + pow(pos_info.velocity_y, 2)));
   }
 
   // IMU data.
@@ -109,7 +107,8 @@ void AutopilotSensorReader::RunIteration() {
     sensors->set_armed(true);
 
     AutopilotState autopilot_state = UNKNOWN;
-    // Not testing autopilot functionality for now (land, takeoff, etc.), always offboard
+    // Not testing autopilot functionality for now (land, takeoff, etc.), always
+    // offboard
     autopilot_state = OFFBOARD;
 
     sensors->set_autopilot_state(autopilot_state);
