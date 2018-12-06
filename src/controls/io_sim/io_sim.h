@@ -29,7 +29,9 @@ struct PosInfo {
   float velocity_x;
   float velocity_y;
   float velocity_z;
-} pos_info;
+};
+
+struct PosInfo pos_info;
 
 std::mutex pos_info_mutex;
 
