@@ -33,8 +33,8 @@ struct PosInfo {
 
 std::mutex pos_info_mutex;
 
-__attribute__ ((constructor))
-static void use_pos_info (void)  // prevent unused variable error?
+__attribute__((constructor)) static void
+use_pos_info(void) // prevent unused variable error
 {
   (void)pos_info;
 }
