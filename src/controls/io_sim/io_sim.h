@@ -1,12 +1,12 @@
 #pragma once
 
 #include <atomic>
+#include <boost/asio.hpp>
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <unistd.h>
 #include <mutex>
-#include <boost/asio.hpp>
+#include <unistd.h>
 
 #include "lib/logger/log_sender.h"
 #include "lib/proto_comms/proto_comms.h"

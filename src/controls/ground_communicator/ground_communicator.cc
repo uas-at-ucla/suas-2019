@@ -36,7 +36,7 @@ void GroundCommunicator::ConnectToGround() {
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   client_.connect("http://192.168.2.20:8081");
 #else
-  //client_.connect("http://0.0.0.0:8081");
+  // client_.connect("http://0.0.0.0:8081");
   client_.connect("http://192.168.2.20:8081");
 #endif
 }
@@ -75,7 +75,7 @@ void GroundCommunicator::RunIteration() {
   if (sensors_receiver_.HasMessages()) {
     ::src::controls::UasMessage message = sensors_receiver_.GetLatest();
     ::src::controls::Sensors sensors = message.sensors();
-    
+
     if (sensors.has_latitude()) { // sometimes all the fields are missing???
       send_sensors = true;
 
