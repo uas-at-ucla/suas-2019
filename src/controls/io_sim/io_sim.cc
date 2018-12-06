@@ -17,7 +17,6 @@ IO::IO() : autopilot_sensor_reader_(), autopilot_output_writer_() {
 }
 
 void IO::Run() {
-  (void)pos_info;
   pos_info.latitude = 0;
   pos_info.longitude = 0;
   pos_info.altitude = 100;
