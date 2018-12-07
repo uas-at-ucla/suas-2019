@@ -90,7 +90,7 @@ struct Mavlink_Messages {
 
 class AutopilotInterface {
  public:
-  AutopilotInterface(const char *address, int baud);
+  AutopilotInterface(const char *address);
   ~AutopilotInterface();
 
   int system_id;

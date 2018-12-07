@@ -5,7 +5,6 @@
 #include <cmath>
 #include <condition_variable>
 #include <iostream>
-#include <iostream>
 #include <map>
 #include <memory>
 #include <string>
@@ -26,24 +25,24 @@
 namespace src {
 namespace controls {
 namespace loops {
-namespace pilot {
+namespace executor {
 
-struct PilotOutput {
+struct ExecutorOutput {
   Vector3D flight_velocities;
   float yaw;
   bool bomb_drop;
   bool alarm;
 };
 
-class Pilot {
+class Executor {
  public:
-  Pilot();
-  ~Pilot();
+  Executor();
+  ~Executor();
 
-  PilotOutput Calculate(Position3D position, ::Eigen::Vector3d velocity);
+  ExecutorOutput Calculate(Position3D position, ::Eigen::Vector3d velocity);
   void PreprocessorThread();
   void SetMission(::lib::mission_manager::Mission mission);
-  PilotOutput VelocityNavigator();
+  ExecutorOutput VelocityNavigator();
   bool MetGoal();
 
   void Quit() { run_ = false; }
@@ -76,7 +75,7 @@ class Pilot {
   ::Eigen::Vector3d current_physical_velocity_;
 };
 
-} // namespace pilot
+} // namespace executor
 } // namespace loops
 } // namespace controls
 } // namespace src

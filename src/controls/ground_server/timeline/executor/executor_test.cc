@@ -1,4 +1,4 @@
-#include "src/controls/loops/pilot/pilot.h"
+#include "src/controls/ground_server/timeline/executor/executor.h"
 
 #include "gtest/gtest.h"
 
@@ -7,17 +7,18 @@
 namespace src {
 namespace controls {
 namespace loops {
-namespace pilot {
+namespace executor {
 namespace testing {
 namespace {
 const double kMetPositionTolerance = 5;
 const double kMetersPerCoordinate = GetDistance2D({0, 0, 0}, {1, 0, 0});
 } // namespace
 
-class PilotPlant {
+class ExecutorPlant {
  public:
-  PilotPlant(Position3D init_position, double loop_frequency)
-      : drone_position_(init_position), loop_frequency_(loop_frequency) {}
+  ExecutorPlant(Position3D init_position, double loop_frequency) :
+      drone_position_(init_position),
+      loop_frequency_(loop_frequency) {}
 
   void MoveDrone(Vector3D flight_direction) {
     drone_position_.latitude +=
@@ -36,9 +37,9 @@ class PilotPlant {
   double loop_frequency_;
 };
 
-class PilotTest : public ::testing::Test {
+class ExecutorTest : public ::testing::Test {
  protected:
-  PilotTest() {}
+  ExecutorTest() {}
 
   bool CheckMetGoal(Position3D position, Position3D goal) {
     return GetDistance3D(position, goal) < kMetPositionTolerance;
@@ -48,11 +49,11 @@ class PilotTest : public ::testing::Test {
     EXPECT_LE(GetDistance3D(position, goal), kMetPositionTolerance);
   }
 
-  Pilot pilot_;
+  Executor executor_;
 };
 
-TEST_F(PilotTest, ReachesGoalTest) {
-  PilotPlant plant({0, 0, 0}, 100);
+TEST_F(ExecutorTest, ReachesGoalTest) {
+  ExecutorPlant plant({0, 0, 0}, 100);
   Position3D goal = {0.0005, 0.0003, 10};
 
   ::lib::mission_manager::Mission mission;
@@ -68,7 +69,7 @@ TEST_F(PilotTest, ReachesGoalTest) {
   goto_cmd->set_allocated_goal(goto_goal);
   goto_cmd->set_come_to_stop(true);
 
-  pilot_.SetMission(mission);
+  executor_.SetMission(mission);
 
   double runtime_in_seconds = 25;
 
@@ -81,8 +82,8 @@ TEST_F(PilotTest, ReachesGoalTest) {
     ::std::cout << "drone at (" << plant.GetPosition().latitude << ", "
                 << plant.GetPosition().longitude << ")\n";
 
-    pilot::PilotOutput flight_direction =
-        pilot_.Calculate(plant.GetPosition(), current_velocities);
+    executor::ExecutorOutput flight_direction =
+        executor_.Calculate(plant.GetPosition(), current_velocities);
     ::std::cout << flight_direction.flight_velocities.x << ", "
                 << flight_direction.flight_velocities.y << ", "
                 << flight_direction.flight_velocities.z << ::std::endl;
@@ -98,7 +99,7 @@ TEST_F(PilotTest, ReachesGoalTest) {
 }
 
 } // namespace testing
-} // namespace pilot
+} // namespace executor
 } // namespace loops
 } // namespace controls
 } // namespace src

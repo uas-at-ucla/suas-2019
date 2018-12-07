@@ -7,7 +7,7 @@ cc_test(
   ],
   deps = [
     ':alarm',
-    '@gtest//:googletest_main',
+    '@gtest//:gtest_main',
   ],
 )
 

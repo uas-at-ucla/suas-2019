@@ -6,10 +6,10 @@ namespace rrt_avoidance {
 BiRRT::BiRRT(::std::shared_ptr<StateSpace<::Eigen::Vector2d>> state_space,
              ::std::function<size_t(::Eigen::Vector2d)> hash, int dimensions,
              ::std::function<::Eigen::Vector2d(double *)> array_to_t,
-             ::std::function<void(::Eigen::Vector2d, double *)> t_to_array)
-    : start_tree_(state_space, hash, dimensions, array_to_t, t_to_array),
-      goal_tree_(state_space, hash, dimensions, array_to_t, t_to_array),
-      min_iterations_(0) {
+             ::std::function<void(::Eigen::Vector2d, double *)> t_to_array) :
+    start_tree_(state_space, hash, dimensions, array_to_t, t_to_array),
+    goal_tree_(state_space, hash, dimensions, array_to_t, t_to_array),
+    min_iterations_(0) {
   Reset();
 }
 

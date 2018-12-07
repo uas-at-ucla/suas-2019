@@ -23,6 +23,6 @@ cc_test(
   ],
   deps = [
     ":mission_message_queue",
-    "@gtest//:googletest_main",
+    "@gtest//:gtest_main",
   ],
 )
