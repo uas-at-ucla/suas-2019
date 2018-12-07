@@ -1,0 +1,25 @@
+#include "state_machine.h"
+
+#include <sstream>
+
+namespace src {
+namespace controls {
+namespace ground_server {
+namespace state_machine {
+
+InvalidStateException::InvalidStateException(Result result)
+  // : result_(result)
+{
+  std::ostringstream what_stream;
+  what_stream << "An attempt to execute an invalid state id was made: " << result;
+  this->what_ = what_stream.str();
+}
+
+const char* InvalidStateException::what() const noexcept {
+  return this->what_.c_str();
+}
+
+}
+}
+}
+}
