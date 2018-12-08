@@ -92,8 +92,8 @@ bzip2 \
     lcov \
     make \
     ninja-build \
-    openjdk-8-jdk \
-    openjdk-8-jre \
+    openjdk-8-jdk-headless \
+    openjdk-8-jre-headless \
     openssh-client \
     python-pip \
     python-pygments \

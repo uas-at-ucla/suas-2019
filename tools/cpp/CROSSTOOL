@@ -9,7 +9,7 @@ default_toolchain {
 
 default_toolchain {
   cpu: "k8"
-  toolchain_identifier: "local"
+  toolchain_identifier: "clang-7"
 }
 
 default_toolchain {
@@ -34,13 +34,13 @@ toolchain {
   target_libc: "local"
   target_cpu: "k8"
   target_system_name: "k8"
-  toolchain_identifier: "local"
+  toolchain_identifier: "clang-7"
 
   tool_path { name: "ar" path: "/usr/bin/ar" }
   tool_path { name: "compat-ld" path: "/usr/bin/ld" }
   tool_path { name: "cpp" path: "/usr/bin/cpp" }
   tool_path { name: "dwp" path: "/usr/bin/dwp" }
-  tool_path { name: "gcc" path: "/usr/bin/clang-3.9" }
+  tool_path { name: "gcc" path: "/usr/bin/clang-7" }
   tool_path { name: "gcov" path: "/usr/bin/gcov" }
   # C(++) compiles invoke the compiler (as that is the one knowing where
   # to find libraries), but we provide LD so other rules can invoke the linker.
@@ -55,16 +55,14 @@ toolchain {
 
   # absolute locations and has no remote execution, yet. However, this will need
   # to be fixed, maybe with auto-detection?
-  cxx_builtin_include_directory: '/usr/include/c++/4.8'
-  cxx_builtin_include_directory: '/usr/include/c++/v1'
-  cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu/c++/3.9'
-  cxx_builtin_include_directory: '/usr/include/c++/4.8/backward'
-  cxx_builtin_include_directory: '/usr/include/libcxxabi'
+  cxx_builtin_include_directory: '/usr/include/c++/8'
+  cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu/c++/8'
+  cxx_builtin_include_directory: '/usr/include/c++/8/backward'
+  #cxx_builtin_include_directory: '/usr/include/libcxxabi'
+  cxx_builtin_include_directory: '/usr/include/clang/7/include'
   cxx_builtin_include_directory: '/usr/local/include'
-  cxx_builtin_include_directory: '/usr/lib/llvm-3.6/lib/clang/3.9.1/include'
   cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu'
   cxx_builtin_include_directory: '/usr/include'
-  cxx_builtin_include_directory: '/usr/lib/clang/3.9.1/include'
   cxx_builtin_include_directory: '/usr/include/python2.7'
 
   cxx_flag: "-isystem"

@@ -8,9 +8,8 @@
 FROM debian:stretch
 
 # Install compilation and testing dependencies #################################
-RUN apt-get update     -qq                                                      && \
-    apt-get install -y -qq curl                                                 && \
-    apt-get install -y -qq gnupg
+RUN apt-get update     -qq                                                  && \
+    apt-get install -y -qq curl gnupg
 
 # Add apt-get repositories containing required packages. ###########################
 #RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
@@ -21,12 +20,12 @@ RUN apt-get update     -qq                                                      
 #  "deb-src http://deb.debian.org/debian sid main" > \
 #  /etc/apt/sources.list
 
-RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
-RUN echo "deb http://deb.debian.org/debian testing main" \
-  | tee /etc/apt/sources.list.d/python3_6.list
-RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
+RUN curl -sL https://bazel.build/bazel-release.pub.gpg | apt-key add -      && \
+    curl -sL https://deb.nodesource.com/setup_8.x | bash -                  && \
+    echo "deb http://deb.debian.org/debian testing main" |                     \
+      tee /etc/apt/sources.list.d/python3_6.list                            && \
+    curl -sL https://bazel.build/bazel-release.pub.gpg | apt-key add -      && \
+    echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
   "stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 
 # Install apt dependencies. ####################################################
@@ -42,7 +41,7 @@ RUN apt-get update -qq                                                      && \
     build-essential                                                            \
     ca-certificates-java                                                       \
     check                                                                      \
-    clang-3.9                                                                  \
+    clang-7                                                                    \
     clang-format-7                                                             \
     cmake                                                                      \
     g++                                                                        \
@@ -64,7 +63,7 @@ RUN apt-get update -qq                                                      && \
     libz-dev                                                                   \
     make                                                                       \
     nodejs                                                                     \
-    openjdk-8-jdk                                                             \
+    openjdk-8-jdk-headless                                                     \
     pkg-config                                                                 \
     protobuf-compiler                                                          \
     python2.7                                                                  \
@@ -84,15 +83,15 @@ RUN apt-get update -qq                                                      && \
     vim
 
 # Fix git certificate bug with open JDK. #######################################
-RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
-  /etc/java-8-openjdk/security/java.security
-RUN rm /etc/ssl/certs/java/cacerts
-RUN update-ca-certificates -f
+RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g'                     \
+      /etc/java-8-openjdk/security/java.security                            && \
+    rm /etc/ssl/certs/java/cacerts                                          && \
+    update-ca-certificates -f
 
 # Install pip and python dependencies. #########################################
-RUN curl https://bootstrap.pypa.io/get-pip.py | python2.7
-RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
-RUN pip2.7 install --upgrade pip                                            && \
+RUN curl -sL https://bootstrap.pypa.io/get-pip.py | python2.7               && \
+    curl -sL https://bootstrap.pypa.io/get-pip.py | python3.6               && \
+    pip2.7 install --upgrade pip                                            && \
     pip3.6 install --upgrade pip
 
 # Set up workspace. ############################################################
@@ -118,15 +117,14 @@ WORKDIR /home/uas
 
 # Install python requirements. #################################################
 RUN pip2.7 install --user future
-RUN git clone https://github.com/intel/mavlink-router.git
+RUN git clone --recursive https://github.com/intel/mavlink-router.git
 WORKDIR /home/uas/mavlink-router
-RUN git submodule update --init --recursive
 RUN ./autogen.sh && ./configure CFLAGS='-g -O2' \
     --sysconfdir=/etc \
     --localstatedir=/var \
     --libdir=/usr/lib64 \
     --prefix=/usr
-RUN make
+RUN make -j4
 RUN sudo make install
 
 RUN pip2.7 install --user                                                      \

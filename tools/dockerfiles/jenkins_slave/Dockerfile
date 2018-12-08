@@ -32,7 +32,7 @@ RUN apt-get install -y -qq                                                     \
   ca-certificates                                                              \
   ca-certificates-java                                                         \
   netcat                                                                       \
-  openjdk-10-jdk                                                               \
+  openjdk-8-jdk-headless                                                       \
   openssh-client                                                               \
   openssh-server                                                               \
   python2.7                                                                    \
