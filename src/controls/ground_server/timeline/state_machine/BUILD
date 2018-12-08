@@ -5,7 +5,9 @@ cc_library(
     'state_machine.cc'
   ],
   hdrs = [
-    'state_machine.h'
+    'state.hh',
+    'branching_state.hh',
+    'state_machine.hh'
   ],
   deps = [
   ],
