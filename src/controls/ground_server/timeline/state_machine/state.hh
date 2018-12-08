@@ -47,12 +47,15 @@ template <typename Context> class State {
  public:
   virtual result::Result Execute(Context ctx);
 
- protected:
-  const char *GetName() const;
+  bool CurrentlyExecuting() const;
+  const std::string& Name() const;
 
+ protected:
   virtual void Initialize(Context ctx);
   virtual result::Result Step(Context ctx) = 0;
   virtual void Finish(Context ctx);
+
+  std::string name_ = "state";
 
  private:
   bool has_initialized_;
@@ -82,6 +85,16 @@ result::Result State<Context>::Execute(Context ctx) {
       this->has_finished_ = true;
       return res;
   }
+}
+
+template <typename Context>
+bool State<Context>::CurrentlyExecuting() const {
+  return this->has_initialized_ && !this->has_finished_;
+}
+
+template <typename Context>
+const std::string& State<Context>::Name() const {
+  return this->name_;
 }
 
 template <typename Context> void State<Context>::Initialize(Context ctx) {

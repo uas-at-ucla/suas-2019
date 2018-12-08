@@ -13,7 +13,7 @@ cc_library(
   ],
 )
 
-cc_binary(
+cc_test(
   name = 'state_machine_test',
   srcs = [
     'state_machine_test.cc',

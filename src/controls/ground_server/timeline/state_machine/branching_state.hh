@@ -11,30 +11,44 @@ namespace controls {
 namespace ground_server {
 namespace state_machine {
 
+/**
+ * The identifier of a branch for a BranchingState
+ */
 typedef uint32_t BranchId;
 
+/**
+ * A state which can branch to other states. Each of those branches can be
+ * set up to result in a different StateId.
+ * Subclasses should have many `constexpr static BranchId` members with the
+ * different BranchIds which are possible to be set.
+ */
 template <typename Context> class BranchingState : public State<Context> {
  public:
   typedef std::map<StateId, StateId> BranchMap;
 
   BranchingState() = default;
 
+  /**
+   * Lists all possible branch ids which can be set in SetBranch
+   */
   virtual const std::vector<BranchId> ListBranches() const = 0;
+
+  /**
+   * Gets the resultant StateId for the BranchId. Primarily used in
+   * implementations of subclasses
+   * If a StateId has not been set, it will default to FINISHED and terminate
+   * the state machine.
+   */
   StateId Branch(BranchId branch_id) const;
+
+  /**
+   * Sets what state_id the state will attempt to execute for the specified
+   * branch_id
+   */
   void SetBranch(BranchId branch_id, StateId state_id);
 
  private:
   BranchMap branches_;
-};
-
-class InvalidBranchException : std::exception {
- public:
-  InvalidBranchException(BranchId branch_id);
-
-  const char *what() const noexcept override;
-
- private:
-  std::string what_;
 };
 
 template <typename Context>
