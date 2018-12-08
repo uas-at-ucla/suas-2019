@@ -33,27 +33,25 @@ public:
   }
 
   void Initialize(Context ctx) {
-    (void) ctx;
     counter = 0;
     ctx.output_stream << "state " << name << " initializing" << std::endl;
   }
 
   state_machine::Result Step(Context ctx) {
     ctx.output_stream << "this is iteration " << counter++ << " of state " << name << std::endl;
-    (void) ctx;
     return (counter > 10) ? Branch(FINISH) : state_machine::result::YIELD;
   }
 
   void Finish(Context ctx) {
-    (void) ctx;
     ctx.output_stream << "state " << name << " finished" << std::endl;
   }
 };
 
 int main() {
   StateMachine::States states;
-  states[0] = make_shared<TestState>("state 1");
-  std::static_pointer_cast<TestState>(states[0])->SetBranch(TestState::FINISH, 1);
+  auto state0 = make_shared<TestState>("state 1");
+  state0->SetBranch(TestState::FINISH, 1);
+  states[0] = state0;
   states[1] = make_shared<TestState>("state 2");
 
   StateContext ctx{ output_stream: std::cout };
