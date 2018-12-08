@@ -1,8 +1,8 @@
 #pragma once
 
+#include <limits>
 #include <map>
 #include <memory>
-#include <limits>
 #include <vector>
 
 #include "state.hh"
@@ -16,9 +16,8 @@ using result::Result;
 
 constexpr StateId STATE_MACHINE_FINISHED = std::numeric_limits<StateId>::max();
 
-template<typename Context>
-class StateMachine: public State<Context> {
-public:
+template <typename Context> class StateMachine : public State<Context> {
+ public:
   typedef std::shared_ptr<State<Context>> StatePtr;
   typedef std::map<StateId, StatePtr> States;
 
@@ -30,7 +29,7 @@ public:
 
   bool IsFinished() const;
 
-private:
+ private:
   States states_;
   StateId initial_state_id_;
   StateId current_state_id_;
@@ -39,34 +38,33 @@ private:
 /**
  * An exception thrown when an invalid StateId is attempted to be executed.
  */
-class InvalidStateException: std::exception {
-public:
+class InvalidStateException : std::exception {
+ public:
   InvalidStateException(result::Result result);
 
-  const char* what() const noexcept override;
+  const char *what() const noexcept override;
 
-private:
+ private:
   // result::Result result_;
   std::string what_;
 };
 
-template<typename Context>
+template <typename Context>
 StateMachine<Context>::StateMachine(StateMachine::States states,
-  StateId initial_state_id) :
-  states_(states), initial_state_id_(initial_state_id) {
+                                    StateId initial_state_id) :
+    states_(states),
+    initial_state_id_(initial_state_id) {
   if (this->states_.count(this->initial_state_id_) == 0) {
     throw InvalidStateException(this->initial_state_id_);
   }
   this->Reset();
 }
 
-template<typename Context>
-void StateMachine<Context>::Reset() {
+template <typename Context> void StateMachine<Context>::Reset() {
   this->current_state_id_ = this->initial_state_id_;
 }
 
-template<typename Context>
-Result StateMachine<Context>::Step(Context ctx) {
+template <typename Context> Result StateMachine<Context>::Step(Context ctx) {
   Result res = this->current_state_id_;
   while (res >= 0) {
     typename States::iterator current_state = this->states_.find(res);
@@ -85,12 +83,11 @@ Result StateMachine<Context>::Step(Context ctx) {
   return res;
 }
 
-template<typename Context>
-bool StateMachine<Context>::IsFinished() const {
+template <typename Context> bool StateMachine<Context>::IsFinished() const {
   return this->current_state_id_ == STATE_MACHINE_FINISHED;
 }
 
-}
-}
-}
-}
+} // namespace state_machine
+} // namespace ground_server
+} // namespace controls
+} // namespace src

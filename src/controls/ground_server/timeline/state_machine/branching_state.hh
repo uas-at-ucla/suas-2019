@@ -13,9 +13,8 @@ namespace state_machine {
 
 typedef uint32_t BranchId;
 
-template<typename Context>
-class BranchingState : public State<Context> {
-public:
+template <typename Context> class BranchingState : public State<Context> {
+ public:
   typedef std::map<StateId, StateId> BranchMap;
 
   BranchingState() = default;
@@ -24,21 +23,21 @@ public:
   StateId Branch(BranchId branch_id) const;
   void SetBranch(BranchId branch_id, StateId state_id);
 
-private:
+ private:
   BranchMap branches_;
 };
 
-class InvalidBranchException: std::exception {
-public:
+class InvalidBranchException : std::exception {
+ public:
   InvalidBranchException(BranchId branch_id);
 
-  const char* what() const noexcept override;
+  const char *what() const noexcept override;
 
-private:
+ private:
   std::string what_;
 };
 
-template<typename Context>
+template <typename Context>
 StateId BranchingState<Context>::Branch(BranchId branch_id) const {
   auto branch_it = branches_.find(branch_id);
   if (branch_it == branches_.end()) {
@@ -47,12 +46,12 @@ StateId BranchingState<Context>::Branch(BranchId branch_id) const {
   return branch_it->second;
 }
 
-template<typename Context>
+template <typename Context>
 void BranchingState<Context>::SetBranch(BranchId branch_id, StateId state_id) {
   branches_[branch_id] = state_id;
 }
 
-}
-}
-}
-}
+} // namespace state_machine
+} // namespace ground_server
+} // namespace controls
+} // namespace src
