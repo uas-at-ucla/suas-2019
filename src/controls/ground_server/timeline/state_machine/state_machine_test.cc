@@ -8,8 +8,7 @@ using std::make_shared;
 
 namespace state_machine = src::controls::ground_server::state_machine;
 
-class StateContext {
- public:
+struct StateContext {
   std::ostream &output_stream;
 };
 
@@ -31,18 +30,18 @@ class TestState : public BranchingState {
     return {FINISH};
   }
 
-  void Initialize(Context ctx) {
+  void Initialize(Context ctx) override {
     counter = 0;
     ctx.output_stream << "state " << name << " initializing" << std::endl;
   }
 
-  state_machine::Result Step(Context ctx) {
+  state_machine::Result Step(Context ctx) override {
     ctx.output_stream << "this is iteration " << counter++ << " of state "
                       << name << std::endl;
     return (counter > 10) ? Branch(FINISH) : state_machine::result::YIELD;
   }
 
-  void Finish(Context ctx) {
+  void Finish(Context ctx) override {
     ctx.output_stream << "state " << name << " finished" << std::endl;
   }
 };
@@ -54,7 +53,7 @@ int main() {
   states[0] = state0;
   states[1] = make_shared<TestState>("state 2");
 
-  StateContext ctx{output_stream : std::cout};
+  StateContext ctx = {.output_stream = std::cout};
 
   StateMachine state_machine_(states, 0);
   while (!state_machine_.IsFinished()) {
