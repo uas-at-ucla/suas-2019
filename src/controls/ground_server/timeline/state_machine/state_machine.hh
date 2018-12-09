@@ -6,6 +6,7 @@
 #include <vector>
 
 #include "state.hh"
+#include "branching_state.hh"
 
 namespace src {
 namespace controls {
@@ -32,7 +33,7 @@ template <typename Context> class StateMachine : public State<Context> {
  private:
   States states_;
   StateId initial_state_id_;
-  StateId current_state_id_;
+  typename States::iterator current_state_it_;
 };
 
 /**
@@ -61,30 +62,32 @@ StateMachine<Context>::StateMachine(StateMachine::States states,
 }
 
 template <typename Context> void StateMachine<Context>::Reset() {
-  this->current_state_id_ = this->initial_state_id_;
+  current_state_it_ = states_.find(initial_state_id_);
 }
 
 template <typename Context> Result StateMachine<Context>::Step(Context ctx) {
-  Result res = this->current_state_id_;
+  Result res;
+  if (IsFinished()) {
+    return result::FINISHED;
+  }
   while (res >= 0) {
-    typename States::iterator current_state = this->states_.find(res);
-    if (current_state == this->states_.end()) {
-      // if the current state does not exist, there is some logic error
-      throw InvalidStateException(res);
-    }
-    res = current_state->second->Execute(ctx);
+    res = current_state_it_->second->Execute(ctx);
     if (res >= 0) {
-      this->current_state_id_ = res;
+      auto new_current_it = states_.find(res);
+      if (new_current_it == states_.end()) {
+        throw InvalidStateException(res);
+      }
+      current_state_it_ = new_current_it;
     }
   }
   if (res == result::FINISHED) {
-    this->current_state_id_ = STATE_MACHINE_FINISHED;
+    current_state_it_ = states_.end();
   }
   return res;
 }
 
 template <typename Context> bool StateMachine<Context>::IsFinished() const {
-  return this->current_state_id_ == STATE_MACHINE_FINISHED;
+  return current_state_it_ == states_.end();
 }
 
 } // namespace state_machine

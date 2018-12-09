@@ -26,7 +26,7 @@ class TestState : public BranchingState {
   int counter;
   int max_count = 10;
 
-  TestState(std::string name) {
+  TestState(std::string name) : BranchingState() {
     this->name_ = name;
   }
 

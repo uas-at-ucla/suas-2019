@@ -45,17 +45,20 @@ typedef uint32_t StateId;
  */
 template <typename Context> class State {
  public:
+  State();
+  State(std::string name);
+
   virtual result::Result Execute(Context ctx);
 
   bool CurrentlyExecuting() const;
-  const std::string& Name() const;
+  const std::string &Name() const;
 
  protected:
   virtual void Initialize(Context ctx);
   virtual result::Result Step(Context ctx) = 0;
   virtual void Finish(Context ctx);
 
-  std::string name_ = "state";
+  std::string name_;
 
  private:
   bool has_initialized_;
@@ -65,6 +68,16 @@ template <typename Context> class State {
 ////////////////////////////////////////
 // Template implementations
 ////////////////////////////////////////
+
+template <typename Context>
+State<Context>::State() :
+    State("State") {}
+
+template <typename Context>
+State<Context>::State(std::string name) :
+    name_(name),
+    has_initialized_(false),
+    has_finished_(false) {}
 
 template <typename Context>
 result::Result State<Context>::Execute(Context ctx) {
@@ -87,13 +100,11 @@ result::Result State<Context>::Execute(Context ctx) {
   }
 }
 
-template <typename Context>
-bool State<Context>::CurrentlyExecuting() const {
+template <typename Context> bool State<Context>::CurrentlyExecuting() const {
   return this->has_initialized_ && !this->has_finished_;
 }
 
-template <typename Context>
-const std::string& State<Context>::Name() const {
+template <typename Context> const std::string &State<Context>::Name() const {
   return this->name_;
 }
 

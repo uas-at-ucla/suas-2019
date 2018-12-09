@@ -27,6 +27,7 @@ template <typename Context> class BranchingState : public State<Context> {
   typedef std::map<StateId, StateId> BranchMap;
 
   BranchingState() = default;
+  BranchingState(std::string name);
 
   /**
    * Lists all possible branch ids which can be set in SetBranch
@@ -50,6 +51,10 @@ template <typename Context> class BranchingState : public State<Context> {
  private:
   BranchMap branches_;
 };
+
+template <typename Context>
+BranchingState<Context>::BranchingState(std::string name) :
+    State<Context>(name) {}
 
 template <typename Context>
 StateId BranchingState<Context>::Branch(BranchId branch_id) const {
