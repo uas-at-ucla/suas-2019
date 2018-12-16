@@ -1,6 +1,5 @@
 #pragma once
 
-#include <limits>
 #include <map>
 #include <memory>
 #include <vector>
@@ -14,8 +13,6 @@ namespace ground_server {
 namespace state_machine {
 
 using result::Result;
-
-constexpr StateId STATE_MACHINE_FINISHED = std::numeric_limits<StateId>::max();
 
 template <typename Context> class StateMachine : public State<Context> {
  public:
