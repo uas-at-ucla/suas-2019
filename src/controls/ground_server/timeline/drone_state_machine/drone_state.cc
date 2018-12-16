@@ -5,15 +5,11 @@ namespace controls {
 namespace ground_server {
 namespace drone_state_machine {
 
-const controls::Sensors& DroneContext::Sensors() {
-  return this->sensors_;
-}
+const controls::Sensors &DroneContext::Sensors() { return this->sensors_; }
 
-controls::Output& DroneContext::Output() {
-  return this->output_;
-}
+controls::Output &DroneContext::Output() { return this->output_; }
 
-}
+} // namespace drone_state_machine
 } // namespace ground_server
 } // namespace controls
 } // namespace src

@@ -7,8 +7,7 @@ namespace controls {
 namespace ground_server {
 namespace state_machine {
 
-InvalidStateException::InvalidStateException(Result result)
-{
+InvalidStateException::InvalidStateException(Result result) {
   std::ostringstream what_stream;
   what_stream << "An attempt to execute an invalid state id was made: "
               << result;

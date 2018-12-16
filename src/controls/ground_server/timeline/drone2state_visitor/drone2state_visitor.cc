@@ -63,7 +63,7 @@ void Drone2StateVisitor::Visit(const timeline::DroneCommand &drone_command) {
 }
 
 void Drone2StateVisitor::Visit(const timeline::NothingCommand &command) {
-  (void) command;
+  (void)command;
   MakeBranchingState<states::Nothing>();
 }
 
@@ -74,18 +74,19 @@ void Drone2StateVisitor::Visit(const timeline::SleepCommand &command) {
 
 void Drone2StateVisitor::Visit(const timeline::TranslateCommand &command) {
   auto translate_state = MakeBranchingState<states::Translate>();
-  (void) command;
-  (void) translate_state;
+  (void)command;
+  (void)translate_state;
   // TODO: actually set up states::Translate
 }
 
 void Drone2StateVisitor::Visit(const timeline::TriggerAlarmCommand &command) {
-  (void) command;
+  (void)command;
   MakeBranchingState<states::TriggerAlarm>();
 }
 
-void Drone2StateVisitor::Visit(const timeline::TriggerBombDropCommand &command) {
-  (void) command;
+void Drone2StateVisitor::Visit(
+    const timeline::TriggerBombDropCommand &command) {
+  (void)command;
   MakeBranchingState<states::TriggerBombDrop>();
 }
 

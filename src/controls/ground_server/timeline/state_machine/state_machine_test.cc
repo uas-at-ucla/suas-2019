@@ -26,9 +26,7 @@ class TestState : public BranchingState {
   int counter;
   int max_count = 10;
 
-  TestState(std::string name) : BranchingState() {
-    this->name_ = name;
-  }
+  TestState(std::string name) : BranchingState() { this->name_ = name; }
 
   const std::vector<state_machine::BranchId> ListBranches() const override {
     return {FINISH};
@@ -42,7 +40,8 @@ class TestState : public BranchingState {
   state_machine::Result Step(Context ctx) override {
     ctx.output_stream << "this is iteration " << counter++ << " of state "
                       << Name() << std::endl;
-    return (counter >= max_count) ? Branch(FINISH) : state_machine::result::YIELD;
+    return (counter >= max_count) ? Branch(FINISH)
+                                  : state_machine::result::YIELD;
   }
 
   void Finish(Context ctx) override {
