@@ -13,6 +13,7 @@ cc_library(
   hdrs = [
     'drone_state_machine.hh',
     'drone_state.hh',
+    'states.hh',
     'states/nothing.hh',
     'states/sleep.hh',
     'states/translate.hh',

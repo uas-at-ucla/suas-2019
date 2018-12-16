@@ -1,3 +1,5 @@
+#pragma once
+
 #include "src/controls/ground_server/timeline/state_machine/state_machine.hh"
 
 #include "drone_state.hh"

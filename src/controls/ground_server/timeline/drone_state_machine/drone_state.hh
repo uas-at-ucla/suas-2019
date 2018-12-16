@@ -1,3 +1,5 @@
+#pragma once 
+
 #include "src/controls/ground_server/timeline/state_machine/branching_state.hh"
 
 #include "src/controls/messages.pb.h"

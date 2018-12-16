@@ -1,3 +1,5 @@
+#pragma once
+
 #include "../drone_state_machine.hh"
 
 #include <chrono>
