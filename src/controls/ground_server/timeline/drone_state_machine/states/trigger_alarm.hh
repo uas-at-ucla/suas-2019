@@ -8,11 +8,11 @@ namespace states {
 
 using namespace src::controls::ground_server::drone_state_machine;
 
-class Nothing : public BranchingDroneState {
+class TriggerAlarm : public BranchingDroneState {
  public:
   constexpr static BranchId NEXT = 1;
 
-  Nothing();
+  TriggerAlarm();
 
  protected:
   Result Step(DroneContext ctx) override;

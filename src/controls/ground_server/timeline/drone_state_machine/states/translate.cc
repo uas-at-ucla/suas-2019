@@ -1,4 +1,4 @@
-#include "nothing.hh"
+#include "translate.hh"
 
 namespace src {
 namespace controls {
@@ -6,12 +6,13 @@ namespace ground_server {
 namespace drone_state_machine {
 namespace states {
 
-Nothing::Nothing() {
-  this->name_ = "Nothing";
+Translate::Translate() {
+  this->name_ = "Translate";
 }
 
-Result Nothing::Step(DroneContext ctx) {
+Result Translate::Step(DroneContext ctx) {
   (void)ctx;
+  // TODO: Implement command
   return Branch(NEXT);
 }
 

@@ -1,4 +1,4 @@
-#include "nothing.hh"
+#include "trigger_bomb_drop.hh"
 
 namespace src {
 namespace controls {
@@ -6,12 +6,12 @@ namespace ground_server {
 namespace drone_state_machine {
 namespace states {
 
-Nothing::Nothing() {
-  this->name_ = "Nothing";
+TriggerBombDrop::TriggerBombDrop() {
+  this->name_ = "TriggerBombDrop";
 }
 
-Result Nothing::Step(DroneContext ctx) {
-  (void)ctx;
+Result TriggerBombDrop::Step(DroneContext ctx) {
+  ctx.Output().set_bomb_drop(true);
   return Branch(NEXT);
 }
 
