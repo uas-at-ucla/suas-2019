@@ -21,11 +21,13 @@ class Sleep : public BranchingDroneState {
   Sleep();
   Sleep(Clock::duration sleep_duration);
 
+  const std::vector<BranchId> ListBranches() const override;
+
   Clock::duration Duration() const;
   void SetDuration(Clock::duration sleep_duration);
+  void SetDurationSecs(double duration_seconds);
 
  protected:
-  const std::vector<BranchId> ListBranches() const override;
   void Initialize(DroneContext ctx) override;
   Result Step(DroneContext ctx) override;
 

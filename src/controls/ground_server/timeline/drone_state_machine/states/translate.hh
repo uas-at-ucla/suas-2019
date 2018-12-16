@@ -16,6 +16,8 @@ class Translate : public BranchingDroneState {
 
   Translate();
 
+  const std::vector<BranchId> ListBranches() const override;
+
  protected:
   Result Step(DroneContext ctx) override;
 };

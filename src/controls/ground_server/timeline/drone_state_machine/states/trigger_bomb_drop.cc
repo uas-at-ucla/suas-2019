@@ -6,8 +6,10 @@ namespace ground_server {
 namespace drone_state_machine {
 namespace states {
 
-TriggerBombDrop::TriggerBombDrop() {
-  this->name_ = "TriggerBombDrop";
+TriggerBombDrop::TriggerBombDrop() { this->name_ = "TriggerBombDrop"; }
+
+const std::vector<BranchId> TriggerBombDrop::ListBranches() const {
+  return {NEXT};
 }
 
 Result TriggerBombDrop::Step(DroneContext ctx) {

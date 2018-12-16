@@ -16,6 +16,8 @@ class Nothing : public BranchingDroneState {
 
   Nothing();
 
+  virtual const std::vector<BranchId> ListBranches() const override;
+
  protected:
   Result Step(DroneContext ctx) override;
 };

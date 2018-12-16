@@ -6,9 +6,9 @@ namespace ground_server {
 namespace drone_state_machine {
 namespace states {
 
-Translate::Translate() {
-  this->name_ = "Translate";
-}
+Translate::Translate() { this->name_ = "Translate"; }
+
+const std::vector<BranchId> Translate::ListBranches() const { return {NEXT}; }
 
 Result Translate::Step(DroneContext ctx) {
   (void)ctx;

@@ -16,6 +16,8 @@ class TriggerBombDrop : public BranchingDroneState {
 
   TriggerBombDrop();
 
+  const std::vector<BranchId> ListBranches() const override;
+
  protected:
   Result Step(DroneContext ctx) override;
 };

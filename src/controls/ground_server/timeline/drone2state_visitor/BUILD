@@ -12,3 +12,10 @@ cc_library(
     '//src/controls/ground_server/timeline:timeline_grammar_cc'
   ]
 )
+
+cc_binary(
+  name = 'drone2state_visitor_test',
+  visibility = ['//visibility:public'],
+  srcs = [ 'drone2state_visitor_test.cc' ],
+  deps = [ ':drone2state_visitor' ]
+)

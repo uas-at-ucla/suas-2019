@@ -16,6 +16,8 @@ class TriggerAlarm : public BranchingDroneState {
 
   TriggerAlarm();
 
+  const std::vector<BranchId> ListBranches() const override;
+
  protected:
   Result Step(DroneContext ctx) override;
 };
