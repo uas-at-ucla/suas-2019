@@ -2,6 +2,7 @@
 var cookie = "false";
 var cookieobj = {};
 const axios = require('axios');
+var alphabet = '0';
 var odlcs_1 ={  "type": "standard",
 "latitude": 38.1478,
 "longitude": -76.4275,
@@ -28,7 +29,7 @@ function getMissions(c){
          timeout: 5000
        })
     .then(function (response) {
-     console.log("this is a joke, right?" + cookie + "\n\n\n");
+    
      console.log(response.data);
     })
     .catch(function (error) {
@@ -113,7 +114,7 @@ function postOdlcs(c, odlcs)
         data: odlcs
     })
     .then(function (response) {
-     console.log("this is a joke, right?" + response + "\n\n\n");
+     
      console.log(response.data);
     })
     .catch(function (error) {
@@ -137,19 +138,69 @@ function telemetry(c, data)
         data:data
     })
     .then(function (response) {
-     console.log("this is a joke, right?" + response + "\n\n\n");
+    
      console.log(response.data);
     })
     .catch(function (error) {
      console.log(error);
     });
 }
-gc()
-
+function getOdlcs(c)
+{
+    axios ({
+        method: 'get',
+        url: "localhost:8000/api/odlcs",
+        proxy: {
+            host: '127.0.0.1',
+            port: 8000
+          },
+        headers:{
+            Cookie: c,
+            'Content-type':'application/json'
+        } ,
+        timeout: 5000,
+    })
+    .then(function (response) {
+     
+     console.log(response.data);
+    })
+    .catch(function (error) {
+     console.log(error);
+    });
+}
+function putOdlcs(c, alpha)
+{
+    axios({
+        method : 'put',
+        url : 'localhost:8000/api/odlcs/1',
+        proxy: {
+            host: '127.0.0.1',
+            port: 8000
+          },
+        headers:{
+            Cookie: c,
+            'Content-type':'application/json'
+        } ,
+        timeout: 5000,
+        data :{
+            "alphanumeric": alpha
+         }
+    })
+    .then(function (response) {
+     
+     console.log(response.data);
+    })
+    .catch(function (error) {
+     console.log(error);
+    });
+}
+gc();
 
 module.exports = { variableName: "variableValue" };
-setTimeout(() => console.log(cookieobj.cookie), 2000);
-setTimeout(() => (getMissions(cookieobj.cookie)), 2001);
-setTimeout(() => (getObstacles(cookieobj.cookie)), 2002);
+//setTimeout(() => console.log(cookieobj.cookie), 2000);
+//setTimeout(() => (getMissions(cookieobj.cookie)), 2001);
+//setTimeout(() => (getObstacles(cookieobj.cookie)), 2002);
 setTimeout(() => (postOdlcs(cookieobj.cookie, odlcs_1)), 2003);
 setTimeout(() => (telemetry(cookieobj.cookie,Data)), 2004);
+setTimeout(()=> (getOdlcs(cookieobj.cookie)),2005);
+setTimeout(()=> (putOdlcs(cookieobj.cookie,alphabet)),2006);

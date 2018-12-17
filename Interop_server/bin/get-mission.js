@@ -29,7 +29,7 @@ const login = require('./login.js')
     });
 }*/
 
-/*axios ({
+axios ({
     method: 'post',
     url: "localhost:8000/api/login",
     proxy: {
@@ -58,5 +58,5 @@ const login = require('./login.js')
 
 .catch(function (error) {
     console.log(error);
-})}*/
+})}
 
