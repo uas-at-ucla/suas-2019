@@ -64,7 +64,7 @@ RUN apt-get update -qq                                                      && \
     libz-dev                                                                   \
     make                                                                       \
     nodejs                                                                     \
-    openjdk-10-jdk                                                             \
+    openjdk-8-jdk                                                             \
     pkg-config                                                                 \
     protobuf-compiler                                                          \
     python2.7                                                                  \
@@ -85,7 +85,7 @@ RUN apt-get update -qq                                                      && \
 
 # Fix git certificate bug with open JDK. #######################################
 RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
-  /etc/java-10-openjdk/security/java.security
+  /etc/java-8-openjdk/security/java.security
 RUN rm /etc/ssl/certs/java/cacerts
 RUN update-ca-certificates -f
 
