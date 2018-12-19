@@ -31,6 +31,7 @@ class App extends Component {
             </ul>
           </nav>
 
+          {/* The following produces a warning about redirecting, but it's ok! */}
           <Redirect exact from="/" to={defaultPage}/>
           <Route path="/controls" component={Controls} />
           <Route path="/vision" component={Vision} />

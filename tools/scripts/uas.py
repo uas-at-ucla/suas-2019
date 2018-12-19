@@ -5,6 +5,7 @@ import time
 import argparse
 import textwrap
 import platform
+import subprocess
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir("../..")
@@ -45,6 +46,10 @@ LINT_CHECK_SCRIPT = "./tools/scripts/lint/check_format.sh"
 LINT_FORMAT_SCRIPT = "./tools/scripts/lint/format.sh"
 
 NUKE_SCRIPT = "./tools/scripts/nuke.sh"
+
+IP_SCRIPT = "./tools/scripts/controls/get_ip.sh"
+
+DOCKER_IP = subprocess.check_output(IP_SCRIPT, shell=True)
 
 # Command chains.
 if "CONTINUOUS_INTEGRATION" in os.environ \
@@ -256,7 +261,7 @@ def run_travis(args):
     run_and_die_if_error("bazel test //src/...")
     run_and_die_if_error("bazel test //lib/...")
     run_and_die_if_error(
-        "./bazel-out/k8-fastbuild/bin/src/control/loops/flight_loop_lib_test")
+        "./bazel-out/k8-fastbuild/bin/src/controls/loops/flight_loop_lib_test")
 
 
 def run_controls_build(args=None, show_complete=True):
@@ -380,19 +385,19 @@ def run_controls_simulate(args):
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
-            "bazel run //src/control/loops:flight_loop\" C-m")
+            "bazel run //src/controls/loops:flight_loop\" C-m")
 
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
-            "bazel run //src/control/io:io\" C-m")
+            "bazel run //src/controls/io:io " + DOCKER_IP + "\" C-m")
 
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
             DOCKER_EXEC_SCRIPT + \
-            "bazel run //src/control/ground_communicator:ground_communicator\" C-m")
+            "bazel run //src/controls/ground_communicator:ground_communicator\" C-m")
 
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
@@ -441,7 +446,7 @@ def run_ground_build(args):
     run_ground("build", args)
 
 def run_ground_run(args):
-    run_ground("run", args)
+    run_ground("run --web", args)
 
 def run_ground(arg1, args):
     shutdown_functions.append(kill_ground)
@@ -471,7 +476,7 @@ def run_ground_shell(args):
     kill_ground()
 
 
-def run_controls_docker_start(args, show_complete=True):
+def run_controls_docker_start(args=None, show_complete=True):
     print_update("Making sure all the necessary packages are installed")
     run_install()
 
@@ -484,7 +489,22 @@ def run_controls_docker_start(args, show_complete=True):
                 msg_type="SUCCESS")
 
 
-def run_controls_docker_kill(args, show_complete=True):
+def run_controls_docker_rebuild(args=None, show_complete=True):
+    print_update("Rebuilding docker environment.")
+    run_install()
+
+    run_controls_docker_kill(False)
+
+    # Start the UAS@UCLA software development docker image if it is not already
+    # running.
+    run_env(show_complete=False, rebuild=True)
+
+    if show_complete:
+        print_update("\n\nControls docker container started successfully", \
+                msg_type="SUCCESS")
+
+
+def run_controls_docker_kill(args=None, show_complete=True):
     result = kill_controls()
 
     if show_complete:
@@ -518,10 +538,13 @@ def run_controls_test_rrtavoidance(args):
 
 
 
-def run_env(args=None, show_complete=True):
+def run_env(args=None, show_complete=True, rebuild=False):
     print_update("Starting UAS@UCLA development environment...")
 
-    run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
+    if rebuild:
+        run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT + " --rebuild")
+    else:
+        run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
 
     if show_complete:
         print_update("UAS@UCLA development environment started " \
@@ -609,6 +632,8 @@ if __name__ == '__main__':
     controls_docker_subparsers = controls_docker_parser.add_subparsers()
     controls_docker_start = controls_docker_subparsers.add_parser('start')
     controls_docker_start.set_defaults(func=run_controls_docker_start)
+    controls_docker_rebuild = controls_docker_subparsers.add_parser('rebuild')
+    controls_docker_rebuild.set_defaults(func=run_controls_docker_rebuild)
     controls_docker_kill = controls_docker_subparsers.add_parser('kill')
     controls_docker_kill.set_defaults(func=run_controls_docker_kill)
     controls_docker_shell = controls_docker_subparsers.add_parser('shell')

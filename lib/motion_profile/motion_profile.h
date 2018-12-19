@@ -18,8 +18,9 @@ class MotionProfile {
                 double delta_time);
 
   ::Eigen::Vector3d Calculate(::Eigen::Vector3d flight_direction);
-
   void SetOutput(::Eigen::Vector3d output);
+
+  double delta_time() { return delta_time_; }
 
  private:
   ::Eigen::Vector3d output_;
