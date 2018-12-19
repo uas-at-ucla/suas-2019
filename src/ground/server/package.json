@@ -7,7 +7,7 @@
     "start": "concurrently --kill-others \"npm:server\" \"npm:ui\"",
     "server": "node ground_server.js",
     "ui": "cd ../ui && npm start",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test.js"
   },
   "author": "",
   "license": "ISC",
@@ -16,6 +16,7 @@
     "concurrently": "^4.0.1"
   },
   "dependencies": {
+    "axios": "^0.18.0",
     "socket.io": "^2.1.1"
   }
 }
