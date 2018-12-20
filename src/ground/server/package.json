@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "qs": "^6.6.0",
     "socket.io": "^2.1.1"
   }
 }
