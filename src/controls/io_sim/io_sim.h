@@ -1,22 +1,17 @@
 #pragma once
 
 #include <atomic>
+#include <boost/asio.hpp>
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <mutex>
 #include <unistd.h>
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-#include <pigpiod_if2.h>
-#include <wiringPi.h>
-#endif
-
-#include "lib/dslr_interface/dslr_interface.h"
 #include "lib/logger/log_sender.h"
 #include "lib/proto_comms/proto_comms.h"
 #include "lib/trigger/trigger.h"
 
-#include "src/controls/io/autopilot_interface/autopilot_interface.h"
 #include "src/controls/io/loop_handler.h"
 #include "src/controls/messages.pb.h"
 
@@ -24,20 +19,25 @@ namespace src {
 namespace controls {
 namespace io {
 namespace {
-// Output GPIO pins for sending out servo PWM signals to control actuators.
-const int kAlarmGPIOPin = 2;
-const int kGimbalGPIOPin = 18;
-
 // Tolerance for the time period to accept a trigger signal edge, in seconds.
 const double kTriggerSignalTolerance = 0.1;
 
-// Bit patterns for the custom modes used by the PX4 flight controller.
-const int kTakeoffCommandMode = 0b00000010000001000000000000000000;
-const int kHoldCommandMode = 0b00000100000001000000000000000000;
-const int kHoldAlternateCommandMode = 0b00000011000001000000000000000000;
-const int kOffboardCommandMode = 0b00000000000001100000000000000000;
-const int kRtlCommandMode = 0b00000101000001000000000000000000;
-const int kLandCommandMode = 0b00000110000001000000000000000000;
+struct PosInfo {
+  double latitude;
+  double longitude;
+  float altitude;
+  float velocity_x;
+  float velocity_y;
+  float velocity_z;
+} pos_info;
+
+std::mutex pos_info_mutex;
+
+__attribute__((constructor)) static void
+use_pos_info(void) // prevent unused variable error
+{
+  (void)pos_info;
+}
 
 } // namespace
 
@@ -54,14 +54,11 @@ void quit_handler(int sig);
 
 class AutopilotSensorReader : public LoopHandler {
  public:
-  AutopilotSensorReader(autopilot_interface::AutopilotInterface *copter_io);
+  AutopilotSensorReader();
 
  private:
   virtual void RunIteration() override;
   virtual void Stop() override{};
-
-  autopilot_interface::AutopilotInterface *copter_io_;
-  autopilot_interface::TimeStamps last_timestamps_;
 
   double last_gps_;
 
@@ -70,22 +67,11 @@ class AutopilotSensorReader : public LoopHandler {
 
 class AutopilotOutputWriter : public LoopHandler {
  public:
-  AutopilotOutputWriter(autopilot_interface::AutopilotInterface *copter_io);
+  AutopilotOutputWriter();
 
  private:
   virtual void RunIteration() override;
   virtual void Stop() override;
-
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-  int pigpio_;
-
-  int camera_script_pid_;
-  int camera_script_run_;
-#endif
-
-  ::lib::DSLRInterface dslr_interface_;
-
-  autopilot_interface::AutopilotInterface *copter_io_;
 
   ::lib::proto_comms::ProtoReceiver<::src::controls::Output> output_receiver_;
 
@@ -100,12 +86,11 @@ class AutopilotOutputWriter : public LoopHandler {
 
 class IO {
  public:
-  IO(const char *drone_address);
+  IO();
   void Run();
   void Quit();
 
  private:
-  autopilot_interface::AutopilotInterface copter_io_;
   ::std::atomic<bool> run_{true};
 
   AutopilotSensorReader autopilot_sensor_reader_;

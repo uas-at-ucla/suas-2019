@@ -36,7 +36,8 @@ void GroundCommunicator::ConnectToGround() {
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   client_.connect("http://192.168.2.20:8081");
 #else
-  client_.connect("http://0.0.0.0:8081");
+  // client_.connect("http://0.0.0.0:8081");
+  client_.connect("http://192.168.2.20:8081");
 #endif
 }
 
@@ -72,32 +73,35 @@ void GroundCommunicator::RunIteration() {
 
   // Fetch the latest data from queues with messages.
   if (sensors_receiver_.HasMessages()) {
-    send_sensors = true;
-
     ::src::controls::UasMessage message = sensors_receiver_.GetLatest();
     ::src::controls::Sensors sensors = message.sensors();
-    ::std::string sensors_serialized;
-    sensors.SerializeToString(&sensors_serialized);
 
-    telemetry->get_map()["sensors"] = ::sio::string_message::create(
-        ::lib::base64_tools::Encode(sensors_serialized));
+    if (sensors.has_latitude()) { // sometimes all the fields are missing???
+      send_sensors = true;
 
-    if (current_time - last_serial_telemetry_sent_ > 0.3) {
-      // Time to send another serial telemetry message.
-      ::lib::serial_comms::SerialCommsMessage message;
-      message.set_latitude(sensors.latitude());
-      message.set_longitude(sensors.longitude());
-      message.set_altitude(sensors.relative_altitude());
-      message.set_heading(sensors.heading());
+      ::std::string sensors_serialized;
+      sensors.SerializeToString(&sensors_serialized);
 
-      ::std::cout << "Lat: " << message.latitude()
-                  << " Lng: " << message.longitude()
-                  << " Alt: " << message.altitude()
-                  << " Heading: " << message.heading() << ::std::endl;
+      telemetry->get_map()["sensors"] = ::sio::string_message::create(
+          ::lib::base64_tools::Encode(sensors_serialized));
 
-      serial_comms_bridge_.SendData(message);
+      if (current_time - last_serial_telemetry_sent_ > 0.3) {
+        // Time to send another serial telemetry message.
+        ::lib::serial_comms::SerialCommsMessage message;
+        message.set_latitude(sensors.latitude());
+        message.set_longitude(sensors.longitude());
+        message.set_altitude(sensors.relative_altitude());
+        message.set_heading(sensors.heading());
 
-      last_serial_telemetry_sent_ = current_time;
+        ::std::cout << "Lat: " << message.latitude()
+                    << " Lng: " << message.longitude()
+                    << " Alt: " << message.altitude()
+                    << " Heading: " << message.heading() << ::std::endl;
+
+        serial_comms_bridge_.SendData(message);
+
+        last_serial_telemetry_sent_ = current_time;
+      }
     }
   }
 
@@ -155,14 +159,13 @@ void GroundCommunicator::RunIteration() {
   all_data->get_map()["telemetry"] = telemetry;
   all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
 
-  client_.socket()->emit("telemetry", all_data);
+  client_.socket("drone")->emit("telemetry", all_data);
 }
 
 void GroundCommunicator::OnConnect() {
   LOG_LINE("Someone connected to ground_communicator");
-  client_.socket()->emit("join_room", sio::string_message::create("drone"));
 
-  client_.socket()->on(
+  client_.socket("drone")->on(
       "drone_execute_commands",
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
@@ -188,7 +191,7 @@ void GroundCommunicator::OnConnect() {
             SetState("MISSION");
           }));
 
-  client_.socket()->on(
+  client_.socket("drone")->on(
       "interop_data",
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
@@ -211,7 +214,7 @@ void GroundCommunicator::OnConnect() {
             mission_message_queue_sender_.SendData(ground_data);
           }));
 
-  client_.socket()->on(
+  client_.socket("drone")->on(
       "drone_set_state",
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
