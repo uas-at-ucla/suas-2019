@@ -91,9 +91,9 @@ RUN update-ca-certificates -f
 
 # Install pip and python dependencies. #########################################
 RUN curl https://bootstrap.pypa.io/get-pip.py | python2.7
-RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
+RUN curl https://bootstrap.pypa.io/get-pip.py | python3.7
 RUN pip2.7 install --upgrade pip                                            && \
-    pip3.6 install --upgrade pip
+    pip3.7 install --upgrade pip
 
 # Set up workspace. ############################################################
 # Fix xlocale.h renamed to locale.h
