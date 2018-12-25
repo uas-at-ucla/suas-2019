@@ -134,6 +134,8 @@ RUN pip2.7 install --user                                                      \
   pyzmq==17.0.0                                                                \
   zmq==0.0.0
 
+RUN rm -rf /home/uas/mavlink-router
+
 # Use a stable version of bazel. ###############################################
 WORKDIR /tmp
 RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.19.2/bazel-0.19.2-installer-linux-x86_64.sh > bazel-0.19.2-installer-linux-x86_64.sh
@@ -141,16 +143,15 @@ RUN chmod +x bazel-0.19.2-installer-linux-x86_64.sh
 RUN ./bazel-0.19.2-installer-linux-x86_64.sh --user
 RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
 
+USER root
+
+RUN mv /home/illuminate/bin/bazel /usr/local/sbin
+RUN rm -r /home/illuminate/bin
+
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
-
-RUN rm -rf /home/uas/mavlink-router
 
 EXPOSE 8085/udp
 EXPOSE 8086/udp
 EXPOSE 8090/udp
 EXPOSE 8091/udp
-
-# Set user to root so that we can set the appropriate permissions for file #####
-# access later on. #############################################################
-USER root
