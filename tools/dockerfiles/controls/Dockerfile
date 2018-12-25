@@ -13,17 +13,9 @@ RUN apt-get update     -qq                                                      
     apt-get install -y -qq gnupg
 
 # Add apt-get repositories containing required packages. ###########################
-#RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
-#  "deb-src http://deb.debian.org/debian buster main\n\n" \
-#  "deb http://deb.debian.org/debian buster-updates main contrib non-free\n" \
-#  "deb-src http://deb.debian.org/debian buster-updates main\n\n" \
-#  "deb http://deb.debian.org/debian sid main contrib non-free\n" \
-#  "deb-src http://deb.debian.org/debian sid main" > \
-#  /etc/apt/sources.list
-
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
-RUN echo "deb http://deb.debian.org/debian stretch main" \
+RUN echo "deb http://deb.debian.org/debian testing main" \
   | tee /etc/apt/sources.list.d/python3_6.list
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
