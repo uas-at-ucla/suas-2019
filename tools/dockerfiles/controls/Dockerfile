@@ -143,7 +143,7 @@ WORKDIR /tmp
 RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.19.2/bazel-0.19.2-installer-linux-x86_64.sh > bazel-0.19.2-installer-linux-x86_64.sh
 RUN chmod +x bazel-0.19.2-installer-linux-x86_64.sh
 RUN ./bazel-0.19.2-installer-linux-x86_64.sh --user
-RUN echo "source /home/illuminate/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
+RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
