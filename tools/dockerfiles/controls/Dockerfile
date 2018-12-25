@@ -23,7 +23,7 @@ RUN apt-get update     -qq                                                      
 
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
-RUN echo "deb http://deb.debian.org/debian testing main" \
+RUN echo "deb http://deb.debian.org/debian stretch main" \
   | tee /etc/apt/sources.list.d/python3_6.list
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
@@ -37,7 +37,6 @@ RUN apt-get update -qq                                                      && \
     autoconf                                                                   \
     autoconf                                                                   \
     automake                                                                   \
-    bazel                                                                      \
     bmon                                                                       \
     build-essential                                                            \
     ca-certificates-java                                                       \
@@ -64,7 +63,7 @@ RUN apt-get update -qq                                                      && \
     libz-dev                                                                   \
     make                                                                       \
     nodejs                                                                     \
-    openjdk-10-jdk                                                             \
+    openjdk-11-jdk                                                             \
     pkg-config                                                                 \
     protobuf-compiler                                                          \
     python2.7                                                                  \
@@ -83,17 +82,11 @@ RUN apt-get update -qq                                                      && \
     uthash-dev                                                                 \
     vim
 
-# Fix git certificate bug with open JDK. #######################################
-RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
-  /etc/java-10-openjdk/security/java.security
-RUN rm /etc/ssl/certs/java/cacerts
-RUN update-ca-certificates -f
-
 # Install pip and python dependencies. #########################################
 RUN curl https://bootstrap.pypa.io/get-pip.py | python2.7
-RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
+RUN curl https://bootstrap.pypa.io/get-pip.py | python3.7
 RUN pip2.7 install --upgrade pip                                            && \
-    pip3.6 install --upgrade pip
+    pip3.7 install --upgrade pip
 
 # Set up workspace. ############################################################
 # Fix xlocale.h renamed to locale.h
@@ -151,6 +144,13 @@ RUN pip2.7 install --user                                                      \
   protobuf==3.5.2.post1                                                        \
   pyzmq==17.0.0                                                                \
   zmq==0.0.0
+
+# Use a stable version of bazel. ###############################################
+WORKDIR /tmp
+RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.19.2/bazel-0.19.2-installer-linux-x86_64.sh > bazel-0.19.2-installer-linux-x86_64.sh
+RUN chmod +x bazel-0.19.2-installer-linux-x86_64.sh
+RUN ./bazel-0.19.2-installer-linux-x86_64.sh --user
+RUN echo "source /home/illuminate/.bazel/bin/bazel-complete.bash" > /home/illuminate/.bashrc
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
