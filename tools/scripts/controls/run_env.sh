@@ -32,11 +32,14 @@ if [ $MATCH -eq 0 ]
 then
   echo "controls dockerfile updated; killing existing container"
 
-  docker kill $(docker ps \
-              --filter status=running \
-              --format "{{.ID}}" \
-              --filter name=uas-at-ucla_controls \
-              --latest)
+  RUNNING_DOCKER_CONTAINERS=$(docker ps \
+    --filter name=uas-at-ucla_controls \
+    --filter status=running \
+    --format "{{.ID}}" \
+    --latest \
+  )
+
+  docker kill $RUNNING_DOCKER_CONTAINERS
 
   CHECKSUM=$(md5sum tools/dockerfiles/controls/Dockerfile)
   echo $CHECKSUM > tools/cache/checksums/controls_dockerfile.md5
