@@ -25,10 +25,6 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
 RUN apt-get update -qq                                                      && \
     apt-get upgrade -y -qq                                                  && \
     apt-get install -y                                                         \
-    ant                                                                        \
-    autoconf                                                                   \
-    autoconf                                                                   \
-    automake                                                                   \
     bmon                                                                       \
     build-essential                                                            \
     ca-certificates-java                                                       \
@@ -68,7 +64,6 @@ RUN apt-get update -qq                                                      && \
     python-matplotlib                                                          \
     python-empy                                                                \
     python-jinja2                                                              \
-    ruby                                                                       \
     screen                                                                     \
     sudo                                                                       \
     tmux                                                                       \
