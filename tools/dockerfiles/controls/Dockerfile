@@ -145,8 +145,8 @@ RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
 
 USER root
 
-RUN mv /home/illuminate/bin/bazel /usr/local/sbin
-RUN rm -r /home/illuminate/bin
+RUN mv /home/uas/bin/bazel /usr/local/sbin
+RUN rm -r /home/uas/bin
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
