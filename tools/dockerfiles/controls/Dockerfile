@@ -68,6 +68,7 @@ RUN apt-get update -qq                                                      && \
     sudo                                                                       \
     tmux                                                                       \
     uthash-dev                                                                 \
+    unzip                                                                      \
     vim
 
 # Install pip and python dependencies. #########################################
