@@ -63,6 +63,7 @@ RUN apt-get update -qq                                                      && \
     libz-dev                                                                   \
     make                                                                       \
     nodejs                                                                     \
+    nmap                                                                       \
     openjdk-11-jdk                                                             \
     pkg-config                                                                 \
     protobuf-compiler                                                          \
