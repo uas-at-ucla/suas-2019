@@ -153,6 +153,7 @@ FlightLoop::RunIteration(::src::controls::Sensors sensors,
       if (run_mission) {
         next_state = ARMING;
       }
+
       break;
 
     case ARMING:
