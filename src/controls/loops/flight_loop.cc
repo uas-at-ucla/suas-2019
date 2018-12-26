@@ -3,10 +3,6 @@
 namespace src {
 namespace controls {
 namespace loops {
-namespace {
-int kFlightLoopFrequency = 1e2;
-int kMaxMessageInQueues = 5;
-} // namespace
 
 FlightLoop::FlightLoop() :
     state_(STANDBY),
@@ -26,49 +22,79 @@ FlightLoop::FlightLoop() :
     last_dslr_(0),
     sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", kMaxMessageInQueues),
     goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", kMaxMessageInQueues),
-    status_sender_("ipc:///tmp/uasatucla_status.ipc"),
     output_sender_("ipc:///tmp/uasatucla_output.ipc") {}
-
-void FlightLoop::Iterate() { RunIteration(); }
 
 void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 
-void FlightLoop::RunIteration() {
-  phased_loop_.SleepUntilNext();
-
-  double current_time =
-      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
-          ::std::chrono::system_clock::now().time_since_epoch())
-          .count() *
-      1e-9;
-
-  // Get latest telemetry.
-  if (!sensors_receiver_.HasMessages()) {
+void FlightLoop::Run() {
+  // Don't allow two instances of the loop to run simultaneously on different
+  // threads.
+  if(running_) {
+    LOG_LINE("Loop already running.");
     return;
   }
+  running_ = true;
 
-  // Convert UasMessage to sensor
-  ::src::controls::UasMessage message = sensors_receiver_.GetLatest();
-  ::src::controls::Sensors sensors = message.sensors();
+  while (running_) {
+    // Run loop at a set frequency.
+    phased_loop_.SleepUntilNext();
 
-  // Get latest goal.
-  if (!goal_receiver_.HasMessages()) {
-    return;
+    // Fetch latest messages.
+    if (!sensors_receiver_.HasMessages()) {
+      continue;
+    }
+
+    if (!goal_receiver_.HasMessages()) {
+      continue;
+    }
+
+    // Extract messages from UasMessage wrapper.
+    ::src::controls::UasMessage sensors_uas_message =
+        sensors_receiver_.GetLatest();
+    if (!sensors_uas_message.has_sensors()) {
+      continue;
+    }
+    ::src::controls::Sensors sensors_message = sensors_uas_message.sensors();
+
+    ::src::controls::UasMessage goal_uas_message = goal_receiver_.GetLatest();
+    if (!goal_uas_message.has_goal()) {
+      continue;
+    }
+    ::src::controls::Goal goal_message = goal_uas_message.goal();
+
+    // Set the current time in inputted sensors message.
+    double current_time =
+    ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
+        ::std::chrono::system_clock::now().time_since_epoch())
+        .count() *
+    1e-9;
+    sensors_message.set_time(current_time);
+
+    // Run control loop iteration.
+    ::src::controls::Output output_message =
+        RunIteration(sensors_message, goal_message);
+
+    // Send out output message.
+    ::src::controls::UasMessage output_uas_message;
+    output_uas_message.set_allocated_output(&output_message);
+    output_sender_.Send(output_uas_message);
   }
+}
 
-  ::src::controls::Goal goal = goal_receiver_.GetLatest();
-
+::src::controls::Output
+FlightLoop::RunIteration(::src::controls::Sensors sensors,
+                         ::src::controls::Goal goal) {
   got_sensors_ = true;
   State next_state = state_;
 
   LOG_LINE("Flight Loop dt: " << std::setprecision(14)
-                              << current_time - last_loop_ - 0.01);
+                              << sensors.time() - last_loop_ - 0.01);
 
-  if (current_time - last_loop_ > 0.01 + 0.002) {
+  if (sensors.time() - last_loop_ > 0.01 + 0.002) {
     LOG_LINE("Flight LOOP RUNNING SLOW: dt: "
-             << std::setprecision(14) << current_time - last_loop_ - 0.01);
+             << std::setprecision(14) << sensors.time() - last_loop_ - 0.01);
   }
-  last_loop_ = current_time;
+  last_loop_ = sensors.time();
 
   ::src::controls::Output output = ::src::controls::Output();
 
@@ -92,7 +118,7 @@ void FlightLoop::RunIteration() {
     next_state = FLIGHT_TERMINATION;
   }
 
-  if (goal.trigger_alarm() + 0.05 > current_time) {
+  if (goal.trigger_alarm() + 0.05 > sensors.time()) {
     if (!did_alarm_) {
       did_alarm_ = true;
       alarm_.AddAlert({0.30, 0.30});
@@ -131,10 +157,10 @@ void FlightLoop::RunIteration() {
 
     case ARMING:
       // Check if we have GPS.
-      if (sensors.last_gps() < current_time - 0.5) {
+      if (sensors.last_gps() < sensors.time() - 0.5) {
         LOG_LINE("can't arm; no GPS "
                  << "(last gps: " << sensors.last_gps()
-                 << " current time: " << current_time);
+                 << " current time: " << sensors.time());
 
         next_state = STANDBY;
         break;
@@ -203,7 +229,7 @@ void FlightLoop::RunIteration() {
           executor_.Calculate(position, velocity);
 
       last_bomb_drop_ =
-          executor_output.bomb_drop ? current_time : last_bomb_drop_;
+          executor_output.bomb_drop ? sensors.time() : last_bomb_drop_;
 
       if (executor_output.alarm) {
         alarm_.AddAlert({5.0, 0.50});
@@ -238,9 +264,9 @@ void FlightLoop::RunIteration() {
   }
 
   // Land if the GPS data is old.
-  if (next_state == IN_AIR && sensors.last_gps() < current_time - 0.5) {
+  if (next_state == IN_AIR && sensors.last_gps() < sensors.time() - 0.5) {
     LOG_LINE("no GPS; landing (last gps: "
-             << sensors.last_gps() << " current time: " << current_time);
+             << sensors.last_gps() << " current time: " << sensors.time());
 
     next_state = LANDING;
   }
@@ -258,14 +284,14 @@ void FlightLoop::RunIteration() {
   last_bomb_drop_ = ::std::max(last_bomb_drop_, goal.trigger_bomb_drop());
 
   output.set_bomb_drop(false);
-  if (last_bomb_drop_ <= current_time && last_bomb_drop_ + 5.0 > current_time) {
+  if (last_bomb_drop_ <= sensors.time() && last_bomb_drop_ + 5.0 > sensors.time()) {
     output.set_bomb_drop(true);
   }
 
   // Handle dslr.
   output.set_dslr(false);
   last_dslr_ = ::std::max(last_dslr_, goal.trigger_dslr());
-  if (last_dslr_ <= current_time && last_dslr_ + 15.0 > current_time) {
+  if (last_dslr_ <= sensors.time() && last_dslr_ + 15.0 > sensors.time()) {
     output.set_dslr(true);
   }
 
@@ -275,14 +301,13 @@ void FlightLoop::RunIteration() {
 
   // TODO(comran): Send output.
 
-  ::src::controls::Status status = ::src::controls::Status();
-  status.set_state(next_state);
-  status.set_current_command_index(0);
+  output.set_state(next_state);
+  output.set_current_command_index(0);
 
   if (current_flight_start_time_ == 0) {
-    status.set_flight_time(previous_flights_time_);
+    output.set_flight_time(previous_flights_time_);
   } else {
-    status.set_flight_time(
+    output.set_flight_time(
         previous_flights_time_ +
         (std::chrono::duration_cast<std::chrono::milliseconds>(
              std::chrono::system_clock::now().time_since_epoch())
@@ -290,12 +315,7 @@ void FlightLoop::RunIteration() {
          current_flight_start_time_));
   }
 
-  LOG_LINE("Flight loop iteration STATUS... "
-           << " State: " << status.state()
-           << " FlightTime: " << status.flight_time()
-           << " CurrentCommandIndex: " << status.current_command_index());
-
-  output_sender_.Send(output);
+  return output;
 }
 
 void FlightLoop::EndFlightTimer() {
@@ -306,14 +326,6 @@ void FlightLoop::EndFlightTimer() {
             .count() -
         current_flight_start_time_;
     current_flight_start_time_ = 0;
-  }
-}
-
-void FlightLoop::Run() {
-  running_ = true;
-
-  while (running_) {
-    RunIteration();
   }
 }
 

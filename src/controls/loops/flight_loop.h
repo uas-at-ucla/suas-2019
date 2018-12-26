@@ -30,33 +30,44 @@
 namespace src {
 namespace controls {
 namespace loops {
+enum State {
+  STANDBY = 0,
+  ARMING = 1,
+  ARMED = 2,
+  TAKING_OFF = 3,
+  IN_AIR = 4,
+  LANDING = 5,
+  FAILSAFE = 6,
+  FLIGHT_TERMINATION = 7
+};
+
+namespace {
+static const int kFlightLoopFrequency = 1e2;
+static const int kMaxMessageInQueues = 5;
+const ::std::map<State, ::std::string> kStateString = {
+    {State::STANDBY, "STANDBY"},
+    {ARMING, "ARMING"},
+    {ARMED, "ARMED"},
+    {TAKING_OFF, "TAKING_OFF"},
+    {IN_AIR, "IN_AIR"},
+    {LANDING, "LANDING"},
+    {FAILSAFE, "FAILSAFE"},
+    {FLIGHT_TERMINATION, "FLIGHT_TERMINATION"}};
+} // namespace
 
 class FlightLoop {
  public:
   FlightLoop();
 
   void Run();
-  void Iterate();
-
-  // Flight loop state machine states.
-  enum State {
-    STANDBY = 0,
-    ARMING = 1,
-    ARMED = 2,
-    TAKING_OFF = 3,
-    IN_AIR = 4,
-    LANDING = 5,
-    FAILSAFE = 6,
-    FLIGHT_TERMINATION = 7
-  };
+  ::src::controls::Output RunIteration(::src::controls::Sensors sensors,
+                                       ::src::controls::Goal goal);
 
   State state() const { return state_; }
 
   void SetVerbose(bool verbose);
 
  private:
-  void RunIteration();
-
   State state_;
 
   executor::Executor executor_;
@@ -85,20 +96,9 @@ class FlightLoop {
 
   ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
       sensors_receiver_;
-  ::lib::proto_comms::ProtoReceiver<::src::controls::Goal> goal_receiver_;
-  ::lib::proto_comms::ProtoSender<::src::controls::Status> status_sender_;
-  ::lib::proto_comms::ProtoSender<::src::controls::Output> output_sender_;
+  ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage> goal_receiver_;
+  ::lib::proto_comms::ProtoSender<::src::controls::UasMessage> output_sender_;
 };
-
-const ::std::map<FlightLoop::State, ::std::string> state_string = {
-    {FlightLoop::STANDBY, "STANDBY"},
-    {FlightLoop::ARMING, "ARMING"},
-    {FlightLoop::ARMED, "ARMED"},
-    {FlightLoop::TAKING_OFF, "TAKING_OFF"},
-    {FlightLoop::IN_AIR, "IN_AIR"},
-    {FlightLoop::LANDING, "LANDING"},
-    {FlightLoop::FAILSAFE, "FAILSAFE"},
-    {FlightLoop::FLIGHT_TERMINATION, "FLIGHT_TERMINATION"}};
 
 } // namespace loops
 } // namespace controls
