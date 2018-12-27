@@ -31,14 +31,17 @@ namespace src {
 namespace controls {
 namespace loops {
 enum State {
-  STANDBY = 0,
-  ARMING = 1,
-  ARMED = 2,
-  TAKING_OFF = 3,
-  IN_AIR = 4,
-  LANDING = 5,
-  FAILSAFE = 6,
-  FLIGHT_TERMINATION = 7
+  STANDBY,
+  ARMING,
+  ARMED_WAIT_FOR_SPINUP,
+  ARMED,
+  TAKING_OFF,
+  TAKEN_OFF,
+  SAFETY_PILOT_CONTROL,
+  AUTOPILOT,
+  LANDING,
+  FAILSAFE,
+  FLIGHT_TERMINATION
 };
 
 namespace {
@@ -49,7 +52,8 @@ const ::std::map<State, ::std::string> kStateString = {
     {ARMING, "ARMING"},
     {ARMED, "ARMED"},
     {TAKING_OFF, "TAKING_OFF"},
-    {IN_AIR, "IN_AIR"},
+    {SAFETY_PILOT_CONTROL, "SAFETY_PILOT_CONTROL"},
+    {AUTOPILOT, "AUTOPILOT"},
     {LANDING, "LANDING"},
     {FAILSAFE, "FAILSAFE"},
     {FLIGHT_TERMINATION, "FLIGHT_TERMINATION"}};
@@ -68,6 +72,44 @@ class FlightLoop {
   void SetVerbose(bool verbose);
 
  private:
+  void MonitorLoopFrequency(::src::controls::Sensors);
+  void EndFlightTimer();
+  ::src::controls::Output GenerateDefaultOutput();
+
+  void HandleStandby(::src::controls::Sensors &sensors,
+                     ::src::controls::Goal &goal,
+                     ::src::controls::Output &output);
+  void HandleArming(::src::controls::Sensors &sensors,
+                    ::src::controls::Goal &goal,
+                    ::src::controls::Output &output);
+  void HandleArmedWaitForSpinup(::src::controls::Sensors &sensors,
+                                ::src::controls::Goal &goal,
+                                ::src::controls::Output &output);
+  void HandleArmed(::src::controls::Sensors &sensors,
+                   ::src::controls::Goal &goal,
+                   ::src::controls::Output &output);
+  void HandleTakingOff(::src::controls::Sensors &sensors,
+                       ::src::controls::Goal &goal,
+                       ::src::controls::Output &output);
+  void HandleTakenOff(::src::controls::Sensors &sensors,
+                      ::src::controls::Goal &goal,
+                      ::src::controls::Output &output);
+  void HandleSafetyPilotControl(src::controls::Sensors &sensors,
+                                ::src::controls::Goal &goal,
+                                ::src::controls::Output &output);
+  void HandleAutopilot(::src::controls::Sensors &sensors,
+                       ::src::controls::Goal &goal,
+                       ::src::controls::Output &output);
+  void HandleLanding(::src::controls::Sensors &sensors,
+                     ::src::controls::Goal &goal,
+                     ::src::controls::Output &output);
+  void HandleFailsafe(::src::controls::Sensors &sensors,
+                      ::src::controls::Goal &goal,
+                      ::src::controls::Output &output);
+  void HandleFlightTermination(::src::controls::Sensors &sensors,
+                               ::src::controls::Goal &goal,
+                               ::src::controls::Output &output);
+
   State state_;
 
   executor::Executor executor_;
@@ -80,13 +122,11 @@ class FlightLoop {
   int takeoff_ticker_;
   bool verbose_;
 
-  void EndFlightTimer();
   int previous_flights_time_;
   unsigned long current_flight_start_time_;
 
   ::lib::alarm::Alarm alarm_;
 
-  bool got_sensors_;
   double last_loop_;
   bool did_alarm_;
   bool did_arm_;

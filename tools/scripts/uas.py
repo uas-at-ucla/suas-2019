@@ -266,9 +266,6 @@ def run_controls_build(args=None, show_complete=True):
 
     run_controls_docker_start(None, show_complete=False)
 
-    # Execute the build commands in the running docker image.
-    print_update("Downloading the dependencies...")
-
     print_update("Building src directory...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")
 
