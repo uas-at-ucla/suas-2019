@@ -32,7 +32,7 @@ export default {
           return null;
         }
         let commands = {};
-        for (let commandType of missionProto.Command.oneofs.command.oneof) {
+        for (let commandType of missionProto.GroundCommand.oneofs.command.oneof) {
           commands[commandType] = missionProto[commandType];
         }
         return {

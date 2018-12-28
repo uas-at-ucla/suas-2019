@@ -1,5 +1,6 @@
 /* USAGE:
-  require(./protobuf_utils/protobuf_utils)((protobuf_utils) => {
+  const loadProtobufUtils = require('./protobuf_utils/protobuf_utils');
+  loadProtobufUtils((protobuf_utils) => {
     let message = "something invalid";
     let sensors = protobuf_utils.decodeSensors(message);
   });
@@ -7,9 +8,15 @@
 
 const protobuf = require("protobufjs");
 
-// Rename built-in functions
-const decodeBase64 = atob;
-const encodeBase64 = btoa;
+function decodeBase64(string) {
+  let decoded = protobuf.util.newBuffer(protobuf.util.base64.length(string));
+  protobuf.util.base64.decode(string, decoded, 0);
+  return decoded;
+}
+
+function encodeBase64(bytes) {
+  return protobuf.util.base64.encode(bytes, 0, bytes.length);
+}
 
 function decode(Type, message) {
   return Type.decode(decodeBase64(message));
@@ -20,8 +27,11 @@ function encode(Type, message) {
 }
 
 module.exports = (callback) => {
-  protobuf.load("../../../controls/ground_server/timeline/timeline_grammar.proto", function(err, timelineRoot) {
-    protobuf.load("../../../controls/messages.proto", function(err, telemetryRoot) {
+  protobuf.load("../../controls/ground_server/timeline/timeline_grammar.proto", function(err, timelineRoot) {
+    if (err) throw err;
+    protobuf.load("../../controls/messages.proto", function(err, telemetryRoot) {
+      if (err) throw err;
+
       const GroundProgram = timelineRoot.lookupType("src.controls.ground_server.timeline.GroundProgram");
 
       const Sensors = telemetryRoot.lookupType("src.controls.Sensors");
