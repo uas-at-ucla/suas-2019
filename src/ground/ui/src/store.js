@@ -15,7 +15,8 @@ export const { reducer, selector } = combineReducersAndSelectors({
 
 const logger = createLogger({
   predicate: (getState, action) => {
-  	let shouldLog = (action.type === 'TELEMETRY');
+    // let shouldLog = (action.type === 'TELEMETRY');
+    let shouldLog = false;
     return shouldLog;
   },
   collapsed: true

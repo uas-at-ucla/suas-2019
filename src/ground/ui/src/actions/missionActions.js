@@ -46,7 +46,7 @@ function createCommand(type, options, protoInfo) {
   command[type] = createMissionObject(type, options, protoInfo);
   command.type = type;
   command.id = shortid.generate();
-  createMessage('Command', command); // Verify that object correctly represents protobuf
+  createMessage('GroundCommand', command); // Verify that object correctly represents protobuf
   return command;
 }
 

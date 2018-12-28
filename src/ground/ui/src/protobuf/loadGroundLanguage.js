@@ -1,8 +1,8 @@
 import protobuf from 'protobufjs';
 
-import missionProtoFile from '../protobuf/ground_language.proto';
+import missionProtoFile from './timeline_grammar.proto';
 
-const packageName = 'src.control.ground_server.timeline_compiler.languages.';
+const packageName = 'src.controls.ground_server.timeline.';
 var root = null;
 
 export default function loadGroundLanguage(dispatch) {

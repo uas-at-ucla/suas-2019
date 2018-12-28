@@ -37,7 +37,6 @@ RUN apt-get update -qq                                                      && \
     autoconf                                                                   \
     autoconf                                                                   \
     automake                                                                   \
-    bazel                                                                      \
     bmon                                                                       \
     build-essential                                                            \
     ca-certificates-java                                                       \
@@ -113,6 +112,13 @@ RUN apt-get install -y openssh-client openssh-server
 USER uas
 RUN mkdir -p /home/uas/code_env
 ENV WORKSPACE /home/uas/code_env WORKDIR /home/uas/code_env
+
+# Use a stable version of bazel. ###############################################
+WORKDIR /tmp
+RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.20.0/bazel-0.20.0-installer-linux-x86_64.sh > bazel-0.20.0-installer-linux-x86_64.sh
+RUN chmod +x bazel-0.20.0-installer-linux-x86_64.sh
+RUN ./bazel-0.20.0-installer-linux-x86_64.sh --user
+ENV PATH="${PATH}:/home/uas/bin/"
 
 WORKDIR /home/uas
 
