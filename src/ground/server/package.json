@@ -18,6 +18,7 @@
     "concurrently": "^4.0.1"
   },
   "dependencies": {
+    "protobufjs": "^6.8.8",
     "socket.io": "^2.1.1"
   }
 }
