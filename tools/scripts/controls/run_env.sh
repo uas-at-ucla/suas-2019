@@ -1,9 +1,6 @@
 #!/bin/bash
 
-if [ $(uname -s) == "Darwin" ]
-then
-  source tools/scripts/docker/start_machine_mac.sh
-fi
+source tools/scripts/docker/start_machine_mac.sh
 
 unset ENV_DOCKER_RUNNING_CONTAINER
 unset ENV_DOCKER_CONTAINER
