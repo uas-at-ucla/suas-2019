@@ -36,11 +36,7 @@ void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 void FlightLoop::RunIteration() {
   phased_loop_.SleepUntilNext();
 
-  double current_time =
-      ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
-          ::std::chrono::system_clock::now().time_since_epoch())
-          .count() *
-      1e-9;
+  double current_time = ::lib::phased_loop::GetCurrentTime();
 
   // Get latest telemetry.
   if (!sensors_receiver_.HasMessages()) {
