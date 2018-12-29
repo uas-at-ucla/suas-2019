@@ -44,19 +44,12 @@ enum State {
   FLIGHT_TERMINATION
 };
 
+::std::string StateToString(State state);
+
 namespace {
 static const int kFlightLoopFrequency = 1e2;
 static const int kMaxMessageInQueues = 5;
-const ::std::map<State, ::std::string> kStateString = {
-    {State::STANDBY, "STANDBY"},
-    {ARMING, "ARMING"},
-    {ARMED, "ARMED"},
-    {TAKING_OFF, "TAKING_OFF"},
-    {SAFETY_PILOT_CONTROL, "SAFETY_PILOT_CONTROL"},
-    {AUTOPILOT, "AUTOPILOT"},
-    {LANDING, "LANDING"},
-    {FAILSAFE, "FAILSAFE"},
-    {FLIGHT_TERMINATION, "FLIGHT_TERMINATION"}};
+static constexpr double kDefaultGimbalAngle = 0.15;
 } // namespace
 
 class FlightLoop {
@@ -72,9 +65,15 @@ class FlightLoop {
   void SetVerbose(bool verbose);
 
  private:
+  bool SafetyStateOverride(::src::controls::Goal &goal,
+                           ::src::controls::Output &output);
   void MonitorLoopFrequency(::src::controls::Sensors);
   void EndFlightTimer();
   ::src::controls::Output GenerateDefaultOutput();
+
+  void RouteToCurrentState(::src::controls::Sensors &sensors,
+                           ::src::controls::Goal &goal,
+                           ::src::controls::Output &output);
 
   void HandleStandby(::src::controls::Sensors &sensors,
                      ::src::controls::Goal &goal,
@@ -110,6 +109,11 @@ class FlightLoop {
                                ::src::controls::Goal &goal,
                                ::src::controls::Output &output);
 
+  void StateTransition(::src::controls::Output &output);
+  void WriteActuators(::src::controls::Sensors &sensors,
+                      ::src::controls::Goal &goal,
+                      ::src::controls::Output &output);
+
   State state_;
 
   executor::Executor executor_;
@@ -123,7 +127,7 @@ class FlightLoop {
   bool verbose_;
 
   int previous_flights_time_;
-  unsigned long current_flight_start_time_;
+  double current_flight_start_time_;
 
   ::lib::alarm::Alarm alarm_;
 

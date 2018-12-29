@@ -63,7 +63,7 @@ message Goal {
 
 message Output {
   required int32 state                                                     = 1;
-  required int32 flight_time                                               = 2;
+  required double flight_time                                              = 2;
   required int32 current_command_index                                     = 3;
 
   required float velocity_x                                                = 4;

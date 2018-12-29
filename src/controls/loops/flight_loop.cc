@@ -4,6 +4,45 @@ namespace src {
 namespace controls {
 namespace loops {
 
+::std::string StateToString(State state) {
+  switch (state) {
+    case STANDBY:
+      return "STANDBY";
+
+    case ARMING:
+      return "ARMING";
+
+    case ARMED_WAIT_FOR_SPINUP:
+      return "ARMED_WAIT_FOR_SPINUP";
+
+    case ARMED:
+      return "ARMED";
+
+    case TAKING_OFF:
+      return "TAKING_OFF";
+
+    case TAKEN_OFF:
+      return "TAKEN_OFF";
+
+    case SAFETY_PILOT_CONTROL:
+      return "SAFETY_PILOT_CONTROL";
+
+    case AUTOPILOT:
+      return "AUTOPILOT";
+
+    case LANDING:
+      return "LANDING";
+
+    case FAILSAFE:
+      return "FAILSAFE";
+
+    case FLIGHT_TERMINATION:
+      return "FLIGHT_TERMINATION";
+  }
+
+  return "UNKNOWN";
+}
+
 FlightLoop::FlightLoop() :
     state_(STANDBY),
     running_(false),
@@ -86,126 +125,12 @@ FlightLoop::RunIteration(::src::controls::Sensors sensors,
 
   ::src::controls::Output output = GenerateDefaultOutput();
 
-  bool state_machine_override = false;
-  if (goal.trigger_failsafe()) {
-    EndFlightTimer();
-    output.set_state(FAILSAFE);
-    state_machine_override = true;
+  if (!SafetyStateOverride(goal, output)) {
+    RouteToCurrentState(sensors, goal, output);
   }
 
-  if (goal.trigger_throttle_cut()) {
-    EndFlightTimer();
-    output.set_state(FLIGHT_TERMINATION);
-    state_machine_override = true;
-  }
-
-  if (goal.trigger_alarm() + 0.05 > sensors.time()) {
-    if (!did_alarm_) {
-      did_alarm_ = true;
-      alarm_.AddAlert({0.30, 0.30});
-      LOG_LINE("Alarm was manually triggered");
-    }
-  } else {
-    did_alarm_ = false;
-  }
-
-  // Check if the Pixhawk just got armed, and send out a chirp if it did.
-  if (sensors.armed() && !did_arm_) {
-    did_arm_ = true;
-
-    alarm_.AddAlert({0.03, 0.25});
-  }
-
-  if (!sensors.armed()) {
-    did_arm_ = false;
-  }
-
-  if (!state_machine_override) {
-    switch (state_) {
-      case STANDBY:
-        HandleStandby(sensors, goal, output);
-        break;
-
-      case ARMING:
-        HandleArming(sensors, goal, output);
-        break;
-
-      case ARMED_WAIT_FOR_SPINUP:
-        HandleArmedWaitForSpinup(sensors, goal, output);
-        break;
-
-      case ARMED:
-        HandleArmed(sensors, goal, output);
-        break;
-
-      case TAKING_OFF:
-        HandleTakingOff(sensors, goal, output);
-        break;
-
-      case TAKEN_OFF:
-        HandleTakenOff(sensors, goal, output);
-        break;
-
-      case SAFETY_PILOT_CONTROL:
-        HandleSafetyPilotControl(sensors, goal, output);
-        break;
-
-      case AUTOPILOT: {
-        HandleAutopilot(sensors, goal, output);
-        break;
-      }
-
-      case LANDING:
-        HandleLanding(sensors, goal, output);
-        break;
-
-      case FAILSAFE:
-        HandleFailsafe(sensors, goal, output);
-        break;
-
-      case FLIGHT_TERMINATION:
-        HandleFlightTermination(sensors, goal, output);
-        break;
-    }
-  }
-
-  // Land if the GPS data is old.
-  if (output.state() == AUTOPILOT &&
-      sensors.last_gps() < sensors.time() - 0.5) {
-    LOG_LINE("no GPS; landing (last gps: "
-             << sensors.last_gps() << " current time: " << sensors.time());
-
-    output.set_state(LANDING);
-  }
-
-  if (output.state() != state_) {
-    // Handle state transitions.
-    LOG_LINE("Switching states: " << state_ << " -> " << output.state());
-  }
-
-  state_ = static_cast<State>(output.state());
-
-  output.set_alarm(alarm_.ShouldAlarm());
-
-  // Handle bomb drop.
-  last_bomb_drop_ = ::std::max(last_bomb_drop_, goal.trigger_bomb_drop());
-
-  output.set_bomb_drop(false);
-  if (last_bomb_drop_ <= sensors.time() &&
-      last_bomb_drop_ + 5.0 > sensors.time()) {
-    output.set_bomb_drop(true);
-  }
-
-  // Handle dslr.
-  output.set_dslr(false);
-  last_dslr_ = ::std::max(last_dslr_, goal.trigger_dslr());
-  if (last_dslr_ <= sensors.time() && last_dslr_ + 15.0 > sensors.time()) {
-    output.set_dslr(true);
-  }
-
-  LOG_LINE("Flight loop iteration OUTPUT..."
-           << " VelocityX: " << output.velocity_x() << " VelocityY: "
-           << output.velocity_y() << " VelocityZ: " << output.velocity_z());
+  StateTransition(output);
+  WriteActuators(sensors, goal, output);
 
   output.set_current_command_index(0);
 
@@ -214,13 +139,29 @@ FlightLoop::RunIteration(::src::controls::Sensors sensors,
   } else {
     output.set_flight_time(
         previous_flights_time_ +
-        (std::chrono::duration_cast<std::chrono::milliseconds>(
-             std::chrono::system_clock::now().time_since_epoch())
-             .count() -
-         current_flight_start_time_));
+        (::lib::phased_loop::GetCurrentTime() - current_flight_start_time_));
   }
 
   return output;
+}
+
+bool FlightLoop::SafetyStateOverride(::src::controls::Goal &goal,
+                                     ::src::controls::Output &output) {
+  // Prioritize the throttle cut check, so that the drone always cuts throttle
+  // instead of following any failsafe commands.
+  if (goal.trigger_throttle_cut()) {
+    EndFlightTimer();
+    output.set_state(FLIGHT_TERMINATION);
+    return true;
+  }
+
+  if (goal.trigger_failsafe()) {
+    EndFlightTimer();
+    output.set_state(FAILSAFE);
+    return true;
+  }
+
+  return false;
 }
 
 void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
@@ -237,10 +178,7 @@ void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
 void FlightLoop::EndFlightTimer() {
   if (current_flight_start_time_ != 0) {
     previous_flights_time_ +=
-        std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now().time_since_epoch())
-            .count() -
-        current_flight_start_time_;
+        ::lib::phased_loop::GetCurrentTime() - current_flight_start_time_;
     current_flight_start_time_ = 0;
   }
 }
@@ -248,15 +186,15 @@ void FlightLoop::EndFlightTimer() {
 ::src::controls::Output FlightLoop::GenerateDefaultOutput() {
   ::src::controls::Output output;
   output.set_state(state_);
-  output.set_flight_time(-1);
-  output.set_current_command_index(-1);
+  output.set_flight_time(0);
+  output.set_current_command_index(0);
 
   output.set_velocity_x(0);
   output.set_velocity_y(0);
   output.set_velocity_z(0);
   output.set_yaw_setpoint(0);
 
-  output.set_gimbal_angle(0.15);
+  output.set_gimbal_angle(kDefaultGimbalAngle);
   output.set_bomb_drop(false);
   output.set_alarm(false);
   output.set_dslr(false);
@@ -272,13 +210,117 @@ void FlightLoop::EndFlightTimer() {
   return output;
 }
 
+void FlightLoop::StateTransition(::src::controls::Output &output) {
+  State old_state = state_;
+  State new_state = static_cast<State>(output.state());
+
+  if (old_state != new_state) {
+    // Handle state transitions.
+    LOG_LINE("Switching states: " << StateToString(old_state) << " -> "
+                                  << StateToString(new_state));
+  }
+
+  state_ = new_state;
+}
+
+void FlightLoop::WriteActuators(::src::controls::Sensors &sensors,
+                                ::src::controls::Goal &goal,
+                                ::src::controls::Output &output) {
+  // Handle alarm.
+  output.set_alarm(alarm_.ShouldAlarm());
+
+  if (goal.trigger_alarm() + 0.05 > sensors.time()) {
+    if (!did_alarm_) {
+      did_alarm_ = true;
+      alarm_.AddAlert({0.30, 0.30});
+      LOG_LINE("Alarm was manually triggered");
+    }
+  } else {
+    did_alarm_ = false;
+  }
+
+  if (sensors.armed() && !did_arm_) {
+    // Send out a chirp if the Pixhawk just got armed.
+    did_arm_ = true;
+    alarm_.AddAlert({0.03, 0.25});
+  }
+
+  if (!sensors.armed()) {
+    did_arm_ = false;
+  }
+
+  // Handle bomb drop.
+  last_bomb_drop_ = ::std::max(last_bomb_drop_, goal.trigger_bomb_drop());
+
+  output.set_bomb_drop(false);
+  if (last_bomb_drop_ <= sensors.time() &&
+      last_bomb_drop_ + 5.0 > sensors.time()) {
+    output.set_bomb_drop(true);
+  }
+
+  // Handle dslr.
+  output.set_dslr(false);
+  last_dslr_ = ::std::max(last_dslr_, goal.trigger_dslr());
+  if (last_dslr_ <= sensors.time() && last_dslr_ + 15.0 > sensors.time()) {
+    output.set_dslr(true);
+  }
+}
+
+// State machine handlers //////////////////////////////////////////////////////
+void FlightLoop::RouteToCurrentState(::src::controls::Sensors &sensors,
+                                     ::src::controls::Goal &goal,
+                                     ::src::controls::Output &output) {
+  switch (state_) {
+    case STANDBY:
+      HandleStandby(sensors, goal, output);
+      break;
+
+    case ARMING:
+      HandleArming(sensors, goal, output);
+      break;
+
+    case ARMED_WAIT_FOR_SPINUP:
+      HandleArmedWaitForSpinup(sensors, goal, output);
+      break;
+
+    case ARMED:
+      HandleArmed(sensors, goal, output);
+      break;
+
+    case TAKING_OFF:
+      HandleTakingOff(sensors, goal, output);
+      break;
+
+    case TAKEN_OFF:
+      HandleTakenOff(sensors, goal, output);
+      break;
+
+    case SAFETY_PILOT_CONTROL:
+      HandleSafetyPilotControl(sensors, goal, output);
+      break;
+
+    case AUTOPILOT: {
+      HandleAutopilot(sensors, goal, output);
+      break;
+    }
+
+    case LANDING:
+      HandleLanding(sensors, goal, output);
+      break;
+
+    case FAILSAFE:
+      HandleFailsafe(sensors, goal, output);
+      break;
+
+    case FLIGHT_TERMINATION:
+      HandleFlightTermination(sensors, goal, output);
+      break;
+  }
+}
+
 void FlightLoop::HandleStandby(::src::controls::Sensors &sensors,
                                ::src::controls::Goal &goal,
                                ::src::controls::Output &output) {
-  (void)sensors;
-  (void)goal;
-  (void)output;
-
   if (goal.run_mission()) {
     output.set_state(ARMING);
   }
@@ -291,9 +333,6 @@ void FlightLoop::HandleStandby(::src::controls::Sensors &sensors,
 void FlightLoop::HandleArming(::src::controls::Sensors &sensors,
                               ::src::controls::Goal &goal,
                               ::src::controls::Output &output) {
-  (void)sensors;
-  (void)goal;
-  (void)output;
   // Check if we have GPS.
   if (sensors.last_gps() < sensors.time() - 0.5) {
     LOG_LINE("can't arm; no GPS "
@@ -327,6 +366,9 @@ void FlightLoop::HandleArmed(::src::controls::Sensors &sensors,
   (void)sensors;
   (void)goal;
   (void)output;
+
+  current_flight_start_time_ = ::lib::phased_loop::GetCurrentTime();
+
   if (!sensors.armed()) {
     if (goal.run_mission()) {
       output.set_state(ARMING);
