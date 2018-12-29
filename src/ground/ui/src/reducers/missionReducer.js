@@ -40,6 +40,39 @@ export default {
           commands: commands
         };
       }
+    ),
+    commandPoints: createSelector(
+      [state => state.commands],
+      (commands) => {
+        if(!commands) return [];
+        return commands.map(cmd => {
+
+
+          return {
+            marker:{
+              position: {
+                lat: cmd.latitude,
+                lng: cmd.longitude
+              },
+              label: cmd.name,
+              options:{
+                //icon: url //if u want it to look different
+              }
+            },
+            infobox: {
+              position: { //TODO; if this doesn't work, try putting positions in options.
+                lat: cmd.latitude,
+                lng: cmd.longitude
+              },
+              options: {
+                //enableEventPropagation: true //we might need this if there are some buttons in the infobox.
+              }
+            }
+          }
+
+
+        });
+      }
     )
   })
 };
