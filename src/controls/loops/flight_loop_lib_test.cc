@@ -9,6 +9,8 @@
 
 #include "gtest/gtest.h"
 
+#include "lib/logger/log_writer.h"
+
 namespace src {
 namespace controls {
 namespace loops {
@@ -17,8 +19,6 @@ namespace testing {
 class FlightLoopTest : public ::testing::Test {
  public:
   FlightLoopTest() {
-    flight_loop_.SetVerbose(true);
-
     sensors_.set_time(0);
     sensors_.set_latitude(0);
     sensors_.set_longitude(0);
@@ -128,23 +128,30 @@ TEST_F(FlightLoopTest, Initialization) {
 } // namespace src
 
 int main(int argc, char **argv) {
-  // static struct option getopt_options[] = {{"verbose", no_argument, 0, 'v'},
-  //                                          {0, 0, 0, 0}};
+  static struct option getopt_options[] = {{"verbose", no_argument, 0, 'v'},
+                                           {0, 0, 0, 0}};
 
-  // while (1) {
-  //   int opt = getopt_long(argc, argv, "i:o:sc", getopt_options, NULL);
-  //   if (opt == -1)
-  //     break;
+  while (1) {
+    int opt = getopt_long(argc, argv, "i:o:sc", getopt_options, NULL);
+    if (opt == -1)
+      break;
 
-  //   switch (opt) {
-  //     case 'v':
-  //       ::src::controls::loops::testing::verbose = true;
-  //       break;
-  //     default:
-  //       exit(1);
-  //       break;
-  //   }
-  // }
+    switch (opt) {
+      case 'v':
+        // TODO: do verbose stuff here.
+        break;
+      default:
+        ::std::cerr << "Unknown opt given." << ::std::endl;
+        exit(1);
+
+        break;
+    }
+  }
+
+  ::lib::logger::LogWriter log_writer(false);
+
+  usleep(1e6);
+  LOG_LINE("BEGIN!");
 
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

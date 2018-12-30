@@ -8,38 +8,27 @@ namespace loops {
   switch (state) {
     case STANDBY:
       return "STANDBY";
-
     case ARMING:
       return "ARMING";
-
     case ARMED_WAIT_FOR_SPINUP:
       return "ARMED_WAIT_FOR_SPINUP";
-
     case ARMED:
       return "ARMED";
-
     case TAKING_OFF:
       return "TAKING_OFF";
-
     case TAKEN_OFF:
       return "TAKEN_OFF";
-
     case SAFETY_PILOT_CONTROL:
       return "SAFETY_PILOT_CONTROL";
-
     case AUTOPILOT:
       return "AUTOPILOT";
-
     case LANDING:
       return "LANDING";
-
     case FAILSAFE:
       return "FAILSAFE";
-
     case FLIGHT_TERMINATION:
       return "FLIGHT_TERMINATION";
   }
-
   return "UNKNOWN";
 }
 
@@ -49,7 +38,6 @@ FlightLoop::FlightLoop() :
     phased_loop_(kFlightLoopFrequency),
     start_(std::chrono::system_clock::now()),
     takeoff_ticker_(0),
-    verbose_(false),
     previous_flights_time_(0),
     current_flight_start_time_(0),
     alarm_(kFlightLoopFrequency),
@@ -61,8 +49,6 @@ FlightLoop::FlightLoop() :
     sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", kMaxMessageInQueues),
     goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", kMaxMessageInQueues),
     output_sender_("ipc:///tmp/uasatucla_output.ipc") {}
-
-void FlightLoop::SetVerbose(bool verbose) { verbose_ = verbose; }
 
 void FlightLoop::Run() {
   sensors_receiver_.Connect();
@@ -122,17 +108,20 @@ void FlightLoop::Run() {
 ::src::controls::Output
 FlightLoop::RunIteration(::src::controls::Sensors sensors,
                          ::src::controls::Goal goal) {
+  LOG_LINE("Running flight loop iteration @ "
+           << ::std::fixed << ::std::setw(8) << ::std::setprecision(3)
+           << sensors.time() << " with state: " << StateToString(state_));
 
   ::src::controls::Output output = GenerateDefaultOutput();
 
-  if (!SafetyStateOverride(goal, output)) {
-    RouteToCurrentState(sensors, goal, output);
+  if (SafetyStateOverride(goal, output)) {
+    StateTransition(output);
   }
 
+  RouteToCurrentState(sensors, goal, output);
   StateTransition(output);
-  WriteActuators(sensors, goal, output);
 
-  output.set_current_command_index(0);
+  WriteActuators(sensors, goal, output);
 
   if (current_flight_start_time_ == 0) {
     output.set_flight_time(previous_flights_time_);
@@ -185,7 +174,10 @@ void FlightLoop::EndFlightTimer() {
 
 ::src::controls::Output FlightLoop::GenerateDefaultOutput() {
   ::src::controls::Output output;
-  output.set_state(state_);
+
+  // Set state to integer representation of the current state of the flight
+  // loop.
+  output.set_state(static_cast<int>(state_));
   output.set_flight_time(0);
   output.set_current_command_index(0);
 
