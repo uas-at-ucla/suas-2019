@@ -90,7 +90,7 @@ class FlightLoopTest : public ::testing::Test {
 };
 
 TEST_F(FlightLoopTest, Initialization) {
-  for (double start = sensors().time(); sensors().time() < start + 5;) {
+  for (double start = sensors().time(); sensors().time() < start + 1;) {
     StepLoop();
     ASSERT_EQ(output().state(), ::src::controls::loops::State::STANDBY);
     ASSERT_EQ(output().velocity_x(), 0);
@@ -108,10 +108,24 @@ TEST_F(FlightLoopTest, Initialization) {
 
   sensors().set_armed(true);
 
-  for (double start = sensors().time(); sensors().time() < start + 5;) {
+  for (double start = sensors().time(); sensors().time() < start + 1;) {
     StepLoop();
 
     ASSERT_EQ(output().state(), ::src::controls::loops::State::ARMED);
+    ASSERT_FALSE(output().trigger_arm());
+    ASSERT_FALSE(output().trigger_takeoff());
+    ASSERT_FALSE(output().trigger_hold());
+    ASSERT_FALSE(output().trigger_offboard());
+    ASSERT_FALSE(output().trigger_rtl());
+    ASSERT_FALSE(output().trigger_land());
+    ASSERT_FALSE(output().trigger_disarm());
+  }
+
+  sensors().set_armed(false);
+  for (double start = sensors().time(); sensors().time() < start + 1;) {
+    StepLoop();
+
+    ASSERT_EQ(output().state(), ::src::controls::loops::State::STANDBY);
     ASSERT_FALSE(output().trigger_arm());
     ASSERT_FALSE(output().trigger_takeoff());
     ASSERT_FALSE(output().trigger_hold());

@@ -314,10 +314,12 @@ void FlightLoop::HandleStandby(::src::controls::Sensors &sensors,
                                ::src::controls::Goal &goal,
                                ::src::controls::Output &output) {
   if (goal.run_mission()) {
+    LOG_LINE("Run mission requested; attempting to arm.");
     output.set_state(ARMING);
   }
 
   if (sensors.armed()) {
+    LOG_LINE("Pixhawk was armed; switching to ARMED state.");
     output.set_state(ARMED);
   }
 }
@@ -325,6 +327,7 @@ void FlightLoop::HandleStandby(::src::controls::Sensors &sensors,
 void FlightLoop::HandleArming(::src::controls::Sensors &sensors,
                               ::src::controls::Goal &goal,
                               ::src::controls::Output &output) {
+  (void) goal;
   // Check if we have GPS.
   if (sensors.last_gps() < sensors.time() - 0.5) {
     LOG_LINE("can't arm; no GPS "
@@ -332,10 +335,6 @@ void FlightLoop::HandleArming(::src::controls::Sensors &sensors,
              << " current time: " << sensors.time());
 
     output.set_state(STANDBY);
-  }
-
-  if (!goal.run_mission()) {
-    output.set_state(LANDING);
   }
 
   if (sensors.armed()) {
