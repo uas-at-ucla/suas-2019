@@ -1,25 +1,25 @@
 import protobuf from 'protobufjs';
 
-import missionProtoFile from './timeline_grammar.proto';
+import protoFile from './timeline_grammar.proto';
 
 const packageName = 'src.controls.ground_server.timeline.';
 var root = null;
 
-export default function loadGroundLanguage(dispatch) {
-  protobuf.load(missionProtoFile, function(err, protoRoot) {
+export default function loadTimelineGrammar(dispatch) {
+  protobuf.load(protoFile, function(err, protoRoot) {
     root = protoRoot;
-    let missionProto = root.toJSON().nested;
+    let timelineGrammar = root.toJSON().nested;
     // Unpack the nested object, which contains an inner object for each word in the package name.
     let nested;
-    while ((nested = missionProto[Object.keys(missionProto)[0]].nested)) {
-      missionProto = nested;
+    while ((nested = timelineGrammar[Object.keys(timelineGrammar)[0]].nested)) {
+      timelineGrammar = nested;
     }
-    console.log(missionProto);
+    console.log(timelineGrammar);
 
     // Send to Redux store
     dispatch({
-      type: 'MISSION_PROTO_LOADED',
-      payload: missionProto
+      type: 'TIMELINE_PROTO_LOADED',
+      payload: timelineGrammar
     });
   });
 }

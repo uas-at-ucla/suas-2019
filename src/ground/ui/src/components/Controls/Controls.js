@@ -4,7 +4,7 @@ import './Controls.css';
 import Map from './Map';
 import Telemetry from './Telemetry/Telemetry';
 import DroneActions from './DroneActions';
-import MissionPlanner from './MissionPlanner';
+import MissionPlannerContainer from './MissionPlannerContainer/MissionPlannerContainer';
 
 class Controls extends Component {
   render() {
@@ -12,7 +12,7 @@ class Controls extends Component {
       <div className="Controls">
         <Telemetry/>
         <DroneActions/>
-        <MissionPlanner/>
+        <MissionPlannerContainer/>
         <Map/>
       </div>
     );

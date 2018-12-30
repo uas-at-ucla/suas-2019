@@ -1,5 +1,5 @@
 import shortid from 'shortid';
-import { createMessage } from '../protobuf/loadGroundLanguage';
+import { createMessage } from '../protobuf/timelineGrammarUtil';
 
 export default {
   addCommand: (type, options, protoInfo) => {
@@ -41,11 +41,10 @@ export default {
 }
 
 function createCommand(type, options, protoInfo) {
-  // TODO: Use protoInfo to create new command using the relevant fields for this type of command
   let command = {};
   command[type] = createMissionObject(type, options, protoInfo);
-  command.type = type;
-  command.id = shortid.generate();
+  command.type = type;             // not part of protobuf, but helpful info
+  command.id = shortid.generate(); // not part of protobuf, but helpful info
   createMessage('GroundCommand', command); // Verify that object correctly represents protobuf
   return command;
 }
@@ -53,11 +52,11 @@ function createCommand(type, options, protoInfo) {
 function createMissionObject(type, options, protoInfo) {
   // Custom function to recursively create object based on protobuf definition
   let missionObject;
-  if (protoInfo.proto[type]) {
+  if (protoInfo.timelineGrammar[type]) {
     // object is a protobuf defined object
     missionObject = {};
-    for (let fieldName in protoInfo.proto[type].fields) {
-      let field = protoInfo.proto[type].fields[fieldName];
+    for (let fieldName in protoInfo.timelineGrammar[type].fields) {
+      let field = protoInfo.timelineGrammar[type].fields[fieldName];
       if (field.rule === 'repeated') {
         // repeated objects are stored in arrays
         missionObject[fieldName] = [];

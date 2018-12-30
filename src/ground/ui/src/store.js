@@ -3,7 +3,7 @@ import { combineReducersAndSelectors } from './utils/reduxUtils';
 import { createLogger } from 'redux-logger';
 
 import communicator from './communicator';
-import loadGroundLanguage from './protobuf/loadGroundLanguage';
+import loadTimelineGrammar from './protobuf/timelineGrammarUtil';
 
 import telemetryReducer from './reducers/telemetryReducer';
 import missionReducer from './reducers/missionReducer';
@@ -26,6 +26,6 @@ const middleware = applyMiddleware(logger, communicator);
 
 const store = createStore(reducer, middleware);
 
-loadGroundLanguage(store.dispatch);
+loadTimelineGrammar(store.dispatch);
 
 export default store;

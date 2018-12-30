@@ -2,15 +2,15 @@ import dotProp from 'dot-prop-immutable';
 import { createSelector, createStructuredSelector } from 'reselect';
 
 const initialState = {
-  missionProto: null,
+  timelineGrammar: null,
   commands: []
 };
 
 export default {
   reducer: (state=initialState, action) => {
     switch (action.type) {
-      case 'MISSION_PROTO_LOADED': {
-        return dotProp.set(state, `missionProto`, action.payload);
+      case 'TIMELINE_PROTO_LOADED': {
+        return dotProp.set(state, `timelineGrammar`, action.payload);
       }
       case 'ADD_COMMAND': {
         return dotProp.set(state, `commands`, state.commands.concat(action.payload));
@@ -25,18 +25,18 @@ export default {
   },
   selector: createStructuredSelector({
     protoInfo: createSelector(
-      [state => state.missionProto],
-      (missionProto) => {
+      [state => state.timelineGrammar],
+      (timelineGrammar) => {
         // Create objects that make it easy to get info about the proto definition
-        if (!missionProto) {
+        if (!timelineGrammar) {
           return null;
         }
         let commands = {};
-        for (let commandType of missionProto.GroundCommand.oneofs.command.oneof) {
-          commands[commandType] = missionProto[commandType];
+        for (let commandType of timelineGrammar.GroundCommand.oneofs.command.oneof) {
+          commands[commandType] = timelineGrammar[commandType];
         }
         return {
-          proto: missionProto,
+          timelineGrammar: timelineGrammar,
           commands: commands
         };
       }

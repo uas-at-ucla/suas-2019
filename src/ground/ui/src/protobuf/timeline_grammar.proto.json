@@ -1,0 +1,278 @@
+{
+  "Position2D": {
+    "fields": {
+      "latitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 1
+      },
+      "longitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "Position3D": {
+    "fields": {
+      "latitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 1
+      },
+      "longitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      },
+      "altitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 3
+      }
+    }
+  },
+  "StaticObstacle": {
+    "fields": {
+      "location": {
+        "rule": "required",
+        "type": "Position2D",
+        "id": 1
+      },
+      "cylinderRadius": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "GroundProgram": {
+    "fields": {
+      "commands": {
+        "rule": "repeated",
+        "type": "GroundCommand",
+        "id": 1,
+        "options": {
+          "packed": false
+        }
+      },
+      "staticObstacles": {
+        "rule": "repeated",
+        "type": "StaticObstacle",
+        "id": 2,
+        "options": {
+          "packed": false
+        }
+      },
+      "fieldBoundary": {
+        "rule": "repeated",
+        "type": "Position2D",
+        "id": 3,
+        "options": {
+          "packed": false
+        }
+      }
+    }
+  },
+  "GroundCommand": {
+    "oneofs": {
+      "command": {
+        "oneof": [
+          "waypointCommand",
+          "ugvDropCommand",
+          "surveyCommand",
+          "offAxisCommand",
+          "waitCommand"
+        ]
+      }
+    },
+    "fields": {
+      "waypointCommand": {
+        "type": "WaypointCommand",
+        "id": 1
+      },
+      "ugvDropCommand": {
+        "type": "UgvDropCommand",
+        "id": 2
+      },
+      "surveyCommand": {
+        "type": "SurveyCommand",
+        "id": 3
+      },
+      "offAxisCommand": {
+        "type": "OffAxisCommand",
+        "id": 4
+      },
+      "waitCommand": {
+        "type": "WaitCommand",
+        "id": 5
+      }
+    }
+  },
+  "WaypointCommand": {
+    "fields": {
+      "goal": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      }
+    }
+  },
+  "UgvDropCommand": {
+    "fields": {
+      "groundTarget": {
+        "rule": "required",
+        "type": "Position2D",
+        "id": 1
+      },
+      "dropHeight": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "SurveyCommand": {
+    "fields": {
+      "surveyPolygon": {
+        "rule": "repeated",
+        "type": "Position2D",
+        "id": 1,
+        "options": {
+          "packed": false
+        }
+      },
+      "altitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "OffAxisCommand": {
+    "fields": {
+      "photographerLocation": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      },
+      "subjectLocation": {
+        "rule": "required",
+        "type": "Position2D",
+        "id": 2
+      }
+    }
+  },
+  "WaitCommand": {
+    "fields": {
+      "time": {
+        "rule": "required",
+        "type": "double",
+        "id": 1
+      }
+    }
+  },
+  "GotoCommand": {
+    "fields": {
+      "goal": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      },
+      "comeToStop": {
+        "rule": "required",
+        "type": "bool",
+        "id": 2
+      }
+    }
+  },
+  "DroneProgram": {
+    "fields": {
+      "commands": {
+        "rule": "repeated",
+        "type": "DroneCommand",
+        "id": 1,
+        "options": {
+          "packed": false
+        }
+      }
+    }
+  },
+  "DroneCommand": {
+    "oneofs": {
+      "command": {
+        "oneof": [
+          "nothingCommand",
+          "sleepCommand",
+          "gotoCommand",
+          "gotoRawCommand",
+          "triggerBombDropCommand",
+          "triggerAlarmCommand",
+          "translateCommand"
+        ]
+      }
+    },
+    "fields": {
+      "nothingCommand": {
+        "type": "NothingCommand",
+        "id": 1
+      },
+      "sleepCommand": {
+        "type": "SleepCommand",
+        "id": 2
+      },
+      "gotoCommand": {
+        "type": "GotoCommand",
+        "id": 3
+      },
+      "gotoRawCommand": {
+        "type": "TranslateCommand",
+        "id": 4
+      },
+      "triggerBombDropCommand": {
+        "type": "TriggerBombDropCommand",
+        "id": 5
+      },
+      "triggerAlarmCommand": {
+        "type": "TriggerAlarmCommand",
+        "id": 6
+      },
+      "translateCommand": {
+        "type": "TranslateCommand",
+        "id": 7
+      }
+    }
+  },
+  "NothingCommand": {
+    "fields": {}
+  },
+  "SleepCommand": {
+    "fields": {
+      "time": {
+        "rule": "required",
+        "type": "double",
+        "id": 1
+      }
+    }
+  },
+  "TranslateCommand": {
+    "fields": {
+      "goal": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      },
+      "comeToStop": {
+        "rule": "required",
+        "type": "bool",
+        "id": 2
+      }
+    }
+  },
+  "TriggerBombDropCommand": {
+    "fields": {}
+  },
+  "TriggerAlarmCommand": {
+    "fields": {}
+  }
+}
