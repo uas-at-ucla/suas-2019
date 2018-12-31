@@ -28,6 +28,8 @@ void ArmingState::Handle(::src::controls::Sensors &sensors,
   output.set_trigger_arm(sensors.time());
 }
 
+void ArmingState::Reset() {}
+
 } // namespace state_machine
 } // namespace loops
 } // namespace controls

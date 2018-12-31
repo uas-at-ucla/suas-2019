@@ -21,6 +21,8 @@ void StandbyState::Handle(::src::controls::Sensors &sensors,
   }
 }
 
+void StandbyState::Reset() {}
+
 } // namespace state_machine
 } // namespace loops
 } // namespace controls

@@ -34,6 +34,8 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
   output.set_yaw_setpoint(executor_output.yaw);
 }
 
+void MissionState::Reset() {}
+
 } // namespace state_machine
 } // namespace loops
 } // namespace controls

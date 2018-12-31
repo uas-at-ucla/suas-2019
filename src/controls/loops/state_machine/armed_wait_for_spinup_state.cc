@@ -16,6 +16,8 @@ void ArmedWaitForSpinupState::Handle(::src::controls::Sensors &sensors,
   output.set_state(ARMED);
 }
 
+void ArmedWaitForSpinupState::Reset() {}
+
 } // namespace state_machine
 } // namespace loops
 } // namespace controls

@@ -40,6 +40,7 @@ enum FlightLoopState {
   FAILSAFE,
   FLIGHT_TERMINATION,
 };
+
 ::std::string StateToString(FlightLoopState state);
 
 // States //////////////////////////////////////////////////////////////////////
@@ -49,6 +50,8 @@ class State {
   virtual void Handle(::src::controls::Sensors &sensors,
                       ::src::controls::Goal &goal,
                       ::src::controls::Output &output) = 0;
+
+  virtual void Reset() = 0;
 };
 
 class StandbyState : public State {
@@ -56,6 +59,7 @@ class StandbyState : public State {
   StandbyState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 };
 
 class ArmingState : public State {
@@ -63,6 +67,7 @@ class ArmingState : public State {
   ArmingState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 };
 
 class ArmedWaitForSpinupState : public State {
@@ -70,6 +75,7 @@ class ArmedWaitForSpinupState : public State {
   ArmedWaitForSpinupState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 };
 
 class ArmedState : public State {
@@ -77,6 +83,7 @@ class ArmedState : public State {
   ArmedState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 };
 
 class TakingOffState : public State {
@@ -84,6 +91,7 @@ class TakingOffState : public State {
   TakingOffState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 };
 
 class TakenOffState : public State {
@@ -91,6 +99,7 @@ class TakenOffState : public State {
   TakenOffState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 };
 
 class SafetyPilotControlState : public State {
@@ -98,6 +107,7 @@ class SafetyPilotControlState : public State {
   SafetyPilotControlState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 };
 
 class MissionState : public State {
@@ -105,6 +115,7 @@ class MissionState : public State {
   MissionState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 
  private:
   executor::Executor executor_;
@@ -115,6 +126,7 @@ class LandingState : public State {
   LandingState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 };
 
 class FailsafeState : public State {
@@ -122,6 +134,7 @@ class FailsafeState : public State {
   FailsafeState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 };
 
 class FlightTerminationState : public State {
@@ -129,6 +142,7 @@ class FlightTerminationState : public State {
   FlightTerminationState();
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+  void Reset();
 };
 
 // State machine router ////////////////////////////////////////////////////////

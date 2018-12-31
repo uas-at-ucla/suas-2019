@@ -15,6 +15,8 @@ void SafetyPilotControlState::Handle(::src::controls::Sensors &sensors,
   (void)output;
 }
 
+void SafetyPilotControlState::Reset() {}
+
 } // namespace state_machine
 } // namespace loops
 } // namespace controls

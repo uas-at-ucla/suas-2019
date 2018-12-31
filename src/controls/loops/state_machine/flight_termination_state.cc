@@ -15,6 +15,8 @@ void FlightTerminationState::Handle(::src::controls::Sensors &sensors,
   (void)output;
 }
 
+void FlightTerminationState::Reset() {}
+
 } // namespace state_machine
 } // namespace loops
 } // namespace controls

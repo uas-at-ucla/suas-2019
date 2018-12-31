@@ -32,6 +32,8 @@ void TakingOffState::Handle(::src::controls::Sensors &sensors,
   }
 }
 
+void TakingOffState::Reset() {}
+
 } // namespace state_machine
 } // namespace loops
 } // namespace controls

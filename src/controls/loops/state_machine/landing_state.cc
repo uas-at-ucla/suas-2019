@@ -21,6 +21,8 @@ void LandingState::Handle(::src::controls::Sensors &sensors,
   }
 }
 
+void LandingState::Reset() {}
+
 } // namespace state_machine
 } // namespace loops
 } // namespace controls

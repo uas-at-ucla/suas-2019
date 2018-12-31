@@ -15,6 +15,8 @@ void FailsafeState::Handle(::src::controls::Sensors &sensors,
   (void)output;
 }
 
+void FailsafeState::Reset() {}
+
 } // namespace state_machine
 } // namespace loops
 } // namespace controls

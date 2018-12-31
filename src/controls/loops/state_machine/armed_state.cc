@@ -21,6 +21,8 @@ void ArmedState::Handle(::src::controls::Sensors &sensors,
   }
 }
 
+void ArmedState::Reset() {}
+
 } // namespace state_machine
 } // namespace loops
 } // namespace controls
