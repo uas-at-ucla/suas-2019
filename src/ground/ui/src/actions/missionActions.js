@@ -34,7 +34,33 @@ export default {
       type: 'CHANGE_COMMAND_TYPE',
       payload: {
         index: index,
-        newCommand: createCommand(newType, oldCommand, protoInfo)
+        newCommand: createCommand(newType, oldCommand[oldCommand.type], protoInfo)
+      }
+    }
+  },
+  changeCommandField: (dotProp, newValue) => {
+    return {
+      type: 'CHANGE_COMMAND_FIELD',
+      payload: {
+        dotProp: dotProp,
+        newValue: newValue
+      }
+    }
+  },
+  addRepeatedField: (dotProp, type, protoInfo) => {
+    return {
+      type: 'ADD_REPEATED_FIELD',
+      payload: {
+        dotProp: dotProp,
+        newObject: createMissionObject(type, null, protoInfo)
+      }
+    }
+  },
+  popRepeatedField: (dotProp) => {
+    return {
+      type: 'POP_REPEATED_FIELD',
+      payload: {
+        dotProp: dotProp,
       }
     }
   }

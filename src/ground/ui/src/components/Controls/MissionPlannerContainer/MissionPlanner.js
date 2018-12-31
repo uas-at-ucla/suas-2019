@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
+import { Container, Row, Col, Input } from 'reactstrap';
 
 import missionActions from '../../../actions/missionActions';
 import { selector } from '../../../store';
@@ -18,18 +19,32 @@ class MissionPlanner extends Component {
   render() {
     return (
       <div className="MissionPlanner">
-        <Button onClick={this.addCommand}>Add Command</Button>
-        {this.props.missionPlan.commands.map((command, index) => 
-          <div key={command.id}>
-            <span>{index+1}: </span>
-            <span>{command.type}</span>
-            <Field
-              type={command.type}
-              object={command[command.type]}
-              protoInfo={this.props.protoInfo}
-            />
-          </div>
-        )}
+        <Container fluid>
+          {this.props.missionPlan.commands.map((command, index) => 
+            <Row key={command.id}>
+              <Col xs="auto" className="command-column command-index">{index+1}</Col>
+              <Col xs="auto" className="command-column command-type">
+                <span className="value">{command.type}</span>
+                <Input
+                  type="select" className="input" value={command.type}
+                  data-index={index} onChange={this.changeCommandType}
+                >
+                  {this.props.protoInfo.commandTypes.map(commandType =>
+                    <option key={commandType}>{commandType}</option>
+                  )}
+                </Input>
+              </Col>
+              <Col xs="auto" className="command-column">
+                <this.Field
+                  dotProp={index + "." + command.type}
+                  type={command.type}
+                  object={command[command.type]}
+                />
+              </Col>
+            </Row>
+          )}
+        </Container>
+        <Button onClick={this.addCommand} className="command-btn">Add Command</Button>
       </div>
     );
   }
@@ -42,74 +57,113 @@ class MissionPlanner extends Component {
     }}
     this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
   }
+
+  changeCommandType = (event) => {
+    let index = event.target.dataset.index;
+    let newType = event.target.value;
+    let oldCommand = this.props.missionPlan.commands[index];
+    this.props.changeCommandType(index, oldCommand, newType, this.props.protoInfo);
+  }
+
+  changeCommandField = (event) => {
+    let dotProp = event.target.dataset.dotProp;
+    let newValue = event.target.value;
+    this.props.changeCommandField(dotProp, newValue);
+  }
+
+  addRepeatedField = (event) => {
+    let dotProp = event.target.dataset.dotProp;
+    let type = event.target.dataset.type;
+    this.props.addRepeatedField(dotProp, type, this.props.protoInfo);
+  }
+
+  popRepeatedField = (event) => {
+    let dotProp = event.target.dataset.dotProp;
+    this.props.popRepeatedField(dotProp);
+  }
+
+  // Helper components
+  fieldUnits = {
+    altitude: "ft",
+    dropHeight: "ft"
+  }
+
+  NumberField = ({name, dotProp, value, units}) => {
+    return (
+      <Row>
+        <Col xs="auto" className="name">{name}:</Col>
+        <Col xs="auto" className="number input">
+          <Input
+            value={value} type="number"
+            data-dot-prop={dotProp} onChange={this.changeCommandField}
+          ></Input>
+        </Col>
+        <Col xs="auto" className="value">{value}</Col>
+        {units ? <Col xs="auto" className="units">{units}</Col> : null}
+      </Row>
+    );
+  };
+
+  RepeatedField = ({name, dotProp, type, object}) => {
+    return (
+      <span>
+        {object.map((element, index) =>
+          <this.Field
+            name={`${name} ${index+1}`} key={index}
+            dotProp={dotProp + "." + index}
+            type={type}
+            object={element}
+          />
+        )}
+        <Button
+          className="input" data-dot-prop={dotProp}
+          data-type={type} onClick={this.addRepeatedField}
+        >+</Button>
+        <Button
+          className="input" data-dot-prop={dotProp}
+          onClick={this.popRepeatedField}
+        >-</Button>
+      </span>
+    );
+  }
+
+  Field = ({name, dotProp, type, object}) => {
+    // Recursively create HTML based on protobuf definition
+    let timelineGrammar = this.props.protoInfo.timelineGrammar;
+    if (timelineGrammar[type]) {
+      // object is a protobuf defined object
+      return (
+        <Row>
+          {name ? <Col xs="auto" className="name">{name}:</Col> : null}
+          {Object.keys(timelineGrammar[type].fields).map((fieldName) => {
+            let field = timelineGrammar[type].fields[fieldName];
+            let fieldDotProp = dotProp + "." + fieldName;
+            let fieldProps = {
+              name: fieldName,
+              dotProp: fieldDotProp,
+              type: field.type,
+              object: object[fieldName]
+            };
+            return (
+              <Col xs="auto" className="field-container" key={fieldName}>
+                {field.rule === 'repeated' ?
+                  <this.RepeatedField {...fieldProps}/>
+                : field.rule === 'required' ?
+                  <this.Field {...fieldProps}/>
+                :
+                  (() => {throw new Error("No support for timeline_grammar rule '" + field.rule + "' yet!")})()
+                }
+              </Col>
+            );
+          })}
+        </Row>
+      );
+    } else if (type === "double") {
+      return <this.NumberField name={name} dotProp={dotProp} value={object} units={this.fieldUnits[name]}/>;
+    } else {
+      throw new Error("No support for timeline_grammar type '" + type + "' yet!");
+    }
+  };
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MissionPlanner);
-
-
-// Helper components
-const fieldUnits = {
-  altitude: "ft",
-  dropHeight: "ft"
-}
-
-function NumberField({name, value, units}) {
-  return (
-    <div>
-      <span className="name">{name}: </span>
-      <input className="input" value={value} type="number"></input>
-      <span className="value">{value}</span>
-      <span className="units"> {units}</span>
-    </div>
-  );
-};
-
-function RepeatedField({name, type, object, protoInfo}) {
-  return (
-    <div>
-      <span className="name">{name}</span>
-      {object.map((element, index) =>
-        <Field
-          name={index+1} key={index}
-          type={type}
-          object={element}
-          protoInfo={protoInfo}
-        />
-      )}
-      <button class="add-repeated">Add</button>
-    </div>
-  );
-}
-
-function Field({name, type, object, protoInfo}) {
-  // Recursively create HTML based on protobuf definition
-  if (protoInfo.timelineGrammar[type]) {
-    // object is a protobuf defined object
-    return (
-      <div>
-        <span className="name">{name}: </span>
-        {Object.keys(protoInfo.timelineGrammar[type].fields).map((fieldName) => {
-          let field = protoInfo.timelineGrammar[type].fields[fieldName];
-          let fieldProps = {
-            key: fieldName,
-            name: fieldName,
-            type: field.type,
-            object: object[fieldName],
-            protoInfo: protoInfo
-          };
-          if (field.rule === 'repeated') {
-            return <RepeatedField {...fieldProps}/>
-          } else if (field.rule === 'required') {
-            return <Field {...fieldProps}/>
-          } else {
-            throw new Error("No support for timeline_grammar rule '" + field.rule + "' yet!");
-          }
-        })}
-      </div>
-    );
-  } else if (type === "double") {
-    return <NumberField name={name} value={object} units={fieldUnits[name]}/>;
-  } else {
-    throw new Error("No support for timeline_grammar type '" + type + "' yet!");
-  }
-};

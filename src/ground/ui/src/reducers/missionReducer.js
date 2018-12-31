@@ -18,6 +18,20 @@ export default {
       case 'DELETE_COMMAND': {
         return dotProp.delete(state, `commands.${action.payload.index}`);
       }
+      case 'CHANGE_COMMAND_TYPE': {
+        return dotProp.set(state, `commands.${action.payload.index}`, action.payload.newCommand);
+      }
+      case 'CHANGE_COMMAND_FIELD': {
+        return dotProp.set(state, `commands.${action.payload.dotProp}`, action.payload.newValue);
+      }
+      case 'ADD_REPEATED_FIELD': {
+        let newRepeatedFields = dotProp.get(state, `commands.${action.payload.dotProp}`)
+          .concat(action.payload.newObject);
+        return dotProp.set(state, `commands.${action.payload.dotProp}`, newRepeatedFields);
+      }
+      case 'POP_REPEATED_FIELD': {
+        return dotProp.delete(state, `commands.${action.payload.dotProp}.$end`);
+      }
       default: {
         return state;
       }
@@ -32,12 +46,16 @@ export default {
           return null;
         }
         let commands = {};
-        for (let commandType of timelineGrammar.GroundCommand.oneofs.command.oneof) {
+        let commandTypes = [];
+        for (let varName of timelineGrammar.GroundCommand.oneofs.command.oneof) {
+          let commandType = timelineGrammar.GroundCommand.fields[varName].type;
           commands[commandType] = timelineGrammar[commandType];
+          commandTypes.push(commandType);
         }
         return {
           timelineGrammar: timelineGrammar,
-          commands: commands
+          commands: commands,
+          commandTypes: commandTypes
         };
       }
     )
