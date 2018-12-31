@@ -5,14 +5,27 @@ namespace controls {
 namespace loops {
 namespace state_machine {
 
-StateMachine::StateMachine() : state_(STANDBY) {
+StateMachine::StateMachine() :
+    state_(STANDBY),
+    unknown_state_(new UnknownState()) {
   state_handlers_[STANDBY] = new StandbyState();
+  state_handlers_[ARMING] = new ArmingState();
+  state_handlers_[ARMED_WAIT_FOR_SPINUP] = new ArmedWaitForSpinupState();
+  state_handlers_[ARMED] = new ArmedState();
+  state_handlers_[TAKING_OFF] = new TakingOffState();
+  state_handlers_[TAKEN_OFF] = new TakenOffState();
+  state_handlers_[SAFETY_PILOT_CONTROL] = new SafetyPilotControlState();
+  state_handlers_[MISSION] = new MissionState();
+  state_handlers_[FAILSAFE] = new FailsafeState();
+  state_handlers_[FLIGHT_TERMINATION] = new FlightTerminationState();
 }
 
 StateMachine::~StateMachine() {
-  for(auto const &state_handler_pair : state_handlers_) {
+  for (auto const &state_handler_pair : state_handlers_) {
     delete state_handler_pair.second;
   }
+
+  delete unknown_state_;
 }
 
 void StateMachine::Handle(::src::controls::Sensors &sensors,
@@ -32,41 +45,7 @@ void StateMachine::Handle(::src::controls::Sensors &sensors,
 
   // Route to the correct state.
   LOG_LINE("Routing to state: " + StateToString(state_));
-  switch (state_) {
-    case STANDBY:
-      standby_state_.Handle(sensors, goal, output);
-      break;
-    case ARMING:
-      arming_state_.Handle(sensors, goal, output);
-      break;
-    case ARMED_WAIT_FOR_SPINUP:
-      armed_wait_for_spinup_state_.Handle(sensors, goal, output);
-      break;
-    case ARMED:
-      armed_state_.Handle(sensors, goal, output);
-      break;
-    case TAKING_OFF:
-      taking_off_state_.Handle(sensors, goal, output);
-      break;
-    case TAKEN_OFF:
-      taken_off_state_.Handle(sensors, goal, output);
-      break;
-    case SAFETY_PILOT_CONTROL:
-      safety_pilot_control_state_.Handle(sensors, goal, output);
-      break;
-    case MISSION:
-      mission_state_.Handle(sensors, goal, output);
-      break;
-    case LANDING:
-      landing_state_.Handle(sensors, goal, output);
-      break;
-    case FAILSAFE:
-      failsafe_state_.Handle(sensors, goal, output);
-      break;
-    case FLIGHT_TERMINATION:
-      flight_termination_state_.Handle(sensors, goal, output);
-      break;
-  }
+  GetStateHandler(state_)->Handle(sensors, goal, output);
 
   StateTransition(output);
 }
@@ -101,6 +80,14 @@ bool StateMachine::SafetyStateOverride(::src::controls::Goal &goal,
   }
 
   return false;
+}
+
+State *StateMachine::GetStateHandler(FlightLoopState state) {
+  if (state_handlers_.count(state)) {
+    return state_handlers_[state];
+  }
+
+  return unknown_state_;
 }
 
 ::std::string StateToString(FlightLoopState state) {

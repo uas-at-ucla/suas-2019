@@ -188,10 +188,11 @@ void FlightLoop::LogProtobufMessage(::std::string name,
   ::std::vector<::std::string> sensors_split;
   ::boost::split(sensors_split, sensors_string,
                  [](char c) { return c == '\n'; });
-  sensors_split.insert(sensors_split.begin(), name + "...");
+  sensors_split.insert(sensors_split.begin(), "");
+  sensors_split.pop_back();
 
   for (::std::string field : sensors_split) {
-    output << ::std::left << ::std::setw(30) << field << ", ";
+    output << name << "... " << field << "\n";
   }
 
   LOG_LINE(output.str());

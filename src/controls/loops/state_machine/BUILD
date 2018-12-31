@@ -15,6 +15,7 @@ cc_library(
     'landing_state.cc',
     'failsafe_state.cc',
     'flight_termination_state.cc',
+    'unknown_state.cc',
   ],
   hdrs = [
     'state_machine.h',

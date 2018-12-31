@@ -10,24 +10,16 @@ TakingOffState::TakingOffState() {}
 void TakingOffState::Handle(::src::controls::Sensors &sensors,
                             ::src::controls::Goal &goal,
                             ::src::controls::Output &output) {
-  if (!goal.run_mission()) {
-    // takeoff_ticker_ = 0;
-    output.set_state(LANDING);
-    return;
-  }
 
+  // Arm the drone before performing a takeoff.
   if (!sensors.armed()) {
-    // takeoff_ticker_ = 0;
     output.set_state(ARMING);
     return;
   }
 
-  if (sensors.relative_altitude() < 0.3) {
-    // takeoff_ticker_++;
-  }
-
-  if (sensors.relative_altitude() > 2.2) {
-    // takeoff_ticker_ = 0;
+  // Ensure that the drone reaches a safe altitude before going into the next
+  // state.
+  if (sensors.relative_altitude() > kTakeoffAltitude) {
     output.set_state(TAKEN_OFF);
   }
 }

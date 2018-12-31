@@ -16,7 +16,7 @@ void StandbyState::Handle(::src::controls::Sensors &sensors,
   }
 
   if (sensors.armed()) {
-    LOG_LINE("Pixhawk was armed; switching to ARMED state.");
+    LOG_LINE("Pixhawk is armed; switching to ARMED state.");
     output.set_state(ARMED);
   }
 }

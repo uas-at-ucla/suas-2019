@@ -10,7 +10,6 @@ ArmedState::ArmedState() {}
 void ArmedState::Handle(::src::controls::Sensors &sensors,
                         ::src::controls::Goal &goal,
                         ::src::controls::Output &output) {
-  // current_flight_start_time_ = ::lib::phased_loop::GetCurrentTime();
 
   if (!sensors.armed()) {
     if (goal.run_mission()) {
@@ -18,6 +17,12 @@ void ArmedState::Handle(::src::controls::Sensors &sensors,
     } else {
       output.set_state(STANDBY);
     }
+
+    return;
+  }
+
+  if (goal.run_mission()) {
+    output.set_state(TAKING_OFF);
   }
 }
 

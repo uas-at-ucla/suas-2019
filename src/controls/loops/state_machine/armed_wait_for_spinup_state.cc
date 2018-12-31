@@ -4,19 +4,28 @@ namespace src {
 namespace controls {
 namespace loops {
 namespace state_machine {
-ArmedWaitForSpinupState::ArmedWaitForSpinupState() {}
+ArmedWaitForSpinupState::ArmedWaitForSpinupState() :
+    start_(::std::numeric_limits<double>::infinity()) {}
 
 void ArmedWaitForSpinupState::Handle(::src::controls::Sensors &sensors,
                                      ::src::controls::Goal &goal,
                                      ::src::controls::Output &output) {
-  (void)sensors;
   (void)goal;
 
+  // Set initial time if it was not set yet.
+  if (start_ == ::std::numeric_limits<double>::infinity()) {
+    start_ = sensors.time();
+  }
+
   // Wait a bit for the propellers to spin up while armed.
-  output.set_state(ARMED);
+  if (sensors.time() - start_ > kSpinupTime) {
+    output.set_state(ARMED);
+  }
 }
 
-void ArmedWaitForSpinupState::Reset() {}
+void ArmedWaitForSpinupState::Reset() {
+  start_ = ::std::numeric_limits<double>::infinity();
+}
 
 } // namespace state_machine
 } // namespace loops

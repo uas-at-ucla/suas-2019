@@ -6,9 +6,9 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <map>
 #include <string>
 #include <thread>
-#include <map>
 
 #include "zmq.hpp"
 #include <boost/algorithm/string.hpp>
@@ -27,6 +27,14 @@ namespace src {
 namespace controls {
 namespace loops {
 namespace state_machine {
+namespace {
+// Time for propellers to spin up before taking off, in seconds.
+static constexpr double kSpinupTime = 2.0;
+
+// Altitude to reach during takeoff before acknowledging the drone has taken
+// off.
+static constexpr double kTakeoffAltitude = 3.0;
+} // namespace
 
 enum FlightLoopState {
   STANDBY,
@@ -81,10 +89,13 @@ class ArmedWaitForSpinupState : public State {
  public:
   ArmedWaitForSpinupState();
   ~ArmedWaitForSpinupState() {}
-  
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
+
+ private:
+  double start_;
 };
 
 class ArmedState : public State {
@@ -111,7 +122,7 @@ class TakenOffState : public State {
  public:
   TakenOffState();
   ~TakenOffState() {}
-  
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -170,6 +181,16 @@ class FlightTerminationState : public State {
   void Reset();
 };
 
+class UnknownState : public State {
+ public:
+  UnknownState();
+  ~UnknownState() {}
+
+  void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
+              ::src::controls::Output &output);
+  void Reset();
+};
+
 // State machine router ////////////////////////////////////////////////////////
 class StateMachine {
  public:
@@ -184,20 +205,11 @@ class StateMachine {
               ::src::controls::Output &output);
 
  private:
-  FlightLoopState state_;
+  State *GetStateHandler(FlightLoopState state);
 
-  ::std::map<FlightLoopState, State*> state_handlers_;
-  StandbyState standby_state_;
-  ArmingState arming_state_;
-  ArmedWaitForSpinupState armed_wait_for_spinup_state_;
-  ArmedState armed_state_;
-  TakingOffState taking_off_state_;
-  TakenOffState taken_off_state_;
-  SafetyPilotControlState safety_pilot_control_state_;
-  MissionState mission_state_;
-  LandingState landing_state_;
-  FailsafeState failsafe_state_;
-  FlightTerminationState flight_termination_state_;
+  FlightLoopState state_;
+  ::std::map<FlightLoopState, State *> state_handlers_;
+  UnknownState *unknown_state_;
 };
 
 } // namespace state_machine
