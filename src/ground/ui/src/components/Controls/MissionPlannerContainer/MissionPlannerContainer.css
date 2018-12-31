@@ -3,7 +3,9 @@
 }
 
 .MissionPlannerContainer.modal-dialog {
-  max-width: 1200px;
+  max-width: 1500px;
+  margin-left: 10px;
+  margin-right: 10px;
 }
 
 .MissionPlanner [class*="col"] {
@@ -43,13 +45,13 @@
 }
 
 .MissionPlanner .command-type {
-  width: 10em;
+  width: 6em;
   padding: 4px;
   border: 1px solid dimgray;
 }
 
 .MissionPlanner .number.input {
-  width: 8em;
+  width: 7em;
 }
 
 
@@ -89,5 +91,5 @@
 }
 
 .BigMissionPlanner .command-type {
-  width: 12em;
+  width: 7em;
 }

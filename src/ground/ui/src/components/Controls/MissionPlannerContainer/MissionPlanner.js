@@ -24,13 +24,17 @@ class MissionPlanner extends Component {
             <Row key={command.id}>
               <Col xs="auto" className="command-column command-index">{index+1}</Col>
               <Col xs="auto" className="command-column command-type">
-                <span className="value">{command.type}</span>
+                <span className="value">
+                  {this.props.protoInfo.commandAbbr[command.type]}
+                </span>
                 <Input
                   type="select" className="input" value={command.type}
                   data-index={index} onChange={this.changeCommandType}
                 >
                   {this.props.protoInfo.commandTypes.map(commandType =>
-                    <option key={commandType}>{commandType}</option>
+                    <option value={commandType} key={commandType}>
+                     {this.props.protoInfo.commandAbbr[commandType]}
+                    </option>
                   )}
                 </Input>
               </Col>

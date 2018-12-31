@@ -47,15 +47,18 @@ export default {
         }
         let commands = {};
         let commandTypes = [];
+        let commandAbbr = {};
         for (let varName of timelineGrammar.GroundCommand.oneofs.command.oneof) {
           let commandType = timelineGrammar.GroundCommand.fields[varName].type;
           commands[commandType] = timelineGrammar[commandType];
           commandTypes.push(commandType);
+          commandAbbr[commandType] = commandType.replace("Command", "");
         }
         return {
           timelineGrammar: timelineGrammar,
           commands: commands,
-          commandTypes: commandTypes
+          commandTypes: commandTypes,
+          commandAbbr: commandAbbr
         };
       }
     )
