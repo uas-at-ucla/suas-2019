@@ -8,6 +8,7 @@
 #include <limits>
 #include <string>
 #include <thread>
+#include <map>
 
 #include "zmq.hpp"
 #include <boost/algorithm/string.hpp>
@@ -47,6 +48,8 @@ enum FlightLoopState {
 class State {
  public:
   State() {}
+  virtual ~State() {}
+
   virtual void Handle(::src::controls::Sensors &sensors,
                       ::src::controls::Goal &goal,
                       ::src::controls::Output &output) = 0;
@@ -57,6 +60,8 @@ class State {
 class StandbyState : public State {
  public:
   StandbyState();
+  ~StandbyState() {}
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -65,6 +70,8 @@ class StandbyState : public State {
 class ArmingState : public State {
  public:
   ArmingState();
+  ~ArmingState() {}
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -73,6 +80,8 @@ class ArmingState : public State {
 class ArmedWaitForSpinupState : public State {
  public:
   ArmedWaitForSpinupState();
+  ~ArmedWaitForSpinupState() {}
+  
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -81,6 +90,8 @@ class ArmedWaitForSpinupState : public State {
 class ArmedState : public State {
  public:
   ArmedState();
+  ~ArmedState() {}
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -89,6 +100,8 @@ class ArmedState : public State {
 class TakingOffState : public State {
  public:
   TakingOffState();
+  ~TakingOffState() {}
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -97,6 +110,8 @@ class TakingOffState : public State {
 class TakenOffState : public State {
  public:
   TakenOffState();
+  ~TakenOffState() {}
+  
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -105,6 +120,8 @@ class TakenOffState : public State {
 class SafetyPilotControlState : public State {
  public:
   SafetyPilotControlState();
+  ~SafetyPilotControlState() {}
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -113,6 +130,8 @@ class SafetyPilotControlState : public State {
 class MissionState : public State {
  public:
   MissionState();
+  ~MissionState() {}
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -124,6 +143,8 @@ class MissionState : public State {
 class LandingState : public State {
  public:
   LandingState();
+  ~LandingState() {}
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -132,6 +153,8 @@ class LandingState : public State {
 class FailsafeState : public State {
  public:
   FailsafeState();
+  ~FailsafeState() {}
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -140,6 +163,8 @@ class FailsafeState : public State {
 class FlightTerminationState : public State {
  public:
   FlightTerminationState();
+  ~FlightTerminationState() {}
+
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
   void Reset();
@@ -149,6 +174,7 @@ class FlightTerminationState : public State {
 class StateMachine {
  public:
   StateMachine();
+  ~StateMachine();
 
   void StateTransition(::src::controls::Output &output);
   bool SafetyStateOverride(::src::controls::Goal &goal,
@@ -160,6 +186,7 @@ class StateMachine {
  private:
   FlightLoopState state_;
 
+  ::std::map<FlightLoopState, State*> state_handlers_;
   StandbyState standby_state_;
   ArmingState arming_state_;
   ArmedWaitForSpinupState armed_wait_for_spinup_state_;

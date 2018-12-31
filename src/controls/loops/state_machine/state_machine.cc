@@ -5,7 +5,15 @@ namespace controls {
 namespace loops {
 namespace state_machine {
 
-StateMachine::StateMachine() : state_(STANDBY) {}
+StateMachine::StateMachine() : state_(STANDBY) {
+  state_handlers_[STANDBY] = new StandbyState();
+}
+
+StateMachine::~StateMachine() {
+  for(auto const &state_handler_pair : state_handlers_) {
+    delete state_handler_pair.second;
+  }
+}
 
 void StateMachine::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Goal &goal,
