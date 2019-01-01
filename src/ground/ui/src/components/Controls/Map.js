@@ -1,7 +1,17 @@
 import React, { Component } from 'react';
 import { Marker } from 'react-google-maps';
 
+
+import { connect } from 'react-redux';
+
 import GoogleMap from '../Utils/GoogleMap/GoogleMap';
+
+import reducersAndSelectors from  "../../reducers/missionReducer";
+// const mapStateToProps = state => {
+//   return {
+//     getMarkers: reducersAndSelectors.selector.commandPoints
+//   };
+// };
 
 class Map extends Component {
   render() {
@@ -17,6 +27,7 @@ class Map extends Component {
             scaleControl: true
           }}
         >
+          {console.log(this.props)}
           <Marker position={{ lat: -34.397, lng: 150.644 }} />
         </GoogleMap>
       </div>
@@ -24,4 +35,4 @@ class Map extends Component {
   }
 }
 
-export default Map;
+export default connect(reducersAndSelectors.selector)(Map);
