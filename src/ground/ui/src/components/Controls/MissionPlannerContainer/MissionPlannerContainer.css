@@ -3,12 +3,13 @@
 }
 
 .MissionPlannerContainer.modal-dialog {
-  max-width: 1500px;
-  margin-left: 10px;
-  margin-right: 10px;
+  max-width: none;
+  margin-left: 20px;
+  margin-right: 20px;
 }
 
 .MissionPlanner [class*="col"] {
+  max-width: 100%;
   margin: 0px;
   padding-top: 0px;
   padding-bottom: 0px;
@@ -50,10 +51,15 @@
   border: 1px solid dimgray;
 }
 
-.MissionPlanner .number.input {
+/* .MissionPlanner .number.input input {
   width: 7em;
-}
+} */
 
+.MissionPlanner .number.input input::-webkit-inner-spin-button, 
+.MissionPlanner .number.input input::-webkit-outer-spin-button { 
+  -webkit-appearance: none;
+  margin: 0;
+}
 
 /* Small mission planner */
 .SmallMissionPlanner {

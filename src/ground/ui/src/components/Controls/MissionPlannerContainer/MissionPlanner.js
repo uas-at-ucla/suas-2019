@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
-import { Container, Row, Col, Input } from 'reactstrap';
+import { Container, Row, Col, Input, InputGroup, InputGroupAddon } from 'reactstrap';
 
 import missionActions from '../../../actions/missionActions';
 import { selector } from '../../../store';
@@ -87,23 +87,21 @@ class MissionPlanner extends Component {
   }
 
   // Helper components
-  fieldUnits = {
-    altitude: "ft",
-    dropHeight: "ft"
-  }
-
   NumberField = ({name, dotProp, value, units}) => {
     return (
       <Row>
-        <Col xs="auto" className="name">{name}:</Col>
-        <Col xs="auto" className="number input">
-          <Input
-            value={value} type="number"
-            data-dot-prop={dotProp} onChange={this.changeCommandField}
-          ></Input>
+        <Col xs="auto">
+          <InputGroup className="number input">
+            <InputGroupAddon addonType="prepend">{name}</InputGroupAddon>
+            <Input
+              style={{width: (value.toString().length + 3) + "ch"}}
+              value={value} type="number"
+              data-dot-prop={dotProp} onChange={this.changeCommandField}
+            ></Input>
+            {units ? <InputGroupAddon addonType="append">{units}</InputGroupAddon> : null}
+          </InputGroup>
+          <span className="value">{value} {units}</span>
         </Col>
-        <Col xs="auto" className="value">{value}</Col>
-        {units ? <Col xs="auto" className="units">{units}</Col> : null}
       </Row>
     );
   };
@@ -163,7 +161,8 @@ class MissionPlanner extends Component {
         </Row>
       );
     } else if (type === "double") {
-      return <this.NumberField name={name} dotProp={dotProp} value={object} units={this.fieldUnits[name]}/>;
+      return <this.NumberField name={name} dotProp={dotProp} value={object} 
+        units={this.props.protoInfo.fieldUnits[name]}/>;
     } else {
       throw new Error("No support for timeline_grammar type '" + type + "' yet!");
     }

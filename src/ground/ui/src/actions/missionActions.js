@@ -30,6 +30,7 @@ export default {
     }
   },
   changeCommandType: (index, oldCommand, newType, protoInfo) => {
+    setLocationFields(oldCommand[oldCommand.type], protoInfo);
     return {
       type: 'CHANGE_COMMAND_TYPE',
       payload: {
@@ -109,4 +110,20 @@ function createMissionObject(type, options, protoInfo) {
   }
 
   return missionObject;
+}
+
+function setLocationFields(options, protoInfo) {
+  // Set all location fields so location is preserved when changing command types
+  let location = null;
+  for (let locationField of protoInfo.locationFields) {
+    if (options[locationField]) {
+      location = options[locationField];
+      break;
+    }
+  }
+  if (location) {
+    for (let locationField of protoInfo.locationFields) {
+      options[locationField] = location;
+    }
+  }
 }

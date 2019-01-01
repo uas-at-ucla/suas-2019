@@ -58,7 +58,12 @@ export default {
           timelineGrammar: timelineGrammar,
           commands: commands,
           commandTypes: commandTypes,
-          commandAbbr: commandAbbr
+          commandAbbr: commandAbbr,
+          fieldUnits: {
+            altitude: "ft",
+            dropHeight: "ft"
+          },
+          locationFields: ["goal", "groundTarget", "photographerLocation"]
         };
       }
     )
