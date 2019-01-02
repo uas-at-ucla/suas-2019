@@ -193,7 +193,7 @@ void FlightLoop::RunIteration() {
       break;
 
     case IN_AIR: {
-      Position3D position = {sensors.latitude(), sensors.longitude(),
+      ::lib::Position3D position = {sensors.latitude(), sensors.longitude(),
                              sensors.relative_altitude()};
 
       ::Eigen::Vector3d velocity(sensors.velocity_x(), sensors.velocity_y(),

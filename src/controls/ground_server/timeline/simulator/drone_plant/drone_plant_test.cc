@@ -20,7 +20,7 @@ TEST(DronePlantTest, GoFromPointAToPointB) {
   const int kPrintDecimals = 6;
 
   DronePlant plant({0, 0, 0}, kLoopIteration);
-  Position3D goal = {0.001, 0.001, 100};
+  lib::Position3D goal = {0.001, 0.001, 100};
 
   int iteration = 0;
   while (GetDistance2D(plant.position(), goal) > 0.1) {
@@ -31,9 +31,9 @@ TEST(DronePlantTest, GoFromPointAToPointB) {
                     ::std::pow(plant.position().altitude - goal.altitude, 2));
     velocity_pid *= 0.1;
 
-    Position3D start = plant.position();
+    lib::Position3D start = plant.position();
     plant.MoveDrone(velocity_pid);
-    Position3D end = plant.position();
+    lib::Position3D end = plant.position();
 
     double distance_3d = GetDistance2D(start, end);
     distance_3d = ::std::sqrt(::std::pow(distance_3d, 2) +

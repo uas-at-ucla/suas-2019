@@ -7,7 +7,7 @@ namespace timeline {
 namespace simulator {
 namespace drone_plant {
 
-DronePlant::DronePlant(Position3D init_position, double loop_frequency) :
+DronePlant::DronePlant(lib::Position3D init_position, double loop_frequency) :
     position_(init_position),
     profile_(0.5, 0.5, 1.0 / loop_frequency) {}
 
