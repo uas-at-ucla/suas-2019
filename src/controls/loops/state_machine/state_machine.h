@@ -55,8 +55,8 @@ enum FlightLoopState {
 // States //////////////////////////////////////////////////////////////////////
 class State {
  public:
-  State() {}
-  virtual ~State() {}
+  State() = default;
+  virtual ~State() = default;
 
   virtual void Handle(::src::controls::Sensors &sensors,
                       ::src::controls::Goal &goal,
@@ -68,31 +68,31 @@ class State {
 class StandbyState : public State {
  public:
   StandbyState();
-  ~StandbyState() {}
+  ~StandbyState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 };
 
 class ArmingState : public State {
  public:
   ArmingState();
-  ~ArmingState() {}
+  ~ArmingState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 };
 
 class ArmedWaitForSpinupState : public State {
  public:
   ArmedWaitForSpinupState();
-  ~ArmedWaitForSpinupState() {}
+  ~ArmedWaitForSpinupState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 
  private:
   double start_;
@@ -101,51 +101,51 @@ class ArmedWaitForSpinupState : public State {
 class ArmedState : public State {
  public:
   ArmedState();
-  ~ArmedState() {}
+  ~ArmedState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 };
 
 class TakingOffState : public State {
  public:
   TakingOffState();
-  ~TakingOffState() {}
+  ~TakingOffState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 };
 
 class TakenOffState : public State {
  public:
   TakenOffState();
-  ~TakenOffState() {}
+  ~TakenOffState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 };
 
 class SafetyPilotControlState : public State {
  public:
   SafetyPilotControlState();
-  ~SafetyPilotControlState() {}
+  ~SafetyPilotControlState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 };
 
 class MissionState : public State {
  public:
   MissionState();
-  ~MissionState() {}
+  ~MissionState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 
  private:
   executor::Executor executor_;
@@ -154,41 +154,41 @@ class MissionState : public State {
 class LandingState : public State {
  public:
   LandingState();
-  ~LandingState() {}
+  ~LandingState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 };
 
 class FailsafeState : public State {
  public:
   FailsafeState();
-  ~FailsafeState() {}
+  ~FailsafeState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 };
 
 class FlightTerminationState : public State {
  public:
   FlightTerminationState();
-  ~FlightTerminationState() {}
+  ~FlightTerminationState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 };
 
 class UnknownState : public State {
  public:
   UnknownState();
-  ~UnknownState() {}
+  ~UnknownState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output);
-  void Reset();
+              ::src::controls::Output &output) override;
+  void Reset() override;
 };
 
 // State machine router ////////////////////////////////////////////////////////

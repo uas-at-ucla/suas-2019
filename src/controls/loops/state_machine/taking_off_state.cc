@@ -10,6 +10,7 @@ TakingOffState::TakingOffState() {}
 void TakingOffState::Handle(::src::controls::Sensors &sensors,
                             ::src::controls::Goal &goal,
                             ::src::controls::Output &output) {
+  (void) goal;
 
   // Arm the drone before performing a takeoff.
   if (!sensors.armed()) {
