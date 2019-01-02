@@ -1,4 +1,4 @@
-import dotProp from 'dot-prop-immutable';
+// import dotProp from 'dot-prop-immutable';
 
 const initialState = null;
 

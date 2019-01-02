@@ -1,17 +1,20 @@
 import React, { Component } from 'react';
-import { Marker } from 'react-google-maps';
-
-
+import { Marker, InfoWindow } from 'react-google-maps';
 import { connect } from 'react-redux';
 
 import GoogleMap from '../Utils/GoogleMap/GoogleMap';
+import missionActions from '../../actions/missionActions';
+import { selector } from '../../store';
 
-import reducersAndSelectors from  "../../reducers/missionReducer";
-// const mapStateToProps = state => {
-//   return {
-//     getMarkers: reducersAndSelectors.selector.commandPoints
-//   };
-// };
+const mapStateToProps = state => {
+  let derivedData = selector(state);
+  return {
+    commandPoints: derivedData.missionPlan.commandPoints,
+    protoInfo: derivedData.missionPlan.protoInfo
+  };
+};
+
+const mapDispatchToProps = missionActions;
 
 class Map extends Component {
   render() {
@@ -26,13 +29,37 @@ class Map extends Component {
             disableDoubleClickZoom: true,
             scaleControl: true
           }}
+          onDblClick={this.mapDblClick}
         >
-          {console.log(this.props)}
+          {this.props.commandPoints.map(commandPoint => 
+            commandPoint ?
+              <Marker {...commandPoint.marker} key={commandPoint.id}>
+                <InfoWindow {...commandPoint.infobox}>
+                  <div className="map-infobox">
+                    {commandPoint.infobox.content}
+                  </div>
+                </InfoWindow>
+              </Marker>
+            : null
+          )}
           <Marker position={{ lat: -34.397, lng: 150.644 }} />
         </GoogleMap>
       </div>
     );
   }
+
+  mapDblClick = (event) => {
+    this.addWaypointCommand(event.latLng.lat(), event.latLng.lng());
+  }
+
+  addWaypointCommand = (lat, lng) => {
+    let defaultWaypointCommand = { goal: {
+      latitude: lat,
+      longitude: lng,
+      altitude: 100
+    }}
+    this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
+  }
 }
 
-export default connect(reducersAndSelectors.selector)(Map);
+export default connect(mapStateToProps, mapDispatchToProps)(Map);

@@ -69,10 +69,12 @@ class MissionPlanner extends Component {
     this.props.changeCommandType(index, oldCommand, newType, this.props.protoInfo);
   }
 
-  changeCommandField = (event) => {
-    let dotProp = event.target.dataset.dotProp;
-    let newValue = event.target.value;
-    this.props.changeCommandField(dotProp, newValue);
+  changeNumberField = (event) => {
+    let newValue = Number(event.target.value);
+    if (!isNaN(newValue)) {
+      let dotProp = event.target.dataset.dotProp;
+      this.props.changeCommandField(dotProp, newValue);
+    }
   }
 
   addRepeatedField = (event) => {
@@ -94,13 +96,13 @@ class MissionPlanner extends Component {
           <InputGroup className="number input">
             <InputGroupAddon addonType="prepend">{name}</InputGroupAddon>
             <Input
-              style={{width: (value.toString().length + 3) + "ch"}}
+              style={{width: Math.min(12, value.toString().length + 3) + "ch"}}
               value={value} type="number"
-              data-dot-prop={dotProp} onChange={this.changeCommandField}
+              data-dot-prop={dotProp} onChange={this.changeNumberField}
             ></Input>
             {units ? <InputGroupAddon addonType="append">{units}</InputGroupAddon> : null}
           </InputGroup>
-          <span className="value">{value} {units}</span>
+          <span className="value">{Math.round(value*1e4)/1e4} {units}</span>
         </Col>
       </Row>
     );
