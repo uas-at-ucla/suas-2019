@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Button, Modal, ModalHeader, ModalBody } from 'reactstrap';
 
 import './MissionPlannerContainer.css';
-import MissionPlanner from './MissionPlanner'; 
+import MissionPlanner from './MissionPlanner';
 
 class MissionPlannerContainer extends Component {
   state = {
