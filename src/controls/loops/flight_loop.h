@@ -1,13 +1,17 @@
 #pragma once
 
+#include <algorithm>
 #include <atomic>
 #include <chrono>
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <string>
 #include <thread>
 
 #include "zmq.hpp"
+#include <boost/algorithm/string.hpp>
+#include <google/protobuf/text_format.h>
 
 #include "lib/alarm/alarm.h"
 #include "lib/logger/log_sender.h"
@@ -16,6 +20,7 @@
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/proto_comms/proto_comms.h"
 #include "src/controls/ground_server/timeline/executor/executor.h"
+#include "src/controls/loops/state_machine/state_machine.h"
 #include "src/controls/messages.pb.h"
 
 /*      ________  ________  ___  ________   ________       ___    ___
@@ -30,21 +35,6 @@
 namespace src {
 namespace controls {
 namespace loops {
-enum State {
-  STANDBY,
-  ARMING,
-  ARMED_WAIT_FOR_SPINUP,
-  ARMED,
-  TAKING_OFF,
-  TAKEN_OFF,
-  SAFETY_PILOT_CONTROL,
-  AUTOPILOT,
-  LANDING,
-  FAILSAFE,
-  FLIGHT_TERMINATION
-};
-
-::std::string StateToString(State state);
 
 namespace {
 static const int kFlightLoopFrequency = 1e2;
@@ -60,16 +50,15 @@ class FlightLoop {
   ::src::controls::Output RunIteration(::src::controls::Sensors sensors,
                                        ::src::controls::Goal goal);
 
-  State state() const { return state_; }
-
  private:
-  bool SafetyStateOverride(::src::controls::Goal &goal,
-                           ::src::controls::Output &output);
+  void DumpProtobufMessages(::src::controls::Sensors &sensors,
+                            ::src::controls::Goal &goal,
+                            ::src::controls::Output &output);
+  void LogProtobufMessage(::std::string name,
+                          ::google::protobuf::Message *message);
   void MonitorLoopFrequency(::src::controls::Sensors);
   void EndFlightTimer();
   ::src::controls::Output GenerateDefaultOutput();
-
-  void StateTransition(::src::controls::Output &output);
 
   // Pass through any triggers for actuators on the drone, such as the alarm,
   // gimbal, and drop controls.
@@ -82,64 +71,13 @@ class FlightLoop {
                            ::src::controls::Goal &goal,
                            ::src::controls::Output &output);
 
-  // Various handlers for each of the states in our control loop.
-  void HandleStandby(::src::controls::Sensors &sensors,
-                     ::src::controls::Goal &goal,
-                     ::src::controls::Output &output);
-
-  void HandleArming(::src::controls::Sensors &sensors,
-                    ::src::controls::Goal &goal,
-                    ::src::controls::Output &output);
-
-  void HandleArmedWaitForSpinup(::src::controls::Sensors &sensors,
-                                ::src::controls::Goal &goal,
-                                ::src::controls::Output &output);
-
-  void HandleArmed(::src::controls::Sensors &sensors,
-                   ::src::controls::Goal &goal,
-                   ::src::controls::Output &output);
-
-  void HandleTakingOff(::src::controls::Sensors &sensors,
-                       ::src::controls::Goal &goal,
-                       ::src::controls::Output &output);
-
-  void HandleTakenOff(::src::controls::Sensors &sensors,
-                      ::src::controls::Goal &goal,
-                      ::src::controls::Output &output);
-
-  void HandleSafetyPilotControl(src::controls::Sensors &sensors,
-                                ::src::controls::Goal &goal,
-                                ::src::controls::Output &output);
-
-  void HandleAutopilot(::src::controls::Sensors &sensors,
-                       ::src::controls::Goal &goal,
-                       ::src::controls::Output &output);
-
-  void HandleLanding(::src::controls::Sensors &sensors,
-                     ::src::controls::Goal &goal,
-                     ::src::controls::Output &output);
-
-  void HandleFailsafe(::src::controls::Sensors &sensors,
-                      ::src::controls::Goal &goal,
-                      ::src::controls::Output &output);
-
-  void HandleFlightTermination(::src::controls::Sensors &sensors,
-                               ::src::controls::Goal &goal,
-                               ::src::controls::Output &output);
-
   // Fields ////////////////////////////////////////////////////////////////////
-  State state_;
-
-  executor::Executor executor_;
+  state_machine::StateMachine state_machine_;
 
   ::std::atomic<bool> running_;
   ::lib::phased_loop::PhasedLoop phased_loop_;
 
   ::std::chrono::time_point<std::chrono::system_clock> start_;
-
-  int takeoff_ticker_;
-  int previous_flights_time_;
-  double current_flight_start_time_;
 
   ::lib::alarm::Alarm alarm_;
 
