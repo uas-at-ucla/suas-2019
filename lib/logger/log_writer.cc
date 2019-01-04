@@ -9,12 +9,13 @@ const char *kLogFileLocation = "/home/pi/logs/uas_at_ucla/drone_code.csv";
 const char *kLogFileLocation = "/tmp/drone_code.csv";
 #endif
 
-LogWriter::LogWriter() :
+LogWriter::LogWriter(bool write_to_file) :
     context_(1),
     socket_(context_, ZMQ_SUB),
     thread_(&LogWriter::ReceiveThread, this),
     logger_(::spdlog::rotating_logger_mt("uas-at-ucla_log", kLogFileLocation,
-                                         1024 * 1024 * 50, 3)) {
+                                         1024 * 1024 * 50, 3)),
+    write_to_file_(write_to_file) {
   logger_->set_pattern("%v");
 }
 
@@ -46,17 +47,31 @@ void LogWriter::ReceiveThread() {
 
     // Remove commas to avoid messing up our CSV design.
     ::std::string log_line_no_commas = log_message_proto.log_line().line();
-    ReplaceString(log_line_no_commas, ",", "<comma>");
+    // ReplaceString(log_line_no_commas, ",", "<comma>");
 
     ::std::ostringstream log_line_csv_sstream;
-    log_line_csv_sstream << ::std::fixed << ::std::setprecision(9)
-                         << ::std::setfill('0') << ::std::setw(25)
-                         << log_message_proto.time() << ","
-                         << log_message_proto.file() << ","
-                         << log_message_proto.line_number() << ","
-                         << log_message_proto.function() << ","
+    ::std::string file_name_number = log_message_proto.file();
+    file_name_number = file_name_number.substr(file_name_number.rfind("/") + 1,
+                                               file_name_number.size());
+    file_name_number += ":";
+    file_name_number += log_message_proto.function();
+    file_name_number += " #";
+    file_name_number += ::std::to_string(log_message_proto.line_number());
+
+    log_line_csv_sstream << ::std::fixed << ::std::right
+                         << ::std::setprecision(3) << ::std::setfill('0')
+                         << ::std::setw(18) << log_message_proto.time()
+                         << ::std::left << "     " << ::std::setfill(' ')
+                         << ::std::setw(45) << file_name_number
+                         << ::std::setfill(' ') << ::std::setw(25)
                          << log_line_no_commas;
     ::std::string log_line_csv = log_line_csv_sstream.str();
+
+    if (!write_to_file_) {
+      ::std::cout << log_line_csv << ::std::endl;
+      continue;
+    }
+
     logger_->info(log_line_csv);
 
     // Periodically flush log data to file.
