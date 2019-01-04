@@ -9,284 +9,135 @@
 
 #include "gtest/gtest.h"
 
+#include "lib/logger/log_writer.h"
+
 namespace src {
 namespace controls {
 namespace loops {
 namespace testing {
 
-bool verbose = false;
-
-pid_t simulator_pid = 0, io_pid = 0, mavproxy_pid = 0;
-
-void kill_and_wait(pid_t pid, bool should_kill) {
-  if (verbose) {
-    ::std::cout << "trying to kill " << pid << ::std::endl;
-  }
-
-  kill(-1 * pid, should_kill ? SIGKILL : SIGINT);
-  waitpid(-1 * pid, NULL, 0);
-
-  if (verbose) {
-    ::std::cout << "KILLED " << pid << ::std::endl;
-  }
-}
-
-void create_procs() {
-  simulator_pid = fork();
-  if (!simulator_pid) {
-    setsid();
-    const char *simulator_path = "../../../external/PX4_sitl/jmavsim";
-
-    if (!verbose) {
-      int null_fd = open("/dev/null", O_WRONLY);
-      dup2(null_fd, 1); // redirect stdout
-      dup2(null_fd, 2); // redirect stderr
-    }
-
-    execl("/bin/sh", "sh", "-c", simulator_path, NULL);
-    exit(0);
-  }
-  ASSERT_TRUE(0 == kill(simulator_pid, 0));
-
-  mavproxy_pid = fork();
-  if (!mavproxy_pid) {
-    setsid();
-
-    int null_fd = open("/dev/null", O_WRONLY);
-    dup2(null_fd, 1); // redirect stdout
-    dup2(null_fd, 2); // redirect stderr
-
-    execl("/usr/local/bin/mavproxy.py", "--mav20 ", "--state-basedir=/tmp/ ",
-          "--master=0.0.0.0:14550 ", "--out=udp:0.0.0.0:8084 ",
-          "--out=udp:0.0.0.0:8085 ", NULL);
-    exit(0);
-  }
-
-  ASSERT_TRUE(0 == kill(mavproxy_pid, 0));
-
-  usleep(1e6 / 2);
-
-  io_pid = fork();
-  if (!io_pid) {
-    setsid();
-
-    if (!verbose) {
-      int null_fd = open("/dev/null", O_WRONLY);
-      dup2(null_fd, 1); // redirect stdout
-      dup2(null_fd, 2); // redirect stderr
-    }
-
-    const char *io_path = "../io/io";
-    execl("/bin/sh", "sh", "-c", io_path, NULL);
-    exit(0);
-  }
-
-  ASSERT_TRUE(0 == kill(io_pid, 0));
-}
-
-void quit_procs() {
-  kill_and_wait(io_pid, true);
-  kill_and_wait(simulator_pid, false);
-  kill_and_wait(mavproxy_pid, true);
-}
-
-void quit_handler(int sig) {
-  (void)sig;
-  quit_procs();
-
-  exit(0);
-}
-
 class FlightLoopTest : public ::testing::Test {
- protected:
+ public:
   FlightLoopTest() {
-    flight_loop_.SetVerbose(verbose);
+    sensors_.set_time(0);
+    sensors_.set_latitude(0);
+    sensors_.set_longitude(0);
+    sensors_.set_altitude(0);
+    sensors_.set_relative_altitude(0);
+    sensors_.set_heading(0);
+    sensors_.set_velocity_x(0);
+    sensors_.set_velocity_y(0);
+    sensors_.set_velocity_z(0);
+    sensors_.set_gps_ground_speed(0);
+    sensors_.set_gps_satellite_count(0);
+    sensors_.set_gps_eph(0);
+    sensors_.set_gps_epv(0);
+    sensors_.set_accelerometer_x(0);
+    sensors_.set_accelerometer_y(0);
+    sensors_.set_accelerometer_z(0);
+    sensors_.set_gyro_x(0);
+    sensors_.set_gyro_y(0);
+    sensors_.set_gyro_z(0);
+    sensors_.set_absolute_pressure(0);
+    sensors_.set_relative_pressure(0);
+    sensors_.set_pressure_altitude(0);
+    sensors_.set_temperature(0);
+    sensors_.set_battery_voltage(0);
+    sensors_.set_battery_current(0);
+    sensors_.set_armed(0);
+    sensors_.set_autopilot_state(0);
+    sensors_.set_last_gps(0);
 
-    // Change to the directory of the executable.
-    char flight_loop_path[1024];
-    ::readlink("/proc/self/exe", flight_loop_path,
-               sizeof(flight_loop_path) - 1);
-    ::std::string flight_loop_folder(flight_loop_path);
-    flight_loop_folder =
-        flight_loop_folder.substr(0, flight_loop_folder.find_last_of("\\/"));
-    chdir(flight_loop_folder.c_str());
+    goal_.set_run_mission(false);
+    goal_.set_trigger_failsafe(false);
+    goal_.set_trigger_throttle_cut(false);
+
+    goal_.set_trigger_takeoff(false);
+    goal_.set_trigger_hold(false);
+    goal_.set_trigger_offboard(false);
+    goal_.set_trigger_rtl(false);
+    goal_.set_trigger_land(false);
+    goal_.set_trigger_arm(false);
+    goal_.set_trigger_disarm(false);
+
+    goal_.set_trigger_takeoff(false);
+    goal_.set_trigger_hold(false);
+    goal_.set_trigger_offboard(false);
+    goal_.set_trigger_rtl(false);
+    goal_.set_trigger_land(false);
+    goal_.set_trigger_arm(false);
+    goal_.set_trigger_disarm(false);
   }
 
-  void StepLoop() { flight_loop_.Iterate(); }
+  void StepLoop() {
+    output_ = flight_loop_.RunIteration(sensors_, goal_);
+    sensors_.set_time(sensors_.time() +
+                      1.0 / ::src::controls::loops::kFlightLoopFrequency);
+  }
 
-  void SendPosition() {}
+  ::src::controls::Sensors &sensors() { return sensors_; }
 
-  void SetUp() { create_procs(); }
+  ::src::controls::Goal &goal() { return goal_; }
 
-  void TearDown() { quit_procs(); }
+  ::src::controls::Output &output() { return output_; }
 
+ private:
   FlightLoop flight_loop_;
+
+  ::src::controls::Sensors sensors_;
+  ::src::controls::Goal goal_;
+  ::src::controls::Output output_;
 };
 
-// TEST_F(FlightLoopTest, ArmTakeoffAndLandCheck) {
-//  for (int i = 0; i < 1000; i++) {
-//    flight_loop_queue_.goal.MakeWithBuilder()
-//        .run_mission(false)
-//        .trigger_failsafe(false)
-//        .trigger_throttle_cut(false)
-//        .Send();
+TEST_F(FlightLoopTest, Initialization) {
+  for (double start = sensors().time(); sensors().time() < start + 1;) {
+    StepLoop();
+    ASSERT_EQ(output().state(),
+              ::src::controls::loops::state_machine::FlightLoopState::STANDBY);
+    ASSERT_EQ(output().velocity_x(), 0);
+    ASSERT_EQ(output().velocity_y(), 0);
+    ASSERT_EQ(output().velocity_z(), 0);
 
-//    StepLoop();
+    ASSERT_FALSE(output().trigger_takeoff());
+    ASSERT_FALSE(output().trigger_hold());
+    ASSERT_FALSE(output().trigger_offboard());
+    ASSERT_FALSE(output().trigger_rtl());
+    ASSERT_FALSE(output().trigger_land());
+    ASSERT_FALSE(output().trigger_arm());
+    ASSERT_FALSE(output().trigger_disarm());
+  }
 
-//    flight_loop_queue_.output.FetchLatest();
-//    ASSERT_TRUE(flight_loop_queue_.output->velocity_x == 0);
-//    ASSERT_TRUE(flight_loop_queue_.output->velocity_y == 0);
-//    ASSERT_TRUE(flight_loop_queue_.output->velocity_z == 0);
-//    ASSERT_FALSE(flight_loop_queue_.output->arm);
-//    ASSERT_FALSE(flight_loop_queue_.output->takeoff);
-//    ASSERT_FALSE(flight_loop_queue_.output->land);
-//    ASSERT_FALSE(flight_loop_queue_.output->throttle_cut);
-//  }
+  sensors().set_armed(true);
 
-//  // Do arm and check if times out.
-//  ::std::cout << "sending arm...\n";
-//  for (int i = 0; i < 1000 && !flight_loop_queue.sensors->armed; i++) {
-//    flight_loop_queue_.goal.MakeWithBuilder()
-//        .run_mission(true)
-//        .trigger_failsafe(false)
-//        .trigger_throttle_cut(false)
-//        .Send();
+  for (double start = sensors().time(); sensors().time() < start + 1;) {
+    StepLoop();
 
-//    StepLoop();
-//    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
-//  }
-//  ASSERT_TRUE(flight_loop_queue.sensors->armed);
+    ASSERT_EQ(output().state(),
+              ::src::controls::loops::state_machine::FlightLoopState::ARMED);
+    ASSERT_FALSE(output().trigger_arm());
+    ASSERT_FALSE(output().trigger_takeoff());
+    ASSERT_FALSE(output().trigger_hold());
+    ASSERT_FALSE(output().trigger_offboard());
+    ASSERT_FALSE(output().trigger_rtl());
+    ASSERT_FALSE(output().trigger_land());
+    ASSERT_FALSE(output().trigger_disarm());
+  }
 
-//  // Do takeoff and check if times out.
-//  ::std::cout << "sending mission...\n";
-//  for (int i = 0;
-//       i < 5000 && (flight_loop_queue.sensors->relative_altitude < 2.2 ||
-//                    !flight_loop_queue.sensors->armed);
-//       i++) {
-//    flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
+  sensors().set_armed(false);
+  for (double start = sensors().time(); sensors().time() < start + 1;) {
+    StepLoop();
 
-//    StepLoop();
-//    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
-//  }
-//  ASSERT_GE(flight_loop_queue.sensors->relative_altitude, 2.1);
-
-//  ::std::cout << "flying in the air for a bit...\n";
-
-//  // Stay in IN_AIR for a bit.
-//  for (int i = 0; i < 500; i++) {
-//    flight_loop_queue_.goal.MakeWithBuilder().run_mission(true).Send();
-
-//    StepLoop();
-
-//    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
-//    ASSERT_GE(flight_loop_queue.sensors->relative_altitude, 2.1);
-//    ASSERT_TRUE(flight_loop_queue.sensors->armed);
-//  }
-
-//  ::std::cout << "end mission...\n";
-//  // Do land and check if times out.
-//  for (int i = 0; i < 5000 && flight_loop_queue.sensors->armed; i++) {
-//    flight_loop_queue_.goal.MakeWithBuilder().run_mission(false).Send();
-
-//    StepLoop();
-//    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
-//  }
-//  ASSERT_FALSE(flight_loop_queue.sensors->armed);
-
-//  if (verbose) {
-//    ::std::cout << "FINAL STATE:\n";
-//    flight_loop_.DumpSensors();
-//  }
-//}
-
-// TEST_F(FlightLoopTest, FailsafeCheck) {
-//  flight_loop_queue_.output.FetchLatest();
-//  flight_loop_queue_.sensors.FetchLatest();
-
-//  ::std::cout << "taking off" << ::std::endl;
-//  for (int i = 0;
-//       (i < 10000) && (flight_loop_queue_.sensors->relative_altitude < 2.0 ||
-//                       !flight_loop_queue_.sensors->armed);
-//       i++) {
-//    flight_loop_queue_.goal.MakeWithBuilder()
-//        .run_mission(true)
-//        .trigger_failsafe(false)
-//        .trigger_throttle_cut(false)
-//        .Send();
-
-//    StepLoop();
-
-//    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
-
-//    flight_loop_queue_.sensors.FetchLatest();
-//  }
-
-//  ASSERT_TRUE(flight_loop_queue_.sensors->armed);
-//  ASSERT_GE(flight_loop_queue_.sensors->relative_altitude, 2);
-
-//  ::std::cout << "triggering failsafe" << ::std::endl;
-//  for (int i = 0; i < 10000 && flight_loop_queue.sensors->armed; i++) {
-//    flight_loop_queue_.goal.MakeWithBuilder()
-//        .run_mission(true)
-//        .trigger_failsafe(true)
-//        .trigger_throttle_cut(false)
-//        .Send();
-
-//    StepLoop();
-//    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
-//  }
-
-//  ASSERT_FALSE(flight_loop_queue.sensors->armed);
-//  ::std::cout << "landed" << ::std::endl;
-
-//  if (verbose) {
-//    ::std::cout << "FINAL STATE:\n";
-//    flight_loop_.DumpSensors();
-//  }
-//}
-
-// TEST_F(FlightLoopTest, ThrottleCutCheck) {
-//  int timeout = 0;
-
-//  ::std::cout << "taking off" << ::std::endl;
-//  do {
-//    flight_loop_queue_.goal.MakeWithBuilder()
-//        .run_mission(true)
-//        .trigger_failsafe(false)
-//        .trigger_throttle_cut(false)
-//        .Send();
-
-//    StepLoop();
-
-//    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
-//  } while (++timeout < 10000 && flight_loop_.state() != FlightLoop::IN_AIR);
-
-//  ASSERT_TRUE(flight_loop_queue_.sensors.FetchLatest());
-//  ASSERT_TRUE(flight_loop_queue_.sensors->armed);
-//  ASSERT_GE(flight_loop_queue_.sensors->relative_altitude, 2.1);
-
-//  ::std::cout << "throttle cut" << ::std::endl;
-//  for (int i = 0; i < 5000 && flight_loop_queue.sensors->relative_altitude >
-//  0.1;
-//       i++) {
-//    flight_loop_queue_.goal.MakeWithBuilder()
-//        .run_mission(true)
-//        .trigger_failsafe(false)
-//        .trigger_throttle_cut(true)
-//        .Send();
-
-//    StepLoop();
-//    ASSERT_TRUE(flight_loop_queue_.output.FetchLatest());
-//  }
-
-//  ASSERT_LT(flight_loop_queue.sensors->relative_altitude, 0.1);
-//  ::std::cout << "CRASH!" << ::std::endl;
-
-//  if (verbose) {
-//    ::std::cout << "FINAL STATE:\n";
-//    flight_loop_.DumpSensors();
-//  }
-//}
+    ASSERT_EQ(output().state(),
+              ::src::controls::loops::state_machine::FlightLoopState::STANDBY);
+    ASSERT_FALSE(output().trigger_arm());
+    ASSERT_FALSE(output().trigger_takeoff());
+    ASSERT_FALSE(output().trigger_hold());
+    ASSERT_FALSE(output().trigger_offboard());
+    ASSERT_FALSE(output().trigger_rtl());
+    ASSERT_FALSE(output().trigger_land());
+    ASSERT_FALSE(output().trigger_disarm());
+  }
+}
 
 } // namespace testing
 } // namespace loops
@@ -294,9 +145,6 @@ class FlightLoopTest : public ::testing::Test {
 } // namespace src
 
 int main(int argc, char **argv) {
-  signal(SIGINT, ::src::controls::loops::testing::quit_handler);
-  signal(SIGTERM, ::src::controls::loops::testing::quit_handler);
-
   static struct option getopt_options[] = {{"verbose", no_argument, 0, 'v'},
                                            {0, 0, 0, 0}};
 
@@ -307,13 +155,20 @@ int main(int argc, char **argv) {
 
     switch (opt) {
       case 'v':
-        ::src::controls::loops::testing::verbose = true;
+        // TODO: do verbose stuff here.
         break;
       default:
+        ::std::cerr << "Unknown opt given." << ::std::endl;
         exit(1);
+
         break;
     }
   }
+
+  ::lib::logger::LogWriter log_writer(false);
+
+  usleep(1e6);
+  LOG_LINE("BEGIN!");
 
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

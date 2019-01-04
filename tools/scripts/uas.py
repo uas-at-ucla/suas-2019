@@ -18,12 +18,7 @@ processes = process_manager.ProcessManager()
 UAS_AT_UCLA_TEXT = '\033[96m' + \
 '################################################################################\n' + \
 '####                                                                        ####\n' + \
-'####         _   _   _    ____      ____    _   _  ____ _        _          ####\n' + \
-'####        | | | | / \\  / ___|    / __ \\  | | | |/ ___| |      / \\         ####\n' + \
-'####        | | | |/ _ \\ \\___ \\   / / _` | | | | | |   | |     / _ \\        ####\n' + \
-'####        | |_| / ___ \\ ___) | | | (_| | | |_| | |___| |___ / ___ \\       ####\n' + \
-'####         \___/_/   \\_\\____/   \\ \\__,_|  \\___/ \\____|_____/_/   \\_\\      ####\n' + \
-'####                               \\____/                                   ####\n' + \
+'####                                UAS@UCLA                                ####\n' + \
 '####                                                                        ####\n' + \
 '################################################################################\n' + \
 '\033[0m'
@@ -270,9 +265,6 @@ def run_controls_build(args=None, show_complete=True):
     print_update("Going to build the code...")
 
     run_controls_docker_start(None, show_complete=False)
-
-    # Execute the build commands in the running docker image.
-    print_update("Downloading the dependencies...")
 
     print_update("Building src directory...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")

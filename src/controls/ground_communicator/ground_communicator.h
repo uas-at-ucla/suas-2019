@@ -81,7 +81,6 @@ class GroundCommunicator {
   ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
       sensors_receiver_;
   ::lib::proto_comms::ProtoReceiver<::src::controls::Goal> goal_receiver_;
-  ::lib::proto_comms::ProtoReceiver<::src::controls::Status> status_receiver_;
   ::lib::proto_comms::ProtoReceiver<::src::controls::Output> output_receiver_;
 
   ::lib::proto_comms::ProtoSender<::src::controls::Goal> goal_sender_;
