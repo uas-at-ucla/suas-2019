@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "bin": {
     "interop-login": "./bin/login.js",
-    "interop-get-mission": "./bin/get-mission.js"
+    "interop-get-mission": "./bin/get-mission.js",
+    "interop-new": "./bin/test-ish.js"
   },
   "description": "",
   "main": "index.js",

@@ -1,6 +1,6 @@
 
 function switchTest(){
-   
+    var readlineSync =require ('readline-sync')
     var f;
     var index;
     var functions;
@@ -34,7 +34,6 @@ switch(f)
 }
 
 }
-//last version
 setTimeout(() => console.log(cookieobj.cookie), 2000);
 setTimeout(() => (getMissions(cookieobj.cookie)), 2001);
 setTimeout(() => (getObstacles(cookieobj.cookie)), 2002);
