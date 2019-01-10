@@ -43,6 +43,11 @@ void GroundCommunicator::ConnectToGround() {
 void GroundCommunicator::Run() {
   running_ = true;
 
+  sensors_receiver_.Connect();
+  goal_receiver_.Connect();
+  output_receiver_.Connect();
+  goal_sender_.Connect();
+
   while (running_) {
     RunIteration();
 

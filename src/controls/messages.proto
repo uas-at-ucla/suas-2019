@@ -3,7 +3,7 @@ syntax = "proto2";
 package src.controls;
 
 message Sensors {
-  required double time                                                     = 1;
+  optional double time                                                     = 1;
   required double latitude                                                 = 2;
   required double longitude                                                = 3;
   required float altitude                                                  = 4;
@@ -86,7 +86,7 @@ message Output {
 }
 
 message UasMessage {
-  required double time                                                     = 1;
+  optional double time                                                     = 1;
   
   oneof payload {
     Sensors sensors                                                        = 2;

@@ -35,14 +35,12 @@ module.exports = (callback) => {
       const GroundProgram = timelineRoot.lookupType("src.controls.ground_server.timeline.GroundProgram");
 
       const Sensors = telemetryRoot.lookupType("src.controls.Sensors");
-      const Status = telemetryRoot.lookupType("src.controls.Status");
       const Goal = telemetryRoot.lookupType("src.controls.Goal");
       const Output = telemetryRoot.lookupType("src.controls.Output");
 
       callback({
         encodeGroundProgram: (message) => encode(GroundProgram, message),
         decodeSensors: (message) =>  decode(Sensors, message),
-        decodeStatus: (message) => decode(Status, message),
         decodeGoal: (message) => decode(Goal, message),
         decodeOutput: (message) =>  decode(Output, message)
       });

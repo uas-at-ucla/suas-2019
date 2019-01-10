@@ -25,9 +25,6 @@ drone_io.on('connect', (socket) => {
       if (data.telemetry.sensors) {
         data.telemetry.sensors = protobufUtils.decodeSensors(data.telemetry.sensors);
       }
-      if (data.telemetry.status) {
-        data.telemetry.status = protobufUtils.decodeStatus(data.telemetry.status);
-      }
       if (data.telemetry.goal) {
         data.telemetry.goal = protobufUtils.decodeGoal(data.telemetry.goal);
       }

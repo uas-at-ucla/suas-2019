@@ -41,7 +41,9 @@ void IO::Quit() {
 
 AutopilotSensorReader::AutopilotSensorReader() :
     last_gps_(-::std::numeric_limits<double>::infinity()),
-    sensors_sender_("ipc:///tmp/uasatucla_sensors.ipc") {}
+    sensors_sender_("ipc:///tmp/uasatucla_sensors.ipc") {
+      sensors_sender_.Connect();
+    }
 
 void AutopilotSensorReader::RunIteration() {
   std::lock_guard<std::mutex> lock(pos_info_mutex);

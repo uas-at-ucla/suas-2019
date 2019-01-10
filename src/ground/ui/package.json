@@ -41,5 +41,11 @@
     "package-mac": "npm run build && electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds  #--icon=assets/icons/mac/icon.icns",
     "package-win": "npm run build && electron-packager . Flight-Deck --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Flight Deck\"  #--icon=assets/icons/win/icon.ico",
     "package-linux": "npm run build && electron-packager . Flight-Deck --overwrite --asar=true --platform=linux --arch=x64 --prune=true --out=release-builds  #--icon=assets/icons/png/1024x1024.png"
-  }
+  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not ie <= 11",
+    "not op_mini all"
+  ]
 }
