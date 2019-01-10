@@ -51,7 +51,6 @@ toolchain {
   objcopy_embed_flag: "binary"
   tool_path { name: "objdump" path: "/usr/bin/objdump" }
   tool_path { name: "strip" path: "/usr/bin/strip" }
-  linking_mode_flags { mode: DYNAMIC }
 
   # absolute locations and has no remote execution, yet. However, this will need
   # to be fixed, maybe with auto-detection?
@@ -70,9 +69,9 @@ toolchain {
   cxx_flag: "-isystem"
   cxx_flag: "/usr/include/libcxxabi"
 
+  compiler_flag: "-Wno-error=unused-command-line-argument"
   linker_flag: "-lstdc++"
   linker_flag: "-lc++"
-  compiler_flag: "-Wno-error=unused-command-line-argument"
   linker_flag: "-lprofiler"
   linker_flag: "-B/usr/bin/"
 
@@ -86,9 +85,6 @@ toolchain {
       action: "c++-header-parsing"
       action: "c++-header-preprocessing"
       action: "c++-module-compile"
-      flag_group {
-        flag: "-DAOS_DEBUG=0"
-      }
     }
   }
 
@@ -102,9 +98,6 @@ toolchain {
       action: "c++-header-parsing"
       action: "c++-header-preprocessing"
       action: "c++-module-compile"
-      flag_group {
-        flag: "-DAOS_DEBUG=1"
-      }
       flag_group {
         flag: "-fno-omit-frame-pointer"
       }
@@ -327,9 +320,6 @@ toolchain {
       action: "c++-header-parsing"
       action: "c++-header-preprocessing"
       action: "c++-module-compile"
-      flag_group {
-        flag: "-DAOS_DEBUG=0"
-      }
     }
   }
 
@@ -343,9 +333,6 @@ toolchain {
       action: "c++-header-parsing"
       action: "c++-header-preprocessing"
       action: "c++-module-compile"
-      flag_group {
-        flag: "-DAOS_DEBUG=1"
-      }
       flag_group {
         flag: "-fno-omit-frame-pointer"
       }
@@ -362,9 +349,6 @@ toolchain {
       action: "c++-header-parsing"
       action: "c++-header-preprocessing"
       action: "c++-module-compile"
-      flag_group {
-        flag: "-DAOS_DEBUG=0"
-      }
     }
   }
 

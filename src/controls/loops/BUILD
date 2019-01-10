@@ -47,5 +47,6 @@ cc_library(
     '//lib/alarm:alarm',
     "@cppzmq//:cppzmq",
     '@boost//:algorithm',
+    '@ros_bazel//:ros_common',
   ],
 )

@@ -10,6 +10,7 @@
 #include <thread>
 
 #include "zmq.hpp"
+#include "ros/ros.h"
 #include <boost/algorithm/string.hpp>
 #include <google/protobuf/text_format.h>
 
@@ -75,7 +76,7 @@ class FlightLoop {
   state_machine::StateMachine state_machine_;
 
   ::std::atomic<bool> running_;
-  ::lib::phased_loop::PhasedLoop phased_loop_;
+  ::ros::Rate phased_loop_;
 
   ::std::chrono::time_point<std::chrono::system_clock> start_;
 

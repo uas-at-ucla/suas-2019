@@ -168,6 +168,13 @@ new_git_repository(
   build_file = "third_party/gphoto2pp.BUILD"
 )
 
+new_git_repository(
+  name = "ros_bazel",
+  commit = "d39e41edf2d80b3a8abe092fdfc5f6d68817ca60",
+  remote = "https://github.com/uas-at-ucla/ros_bazel.git",
+  build_file = "third_party/ros_bazel.BUILD"
+)
+
 new_local_repository(
     name = "python_linux",
     path = "/usr",
