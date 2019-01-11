@@ -206,7 +206,7 @@ void GroundCommunicator::OnConnect() {
           }));
 
   client_.socket("drone")->on(
-      "drone_set_state",
+      "CHANGE_DRONE_STATE",
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
               bool isAck, ::sio::message::list &ack_resp) {
@@ -214,7 +214,7 @@ void GroundCommunicator::OnConnect() {
             (void)isAck;
             (void)ack_resp;
 
-            SetState(data->get_map()["state"]->get_string());
+            SetState(data->get_string());
           }));
 }
 

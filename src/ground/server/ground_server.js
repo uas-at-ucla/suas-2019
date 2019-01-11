@@ -45,7 +45,8 @@ ui_io.on('connect', (socket) => {
     console.log("TEST " + data);
   });
   socket.on("CHANGE_DRONE_STATE", (data) => {
-    console.log("THE DRONE is asked to " + data + ". THE DRONE says no.");
+    drone_io.emit("CHANGE_DRONE_STATE", data);
+    console.log("THE DRONE is asked to " + data + ". Hey DRONE, are you listening?");
   });
 });
 
