@@ -1,13 +1,11 @@
 #navball {
+    display: inline-block;
     border-width: 0px;
     border-radius: 100px;
     border-style: solid;
 
     height: 200px;
     width: 200px;
-
-    margin-left: auto;
-    margin-right: auto;
 
     overflow: hidden;
 }
@@ -16,8 +14,5 @@
 .navballContainer {
     position: absolute;
     bottom: 10px;
-
-    display: block;
-    left: 0;
-    right: 0;
+    left: calc(100vw / 2 - 100px);
 }
