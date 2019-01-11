@@ -44,9 +44,9 @@ LETTERS = [
 TRANSFORMS = ('rotate', 'perspective', 'affine')
 
 
-def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
-               draw_box, rescale_ratio, shape_color_name, letter_color_name,
-               target_pos_conf, white_balance, origin_pos):
+def gen_images(t_gen, n, shape, t_size, i_size, r_angle, bg_dir, dest_dir, 
+               transforms, draw_box, rescale_ratio, shape_color_name, 
+               letter_color_name, target_pos_conf, white_balance, origin_pos):
     background_files = os.scandir(bg_dir)
     field_width = math.trunc(math.log10(n))
     for i in range(n):
@@ -110,7 +110,11 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
             shape_color=shape_color,
             letter=random.choice(LETTERS),
             letter_color=letter_color)
-        if 'rotate' in transforms:
+        if r_angle > 0:
+            target = target.rotate(
+                r_angle, resample=Image.BICUBIC,
+                expand=1).resize((t_size, t_size), resample=Image.BOX)
+        elif 'rotate' in transforms:
             target = target.rotate(
                 random.randint(0, 359), resample=Image.BICUBIC,
                 expand=1).resize((t_size, t_size), resample=Image.BOX)
@@ -229,6 +233,12 @@ if __name__ == '__main__':
         help='width and height of the image as a tuple (width, height). \
         By default it will crop the image to the target')
     parser.add_argument(
+        '--rotation-angle',
+        type=int,
+        default=0,
+        dest='rotation_angle',
+        help='angle to rotate the image by, in degrees.')
+    parser.add_argument(
         '-d',
         '--dest',
         default=None,
@@ -338,6 +348,7 @@ if __name__ == '__main__':
         white_balance=args.white_balance,
         t_size=args.target_size,
         i_size=args.image_size,
+        r_angle=args.rotation_angle,
         bg_dir=args.backgrounds,
         dest_dir=args.dest,
         transforms=args.transforms,
