@@ -1,6 +1,9 @@
 #!/bin/bash
 
-source tools/scripts/docker/start_machine_mac.sh
+if [ $(uname -s) == "Darwin" ]
+then
+  source tools/scripts/docker/start_machine_mac.sh
+fi
 
 function docker_exec {
     unset UAS_AT_UCLA_IMAGE

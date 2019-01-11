@@ -5,8 +5,6 @@ import Map from './Map';
 import Telemetry from './Telemetry/Telemetry';
 import DroneActions from './DroneActions';
 import Navball from './Navball/Navball';
-import MissionPlannerContainer from './MissionPlannerContainer/MissionPlannerContainer';
-
 
 class Controls extends Component {
   render() {
@@ -14,7 +12,6 @@ class Controls extends Component {
       <div className="Controls">
         <Telemetry/>
         <DroneActions/>
-        <MissionPlannerContainer/>
         <Map/>
         <Navball />
       </div>
