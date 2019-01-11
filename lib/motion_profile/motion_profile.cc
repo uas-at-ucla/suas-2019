@@ -45,7 +45,7 @@ MotionProfile::MotionProfile(double max_velocity, double max_acceleration,
   // make vector have length equal to the desired speed
   // need to calculate the actual acceleration output.norm() >max_velocity_
 
-  /* code added by David */
+  /* code added */
   actual_acceleration_ = (output_ - initial_output) / delta_time_;
   /*end of code added */
   return output_;
