@@ -1,0 +1,101 @@
+.MissionPlannerContainer {
+  width: 400px;
+}
+
+.MissionPlannerContainer.modal-dialog {
+  max-width: none;
+  margin-left: 20px;
+  margin-right: 20px;
+}
+
+.MissionPlanner [class*="col"] {
+  max-width: 100%;
+  margin: 0px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 2px;
+  padding-right: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.MissionPlanner .command-column {
+  margin: 0px;
+  padding: 0px;
+}
+
+.MissionPlanner .field-container {
+  margin: 0px;
+  padding: 6px;
+  border: 1px solid dimgray;
+}
+
+/* .MissionPlanner .command-column > .row > .field-container {
+  border: none;
+} */
+
+.MissionPlanner .row {
+  margin: 0px;
+}
+
+.MissionPlanner .command-index {
+  width: 2em;
+  padding: 4px;
+  border: 1px solid dimgray;
+}
+
+.MissionPlanner .command-type {
+  width: 6em;
+  padding: 4px;
+  border: 1px solid dimgray;
+}
+
+/* .MissionPlanner .number.input input {
+  width: 7em;
+} */
+
+.MissionPlanner .number.input input::-webkit-inner-spin-button, 
+.MissionPlanner .number.input input::-webkit-outer-spin-button { 
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Small mission planner */
+.SmallMissionPlanner {
+  font-size: 11px;
+}
+
+.SmallMissionPlanner .command-btn {
+  display: none;
+}
+
+.SmallMissionPlanner .name {
+  display: none;
+}
+
+.SmallMissionPlanner .input {
+  display: none;
+}
+
+.SmallMissionPlanner [class*="col"] {
+  padding-left: 1px;
+  padding-right: 1px;
+}
+
+.SmallMissionPlanner .command-column {
+  padding: 0px;
+}
+
+.SmallMissionPlanner .field-container {
+  padding: 4px;
+}
+
+/* Big mission planner */
+.BigMissionPlanner .value {
+  display: none;
+}
+
+.BigMissionPlanner .command-type {
+  width: 7em;
+}

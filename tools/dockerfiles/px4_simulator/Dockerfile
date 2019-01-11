@@ -58,8 +58,8 @@ RUN apt-get install -y                                                         \
 # Set up Oracle Java8. #########################################################
 RUN add-apt-repository                                                         \
      "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"     && \
-    gpg --keyserver pgpkeys.mit.edu --recv-key C2518248EEA14886             && \
-    gpg -a --export C2518248EEA14886                                         | \
+    gpg --no-tty --keyserver pgpkeys.mit.edu --recv-key C2518248EEA14886    && \
+    gpg --no-tty -a --export C2518248EEA14886                                | \
     sudo apt-key add -                                                      && \
     apt-get update                                                          && \
     echo debconf shared/accepted-oracle-license-v1-1 select true             | \
@@ -105,7 +105,7 @@ bzip2 \
     xsltproc \
     zip
 
-RUN python -m pip install --upgrade \
+RUN python -m pip install --upgrade pip \
       && pip install setuptools wheel \
       && pip install argparse coverage jinja2 empy numpy requests serial toml pyyaml cerberus
 

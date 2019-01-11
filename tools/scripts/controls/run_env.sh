@@ -1,9 +1,6 @@
 #!/bin/bash
 
-if [ $(uname -s) == "Darwin" ]
-then
-  source tools/scripts/docker/start_machine_mac.sh
-fi
+source tools/scripts/docker/start_machine_mac.sh
 
 unset ENV_DOCKER_RUNNING_CONTAINER
 unset ENV_DOCKER_CONTAINER
@@ -112,7 +109,7 @@ then
 fi
 
 # Create network for docker container to use.
-docker network create -d bridge uas_bridge > /dev/null 2>&1 || true
+./tools/scripts/docker/create_network.sh > /dev/null 2>&1 || true
 
 mkdir -p tools/cache/bazel
 pwd
@@ -148,6 +145,7 @@ docker run \
   -d \
   --rm \
   --net uas_bridge \
+  --ip 192.168.2.21 \
   -v $ROOT_PATH:/home/uas/code_env \
   -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
   -e DISPLAY=$DISPLAY \
