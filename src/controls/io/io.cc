@@ -15,14 +15,8 @@ void quit_handler(int sig) {
   }
 }
 
-IO::IO()
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-    :
-    copter_io_("/dev/ttyS0", 921600),
-#else
-    :
-    copter_io_("/tmp/virtualcom0", 921600),
-#endif
+IO::IO(const char *drone_address) :
+    copter_io_(drone_address),
     autopilot_sensor_reader_(&copter_io_),
     autopilot_output_writer_(&copter_io_) {
   copter_io_quit = &copter_io_;

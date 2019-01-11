@@ -1,24 +1,25 @@
 cc_library(
-  name = 'simulator',
+  name = 'drone_plant',
   visibility = ['//visibility:public'],
   srcs = [
-    'simulator.cc'
+    'drone_plant.cc'
   ],
   hdrs = [
-    'simulator.h'
+    'drone_plant.h'
   ],
   deps = [
     '@eigen',
+    '//lib/motion_profile:motion_profile',
   ],
 )
 
 cc_binary(
-  name = 'simulator_test',
+  name = 'drone_plant_test',
   srcs = [
-    'simulator_test.cc',
+    'drone_plant_test.cc',
   ],
   deps = [
-    ':simulator',
+    ':drone_plant',
     '@gtest//:gtest_main',
   ],
 )

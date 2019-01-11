@@ -13,7 +13,7 @@ cc_library(
     '//lib/mission_manager:mission_commands_cpp',
 
     '@eigen',
-    '@gtest//:googletest',
+    '@gtest//:gtest',
   ],
   copts = [
     '-Wno-unused-variable',
@@ -30,7 +30,7 @@ cc_test(
   deps = [
     ':rrt_avoidance',
      '//lib/physics_structs:physics_structs',
-    '@gtest//:googletest',
+    '@gtest//:gtest',
     '@matplotlibcpp//:matplotlibcpp',
   ],
   copts = [
@@ -90,7 +90,7 @@ cc_test(
   ],
   deps = [
     ':rrt_avoidance_tools',
-    '@gtest//:googletest',
+    '@gtest//:gtest',
     '@matplotlibcpp//:matplotlibcpp',
      '//lib/physics_structs:physics_structs',
   ],
@@ -109,7 +109,7 @@ cc_test(
   ],
   deps = [
     ':rrt_avoidance_tools',
-    '@gtest//:googletest_main',
+    '@gtest//:gtest_main',
   ],
   copts = [
     '-Wno-unused-variable',

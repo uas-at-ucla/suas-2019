@@ -70,6 +70,6 @@ cc_test(
   deps = [
     ":log_sender",
     ":log_writer_lib",
-    "@gtest//:googletest_main",
+    "@gtest//:gtest_main",
   ],
 )

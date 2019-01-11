@@ -12,7 +12,7 @@ namespace logger {
 namespace testing {
 
 TEST(LoggerTest, LogTest) {
-  ::lib::logger::LogWriter log_writer;
+  ::lib::logger::LogWriter log_writer(true);
 
   usleep(1e6);
 
