@@ -16,7 +16,7 @@ function reducer(state=initialState, action) {
       return dotProp.set(state, `commands`, state.commands.concat(action.payload));
     }
     case 'DELETE_COMMAND': {
-      return dotProp.delete(state, `commands.${action.payload.index}`);
+      return dotProp.delete(state, `commands.${action.payload}`);
     }
     case 'CHANGE_COMMAND_TYPE': {
       return dotProp.set(state, `commands.${action.payload.index}`, action.payload.newCommand);

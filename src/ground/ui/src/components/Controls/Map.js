@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Marker, InfoWindow } from 'react-google-maps';
+import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
 import GoogleMap from '../Utils/GoogleMap/GoogleMap';
@@ -31,12 +32,21 @@ class Map extends Component {
           }}
           onDblClick={this.mapDblClick}
         >
-          {this.props.commandPoints.map(commandPoint => 
+          {this.props.commandPoints.map((commandPoint, index) => 
             commandPoint ?
               <Marker {...commandPoint.marker} key={commandPoint.id}>
                 <InfoWindow {...commandPoint.infobox}>
                   <div className="map-infobox">
-                    {commandPoint.infobox.content}
+                    <div>
+                      {/* TODO: add title */}
+                      {commandPoint.infobox.title}
+                    </div>
+                    <div>
+                      {commandPoint.infobox.content}
+                    </div>
+                    <Button onClick={this.deleteCommand} data-index={index}>
+                      Delete Command
+                    </Button>
                   </div>
                 </InfoWindow>
               </Marker>
@@ -46,6 +56,10 @@ class Map extends Component {
         </GoogleMap>
       </div>
     );
+  }
+
+  deleteCommand = (event) => {
+    this.props.deleteCommand(event.target.dataset.index);
   }
 
   mapDblClick = (event) => {
