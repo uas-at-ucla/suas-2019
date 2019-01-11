@@ -78,9 +78,9 @@ FlightLoop::RunIteration(::src::controls::Sensors sensors,
 
   ::src::controls::Output output = GenerateDefaultOutput();
 
-  DumpProtobufMessages(sensors, goal, output);
   state_machine_.Handle(sensors, goal, output);
   WriteActuators(sensors, goal, output);
+  DumpProtobufMessages(sensors, goal, output);
 
   return output;
 }
