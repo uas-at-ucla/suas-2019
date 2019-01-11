@@ -13,3 +13,5 @@ test --test_output=errors
 
 build --symlink_prefix=tools/build_output/bazel-
 test --symlink_prefix=tools/build_output/bazel-
+
+build --incompatible_remove_native_git_repository=false

@@ -18,8 +18,8 @@ cc_toolchain_suite(
   name = 'toolchain',
   # target_cpu | compiler
   toolchains = {
-    'raspi|gcc': ':cc-compiler-raspi',
-    'k8|clang': ':cc-compiler-k8',
+    'raspi': ':cc-compiler-raspi',
+    'k8': ':cc-compiler-k8',
     'darwin|clang': ':cc-compiler-k8',
   },
 )
