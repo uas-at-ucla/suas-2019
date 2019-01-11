@@ -7,46 +7,6 @@ namespace controls {
 namespace io {
 namespace autopilot_interface {
 
-uint64_t get_time_usec() {
-  static struct timeval _time_stamp;
-  gettimeofday(&_time_stamp, NULL);
-  return _time_stamp.tv_sec * 1e6 + _time_stamp.tv_usec;
-}
-
-void set_position(float x, float y, float z,
-                  mavlink_set_position_target_local_ned_t &sp) {
-  sp.type_mask = MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_POSITION;
-
-  sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-
-  sp.x = x;
-  sp.y = y;
-  sp.z = z;
-}
-
-void set_velocity(float vx, float vy, float vz,
-                  mavlink_set_position_target_local_ned_t &sp) {
-  sp.type_mask = MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY;
-
-  sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
-
-  sp.vx = vx;
-  sp.vy = vy;
-  sp.vz = vz;
-}
-
-void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp) {
-  sp.type_mask &= MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_ANGLE;
-
-  sp.yaw = yaw;
-}
-
-void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
-  sp.type_mask &= MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_RATE;
-
-  sp.yaw_rate = yaw_rate;
-}
-
 AutopilotInterface::AutopilotInterface(const char *address) :
     write_tid_(0),
     reading_status_(0),
@@ -136,6 +96,46 @@ AutopilotInterface::AutopilotInterface(const char *address) :
 }
 
 AutopilotInterface::~AutopilotInterface() {}
+
+uint64_t AutopilotInterface::get_time_usec() {
+  static struct timeval _time_stamp;
+  gettimeofday(&_time_stamp, NULL);
+  return _time_stamp.tv_sec * 1e6 + _time_stamp.tv_usec;
+}
+
+void AutopilotInterface::set_position(float x, float y, float z,
+                  mavlink_set_position_target_local_ned_t &sp) {
+  sp.type_mask = MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_POSITION;
+
+  sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+
+  sp.x = x;
+  sp.y = y;
+  sp.z = z;
+}
+
+void AutopilotInterface::set_velocity(float vx, float vy, float vz,
+                  mavlink_set_position_target_local_ned_t &sp) {
+  sp.type_mask = MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_VELOCITY;
+
+  sp.coordinate_frame = MAV_FRAME_LOCAL_NED;
+
+  sp.vx = vx;
+  sp.vy = vy;
+  sp.vz = vz;
+}
+
+void AutopilotInterface::set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp) {
+  sp.type_mask &= MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_ANGLE;
+
+  sp.yaw = yaw;
+}
+
+void AutopilotInterface::set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp) {
+  sp.type_mask &= MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_RATE;
+
+  sp.yaw_rate = yaw_rate;
+}
 
 void AutopilotInterface::update_setpoint(
     mavlink_set_position_target_local_ned_t setpoint) {
