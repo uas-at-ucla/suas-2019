@@ -10,9 +10,21 @@ class Controls extends Component {
   render() {
     return (
       <div className="Controls">
-        <Telemetry/>
-        <DroneActions/>
-        <MissionPlannerContainer/>
+        <div className="map-overlay">
+          <div>
+            <div className="left-side">
+              <div>
+                <MissionPlannerContainer/>
+                <DroneActions/>
+              </div>
+            </div>
+            <div className="right-side">
+              <div>
+                <Telemetry/>
+              </div>
+            </div>
+          </div>
+        </div>
         <Map/>
       </div>
     );

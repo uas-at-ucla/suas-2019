@@ -1,5 +1,6 @@
 .MissionPlannerContainer {
   width: 400px;
+  background: rgba(0, 0, 0, 0.6);
 }
 
 .MissionPlannerContainer.modal-dialog {
