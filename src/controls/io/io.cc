@@ -50,7 +50,6 @@ AutopilotSensorReader::AutopilotSensorReader(
     last_gps_(-::std::numeric_limits<double>::infinity()),
     sensors_sender_("ipc:///tmp/uasatucla_sensors.ipc") {
   last_timestamps_.reset_timestamps();
-  sensors_sender_.Connect();
 }
 
 void AutopilotSensorReader::RunIteration() {

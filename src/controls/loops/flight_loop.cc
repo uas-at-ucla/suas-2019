@@ -51,15 +51,15 @@ void FlightLoop::Run() {
     }
     ::src::controls::Sensors sensors_message = sensors_uas_message.sensors();
 
-    // Set the current time in inputted sensors message.
-    double current_time = ::lib::phased_loop::GetCurrentTime();
-    sensors_message.set_time(current_time);
-
     ::src::controls::UasMessage goal_uas_message = goal_receiver_.GetLatest();
     if (!goal_uas_message.has_goal()) {
       continue;
     }
     ::src::controls::Goal goal_message = goal_uas_message.goal();
+
+    // Set the current time in inputted sensors message.
+    double current_time = ::lib::phased_loop::GetCurrentTime();
+    sensors_message.set_time(current_time);
 
     // Run control loop iteration.
     ::src::controls::Output output_message =
@@ -78,9 +78,9 @@ FlightLoop::RunIteration(::src::controls::Sensors sensors,
 
   ::src::controls::Output output = GenerateDefaultOutput();
 
-  DumpProtobufMessages(sensors, goal, output);
   state_machine_.Handle(sensors, goal, output);
   WriteActuators(sensors, goal, output);
+  DumpProtobufMessages(sensors, goal, output);
 
   return output;
 }

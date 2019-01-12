@@ -2,24 +2,22 @@
   "name": "flight-deck",
   "version": "0.1.0",
   "private": true,
-  "main": "main.js",
+  "main": "src/main.js",
   "homepage": "./",
   "dependencies": {
     "bootstrap": "^4.1.2",
     "dot-prop-immutable": "^1.5.0",
     "electron-is-dev": "^1.0.1",
-    "protobufjs": "^6.8.8",
     "react": "^16.5.2",
     "react-dom": "^16.5.2",
     "react-google-maps": "^9.4.5",
     "react-redux": "^5.0.7",
     "react-router-dom": "^4.3.1",
-    "react-scripts": "^2.1.2",
+    "react-scripts": "1.1.5",
     "reactstrap": "^6.3.0",
     "redux": "^4.0.0",
     "redux-logger": "^3.0.6",
-    "reselect": "^4.0.0",
-    "reselect-map": "^1.0.4",
+    "three": "^0.98.0",
     "shortid": "^2.2.14",
     "socket.io-client": "^2.1.1"
   },
@@ -31,9 +29,9 @@
     "wait-on": "^3.1.0"
   },
   "scripts": {
-    "react-start": "PORT=3001 BROWSER=none react-scripts start",
+    "react-start": "BROWSER=none react-scripts start",
     "electron-start": "ELECTRON_DEV=1 electron .",
-    "start": "concurrently \"npm run react-start\" \"wait-on http://localhost:3001/ && npm run  electron-start\"",
+    "start": "concurrently \"npm run react-start\" \"wait-on http://localhost:3000/ && npm run  electron-start\"",
     "start-web": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
@@ -41,11 +39,5 @@
     "package-mac": "npm run build && electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds  #--icon=assets/icons/mac/icon.icns",
     "package-win": "npm run build && electron-packager . Flight-Deck --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Flight Deck\"  #--icon=assets/icons/win/icon.ico",
     "package-linux": "npm run build && electron-packager . Flight-Deck --overwrite --asar=true --platform=linux --arch=x64 --prune=true --out=release-builds  #--icon=assets/icons/png/1024x1024.png"
-  },
-  "browserslist": [
-    ">0.2%",
-    "not dead",
-    "not ie <= 11",
-    "not op_mini all"
-  ]
+  }
 }

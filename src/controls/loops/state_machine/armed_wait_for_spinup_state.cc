@@ -18,7 +18,7 @@ void ArmedWaitForSpinupState::Handle(::src::controls::Sensors &sensors,
   }
 
   // Wait a bit for the propellers to spin up while armed.
-  if (sensors.time() - start_ > kSpinupTime) {
+  if (sensors.time() - start_ >= kSpinupTime) {
     output.set_state(ARMED);
   }
 }

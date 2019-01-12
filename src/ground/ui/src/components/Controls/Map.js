@@ -1,79 +1,27 @@
 import React, { Component } from 'react';
-import { Marker, InfoWindow } from 'react-google-maps';
-import { Button } from 'reactstrap';
-import { connect } from 'react-redux';
+import { Marker } from 'react-google-maps';
 
 import GoogleMap from '../Utils/GoogleMap/GoogleMap';
-import missionActions from '../../actions/missionActions';
-import { selector } from '../../store';
-
-const mapStateToProps = state => {
-  let derivedData = selector(state);
-  return {
-    commandPoints: derivedData.missionPlan.commandPoints,
-    protoInfo: derivedData.missionPlan.protoInfo
-  };
-};
-
-const mapDispatchToProps = missionActions;
 
 class Map extends Component {
   render() {
     return (
       <div className="Map">
         <GoogleMap
-          defaultZoom={16}
-          defaultCenter={{ lat: 38.147483, lng: -76.427778 }}
+          defaultZoom={8}
+          defaultCenter={{ lat: -34.397, lng: 150.644 }}
           defaultMapTypeId="satellite"
           defaultOptions={{
             disableDefaultUI: true,
             disableDoubleClickZoom: true,
             scaleControl: true
           }}
-          onDblClick={this.mapDblClick}
         >
-          {this.props.commandPoints.map((commandPoint, index) => 
-            commandPoint ?
-              <Marker {...commandPoint.marker} key={commandPoint.id}>
-                <InfoWindow {...commandPoint.infobox}>
-                  <div className="map-infobox">
-                    <div>
-                      {/* TODO: add title */}
-                      {commandPoint.infobox.title}
-                    </div>
-                    <div>
-                      {commandPoint.infobox.content}
-                    </div>
-                    <Button onClick={this.deleteCommand} data-index={index}>
-                      Delete Command
-                    </Button>
-                  </div>
-                </InfoWindow>
-              </Marker>
-            : null
-          )}
           <Marker position={{ lat: -34.397, lng: 150.644 }} />
         </GoogleMap>
       </div>
     );
   }
-
-  deleteCommand = (event) => {
-    this.props.deleteCommand(event.target.dataset.index);
-  }
-
-  mapDblClick = (event) => {
-    this.addWaypointCommand(event.latLng.lat(), event.latLng.lng());
-  }
-
-  addWaypointCommand = (lat, lng) => {
-    let defaultWaypointCommand = { goal: {
-      latitude: lat,
-      longitude: lng,
-      altitude: 100
-    }}
-    this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
-  }
 }
 
-export default connect(mapStateToProps, mapDispatchToProps)(Map);
+export default Map;

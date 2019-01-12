@@ -31,7 +31,7 @@ then
 fi
 
 # Create network for docker container to use.
-./tools/scripts/docker/create_network.sh > /dev/null 2>&1 || true
+docker network create -d bridge uas_bridge > /dev/null || true
 
 # Enable access to xhost from the container
 xhost +
