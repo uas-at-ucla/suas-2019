@@ -42,9 +42,9 @@ LINT_FORMAT_SCRIPT = "./tools/scripts/lint/format.sh"
 
 NUKE_SCRIPT = "./tools/scripts/nuke.sh"
 
-IP_SCRIPT = "./tools/scripts/controls/get_ip.sh"
+# IP_SCRIPT = "./tools/scripts/controls/get_ip.sh"
 
-DOCKER_IP = subprocess.check_output(IP_SCRIPT, shell=True)
+# DOCKER_IP = subprocess.check_output(IP_SCRIPT, shell=True)
 
 # Command chains.
 if "CONTINUOUS_INTEGRATION" in os.environ \
@@ -259,7 +259,7 @@ def run_travis(args):
         "./bazel-out/k8-fastbuild/bin/src/controls/loops/flight_loop_lib_test")
 
 
-def run_controls_build(args=None, show_complete=True):
+def run_controls_build(args=None, show_complete=True, raspi=True):
     shutdown_functions.append(kill_processes_in_uas_env_container)
 
     print_update("Going to build the code...")
@@ -272,9 +272,10 @@ def run_controls_build(args=None, show_complete=True):
     print_update("\n\nBuilding lib directory...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//lib/...")
 
-    print_update("\n\nBuilding src for raspi...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
-            + BAZEL_BUILD + "--cpu=raspi //src/...")
+    if raspi:
+        print_update("\n\nBuilding src for raspi...")
+        run_cmd_exit_failure(DOCKER_EXEC_SCRIPT \
+                + BAZEL_BUILD + "--cpu=raspi //src/...")
 
     if show_complete:
         print_update("\n\nBuild successful :^) LONG LIVE SPINNY!", \
@@ -311,7 +312,7 @@ def run_controls_simulate(args):
     shutdown_functions.append(kill_tmux_session_uas_env)
 
     print_update("Building the code...")
-    run_controls_build(show_complete=False)
+    run_controls_build(show_complete=False, raspi=False)
 
     print_update("Build complete! Starting simulator...")
     kill_running_simulators()
@@ -356,13 +357,20 @@ def run_controls_simulate(args):
     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
 
+    sim_command = DOCKER_RUN_SIM_SCRIPT
+    mavlink_router_command = "./tools/scripts/px4_simulator/exec_mavlink_router.sh"
+    io_command = "bazel run //src/controls/io:io 0.0.0.0"
+    if args.lite:
+        sim_command = "echo 'Not running simulator'"
+        mavlink_router_command = "echo 'Not running mavlink router'"
+        io_command = "bazel run //src/controls/io_sim:io_sim"
+    
     # Run scripts on the left side.
-    run_cmd_exit_failure("tmux send-keys \"" + DOCKER_RUN_SIM_SCRIPT + "\" C-m")
+    run_cmd_exit_failure("tmux send-keys \"" + sim_command + "\" C-m")
 
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
-    run_cmd_exit_failure("tmux send-keys \"" + \
-           "./tools/scripts/px4_simulator/exec_mavlink_router.sh\" C-m")
+    run_cmd_exit_failure("tmux send-keys \"" + mavlink_router_command + "\" C-m")
 
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
@@ -382,8 +390,7 @@ def run_controls_simulate(args):
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
     run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_EXEC_SCRIPT + \
-            "bazel run //src/controls/io:io " + DOCKER_IP + "\" C-m")
+            DOCKER_EXEC_SCRIPT + io_command + "\" C-m")
 
     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
@@ -631,6 +638,7 @@ if __name__ == '__main__':
     controls_docker_shell = controls_docker_subparsers.add_parser('shell')
     controls_docker_shell.set_defaults(func=run_controls_docker_shell)
     controls_simulate_parser = controls_subparsers.add_parser('simulate')
+    controls_simulate_parser.add_argument('--lite', action='store_true')
     controls_simulate_parser.set_defaults(func=run_controls_simulate)
     controls_build_parser = controls_subparsers.add_parser('build')
     controls_build_parser.set_defaults(func=run_controls_build)

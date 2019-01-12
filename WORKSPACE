@@ -185,7 +185,7 @@ cc_library(
 new_git_repository(
   name = "com_google_protobuf",
   remote = "https://github.com/protocolbuffers/protobuf.git",
-  commit = "48cb18e5c419ddd23d9badcfe4e9df7bde1979b2",
+  commit = "66dc42d891a4fc8e9190c524fd67961688a37bbe",
   build_file = 'third_party/com_google_protobuf.BUILD'
 )
 

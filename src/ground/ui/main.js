@@ -1,5 +1,5 @@
 // Modules to control application life and create native browser window
-const {app, BrowserWindow} = require('electron')
+const { app, BrowserWindow, Menu } = require('electron')
 
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
@@ -12,7 +12,7 @@ function createWindow () {
   // and load the url of the app.
   const isDev = require('electron-is-dev');
   const path = require('path');
-  mainWindow.loadURL(isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../build/index.html')}`);
+  mainWindow.loadURL(isDev ? 'http://localhost:3001' : `file://${path.join(__dirname, 'build/index.html')}`);
 
   // Open the DevTools.
   // mainWindow.webContents.openDevTools()
@@ -24,6 +24,19 @@ function createWindow () {
     // when you should delete the corresponding element.
     mainWindow = null
   })
+
+  // Allow viewing devtools in packaged app:
+  if (!isDev) {
+    const template = [{
+      label: "Application",
+      submenu: [
+        { role: 'toggledevtools' },
+        { label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" }
+      ]
+    }];
+    const menu = Menu.buildFromTemplate(template);
+    Menu.setApplicationMenu(menu);
+  }
 }
 
 // This method will be called when Electron has finished
