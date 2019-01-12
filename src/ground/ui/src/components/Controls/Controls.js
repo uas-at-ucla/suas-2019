@@ -13,18 +13,18 @@ class Controls extends Component {
       <div className="Controls">
         <div className="map-overlay">
           <div>
-            <div className="left-side">
-              <div>
+            <span className="left-side">
+              <span className="top-left">
                 <Cosmetics/>
                 <MissionPlannerContainer/>
+              </span>
+              <span className="bottom-left">
                 <DroneActions/>
-              </div>
-            </div>
-            <div className="right-side">
-              <div>
-                <Telemetry/>
-              </div>
-            </div>
+              </span>
+            </span>
+            <span className="right-side">
+              <Telemetry/>
+            </span>
           </div>
         </div>
         <Map/>

@@ -19,48 +19,46 @@
   pointer-events: none;
 }
 
-.Controls .map-overlay > div{
+.Controls .map-overlay>div {
   position: relative;
   height: 100%;
   width: 100%;
+}
+
+.Controls .map-overlay>div div {
+  pointer-events: all;
 }
 
 .Controls .left-side {
   height: 100%;
   width: 100%;
   position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
 }
 
-.Controls .left-side > div {
-  height: 100%;
-  position: relative;
+.Controls .top-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-grow: 1;
+  flex-shrink: 10000;
+  overflow: auto;
+  padding-bottom: 10px;
 }
 
-.Controls .left-side > div div {
-  pointer-events: all;
-}
-
-.Controls .DroneActions {
-  position: absolute;
-  bottom: 0;
+.Controls .bottom-left {
+  display: flex;
 }
 
 .Controls .right-side {
   height: 100%;
   width: 100%;
   position: absolute;
-}
-
-.Controls .right-side > div {
-  height: 100%;
-  position: relative;
   display: flex;
   flex-direction: column;
-  flex-flow: row-reverse;
-}
-
-.Controls .right-side > div div {
-  pointer-events: all;
+  align-items: flex-end;
 }
 
 .buttonArray > button
