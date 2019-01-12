@@ -15,7 +15,7 @@ class Telemetry extends Component {
   render() {
     return (
       <span className="Telemetry">
-        <div>{JSON.stringify(this.props.telemetry)}</div>
+        <div className="Readout">{JSON.stringify(this.props.telemetry)}</div>
         <AttitudeIndicator/>
         <Altimeter/>
       </span>

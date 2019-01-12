@@ -63,16 +63,6 @@
   pointer-events: all;
 }
 
-.map-infobox {
-  color: black;
-}
-
-.droneActions > span
-{
-  margin: 0 10px;
-  margin-top: 10px;
-}
-
 .buttonArray > button
 {
   border-width: 2px;
@@ -143,9 +133,6 @@
 {
   color: #c61515;
   border-color: #c61515;
-
-.MissionPlannerContainer {
-  background: rgba(0, 0, 0, 0.6)
 }
 
 .map-infobox {

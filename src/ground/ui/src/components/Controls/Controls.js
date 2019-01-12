@@ -4,9 +4,8 @@ import './Controls.css';
 import Map from './Map';
 import Telemetry from './Telemetry/Telemetry';
 import DroneActions from './DroneActions';
-import Navball from './Navball/Navball';
 import MissionPlannerContainer from './MissionPlannerContainer/MissionPlannerContainer';
-
+import Cosmetics from '../Utils/Cosmetics/Cosmetics';
 
 class Controls extends Component {
   render() {
@@ -16,6 +15,7 @@ class Controls extends Component {
           <div>
             <div className="left-side">
               <div>
+                <Cosmetics/>
                 <MissionPlannerContainer/>
                 <DroneActions/>
               </div>
@@ -28,7 +28,6 @@ class Controls extends Component {
           </div>
         </div>
         <Map/>
-        <Navball />
       </div>
     );
   }

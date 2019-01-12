@@ -1,8 +1,6 @@
 import React from 'react';
 
-import Logo from "./../../graphics/uasLogo.svg";
-import "./cosmetics.css";
-
+import Logo from "../../../graphics/uasLogo.svg";
 
 class UasLogo extends React.Component {
     render() {
