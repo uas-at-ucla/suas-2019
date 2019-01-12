@@ -1,0 +1,18 @@
+#navball {
+    display: inline-block;
+    border-width: 0px;
+    border-radius: 100px;
+    border-style: solid;
+
+    height: 200px;
+    width: 200px;
+
+    overflow: hidden;
+}
+
+
+.navballContainer {
+    position: absolute;
+    bottom: 10px;
+    left: calc(100vw / 2 - 100px);
+}

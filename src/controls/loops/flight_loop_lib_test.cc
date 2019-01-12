@@ -10,6 +10,7 @@
 #include "gtest/gtest.h"
 
 #include "lib/logger/log_writer.h"
+#include "src/controls/loops/state_machine/state_machine.h"
 
 namespace src {
 namespace controls {
@@ -90,6 +91,7 @@ class FlightLoopTest : public ::testing::Test {
 };
 
 TEST_F(FlightLoopTest, Initialization) {
+  // Check if loop stays in STANDBY state when initialized.
   for (double start = sensors().time(); sensors().time() < start + 1;) {
     StepLoop();
     ASSERT_EQ(output().state(),
@@ -107,8 +109,8 @@ TEST_F(FlightLoopTest, Initialization) {
     ASSERT_FALSE(output().trigger_disarm());
   }
 
+  // Check if loop goes into ARMED state if armed is specified.
   sensors().set_armed(true);
-
   for (double start = sensors().time(); sensors().time() < start + 1;) {
     StepLoop();
 
@@ -123,6 +125,7 @@ TEST_F(FlightLoopTest, Initialization) {
     ASSERT_FALSE(output().trigger_disarm());
   }
 
+  // Check if loop goes back into STANDBY state if disarmed.
   sensors().set_armed(false);
   for (double start = sensors().time(); sensors().time() < start + 1;) {
     StepLoop();
@@ -137,6 +140,36 @@ TEST_F(FlightLoopTest, Initialization) {
     ASSERT_FALSE(output().trigger_land());
     ASSERT_FALSE(output().trigger_disarm());
   }
+}
+
+TEST_F(FlightLoopTest, RunMission) {
+  StepLoop();
+  ASSERT_EQ(output().state(),
+            ::src::controls::loops::state_machine::FlightLoopState::STANDBY);
+
+  // Check if loop goes back into ARMING state if arm is attempted.
+  goal().set_run_mission(true);
+  StepLoop();
+  ASSERT_EQ(output().state(),
+            ::src::controls::loops::state_machine::FlightLoopState::ARMING);
+
+  // Check if loop waits for propellers to spin up before continuing to ARMED
+  // state.
+  sensors().set_armed(true);
+  for (double start = sensors().time(); sensors().time() < start + state_machine::kSpinupTime;) {
+    StepLoop();
+    ASSERT_EQ(output().state(),
+              ::src::controls::loops::state_machine::FlightLoopState::ARMED_WAIT_FOR_SPINUP);
+  }
+
+  StepLoop();
+  StepLoop();
+  ASSERT_EQ(output().state(),
+            ::src::controls::loops::state_machine::FlightLoopState::ARMED);
+
+  StepLoop();
+  ASSERT_EQ(output().state(),
+            ::src::controls::loops::state_machine::FlightLoopState::TAKING_OFF);
 }
 
 } // namespace testing

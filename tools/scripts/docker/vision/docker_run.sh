@@ -1,6 +1,9 @@
 #!/bin/bash
 cd $(dirname $0)
-source ../start_machine_mac.sh
+if [ $(uname -s) == "Darwin" ]
+then
+    source ../start_machine_mac.sh
+fi
 cd ../../../../src/vision
 
 # docker running on windows expects a windows-style path
