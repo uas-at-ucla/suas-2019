@@ -29,6 +29,10 @@ ui_io.on('connect', (socket) => {
   socket.on("CHANGE_DRONE_STATE", (data) =>{
     console.log("THE DRONE is asked to " + data + ". THE DRONE says no.")
   })
+
+  socket.on("INTEROP_STFF", (data) => {
+    //connect to interop with data.user and data.pass
+  })
 });
 
 
