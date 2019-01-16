@@ -49,16 +49,14 @@ var instance = {
         }   
     })
     .then(function then_ (response, cookie,res) {
-       
-       
         var test = JSON.stringify(response.headers['set-cookie']);
-         
         var i = test.search("=");
         var j = test.search(";")
         ckie = test.substring(i, j);
         check = true;
        })
-   .catch(function catch_ (error) {
+    .then()
+    .catch(function catch_ (error) {
        console.log(error);
        check = false;
        
