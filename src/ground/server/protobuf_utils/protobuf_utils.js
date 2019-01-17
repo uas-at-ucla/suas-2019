@@ -27,9 +27,9 @@ function encode(Type, message) {
 }
 
 module.exports = (callback) => {
-  protobuf.load("../../controls/ground_server/timeline/timeline_grammar.proto", function(err, timelineRoot) {
+  protobuf.load("../../controls/ground_server/timeline/timeline_grammar.proto", (err, timelineRoot) => {
     if (err) throw err;
-    protobuf.load("../../controls/messages.proto", function(err, telemetryRoot) {
+    protobuf.load("../../controls/messages.proto", (err, telemetryRoot) => {
       if (err) throw err;
 
       const GroundProgram = timelineRoot.lookupType("src.controls.ground_server.timeline.GroundProgram");

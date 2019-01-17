@@ -1,6 +1,7 @@
 // use require() to load libraries from node_modules
 const socketIOServer = require('socket.io');
 const loadProtobufUtils = require('./protobuf_utils/protobuf_utils');
+const loadInteropClient = require('./interop_client/interop_client');
 
 const port = 8081;
 
@@ -17,6 +18,14 @@ loadProtobufUtils((theProtobufUtils) => {
   protobufUtils = theProtobufUtils;
 });
 
+var interopClient = null;
+loadInteropClient("localhost", 8000, "testadmin", "testpass")
+  .then(theInteropClient => {
+    interopClient = theInteropClient;
+  }).catch(error => {
+    console.log(error);
+  });
+
 drone_io.on('connect', (socket) => {
   console.log("drone connected!");
 
@@ -24,6 +33,14 @@ drone_io.on('connect', (socket) => {
     if (protobufUtils) {
       if (data.telemetry.sensors) {
         data.telemetry.sensors = protobufUtils.decodeSensors(data.telemetry.sensors);
+        if (interopClient) {
+          interopClient.postTelemetry({
+            latitude: data.telemetry.sensors.latitude,
+            longitude: data.telemetry.sensors.longitude,
+            altitude_msl: data.telemetry.sensors.altitude,
+            uas_heading: data.telemetry.sensors.heading
+          });
+        }
       }
       if (data.telemetry.goal) {
         data.telemetry.goal = protobufUtils.decodeGoal(data.telemetry.goal);
@@ -32,7 +49,8 @@ drone_io.on('connect', (socket) => {
         data.telemetry.output = protobufUtils.decodeOutput(data.telemetry.output);
       }
     }
-    console.log("Received Telemetry: " + JSON.stringify(data));
+    console.log(JSON.stringify(data, null, 2) + ",");
+    
     // When telemetry is received from the drone, send it to clients on the UI namespace
     ui_io.emit('telemetry', data);
   });
