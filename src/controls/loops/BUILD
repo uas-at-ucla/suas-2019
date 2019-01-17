@@ -45,8 +45,8 @@ cc_library(
     '//lib/logger:log_sender',
     '//lib/phased_loop:phased_loop',
     '//lib/alarm:alarm',
+    '//lib/ros:ros',
     "@cppzmq//:cppzmq",
     '@boost//:algorithm',
-    '@ros_bazel//:ros_common',
   ],
 )

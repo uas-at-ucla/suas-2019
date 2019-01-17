@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "ros/ros.h"
+#include "gtest/gtest.h"
 
 TEST(FactorialTest, Negative) {
   EXPECT_EQ(1, 1);

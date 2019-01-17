@@ -148,6 +148,15 @@ USER root
 RUN mv /home/uas/bin/bazel /usr/local/sbin
 RUN rm -r /home/uas/bin
 
+# Install ros. #################################################################
+USER uas
+RUN sudo apt-key adv                                                           \
+  --keyserver hkp://ha.pool.sks-keyservers.net:80                              \
+  --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116                       && \
+  sudo apt-get update                                                       && \
+  sudo apt-get install -y ros-base
+USER root
+
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
 
