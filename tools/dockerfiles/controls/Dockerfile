@@ -8,9 +8,11 @@
 FROM debian:stretch
 
 # Install compilation and testing dependencies #################################
-RUN apt-get update     -qq                                                      && \
-    apt-get install -y -qq curl                                                 && \
-    apt-get install -y -qq gnupg
+RUN apt-get update     -qq                                                  && \
+    apt-get install -y -qq curl                                             && \
+    apt-get install -y -qq gnupg                                               \
+    gnupg                                                                      \
+    gnupg2
 
 # Add apt-get repositories containing required packages. ###########################
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
@@ -64,6 +66,7 @@ RUN apt-get update -qq                                                      && \
     python-matplotlib                                                          \
     python-empy                                                                \
     python-jinja2                                                              \
+    ros-base                                                                   \
     screen                                                                     \
     sudo                                                                       \
     tmux                                                                       \
@@ -147,17 +150,6 @@ USER root
 
 RUN mv /home/uas/bin/bazel /usr/local/sbin
 RUN rm -r /home/uas/bin
-
-# Install ros. #################################################################
-USER uas
-RUN sudo apt install -y gnupg2
-RUN gpg2                                                                       \
-  --keyserver hkp://ha.pool.sks-keyservers.net:80                              \
-  --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116                       && \
-  sudo rm -rf /var/lib/apt/lists/*                                          && \
-  sudo apt-get update                                                       && \
-  sudo apt-get install -y ros-base
-USER root
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
