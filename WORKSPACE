@@ -6,7 +6,7 @@ new_git_repository(
   name = 'raspi-toolchain',
   remote = 'https://github.com/uas-at-ucla/raspi-toolchain.git',
   build_file = 'compilers/raspi-toolchain.BUILD',
-  commit = '697705b54780c141c71fd4edc27930ddfefcd194',
+  commit = 'a3147acb2a75dcc54d33665882c2e399229d4824',
 )
 
 new_git_repository(

@@ -15,5 +15,8 @@ cc_library(
     "@boost//:math",
     "@boost//:call_traits",
     "@boost//:lexical_cast",
+    "@boost//:filesystem",
+    "@boost//:program_options",
+    "@boost//:thread",
   ],
 )
