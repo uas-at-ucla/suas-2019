@@ -3,7 +3,7 @@ package(default_visibility = ['//tools/cpp:__pkg__'])
 filegroup(
   name = 'gcc',
   srcs = [
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:gcc',
+    '@raspi-toolchain//:gcc',
     'arm-linux-gnueabihf-gcc',
   ],
 )
@@ -11,7 +11,7 @@ filegroup(
 filegroup(
   name = 'ar',
   srcs = [
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:ar',
+    '@raspi-toolchain//:ar',
     'arm-linux-gnueabihf-ar',
   ],
 )
@@ -19,7 +19,7 @@ filegroup(
 filegroup(
   name = 'ld',
   srcs = [
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:ld',
+    '@raspi-toolchain//:ld',
     'arm-linux-gnueabihf-ld',
   ],
 )
@@ -27,7 +27,7 @@ filegroup(
 filegroup(
   name = 'nm',
   srcs = [
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:nm',
+    '@raspi-toolchain//:nm',
     'arm-linux-gnueabihf-nm',
   ],
 )
@@ -35,7 +35,7 @@ filegroup(
 filegroup(
   name = 'objcopy',
   srcs = [
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:objcopy',
+    '@raspi-toolchain//:objcopy',
     'arm-linux-gnueabihf-objcopy',
   ],
 )
@@ -43,7 +43,7 @@ filegroup(
 filegroup(
   name = 'objdump',
   srcs = [
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:objdump',
+    '@raspi-toolchain//:objdump',
     'arm-linux-gnueabihf-objdump',
   ],
 )
@@ -51,7 +51,7 @@ filegroup(
 filegroup(
   name = 'strip',
   srcs = [
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:strip',
+    '@raspi-toolchain//:strip',
     'arm-linux-gnueabihf-strip',
   ],
 )
@@ -59,7 +59,7 @@ filegroup(
 filegroup(
   name = 'as',
   srcs = [
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:as',
+    '@raspi-toolchain//:as',
     'arm-linux-gnueabihf-as',
   ],
 )

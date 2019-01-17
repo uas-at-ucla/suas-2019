@@ -5,7 +5,7 @@ licenses(["notice"])
 cc_library(
   name = "ros_common",
   srcs = glob([
-    "lib/amd64/**/*.so",
+    "lib/raspi/**/*.so*",
   ]),
   hdrs = glob([
     "include/**/*.h",

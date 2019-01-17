@@ -15,8 +15,7 @@ FlightLoop::FlightLoop() :
     last_dslr_(0),
     sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", kMaxMessageInQueues),
     goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", kMaxMessageInQueues),
-    output_sender_("ipc:///tmp/uasatucla_output.ipc") {
-}
+    output_sender_("ipc:///tmp/uasatucla_output.ipc") {}
 
 void FlightLoop::Run() {
   sensors_receiver_.Connect();
