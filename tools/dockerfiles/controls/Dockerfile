@@ -129,7 +129,8 @@ RUN pip2.7 install --user                                                      \
   Flask-SocketIO==2.9.2                                                        \
   futures==3.1.1                                                               \
   socketIO-client==0.7.2                                                       \
-  numpy==1.15.2                                                                \
+  numpy==1.16                                                                  \
+  shap==0.23.0                                                                 \
   empy==3.3.2                                                                  \
   toml==0.9.4                                                                  \
   eventlet==0.23.0                                                             \
