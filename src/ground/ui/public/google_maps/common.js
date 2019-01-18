@@ -3751,7 +3751,12 @@ google.maps.__gjsload__('common', function(_) {
     _.yr = xr || (_.V && _.hj(_.vc(_.V), 15) ? "http://www.google.cn" : "https://www.google.com") + wr + "/help/terms_maps.html";
     "undefined" != typeof window.document && (_.Dn = new Bn(function(a, b) {
         _.tn(_.vh, _.Xq + "/maps/api/js/AuthenticationService.Authenticate", _.Og, _.Dg.j(a.B, "sssss100ss"), function(a) {
-            b(new wn(a))
+            // BEGIN CHANGE BY UAS
+            // b(new wn(a))
+            var a = new wn;
+            a.B[2] = 1;
+            b(a)
+            // END CHANGE BY UAS
         }, function() {
             var a = new wn;
             a.B[2] = 1;
