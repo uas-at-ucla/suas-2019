@@ -1,8 +1,10 @@
 #!/bin/bash
+source tools/scripts/docker/start_machine_mac.sh
 
 echo "Waiting for PX4 simulator docker to start..."
 
-DOCKER_IP=`docker network inspect uas_bridge | grep -o -P ".{0,9}2/16" | sed 's/\/16//g'`
+# 192.168.2.21 is the drone's ip
+DOCKER_IP="192.168.2.21" # `docker network inspect uas_bridge | grep -o -P ".{0,9}2/16" | sed 's/\/16//g'`
 
 unset PX4_RUNNING_CONTAINER
 while [ -z $PX4_RUNNING_CONTAINER ]
