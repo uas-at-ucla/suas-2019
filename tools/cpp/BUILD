@@ -10,7 +10,7 @@ filegroup(
   srcs = [
     ":cc-compiler-k8",
     ":cc-compiler-raspi",
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:compiler_components',
+    '@raspi-toolchain//:compiler_components',
   ],
 )
 
@@ -18,8 +18,8 @@ cc_toolchain_suite(
   name = 'toolchain',
   # target_cpu | compiler
   toolchains = {
-    'raspi|gcc': ':cc-compiler-raspi',
-    'k8|clang': ':cc-compiler-k8',
+    'raspi': ':cc-compiler-raspi',
+    'k8': ':cc-compiler-k8',
     'darwin|clang': ':cc-compiler-k8',
   },
 )
@@ -41,27 +41,27 @@ cc_toolchain(
 filegroup(
   name = 'raspi-gcc-files',
   srcs = [
-    '//tools/cpp/gcc_linaro_arm_linux_gnueabihf_raspbian:tool-wrappers',
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:compiler_pieces',
+    '//tools/cpp/raspi-toolchain:tool-wrappers',
+    '@raspi-toolchain//:compiler_pieces',
   ],
 )
 
 filegroup(
   name = 'linaro_linux_linker_files',
   srcs = [
-    '//tools/cpp/gcc_linaro_arm_linux_gnueabihf_raspbian:gcc',
-    '//tools/cpp/gcc_linaro_arm_linux_gnueabihf_raspbian:ld',
-    '//tools/cpp/gcc_linaro_arm_linux_gnueabihf_raspbian:ar',
-    '@gcc_linaro_arm_linux_gnueabihf_raspbian_repo//:compiler_pieces',
+    '//tools/cpp/raspi-toolchain:gcc',
+    '//tools/cpp/raspi-toolchain:ld',
+    '//tools/cpp/raspi-toolchain:ar',
+    '@raspi-toolchain//:compiler_pieces',
   ],
 )
 
 filegroup(
   name = 'linaro_linux_compiler_files',
   srcs = [
-    '//tools/cpp/gcc_linaro_arm_linux_gnueabihf_raspbian:gcc',
-    '//tools/cpp/gcc_linaro_arm_linux_gnueabihf_raspbian:ld',
-    '//tools/cpp/gcc_linaro_arm_linux_gnueabihf_raspbian:as',
+    '//tools/cpp/raspi-toolchain:gcc',
+    '//tools/cpp/raspi-toolchain:ld',
+    '//tools/cpp/raspi-toolchain:as',
   ],
 )
 
@@ -73,8 +73,8 @@ cc_toolchain(
   dwp_files = ':empty',
   dynamic_runtime_libs = [':empty'],
   linker_files = ':linaro_linux_linker_files',
-  objcopy_files = '//tools/cpp/gcc_linaro_arm_linux_gnueabihf_raspbian:objcopy',
+  objcopy_files = '//tools/cpp/raspi-toolchain:objcopy',
   static_runtime_libs = [':empty'],
-  strip_files = '//tools/cpp/gcc_linaro_arm_linux_gnueabihf_raspbian:strip',
+  strip_files = '//tools/cpp/raspi-toolchain:strip',
   supports_param_files = 1,
 )

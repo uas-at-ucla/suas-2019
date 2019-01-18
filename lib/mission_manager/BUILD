@@ -40,6 +40,6 @@ cc_test(
   ],
   deps = [
     ':mission_manager',
-    '@gtest//:googletest_main',
+    '@gtest//:gtest_main',
   ],
 )
