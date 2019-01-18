@@ -95,12 +95,13 @@ do
 done
 
 # Build docker container.
-if [[ -z $TRAVIS ]]
-then
-  docker build $BUILD_FLAGS tools/dockerfiles/controls
-else
-  docker build $BUILD_FLAGS tools/dockerfiles/controls > /dev/null
-fi
+docker build $BUILD_FLAGS tools/dockerfiles/controls
+# if [[ -z $TRAVIS ]]
+# then
+#   docker build $BUILD_FLAGS tools/dockerfiles/controls
+# else
+#   docker build $BUILD_FLAGS tools/dockerfiles/controls > /dev/null
+# fi
 
 if [ $? -ne 0 ]
 then
@@ -144,6 +145,8 @@ DOCKER_BUILD_CMD="set -x; \
 docker run \
   -d \
   --rm \
+  --cap-add=SYS_PTRACE \
+  --security-opt seccomp=unconfined \
   --net uas_bridge \
   --ip 192.168.2.21 \
   -v $ROOT_PATH:/home/uas/code_env \
