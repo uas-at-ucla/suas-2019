@@ -146,7 +146,16 @@ RUN chmod +x bazel-0.19.2-installer-linux-x86_64.sh
 RUN ./bazel-0.19.2-installer-linux-x86_64.sh --user
 RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
 
+# ROS dependencies.
+RUN pip install --user rosinstall_generator wstool
+RUN sudo rosdep init && rosdep update
+RUN sudo apt-get install -y libxmlrpcpp-dev librosconsole-dev
+
 USER root
+
+RUN ln /usr/lib/x86_64-linux-gnu/libroscpp.so.2d /usr/lib/x86_64-linux-gnu/libroscpp.so
+RUN ln /usr/lib/x86_64-linux-gnu/libroslib.so.1.14.4 /usr/lib/x86_64-linux-gnu/libroslib.so
+RUN ln /usr/lib/x86_64-linux-gnu/librospack.so.2.5.2 /usr/lib/x86_64-linux-gnu/librospack.so
 
 RUN mv /home/uas/bin/bazel /usr/local/sbin
 RUN rm -r /home/uas/bin
