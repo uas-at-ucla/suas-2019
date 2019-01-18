@@ -18,7 +18,6 @@ GroundCommunicator::GroundCommunicator() :
     last_serial_telemetry_sent_(0),
     sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", 5),
     goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", 5),
-    status_receiver_("ipc:///tmp/uasatucla_status.ipc", 5),
     output_receiver_("ipc:///tmp/uasatucla_output.ipc", 5),
     goal_sender_("ipc:///tmp/uasatucla_goal.ipc") {
 
@@ -66,7 +65,6 @@ void GroundCommunicator::RunIteration() {
 
   // Track which message queues are actually sending things.
   bool send_sensors = false;
-  bool send_status = false;
   bool send_goal = false;
   bool send_output = false;
 
@@ -101,17 +99,6 @@ void GroundCommunicator::RunIteration() {
     }
   }
 
-  if (status_receiver_.HasMessages()) {
-    send_status = true;
-
-    ::src::controls::Status status = status_receiver_.GetLatest();
-    ::std::string status_serialized;
-    status.SerializeToString(&status_serialized);
-
-    telemetry->get_map()["status"] = ::sio::string_message::create(
-        ::lib::base64_tools::Encode(status_serialized));
-  }
-
   if (goal_receiver_.HasMessages()) {
     send_goal = true;
 
@@ -136,7 +123,6 @@ void GroundCommunicator::RunIteration() {
 
   LOG_LINE("sending telemetry: "               //
            << (send_sensors ? "sensors " : "") //
-           << (send_status ? "status " : "")   //
            << (send_goal ? "goal " : "")       //
            << (send_output ? "output " : ""));
 

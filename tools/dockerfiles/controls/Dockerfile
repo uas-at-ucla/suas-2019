@@ -8,19 +8,13 @@
 FROM debian:stretch
 
 # Install compilation and testing dependencies #################################
-RUN apt-get update     -qq                                                      && \
-    apt-get install -y -qq curl                                                 && \
-    apt-get install -y -qq gnupg
+RUN apt-get update     -qq                                                  && \
+    apt-get install -y -qq curl                                             && \
+    apt-get install -y -qq gnupg                                               \
+    gnupg                                                                      \
+    gnupg2
 
 # Add apt-get repositories containing required packages. ###########################
-#RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
-#  "deb-src http://deb.debian.org/debian buster main\n\n" \
-#  "deb http://deb.debian.org/debian buster-updates main contrib non-free\n" \
-#  "deb-src http://deb.debian.org/debian buster-updates main\n\n" \
-#  "deb http://deb.debian.org/debian sid main contrib non-free\n" \
-#  "deb-src http://deb.debian.org/debian sid main" > \
-#  /etc/apt/sources.list
-
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN echo "deb http://deb.debian.org/debian testing main" \
@@ -33,11 +27,6 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
 RUN apt-get update -qq                                                      && \
     apt-get upgrade -y -qq                                                  && \
     apt-get install -y                                                         \
-    ant                                                                        \
-    autoconf                                                                   \
-    autoconf                                                                   \
-    automake                                                                   \
-    bazel                                                                      \
     bmon                                                                       \
     build-essential                                                            \
     ca-certificates-java                                                       \
@@ -64,7 +53,8 @@ RUN apt-get update -qq                                                      && \
     libz-dev                                                                   \
     make                                                                       \
     nodejs                                                                     \
-    openjdk-8-jdk                                                             \
+    nmap                                                                       \
+    openjdk-11-jdk                                                             \
     pkg-config                                                                 \
     protobuf-compiler                                                          \
     python2.7                                                                  \
@@ -76,24 +66,19 @@ RUN apt-get update -qq                                                      && \
     python-matplotlib                                                          \
     python-empy                                                                \
     python-jinja2                                                              \
-    ruby                                                                       \
+    ros-base                                                                   \
     screen                                                                     \
     sudo                                                                       \
     tmux                                                                       \
     uthash-dev                                                                 \
+    unzip                                                                      \
     vim
-
-# Fix git certificate bug with open JDK. #######################################
-RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
-  /etc/java-8-openjdk/security/java.security
-RUN rm /etc/ssl/certs/java/cacerts
-RUN update-ca-certificates -f
 
 # Install pip and python dependencies. #########################################
 RUN curl https://bootstrap.pypa.io/get-pip.py | python2.7
-RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
+RUN curl https://bootstrap.pypa.io/get-pip.py | python3.7
 RUN pip2.7 install --upgrade pip                                            && \
-    pip3.6 install --upgrade pip
+    pip3.7 install --upgrade pip
 
 # Set up workspace. ############################################################
 # Fix xlocale.h renamed to locale.h
@@ -144,7 +129,8 @@ RUN pip2.7 install --user                                                      \
   Flask-SocketIO==2.9.2                                                        \
   futures==3.1.1                                                               \
   socketIO-client==0.7.2                                                       \
-  numpy==1.15.2                                                                \
+  numpy==1.16                                                                  \
+  shap==0.23.0                                                                 \
   empy==3.3.2                                                                  \
   toml==0.9.4                                                                  \
   eventlet==0.23.0                                                             \
@@ -152,16 +138,33 @@ RUN pip2.7 install --user                                                      \
   pyzmq==17.0.0                                                                \
   zmq==0.0.0
 
+RUN rm -rf /home/uas/mavlink-router
+
+# Use a stable version of bazel. ###############################################
+WORKDIR /tmp
+RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.19.2/bazel-0.19.2-installer-linux-x86_64.sh > bazel-0.19.2-installer-linux-x86_64.sh
+RUN chmod +x bazel-0.19.2-installer-linux-x86_64.sh
+RUN ./bazel-0.19.2-installer-linux-x86_64.sh --user
+RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
+
+# ROS dependencies.
+RUN pip install --user rosinstall_generator wstool
+RUN sudo rosdep init && rosdep update
+RUN sudo apt-get install -y libxmlrpcpp-dev librosconsole-dev
+
+USER root
+
+RUN ln /usr/lib/x86_64-linux-gnu/libroscpp.so.2d /usr/lib/x86_64-linux-gnu/libroscpp.so
+RUN ln /usr/lib/x86_64-linux-gnu/libroslib.so.1.14.4 /usr/lib/x86_64-linux-gnu/libroslib.so
+RUN ln /usr/lib/x86_64-linux-gnu/librospack.so.2.5.2 /usr/lib/x86_64-linux-gnu/librospack.so
+
+RUN mv /home/uas/bin/bazel /usr/local/sbin
+RUN rm -r /home/uas/bin
+
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
-
-RUN rm -rf /home/uas/mavlink-router
 
 EXPOSE 8085/udp
 EXPOSE 8086/udp
 EXPOSE 8090/udp
 EXPOSE 8091/udp
-
-# Set user to root so that we can set the appropriate permissions for file #####
-# access later on. #############################################################
-USER root
