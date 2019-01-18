@@ -98,12 +98,13 @@ do
 done
 
 # Build docker container.
-if [[ -z $TRAVIS ]]
-then
-  docker build $BUILD_FLAGS tools/dockerfiles/controls
-else
-  docker build $BUILD_FLAGS tools/dockerfiles/controls > /dev/null
-fi
+docker build $BUILD_FLAGS tools/dockerfiles/controls
+# if [[ -z $TRAVIS ]]
+# then
+#   docker build $BUILD_FLAGS tools/dockerfiles/controls
+# else
+#   docker build $BUILD_FLAGS tools/dockerfiles/controls > /dev/null
+# fi
 
 if [ $? -ne 0 ]
 then
