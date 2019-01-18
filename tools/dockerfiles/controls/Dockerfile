@@ -8,9 +8,11 @@
 FROM debian:stretch
 
 # Install compilation and testing dependencies #################################
-RUN apt-get update     -qq                                                      && \
-    apt-get install -y -qq curl                                                 && \
-    apt-get install -y -qq gnupg
+RUN apt-get update     -qq                                                  && \
+    apt-get install -y -qq curl                                             && \
+    apt-get install -y -qq gnupg                                               \
+    gnupg                                                                      \
+    gnupg2
 
 # Add apt-get repositories containing required packages. ###########################
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
@@ -64,6 +66,7 @@ RUN apt-get update -qq                                                      && \
     python-matplotlib                                                          \
     python-empy                                                                \
     python-jinja2                                                              \
+    ros-base                                                                   \
     screen                                                                     \
     sudo                                                                       \
     tmux                                                                       \
@@ -126,7 +129,8 @@ RUN pip2.7 install --user                                                      \
   Flask-SocketIO==2.9.2                                                        \
   futures==3.1.1                                                               \
   socketIO-client==0.7.2                                                       \
-  numpy==1.15.2                                                                \
+  numpy==1.16                                                                  \
+  shap==0.23.0                                                                 \
   empy==3.3.2                                                                  \
   toml==0.9.4                                                                  \
   eventlet==0.23.0                                                             \
@@ -143,7 +147,16 @@ RUN chmod +x bazel-0.19.2-installer-linux-x86_64.sh
 RUN ./bazel-0.19.2-installer-linux-x86_64.sh --user
 RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
 
+# ROS dependencies.
+RUN pip install --user rosinstall_generator wstool
+RUN sudo rosdep init && rosdep update
+RUN sudo apt-get install -y libxmlrpcpp-dev librosconsole-dev
+
 USER root
+
+RUN ln /usr/lib/x86_64-linux-gnu/libroscpp.so.2d /usr/lib/x86_64-linux-gnu/libroscpp.so
+RUN ln /usr/lib/x86_64-linux-gnu/libroslib.so.1.14.4 /usr/lib/x86_64-linux-gnu/libroslib.so
+RUN ln /usr/lib/x86_64-linux-gnu/librospack.so.2.5.2 /usr/lib/x86_64-linux-gnu/librospack.so
 
 RUN mv /home/uas/bin/bazel /usr/local/sbin
 RUN rm -r /home/uas/bin
