@@ -9,6 +9,8 @@ int main(int argc, char **argv) {
   for (int i = 0; i < 1000; i++) {
     loop.sleep();
     ROS_INFO_STREAM("Hello "
-                    << "World");
+                    << "World " << i);
   }
+
+  return 0;
 }

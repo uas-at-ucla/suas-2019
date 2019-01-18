@@ -148,6 +148,8 @@ DOCKER_BUILD_CMD="set -x; \
 docker run \
   -d \
   --rm \
+  --cap-add=SYS_PTRACE \
+  --security-opt seccomp=unconfined \
   --net uas_bridge \
   -v $ROOT_PATH:/home/uas/code_env \
   -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
