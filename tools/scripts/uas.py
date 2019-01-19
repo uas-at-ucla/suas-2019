@@ -186,6 +186,10 @@ def kill_jenkins_client():
     return ""
 
 
+def create_link(src, dst):
+    run_cmd_exit_failure("ln -sf " + src + " " + dst)
+
+
 def run_and_die_if_error(command):
     if (processes.spawn_process_wait_for_code(command) != 0):
         processes.killall()
@@ -261,6 +265,12 @@ def run_travis(args):
 
 def run_controls_build(args=None, show_complete=True, raspi=True):
     shutdown_functions.append(kill_processes_in_uas_env_container)
+
+    # Create link to executables folder.
+    directory = os.path.dirname(os.path.realpath(__file__))
+
+    create_link("../tools/cache/bazel/execroot/com_uclauas/external", "external/downloaded")
+    create_link("tools/cache/bazel/execroot/com_uclauas/bazel-out", "output")
 
     print_update("Going to build the code...")
 
@@ -364,7 +374,7 @@ def run_controls_simulate(args):
         sim_command = "echo 'Not running simulator'"
         mavlink_router_command = "echo 'Not running mavlink router'"
         io_command = "bazel run //src/controls/io_sim:io_sim"
-    
+
     # Run scripts on the left side.
     run_cmd_exit_failure("tmux send-keys \"" + sim_command + "\" C-m")
 
