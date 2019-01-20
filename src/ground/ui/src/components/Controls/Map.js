@@ -17,6 +17,14 @@ const mapStateToProps = state => {
 const mapDispatchToProps = missionActions;
 
 class Map extends Component {
+  state = {
+    isOpen: 0
+  };
+  onToggleOpen(){
+      this.setState({
+        isOpen: !isOpen
+      });
+    }
   render() {
     return (
       <div className="Map">
@@ -33,7 +41,8 @@ class Map extends Component {
         >
           {this.props.commandPoints.map(commandPoint => 
             commandPoint ?
-              <Marker {...commandPoint.marker} key={commandPoint.id}>
+              <Marker {...commandPoint.marker} key={commandPoint.id} onCLick = {this.onToggleOpen}>
+              //define toggle open
                 <InfoWindow {...commandPoint.infobox}>
                   <div className="map-infobox">
                     {commandPoint.infobox.content}
