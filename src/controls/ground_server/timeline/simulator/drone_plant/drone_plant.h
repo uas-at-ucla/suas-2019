@@ -2,9 +2,9 @@
 
 #include <Eigen/Dense>
 
+#include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/motion_profile/motion_profile.h"
 #include "lib/physics_structs/physics_structs.h"
-#include "lib/mission_manager/mission_commands.pb.h"
 
 // using protobuf messages defined in this namespace
 using namespace lib::mission_manager;

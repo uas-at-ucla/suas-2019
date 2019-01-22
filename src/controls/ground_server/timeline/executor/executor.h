@@ -21,7 +21,6 @@
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/pid/pid.h"
 #include "lib/semaphore/semaphore.h"
-#include "lib/mission_manager/mission_commands.pb.h"
 
 // using protobuf messages defined in this namespace
 using namespace lib::mission_manager;
@@ -43,7 +42,8 @@ class Executor {
   Executor();
   ~Executor();
 
-  ExecutorOutput Calculate(lib::Position3D position, ::Eigen::Vector3d velocity);
+  ExecutorOutput Calculate(lib::Position3D position,
+                           ::Eigen::Vector3d velocity);
   void PreprocessorThread();
   void SetMission(::lib::mission_manager::Mission mission);
   ExecutorOutput VelocityNavigator();

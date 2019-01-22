@@ -1,7 +1,7 @@
 #pragma once
 
-#include "src/controls/ground_server/timeline/timeline_grammar.pb.h"
 #include "lib/mission_manager/mission_commands.pb.h"
+#include "src/controls/ground_server/timeline/timeline_grammar.pb.h"
 
 // using protobuf messages defined in this namespace
 using namespace lib::mission_manager;

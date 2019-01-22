@@ -18,6 +18,7 @@ class ContextVisitor {
   ContextVisitor();
   void Process(::std::string input, Position3D drone_position);
   ::std::vector<Position3D> getAvoidancePath();
+
  private:
   // Drone language visitors.
   void Visit(GroundProgram *n, Position3D drone_position);
@@ -33,10 +34,8 @@ class ContextVisitor {
   ::google::protobuf::RepeatedPtrField<StaticObstacle> static_obstacles_;
   ::google::protobuf::RepeatedPtrField<Position2D> field_boundary_;
 
-  //calculated avoidance path
+  // calculated avoidance path
   ::std::vector<Position3D> avoidance_path_;
-  
- 
 
   // helper functions
   bool WithinBoundary(Position2D *p1, Position2D *p2);

@@ -27,7 +27,7 @@ void ContextVisitor::Process(::std::string input, Position3D drone_position) {
   }
 }
 
-::std::vector<Position3D> ContextVisitor::getAvoidancePath(){
+::std::vector<Position3D> ContextVisitor::getAvoidancePath() {
   return avoidance_path_;
 }
 
@@ -98,7 +98,7 @@ void ContextVisitor::Visit(OffAxisCommand *n) {
 void ContextVisitor::Visit(WaitCommand *n) { (void)n; }
 
 void ContextVisitor::Visit(GotoCommand *n, Position3D drone_position) {
-   lib::rrt_avoidance::RRTAvoidance rrt_avoidance_;
+  lib::rrt_avoidance::RRTAvoidance rrt_avoidance_;
   // Go to a certain location on the field while avoiding obstacles by
   // calculating a safe path to travel
   ::lib::Position3D start = {drone_position.latitude(),
@@ -109,7 +109,7 @@ void ContextVisitor::Visit(GotoCommand *n, Position3D drone_position) {
   Obstacles obstacles;
   obstacles.mutable_static_obstacles()->CopyFrom(this->static_obstacles_);
 
-  //Prints additional info
+  // Prints additional info
   // using namespace std;
   // if (obstacles.static_obstacles_size() > 0) {
   //   cout << obstacles.static_obstacles(0).cylinder_radius() << endl;
@@ -118,7 +118,8 @@ void ContextVisitor::Visit(GotoCommand *n, Position3D drone_position) {
   // }
   // cout << start.latitude << ' ' << start.longitude << ' ' << start.altitude
   //      << endl;
-  // cout << end.latitude << ' ' << end.longitude << ' ' << end.altitude << endl;
+  // cout << end.latitude << ' ' << end.longitude << ' ' << end.altitude <<
+  // endl;
 
   ::std::vector<::lib::Position3D> current_avoidance_path =
       rrt_avoidance_.Process(start, end, obstacles);
@@ -130,7 +131,7 @@ void ContextVisitor::Visit(GotoCommand *n, Position3D drone_position) {
     cur_position.set_latitude(goto_step.latitude);
     cur_position.set_longitude(goto_step.longitude);
     cur_position.set_altitude(goto_step.altitude);
-    
+
     if (!WithinBoundary(&prev_position, &cur_position)) {
       throw "calculated avoidance path out of bounds";
     }
