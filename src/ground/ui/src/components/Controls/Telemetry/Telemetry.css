@@ -1,3 +1,19 @@
-.Telemetry div {
-    background: rgba(0, 0, 0, 0.6)
+.Telemetry .Readout {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.Telemetry .Altimeter {
+    background: rgba(0, 0, 0, 0.6);
+}
+
+.Telemetry .AttitudeIndicator {
+    display: inline-block;
+    border-width: 0px;
+    border-radius: 100px;
+    border-style: solid;
+
+    height: 200px;
+    width: 200px;
+
+    overflow: hidden;
 }

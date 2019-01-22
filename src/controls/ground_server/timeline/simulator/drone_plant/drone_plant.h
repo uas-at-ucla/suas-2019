@@ -1,5 +1,6 @@
 #pragma once
 
+#include "lib/battery/battery.h"
 #include <Eigen/Dense>
 
 #include "lib/mission_manager/mission_commands.pb.h"
@@ -17,18 +18,26 @@ namespace simulator {
 namespace drone_plant {
 namespace {
 const double kMetersPerCoordinate = GetDistance2D({0, 0, 0}, {1, 0, 0});
+
 } // namespace
 
 class DronePlant {
  public:
-  DronePlant(lib::Position3D init_position, double loop_frequency);
+
+  DronePlant(lib::Position3D init_position, double loop_frequency, Battery battery);
 
   void MoveDrone(Vector3D flight_direction);
-  lib::Position3D position() { return position_; }
-
+  lib::Position3D position() const { return position_; }
+  Battery battery() const { return battery_; }
+  double
+  GetFlightTime() const; // returns the total flight time in seconds (calculated
+                         // until the battery reaches drop off)
  private:
   lib::Position3D position_;
+  Battery battery_;
+
   ::lib::motion_profile::MotionProfile profile_;
+  double flight_time_;
 };
 
 } // namespace drone_plant
