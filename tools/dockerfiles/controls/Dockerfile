@@ -10,11 +10,21 @@ FROM debian:stretch
 # Install compilation and testing dependencies #################################
 RUN apt-get update     -qq                                                  && \
     apt-get install -y -qq curl                                             && \
-    apt-get install -y -qq gnupg                                               \
+    apt-get install -y -qq                                                     \
+    aria2                                                                      \
+    git                                                                        \
     gnupg                                                                      \
     gnupg2
 
-# Add apt-get repositories containing required packages. ###########################
+# Install apt-fast for faster APT downloads. ###################################
+WORKDIR /tmp
+RUN git clone https://github.com/ilikenwf/apt-fast.git
+RUN cp apt-fast/apt-fast /bin                                               && \
+    chmod +x /bin/apt-fast                                                  && \
+    cp apt-fast/apt-fast.conf /etc                                          && \
+    echo "VERBOSE_OUTPUT=n" > /etc/apt-fast.conf
+
+# Add apt-get repositories containing required packages. #######################
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN echo "deb http://deb.debian.org/debian testing main" \
@@ -24,9 +34,9 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
   "stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 
 # Install apt dependencies. ####################################################
-RUN apt-get update -qq                                                      && \
-    apt-get upgrade -y -qq                                                  && \
-    apt-get install -y                                                         \
+RUN apt-fast update -qq                                                     && \
+    apt-fast upgrade -y -qq                                                 && \
+    apt-fast install -y                                                        \
     bmon                                                                       \
     build-essential                                                            \
     ca-certificates-java                                                       \
@@ -93,7 +103,7 @@ RUN usermod -aG sudo uas
 # User env setup. ##############################################################
 RUN mkdir /external_libs
 
-RUN apt-get install -y openssh-client openssh-server
+RUN apt-fast install -y openssh-client openssh-server
 
 USER uas
 RUN mkdir -p /home/uas/code_env
@@ -150,7 +160,7 @@ RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
 # ROS dependencies.
 RUN pip install --user rosinstall_generator wstool
 RUN sudo rosdep init && rosdep update
-RUN sudo apt-get install -y libxmlrpcpp-dev librosconsole-dev
+RUN sudo apt-fast install -y libxmlrpcpp-dev librosconsole-dev
 
 USER root
 
