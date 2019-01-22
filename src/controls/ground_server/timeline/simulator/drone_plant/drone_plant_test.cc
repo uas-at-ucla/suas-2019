@@ -23,7 +23,6 @@ TEST(DronePlantTest, GoFromPointAToPointB) {
   DronePlant plant({0, 0, 0}, kLoopIteration, battery);
   lib::Position3D goal = {0.001, 0.001, 100};
 
-
   int iteration = 0;
   while (GetDistance2D(plant.position(), goal) > 0.1) {
     // Use a mock proportionality PID to direct the drone.

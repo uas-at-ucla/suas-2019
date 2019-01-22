@@ -23,8 +23,8 @@ const double kMetersPerCoordinate = GetDistance2D({0, 0, 0}, {1, 0, 0});
 
 class DronePlant {
  public:
-
-  DronePlant(lib::Position3D init_position, double loop_frequency, Battery battery);
+  DronePlant(lib::Position3D init_position, double loop_frequency,
+             Battery battery);
 
   void MoveDrone(Vector3D flight_direction);
   lib::Position3D position() const { return position_; }
