@@ -8,7 +8,7 @@ namespace ground_server {
 namespace timeline {
 namespace context_visitors {
 namespace testing {
-
+using namespace lib::mission_manager;
 namespace {
 const int num_field_points = 4;
 const int num_test_points = 5;
@@ -29,7 +29,7 @@ bool test_result[num_test_points] = {
     true, false, false, false,
     true}; // whether each point should be in field boundary
 
-Position3D start_location;
+lib::mission_manager::Position3D start_location;
 } // namespace
 
 void initInputInstructionsObject(GroundProgram &input_instructions) {
@@ -54,7 +54,8 @@ TEST(ContextVisitorTest, CanDetectOutOfBoundary) {
   for (int i = 0; i < num_test_points; i++) {
     input_instructions.clear_commands();
     GroundCommand *cmd = input_instructions.add_commands();
-    Position3D *goal = new Position3D::Position3D();
+    lib::mission_manager::Position3D *goal =
+        new lib::mission_manager::Position3D();
     goal->set_latitude(test_points[i][0]);
     goal->set_longitude(test_points[i][1]);
     goal->set_altitude(i * 3);
@@ -100,7 +101,7 @@ TEST(ContextVisitorTest, CanPerformObjectAvoidance) {
   obstacle_center->set_longitude(20);
 
   // create a mission to fly to goal with a small obstacle
-  Position3D *goal = new Position3D;
+  lib::mission_manager::Position3D *goal = new lib::mission_manager::Position3D;
   goal->set_latitude(80);
   goal->set_longitude(80);
   goal->set_altitude(0);
@@ -125,7 +126,7 @@ TEST(ContextVisitorTest, CanPerformObjectAvoidance) {
     context_visitor.Process(serialized_instructions, start_location);
 
     // get and print the obstacle avoidance path
-    ::std::vector<Position3D> avoidance_path =
+    ::std::vector<lib::mission_manager::Position3D> avoidance_path =
         context_visitor.getAvoidancePath();
     ::std::cout << "calculated object avoidance path: " << ::std::endl;
     for (auto const &step : avoidance_path) {
