@@ -57,7 +57,7 @@ class State {
   virtual void Reset() = 0;
 };
 
-class TranslateState: public State {
+class TranslateState : public State {
  public:
   TranslateState();
   ~TranslateState() = default;
@@ -96,7 +96,6 @@ class UnknownState : public State {
               ::src::controls::Output &output) override;
   void Reset() override;
 };
-
 
 // State machine router ////////////////////////////////////////////////////////
 class MissionStateMachine {
