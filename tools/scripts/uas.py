@@ -269,8 +269,8 @@ def run_controls_build(args=None, show_complete=True, raspi=True):
     # Create link to executables folder.
     directory = os.path.dirname(os.path.realpath(__file__))
 
-    create_link("../tools/cache/bazel/execroot/com_uclauas/external", "external/downloaded")
-    create_link("tools/cache/bazel/execroot/com_uclauas/bazel-out", "output")
+    #create_link("../tools/cache/bazel/execroot/com_uclauas/external", "external/downloaded")
+    #create_link("tools/cache/bazel/execroot/com_uclauas/bazel-out", "output")
 
     print_update("Going to build the code...")
 
