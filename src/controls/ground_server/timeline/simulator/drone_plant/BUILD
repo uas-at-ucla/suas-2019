@@ -10,7 +10,7 @@ cc_library(
   deps = [
     '@eigen',
     '//lib/motion_profile:motion_profile',
-    '//lib/rrt_avoidance:rrt_avoidance',
+    '//lib/battery:battery',
   ],
 )
 
