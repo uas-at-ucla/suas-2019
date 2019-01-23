@@ -45,6 +45,8 @@ kill_container uas-at-ucla_controls
 kill_container uas-at-ucla_ground
 kill_container uas-at-ucla_vision
 
+docker network rm uas_bridge &> /dev/null
+
 # Remove all docker-machines.
 if [[ $(uname -s) == "Darwin" ]]
 then
