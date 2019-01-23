@@ -10,35 +10,41 @@ import Settings from './components/Settings/Settings';
 const defaultPage = "/controls" // "/vision"
 
 class App extends Component {
+  componentDidMount() {
+    document.title = 'Flight Deck';
+  }
+
   render() {
     return (
-      <Router>
-        <div>
-          <nav>
-            <ul>
-              <li>
-                <Link to="/controls">CONTROLS</Link>
-              </li>
-              <li>
-                <Link to="/vision">VISION</Link>
-              </li>
-              <li>
-                <Link to="/analytics">ANALYTICS</Link>
-              </li>
-              <li>
-                <Link to="/settings">SETTINGS</Link>
-              </li>
-            </ul>
-          </nav>
+      <div>
+        <Router>
+          <div>
+            <nav className="viewNav">
+              <ul>
+                <li>
+                  <Link to="/controls">CONTROLS</Link>
+                </li>
+                <li>
+                  <Link to="/vision">VISION</Link>
+                </li>
+                <li>
+                  <Link to="/analytics">ANALYTICS</Link>
+                </li>
+                <li>
+                  <Link to="/settings">SETTINGS</Link>
+                </li>
+              </ul>
+            </nav>
 
-          {/* The following produces a warning about redirecting, but it's ok! */}
-          <Redirect exact from="/" to={defaultPage}/>
-          <Route path="/controls" component={Controls} />
-          <Route path="/vision" component={Vision} />
-          <Route path="/analytics" component={Analytics} />
-          <Route path="/settings" component={Settings} />
-        </div>
-      </Router>
+            {/* The following produces a warning about redirecting, but it's ok! */}
+            <Redirect exact from="/" to={defaultPage}/>
+            <Route path="/controls" component={Controls} />
+            <Route path="/vision" component={Vision} />
+            <Route path="/analytics" component={Analytics} />
+            <Route path="/settings" component={Settings} />
+          </div>
+        </Router>
+      </div>
     );
   }
 }

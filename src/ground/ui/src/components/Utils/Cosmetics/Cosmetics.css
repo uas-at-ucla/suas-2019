@@ -1,0 +1,11 @@
+.component-background 
+{
+    background-color: rgba(0 , 0 , 0 , .6);
+    display: inline-block;
+}
+
+.logo-img
+{
+    width: 20vw;
+    margin: 10px;
+}

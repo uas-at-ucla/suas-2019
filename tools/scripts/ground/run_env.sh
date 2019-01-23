@@ -47,6 +47,9 @@ then
     exit 1
 fi
 
+# Create network for docker container to use.
+./tools/scripts/docker/create_network.sh > /dev/null 2>&1 || true
+
 # Set root path of the repository volume on the host machine.
 # Note: If docker is called within another docker instance & is trying to start
 #       the UAS@UCLA docker environment, the root will need to be set to the
@@ -72,9 +75,12 @@ DOCKER_RUN_CMD="set -x; \
 docker run \
   --rm \
   -d \
+  --ip 192.168.2.20 \
   -p 3000:3000 \
+  -p 8081:8081 \
   -v $ROOT_PATH:/home/uas/code_env \
   --name uas-at-ucla_ground \
+  --net uas_bridge \
   --dns 8.8.8.8 \
   uas-at-ucla_ground \
   bash -c "$DOCKER_RUN_CMD"

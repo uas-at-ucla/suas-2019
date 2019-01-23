@@ -1,15 +1,12 @@
 #!/bin/bash
 
-if [ $(uname -s) == "Darwin" ]
-then
-  source tools/scripts/docker/start_machine_mac.sh
-fi
+source tools/scripts/docker/start_machine_mac.sh
 
 function interrupt_exec {
   if [ ! -z $PIDFILE ]
   then
-    docker exec -t $UAS_AT_UCLA_IMAGE sh -c "PID=\$(cat $PIDFILE);echo \"KILLING \$PID\";kill -15 \$PID > /dev/null 2>&1 || true;rm $PIDFILE;rm $NAMEFILE"
-    printf "\033[91mINTERRUPTED!\033[0m"
+    docker exec -t $UAS_AT_UCLA_IMAGE sh -c "PID=\$(cat $PIDFILE);kill -15 \$PID > /dev/null 2>&1 || true;rm -f $PIDFILE;rm -f $NAMEFILE"
+    printf "\033[91mINTERRUPTED!\033[0m\n"
   fi
 }
 
