@@ -4,9 +4,10 @@
 int main(int argc, char **argv) {
   ::ros::init(argc, argv, "my_test");
   ::ros::start();
-  ::ros::Rate loop(100);
+  ::ros::Rate loop(10);
 
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < 100; i++) {
+    ::std::cout << "Here " << i << ::std::endl;
     loop.sleep();
     ROS_INFO_STREAM("Hello "
                     << "World " << i);
