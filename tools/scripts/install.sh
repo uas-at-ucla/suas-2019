@@ -1,13 +1,8 @@
 #!/bin/bash
 
-unset PACKAGES
-unset MACOS_PACKAGES
-unset INSTALL_REQUIRED
-unset PLATFORM
-unset NEED_TO_INSTALL
-
-PACKAGES="docker python2.7 tmux git node"
-MACOS_PACKAGES="brew docker-machine docker-machine-nfs virtualbox"
+PACKAGES="docker python2.7 tmux git"
+OPTIONAL_PACKAGES="node"
+MACOS_PACKAGES="brew docker-machine docker-machine-nfs virtualbox md5sum"
 INSTALL_REQUIRED="false"
 NEED_TO_INSTALL=""
 ACTION_REQUIRED=""
@@ -20,7 +15,12 @@ function check_if_installed {
 }
 
 function install_package {
-  check_if_installed "$1"
+  if [ ! -z $2 ]
+  then
+    check_if_installed "$2"
+  else
+    check_if_installed "$1"
+  fi
   if [ $? -ne 0 ]
   then
     if [ "$PLATFORM" == "Darwin" ]
@@ -66,6 +66,16 @@ then
 fi
 
 echo "Need to install$NEED_TO_INSTALL"
+
+sudo echo "Checking if sudo privileges work..." > /dev/null 2>&1
+if [ $? -ne 0 ]
+then
+  echo "Please run './tools/scripts/install.sh' directly to install dependencies."
+  exit 1
+fi
+
+PACKAGES="$OPTIONAL_PACKAGES $PACKAGES"
+
 
 if [ "$PLATFORM" == "Darwin" ]
 then
@@ -145,9 +155,14 @@ then
   fi
 fi
 
+if [ "$PLATFORM" == "Darwin" ]
+then
+  install_package "md5sha1sum" "md5sum"
+fi
+
 install_package "tmux"
 install_package "git"
-install_package "nodejs"
+install_package "nodejs" "node"
 
 if [ "$ACTION_REQUIRED" != "" ]
 then

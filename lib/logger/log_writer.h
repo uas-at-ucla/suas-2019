@@ -19,7 +19,7 @@ namespace logger {
 
 class LogWriter {
  public:
-  LogWriter();
+  LogWriter(bool write_to_file);
   ~LogWriter();
 
   void Quit() { run_ = false; }
@@ -37,6 +37,7 @@ class LogWriter {
   ::std::thread thread_;
 
   ::std::shared_ptr<::spdlog::logger> logger_;
+  bool write_to_file_;
 };
 
 } // namespace logger

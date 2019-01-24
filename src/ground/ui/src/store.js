@@ -1,23 +1,31 @@
 import { createStore, applyMiddleware } from 'redux';
-import { combineReducers } from 'redux-immutable';
-import { createLogger } from 'redux-logger'
+import { combineReducersAndSelectors } from './utils/reduxUtils';
+import { createLogger } from 'redux-logger';
 
 import communicator from './communicator';
-import telemetryReducer from './reducers/telemetryReducer';
+import loadTimelineGrammar from './protobuf/timelineGrammarUtil';
 
-const reducers = combineReducers({
-  telemetry: telemetryReducer
+import telemetryReducer from './reducers/telemetryReducer';
+import missionReducer from './reducers/missionReducer';
+
+export const { reducer, selector } = combineReducersAndSelectors({
+  telemetry: telemetryReducer,
+  missionPlan: missionReducer
 });
 
 const logger = createLogger({
   predicate: (getState, action) => {
-  	let shouldLog = (action.type === 'TELEMETRY');
+    // let shouldLog = (action.type === 'TELEMETRY');
+    let shouldLog = false;
     return shouldLog;
   },
-  stateTransformer: (state) => state.toJS(),
   collapsed: true
 });
 
 const middleware = applyMiddleware(logger, communicator);
 
-export default createStore(reducers, middleware);
+const store = createStore(reducer, middleware);
+
+loadTimelineGrammar(store.dispatch);
+
+export default store;

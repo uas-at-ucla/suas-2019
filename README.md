@@ -41,8 +41,9 @@ and reliability for the control software.
 automatically build every commit that is pushed to this Github repository.
 
 ### Installation
-Install docker, tmux, and python2.7. After that, "./uas.sh" will list all of the
-possible commands that can be run. Use "./uas.sh build" to build the code.
+Install docker, tmux, and python2.7. After that, `./uas` will list all of the
+possible commands that can be run. Use `./uas controls build` to build the
+controls code.
 
 ### Platforms and Libraries Used
  * [PX4 Firmware](https://github.com/PX4/Firmware) as the flight controller software stack and simulator.
@@ -50,5 +51,5 @@ possible commands that can be run. Use "./uas.sh build" to build the code.
  * [OpenCV](https://github.com/opencv/opencv) for image filtering and segmentation
  * [Darkflow](https://github.com/thtrieu/darkflow) for image classification
  * [MAVLink Common Messages](http://mavlink.org/messages/common) for communicating between Ground Control Station and the UAV
- * [Bazel](https://bazel.build/), a C++ cross-compiler for the Raspberry Pi
+ * [Bazel](https://bazel.build/), a fast, scalable, multi-language and extensible build system
  * [Gazebo](https://dev.px4.io/en/simulation/gazebo.html) for 3D simulation

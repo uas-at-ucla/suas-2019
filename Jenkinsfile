@@ -8,9 +8,9 @@ pipeline {
   stages {
     stage('SETUP') {
       steps {
-        fileExists './uas.sh'
-        sh './uas.sh nuke'
-        sh './uas.sh run_env'
+        fileExists './uas'
+        sh './uas nuke'
+        sh './uas controls docker start'
       }
     }
     stage('INITIAL CHECKS') {
@@ -24,7 +24,7 @@ pipeline {
         }
         stage('LINT') {
           steps {
-            sh './uas.sh lint --check'
+            sh './uas lint --check'
           }
         }
       }
@@ -33,17 +33,17 @@ pipeline {
       parallel {
         stage('BUILD CONTROLS') {
           steps {
-            sh './uas.sh build'
+            sh './uas controls build'
           }
         }
         stage('BUILD VISION') {
           steps {
-            sh './uas.sh vision build'
+            sh './uas vision build'
           }
         }
         stage('BUILD GROUND') {
           steps {
-            sh './uas.sh ground build'
+            sh './uas ground build'
           }
         }
       }
@@ -63,7 +63,7 @@ pipeline {
         stage('UNIT TESTS') {
           steps {
             echo 'unit tests'
-            sh './uas.sh unittest'
+            sh './uas unittest'
           }
         }
       }
@@ -76,10 +76,5 @@ pipeline {
   }
   environment {
     PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"
-  }
-  post {
-    always {
-      sh 'docker kill $(docker ps --filter status=running --format "{{.ID}}" --latest --filter name=uas_env) || true'
-    }
   }
 }

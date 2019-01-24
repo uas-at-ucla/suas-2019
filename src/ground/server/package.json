@@ -5,16 +5,22 @@
   "main": "ground_server.js",
   "scripts": {
     "start": "concurrently --kill-others \"npm:server\" \"npm:ui\"",
+    "start-web": "concurrently --kill-others \"npm:server\" \"npm:ui-web\"",
     "server": "node ground_server.js",
-    "ui": "cd ../ui; npm start",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "ui": "cd ../ui && npm start",
+    "ui-web": "cd ../ui && npm run start-web",
+    "test": "node test.js"
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "check-dependencies": "^1.1.0"
+    "check-dependencies": "^1.1.0",
+    "concurrently": "^4.0.1"
   },
   "dependencies": {
+    "axios": "^0.18.0",
+    "protobufjs": "^6.8.8",
+    "qs": "^6.6.0",
     "socket.io": "^2.1.1"
   }
 }

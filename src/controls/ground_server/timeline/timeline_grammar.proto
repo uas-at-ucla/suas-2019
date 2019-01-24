@@ -1,0 +1,69 @@
+syntax = "proto2";
+
+package src.controls.ground_server.timeline;
+import "lib/mission_manager/mission_commands.proto";
+
+
+// Ground language /////////////////////////////////////////////////////////////
+// This is the timeline representation for a mission, as received from the
+// ground. Ground timeline commands are abstract and should only convey the
+// high objectives of what the mission requires and the current state of the
+// field.
+
+// GroundProgram is the message that is created by the groundstation,
+// serialized, and sent to the timeline compiler. It contains the list of
+// commands to execute and characteristics of the field, as received by the
+// interop server.
+message GroundProgram {
+  repeated GroundCommand     commands                                                          = 1;
+  repeated lib.mission_manager.StaticObstacle    static_obstacles                              = 2;
+  repeated lib.mission_manager.Position2D        field_boundary                                = 3;
+}
+
+// GroundCommand wraps all of the valid commands that are possible for ground
+// language. Only one of the fields for the oneof command can be set at a time,
+// so whichever one is set will determine the type of this command.
+message GroundCommand {
+  oneof command {
+    lib.mission_manager.WaypointCommand          waypoint_command                              = 1;
+    UgvDropCommand           ugv_drop_command                                = 2;
+    lib.mission_manager.SurveyCommand            survey_command                                = 3;
+    lib.mission_manager.OffAxisCommand           off_axis_command                              = 4;
+    WaitCommand              wait_command                                  = 5;
+  }
+}
+
+message UgvDropCommand {
+  required lib.mission_manager.Position2D        ground_target                                 = 1;
+  required double            drop_height                                   = 2;
+}
+
+message WaitCommand {
+  required double            time                                          = 1;
+}
+
+// Drone language //////////////////////////////////////////////////////////////
+message DroneProgram {
+  repeated DroneCommand      commands                                      = 1;
+}
+
+message DroneCommand {
+  oneof command {
+    lib.mission_manager.NothingCommand           nothing_command                                = 1;
+    lib.mission_manager.SleepCommand             sleep_command                                  = 2;
+    lib.mission_manager.GotoCommand              goto_command                                   = 3;
+    TranslateCommand         goto_raw_command                               = 4;
+    TriggerBombDropCommand   trigger_bomb_drop_command                      = 5;
+    TriggerAlarmCommand      trigger_alarm_command                          = 6;
+    TranslateCommand         translate_command                              = 7;
+  }
+}
+
+message TranslateCommand {
+  required lib.mission_manager.Position3D        goal                                          = 1;
+  required bool              come_to_stop                                  = 2;
+}
+
+message TriggerBombDropCommand {}
+
+message TriggerAlarmCommand {}

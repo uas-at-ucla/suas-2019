@@ -8,20 +8,32 @@ import urllib.request
 import subprocess
 import xml.etree.ElementTree as ET
 
-# run this script only in the targets directory
-os.chdir(os.path.dirname(os.path.realpath(__file__)))
-
 COLORS = {
     'white': (255, 255, 255),
     'black': (0, 0, 0),
     'gray': (128, 128, 128),
     'red': (255, 0, 0),
     'blue': (0, 0, 255),
-    'green': (0, 255, 0),
+    'green': (55, 130, 70),
     'yellow': (255, 255, 0),
     'purple': (128, 0, 128),
     'brown': (165, 42, 42),
     'orange': (255, 165, 0)
+}
+
+KELVIN_TEMP = {
+    4500: (255, 219, 186),
+    5000: (255, 228, 206),
+    5500: (255, 236, 224),
+    6000: (255, 243, 239),
+    6500: (255, 249, 253),
+    7000: (245, 243, 255),
+    7500: (235, 238, 255),
+    8000: (227, 233, 255),
+    8500: (220, 229, 255),
+    9000: (214, 225, 255),
+    9500: (208, 222, 255),
+    10000: (204, 219, 255)
 }
 
 LETTERS = [
@@ -33,11 +45,13 @@ TRANSFORMS = ('rotate', 'perspective', 'affine')
 
 
 def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
-               draw_box, rescale_ratio):
+               draw_box, rescale_ratio, shape_color_name, letter_color_name,
+               target_pos_conf, white_balance, origin_pos):
     background_files = os.scandir(bg_dir)
     field_width = math.trunc(math.log10(n))
     for i in range(n):
-
+        if i % 100 == 0:
+            print('Generating image #{}'.format(i))
         # Get a background image
         background_file = None
         try:
@@ -56,10 +70,38 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
                 resample=Image.BICUBIC)
 
         # Choose some colors
-        shape_color = random.choice(list(COLORS.values()))
-        letter_color = random.choice(list(COLORS.values()))
-        while letter_color == shape_color:
-            letter_color = random.choice(list(COLORS.values()))
+        pure_shape_color = random.choice(list(COLORS.values(
+        ))) if shape_color_name == 'random' else COLORS[shape_color_name]
+
+        pure_letter_color = random.choice(list(COLORS.values(
+        ))) if letter_color_name == 'random' else COLORS[letter_color_name]
+
+        while (pure_letter_color == pure_shape_color
+               and shape_color_name == 'random'
+               and letter_color_name == 'random'):
+            pure_shape_color = random.choice(list(COLORS.values()))
+
+        # randomize rgb values for the colors chosen
+        shape_color_lst = []
+        for value in pure_shape_color:
+            if value == 255:
+                shape_color_lst.append(value + int(random.uniform(-15, 0)))
+            elif value == 0:
+                shape_color_lst.append(value + int(random.uniform(0, 15)))
+            else:
+                shape_color_lst.append(value + int(random.uniform(-15, 15)))
+
+        letter_color_lst = []
+        for value in pure_letter_color:
+            if value == 255:
+                letter_color_lst.append(value + int(random.uniform(-15, 0)))
+            elif value == 0:
+                letter_color_lst.append(value + int(random.uniform(0, 15)))
+            else:
+                letter_color_lst.append(value + int(random.uniform(-15, 15)))
+
+        shape_color = tuple(shape_color_lst)
+        letter_color = tuple(letter_color_lst)
 
         # Draw a target with a generator decided by the iterator
         generator = next(t_gen)
@@ -73,8 +115,11 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
                 random.randint(0, 359), resample=Image.BICUBIC,
                 expand=1).resize((t_size, t_size), resample=Image.BOX)
 
-        target_pos = (random.randint(0, i_size[0] - t_size),
-                      random.randint(0, i_size[1] - t_size))
+        if target_pos_conf is None:
+            target_pos = (random.randint(0, i_size[0] - t_size),
+                          random.randint(0, i_size[1] - t_size))
+        else:
+            target_pos = target_pos_conf
 
         # create annotation
         im_filename = ('{:0=' + str(field_width) + 'd}').format(i)
@@ -109,9 +154,23 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
             draw.rectangle(target_bounds, outline=(255, 255, 255, 255))
 
         # Paste the target and save
-        result = background.crop(box=(0, 0, i_size[0], i_size[1]))
+        ori_x, ori_y = origin_pos
+        if ori_x + i_size[0] > background.width:
+            ori_x = background.width - i_size[0]
+        if ori_y + i_size[1] > background.height:
+            ori_y = background.height - i_size[1]
+        result = background.crop(
+            box=(ori_x, ori_y, ori_x + i_size[0], ori_y + i_size[1]))
+
         result.paste(target, box=target_pos, mask=target)
-        result.save(os.path.join(dest_dir, im_filename + '.jpg'))
+        if white_balance:
+            r, g, b = random.choice(tuple(KELVIN_TEMP.values()))
+            convert_temp = (r / 255.0, 0.0, 0.0, 0.0, 0.0, g / 255.0, 0.0, 0.0,
+                            0.0, 0.0, b / 255.0, 0.0)
+            result = result.convert('RGB', convert_temp)
+        result.save(
+            os.path.join(dest_dir,
+                         im_filename + '.' + background_file.split('.')[1]))
 
 
 if __name__ == '__main__':
@@ -131,11 +190,36 @@ if __name__ == '__main__':
         choices=targets.TARGET_TYPES + ['Random'],
         help='type of target to generate')
     parser.add_argument(
+        '--shape-color',
+        default='random',
+        dest='shape_color',
+        choices=tuple(COLORS.keys()),
+        help='name of the color of the shape')
+    parser.add_argument(
+        '--letter-color',
+        default='random',
+        dest='letter_color',
+        choices=tuple(COLORS.keys()),
+        help='name of the color of the letter')
+    parser.add_argument(
+        '-w',
+        '--white-balance',
+        dest='white_balance',
+        action='store_true',
+        help='simulate incorrect white balance')
+    parser.add_argument(
         '--target-size',
         type=int,
         default=100,
         dest='target_size',
         help='width/height of target(s) in pixels')
+    parser.add_argument(
+        '--target-pos',
+        type=int,
+        nargs=2,
+        default=None,
+        dest='target_pos',
+        help='position of the target on the image, by default it is random')
     parser.add_argument(
         '--image-size',
         type=int,
@@ -181,8 +265,23 @@ if __name__ == '__main__':
         default=1,
         dest='rescale_ratio',
         help='rescale the source image before using it as a background')
+    parser.add_argument(
+        '--origin-pos',
+        type=int,
+        nargs=2,
+        default=(0, 0),
+        dest='origin_pos',
+        help='x, y coordinate of the alternative origin to crop the image as a \
+        tuple. By default it is (0,0) and max they can get is the width and \
+        height of the background minus image_size')
 
     args = parser.parse_args()
+
+    if args.dest is not None:
+        args.dest = os.path.realpath(args.dest)
+    args.backgrounds = os.path.realpath(args.backgrounds)
+
+    os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
     if args.n_targets < 1:
         parser.error('number of targets must be positive')
@@ -236,10 +335,15 @@ if __name__ == '__main__':
         t_gen=generator,
         n=args.n_targets,
         shape=args.target_shape,
+        white_balance=args.white_balance,
         t_size=args.target_size,
         i_size=args.image_size,
         bg_dir=args.backgrounds,
         dest_dir=args.dest,
         transforms=args.transforms,
         draw_box=args.draw_box,
-        rescale_ratio=args.rescale_ratio)
+        rescale_ratio=args.rescale_ratio,
+        origin_pos=args.origin_pos,
+        shape_color_name=args.shape_color,
+        letter_color_name=args.letter_color,
+        target_pos_conf=args.target_pos)
