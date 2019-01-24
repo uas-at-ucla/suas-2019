@@ -38,15 +38,40 @@ KELVIN_TEMP = {
 
 LETTERS = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '1', '2', '3', '4',
+    '5', '6', '7', '8', '9', '0'
 ]
 
 TRANSFORMS = ('rotate', 'perspective', 'affine')
 
 
-def gen_images(t_gen, n, shape, t_size, i_size, r_angle, bg_dir, dest_dir, 
-               transforms, draw_box, rescale_ratio, shape_color_name, 
-               letter_color_name, target_pos_conf, white_balance, origin_pos):
+class TargetSelector:
+    def __init__(self, target_names, font):
+        self.targets = []
+        for target_name in target_names:
+            self.targets += [getattr(targets, target_name)(font)]
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return random.choice(self.targets)
+
+class SingleTarget:
+    def __init__(self, target_name, font):
+        self.target = getattr(targets, target_name)(font)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.target
+
+
+def gen_images(t_gen, n, letter, shape, t_size, i_size, r_angle, bg_dir, 
+               dest_dir, transforms, draw_box, rescale_ratio, shape_color_name, 
+               letter_color_name, target_pos_conf, white_balance, origin_pos,
+               img_name):
     background_files = os.scandir(bg_dir)
     field_width = math.trunc(math.log10(n))
     for i in range(n):
@@ -105,10 +130,14 @@ def gen_images(t_gen, n, shape, t_size, i_size, r_angle, bg_dir, dest_dir,
 
         # Draw a target with a generator decided by the iterator
         generator = next(t_gen)
+        if (letter == 'Random'):
+            letter_choice = random.choice(LETTERS)
+        else:
+            letter_choice = letter
         target = generator.draw_target(
             size=t_size,
             shape_color=shape_color,
-            letter=random.choice(LETTERS),
+            letter=letter_choice,
             letter_color=letter_color)
         if r_angle > 0:
             target = target.rotate(
@@ -125,32 +154,36 @@ def gen_images(t_gen, n, shape, t_size, i_size, r_angle, bg_dir, dest_dir,
         else:
             target_pos = target_pos_conf
 
-        # create annotation
-        im_filename = ('{:0=' + str(field_width) + 'd}').format(i)
-        annotation = ET.Element('annotation')
-        annotation_xml = ET.ElementTree(element=annotation)
-        ET.SubElement(annotation, 'filename').text = im_filename + '.jpg'
-        ET.SubElement(ET.SubElement(annotation, 'source'),
-                      'database').text = 'Unknown'
-        size_e = ET.SubElement(annotation, 'size')
-        ET.SubElement(size_e, 'width').text = str(i_size[0])
-        ET.SubElement(size_e, 'height').text = str(i_size[1])
-        ET.SubElement(size_e, 'depth').text = '3'
-        ET.SubElement(annotation, 'segmented').text = '0'
-        obj_e = ET.SubElement(annotation, 'object')
-        ET.SubElement(obj_e, 'name').text = type(generator).__name__
-        ET.SubElement(obj_e, 'pose').text = 'Unspecified'
-        ET.SubElement(obj_e, 'truncated').text = '0'
-        ET.SubElement(obj_e, 'difficult').text = '0'
+        single_file = False;
+        if single_file:
+            pass
+        else:
+            # create annotation
+            im_filename = ('{:0=' + str(field_width) + 'd}').format(i)
+            annotation = ET.Element('annotation')
+            annotation_xml = ET.ElementTree(element=annotation)
+            ET.SubElement(annotation, 'filename').text = im_filename + '.jpg'
+            ET.SubElement(ET.SubElement(annotation, 'source'),
+                          'database').text = 'Unknown'
+            size_e = ET.SubElement(annotation, 'size')
+            ET.SubElement(size_e, 'width').text = str(i_size[0])
+            ET.SubElement(size_e, 'height').text = str(i_size[1])
+            ET.SubElement(size_e, 'depth').text = '3'
+            ET.SubElement(annotation, 'segmented').text = '0'
+            obj_e = ET.SubElement(annotation, 'object')
+            ET.SubElement(obj_e, 'name').text = type(generator).__name__
+            ET.SubElement(obj_e, 'pose').text = 'Unspecified'
+            ET.SubElement(obj_e, 'truncated').text = '0'
+            ET.SubElement(obj_e, 'difficult').text = '0'
 
-        target_bounds = [(target_pos[0], target_pos[1]),
-                         (target_pos[0] + t_size, target_pos[1] + t_size)]
-        bnds_e = ET.SubElement(obj_e, 'bndbox')
-        ET.SubElement(bnds_e, 'xmin').text = str(target_bounds[0][0])
-        ET.SubElement(bnds_e, 'ymin').text = str(target_bounds[0][1])
-        ET.SubElement(bnds_e, 'xmax').text = str(target_bounds[1][0])
-        ET.SubElement(bnds_e, 'ymax').text = str(target_bounds[1][1])
-        annotation_xml.write(os.path.join(dest_dir, im_filename + '.xml'))
+            target_bounds = [(target_pos[0], target_pos[1]),
+                             (target_pos[0] + t_size, target_pos[1] + t_size)]
+            bnds_e = ET.SubElement(obj_e, 'bndbox')
+            ET.SubElement(bnds_e, 'xmin').text = str(target_bounds[0][0])
+            ET.SubElement(bnds_e, 'ymin').text = str(target_bounds[0][1])
+            ET.SubElement(bnds_e, 'xmax').text = str(target_bounds[1][0])
+            ET.SubElement(bnds_e, 'ymax').text = str(target_bounds[1][1])
+            annotation_xml.write(os.path.join(dest_dir, im_filename + '.xml'))
 
         # Draw a bounding box
         if draw_box:
@@ -172,6 +205,8 @@ def gen_images(t_gen, n, shape, t_size, i_size, r_angle, bg_dir, dest_dir,
             convert_temp = (r / 255.0, 0.0, 0.0, 0.0, 0.0, g / 255.0, 0.0, 0.0,
                             0.0, 0.0, b / 255.0, 0.0)
             result = result.convert('RGB', convert_temp)
+        if img_name != 'default':
+            im_filename = img_name
         result.save(
             os.path.join(dest_dir,
                          im_filename + '.' + background_file.split('.')[1]))
@@ -186,6 +221,18 @@ if __name__ == '__main__':
         default=1,
         dest='n_targets',
         help='number of targets to generate')
+    parser.add_argument(
+        '--image_name',
+        default='default',
+        dest='image_name',
+        help='file name to save the output image to')
+    parser.add_argument(
+        '-l',
+        '--letter',
+        default='Random',
+        dest='letter',
+        choices=LETTERS + ['Random'],
+        help='type of letter to generate')
     parser.add_argument(
         '-s',
         '--shape',
@@ -313,28 +360,6 @@ if __name__ == '__main__':
         os.makedirs(default_dest, exist_ok=True)
         args.dest = default_dest
 
-    class TargetSelector:
-        def __init__(self, target_names, font):
-            self.targets = []
-            for target_name in target_names:
-                self.targets += [getattr(targets, target_name)(font)]
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            return random.choice(self.targets)
-
-    class SingleTarget:
-        def __init__(self, target_name, font):
-            self.target = getattr(targets, target_name)(font)
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            return self.target
-
     if args.target_shape == 'Random':
         generator = TargetSelector(
             target_names=targets.TARGET_TYPES, font=args.font)
@@ -344,6 +369,8 @@ if __name__ == '__main__':
     gen_images(
         t_gen=generator,
         n=args.n_targets,
+        img_name=args.image_name,
+        letter=args.letter,
         shape=args.target_shape,
         white_balance=args.white_balance,
         t_size=args.target_size,
