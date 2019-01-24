@@ -20,7 +20,7 @@ AutopilotInterface::AutopilotInterface(const char *address) :
   current_messages.sysid = system_id;
   current_messages.compid = autopilot_id;
 
-  char udp[27];
+  char udp[30];
   strcpy(udp, "udp://");
   strcat(udp, address);
   strcat(udp, ":8084@:8084");

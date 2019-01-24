@@ -156,10 +156,11 @@ TEST_F(FlightLoopTest, RunMission) {
   // Check if loop waits for propellers to spin up before continuing to ARMED
   // state.
   sensors().set_armed(true);
-  for (double start = sensors().time(); sensors().time() < start + state_machine::kSpinupTime;) {
+  for (double start = sensors().time();
+       sensors().time() < start + state_machine::kSpinupTime;) {
     StepLoop();
-    ASSERT_EQ(output().state(),
-              ::src::controls::loops::state_machine::FlightLoopState::ARMED_WAIT_FOR_SPINUP);
+    ASSERT_EQ(output().state(), ::src::controls::loops::state_machine::
+                                    FlightLoopState::ARMED_WAIT_FOR_SPINUP);
   }
 
   StepLoop();
