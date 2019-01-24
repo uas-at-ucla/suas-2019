@@ -4,13 +4,16 @@ const loadProtobufUtils = require('./protobuf_utils/protobuf_utils');
 const loadInteropClient = require('./interop_client/interop_client');
 
 const port = 8081;
+const USE_FAKE_DRONE = true;
+var drone_connected = false;
 
 // create server
 const io = socketIOServer(port);
 
-// create two namespaces
-const drone_io = io.of('/drone');
+// create namespaces
 const ui_io = io.of('/ui');
+const drone_io = io.of('/drone');
+const fake_drone_io = io.of('/fake-drone');
 
 // For decoding and encoding drone messages
 var protobufUtils = null;
@@ -19,7 +22,8 @@ loadProtobufUtils((theProtobufUtils) => {
 });
 
 var interopClient = null;
-loadInteropClient("localhost", 8000, "testadmin", "testpass")
+// loadInteropClient("192.168.2.30", 80, "testuser", "testpass")
+loadInteropClient("localhost", 8000, "testuser", "testpass")
   .then(theInteropClient => {
     interopClient = theInteropClient;
   }).catch(error => {
@@ -27,6 +31,7 @@ loadInteropClient("localhost", 8000, "testadmin", "testpass")
   });
 
 drone_io.on('connect', (socket) => {
+  drone_connected = true;
   console.log("drone connected!");
 
   socket.on('telemetry', (data) => {
@@ -39,7 +44,7 @@ drone_io.on('connect', (socket) => {
             longitude: data.telemetry.sensors.longitude,
             altitude_msl: data.telemetry.sensors.altitude,
             uas_heading: data.telemetry.sensors.heading
-          });
+          }).then(msg => console.log(msg));
         }
       }
       if (data.telemetry.goal) {
@@ -56,6 +61,23 @@ drone_io.on('connect', (socket) => {
   });
 });
 
+fake_drone_io.on('connect', (socket) => {
+  socket.on('telemetry', (data) => {
+    if (!drone_connected) {
+      if (data.telemetry.sensors && interopClient) {
+        interopClient.postTelemetry({
+          latitude: data.telemetry.sensors.latitude,
+          longitude: data.telemetry.sensors.longitude,
+          altitude_msl: data.telemetry.sensors.altitude,
+          uas_heading: data.telemetry.sensors.heading
+        }).then(msg => console.log(msg));
+      }
+      console.log(data);
+      ui_io.emit('telemetry', data);
+    }
+  });
+});
+
 ui_io.on('connect', (socket) => {
   console.log("ui connected!");
 
@@ -69,12 +91,6 @@ ui_io.on('connect', (socket) => {
 });
 
 
-// // Fake Drone
-// const socketIOClient = require('socket.io-client');
-// const socket = socketIOClient('http://localhost:'+port+'/drone', { transports: ['websocket'] });
-
-// let telemetryNumber = 0;
-// setInterval(() => {
-//   socket.emit('telemetry', "Fake Telemetry " + telemetryNumber);
-//   telemetryNumber++;
-// }, 1000);
+if (USE_FAKE_DRONE) {
+  require('./fake_drone/fake_drone');
+}
