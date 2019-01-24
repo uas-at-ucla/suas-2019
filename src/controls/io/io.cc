@@ -209,10 +209,10 @@ void AutopilotOutputWriter::RunIteration() {
 
   mavlink_set_position_target_local_ned_t sp;
 
-  autopilot_interface::set_velocity(output.velocity_x(), output.velocity_y(),
+  copter_io_->set_velocity(output.velocity_x(), output.velocity_y(),
                                     output.velocity_z(), sp);
 
-  autopilot_interface::set_yaw(output.yaw_setpoint(), sp);
+  copter_io_->set_yaw(output.yaw_setpoint(), sp);
 
   copter_io_->update_setpoint(sp);
 
