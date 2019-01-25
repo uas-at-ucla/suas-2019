@@ -32,7 +32,7 @@ RUN apt-get install -y -qq                                                     \
   ca-certificates                                                              \
   ca-certificates-java                                                         \
   netcat                                                                       \
-  openjdk-10-jdk                                                               \
+  openjdk-11-jdk                                                               \
   openssh-client                                                               \
   openssh-server                                                               \
   python2.7                                                                    \
@@ -40,10 +40,6 @@ RUN apt-get install -y -qq                                                     \
   tmux
 
 RUN apt upgrade -y -qq
-
-# Fix git certificate bug with open JDK. #######################################
-RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
-  /etc/java-10-openjdk/security/java.security
 
 # Install docker ###############################################################
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
