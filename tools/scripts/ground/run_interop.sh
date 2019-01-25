@@ -37,5 +37,8 @@ echo "Username: testadmin"
 echo "Password: testpass"
 echo ""
 
+# Specify interop version (https://hub.docker.com/r/auvsisuas/interop-server/tags)
+docker pull auvsisuas/interop-server:2018.12 2> /dev/null
+
 # Start docker container and let it run forever.
 docker run --rm -t -p 8000:80 --name uas-at-ucla_interop-server auvsisuas/interop-server

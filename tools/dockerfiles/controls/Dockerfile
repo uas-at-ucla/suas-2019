@@ -8,11 +8,23 @@
 FROM debian:stretch
 
 # Install compilation and testing dependencies #################################
-RUN apt-get update     -qq                                                      && \
-    apt-get install -y -qq curl                                                 && \
-    apt-get install -y -qq gnupg
+RUN apt-get update     -qq                                                  && \
+    apt-get install -y -qq curl                                             && \
+    apt-get install -y -qq                                                     \
+    aria2                                                                      \
+    git                                                                        \
+    gnupg                                                                      \
+    gnupg2
 
-# Add apt-get repositories containing required packages. ###########################
+# Install apt-fast for faster APT downloads. ###################################
+WORKDIR /tmp
+RUN git clone https://github.com/ilikenwf/apt-fast.git
+RUN cp apt-fast/apt-fast /bin                                               && \
+    chmod +x /bin/apt-fast                                                  && \
+    cp apt-fast/apt-fast.conf /etc                                          && \
+    echo "VERBOSE_OUTPUT=n" > /etc/apt-fast.conf
+
+# Add apt-get repositories containing required packages. #######################
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN echo "deb http://deb.debian.org/debian testing main" \
@@ -22,9 +34,9 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
   "stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 
 # Install apt dependencies. ####################################################
-RUN apt-get update -qq                                                      && \
-    apt-get upgrade -y -qq                                                  && \
-    apt-get install -y                                                         \
+RUN apt-fast update -qq                                                     && \
+    apt-fast upgrade -y -qq                                                 && \
+    apt-fast install -y                                                        \
     bmon                                                                       \
     build-essential                                                            \
     ca-certificates-java                                                       \
@@ -64,6 +76,7 @@ RUN apt-get update -qq                                                      && \
     python-matplotlib                                                          \
     python-empy                                                                \
     python-jinja2                                                              \
+    ros-base                                                                   \
     screen                                                                     \
     sudo                                                                       \
     tmux                                                                       \
@@ -90,7 +103,7 @@ RUN usermod -aG sudo uas
 # User env setup. ##############################################################
 RUN mkdir /external_libs
 
-RUN apt-get install -y openssh-client openssh-server
+RUN apt-fast install -y openssh-client openssh-server
 
 USER uas
 RUN mkdir -p /home/uas/code_env
@@ -126,7 +139,8 @@ RUN pip2.7 install --user                                                      \
   Flask-SocketIO==2.9.2                                                        \
   futures==3.1.1                                                               \
   socketIO-client==0.7.2                                                       \
-  numpy==1.15.2                                                                \
+  numpy==1.16                                                                  \
+  shap==0.23.0                                                                 \
   empy==3.3.2                                                                  \
   toml==0.9.4                                                                  \
   eventlet==0.23.0                                                             \
@@ -143,7 +157,16 @@ RUN chmod +x bazel-0.19.2-installer-linux-x86_64.sh
 RUN ./bazel-0.19.2-installer-linux-x86_64.sh --user
 RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
 
+# ROS dependencies.
+RUN pip install --user rosinstall_generator wstool
+RUN sudo rosdep init && rosdep update
+RUN sudo apt-fast install -y libxmlrpcpp-dev librosconsole-dev
+
 USER root
+
+RUN ln /usr/lib/x86_64-linux-gnu/libroscpp.so.2d /usr/lib/x86_64-linux-gnu/libroscpp.so
+RUN ln /usr/lib/x86_64-linux-gnu/libroslib.so.1.14.4 /usr/lib/x86_64-linux-gnu/libroslib.so
+RUN ln /usr/lib/x86_64-linux-gnu/librospack.so.2.5.2 /usr/lib/x86_64-linux-gnu/librospack.so
 
 RUN mv /home/uas/bin/bazel /usr/local/sbin
 RUN rm -r /home/uas/bin

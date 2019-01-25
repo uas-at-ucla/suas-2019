@@ -14,7 +14,7 @@ then
     if [ $? -ne 0 ]
     then
       # Script must be able to ask for sudo privileges to run properly.
-      if [ ! -t 1 ]
+      if [ ! -t 0 ]
       then
         echo "Run ./tools/scripts/docker/start_machine_mac.sh to start docker VM."
         exit 1
@@ -43,6 +43,4 @@ then
     fi
     eval $(docker-machine env uas-env)
   fi
-else
-  echo "This script should only be run on MacOS."
 fi
