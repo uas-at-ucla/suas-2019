@@ -48,7 +48,6 @@ NUKE_SCRIPT = "./tools/scripts/nuke.sh"
 # DOCKER_IP = subprocess.check_output(IP_SCRIPT, shell=True)
 
 # Command chains.
-print(os.environ["CONTINUOUS_INTEGRATION"])
 if "CONTINUOUS_INTEGRATION" in os.environ \
         and os.environ["CONTINUOUS_INTEGRATION"] == "true":
     print("CI ENABLED!")
@@ -57,8 +56,8 @@ if "CONTINUOUS_INTEGRATION" in os.environ \
     meminfo = dict((i.split()[0].rstrip(':'),int(i.split()[1])) for i in open('/proc/meminfo').readlines())
     mem_kib = meminfo['MemTotal']
 
-    CI_BUILD_RAM = mem_kib / 1024 * 3.0 / 4.0 # MB
-    CI_BUILD_CPUS = max(multiprocessing.cpu_count() - 3, multiprocessing.cpu_count() / 2) # Number of CPUs
+    CI_BUILD_RAM = mem_kib / 1024 * 2.5 / 4.0 # MB
+    CI_BUILD_CPUS = max(1, multiprocessing.cpu_count() / 2) # Number of CPUs
     CI_BUILD_IO = 1.0
 
     CI_BUILD_LOCAL_RESOURCES = str(CI_BUILD_RAM) + "," \
