@@ -48,6 +48,7 @@ NUKE_SCRIPT = "./tools/scripts/nuke.sh"
 # DOCKER_IP = subprocess.check_output(IP_SCRIPT, shell=True)
 
 # Command chains.
+print(os.environ["CONTINUOUS_INTEGRATION"])
 if "CONTINUOUS_INTEGRATION" in os.environ \
         and os.environ["CONTINUOUS_INTEGRATION"] == "true":
     print("CI ENABLED!")
