@@ -27,7 +27,7 @@ RUN pip install -r /vision_requirements.txt
 # build and install darkflow
 RUN pip install Cython
 RUN git clone https://github.com/thtrieu/darkflow
-RUN pip install /darkflow
+RUN pip install ./darkflow
 
 # copy needed files
 COPY ./src/vision /suas/src/vision
