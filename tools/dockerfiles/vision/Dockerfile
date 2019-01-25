@@ -1,19 +1,10 @@
 FROM python:3.6-slim
 
-# Install apt-fast for faster APT downloads. ###################################
-WORKDIR /tmp
-RUN apt-get update -qq                                                      && \
-    apt-get install -y -qq git
-
-RUN git clone https://github.com/ilikenwf/apt-fast.git
-RUN cp apt-fast/apt-fast /bin                                               && \
-    chmod +x /bin/apt-fast                                                  && \
-    cp apt-fast/apt-fast.conf /etc                                          && \
-    echo "VERBOSE_OUTPUT=n" > /etc/apt-fast.conf
-
 # install dependencies
-RUN apt-fast update     -qq                                                 && \
-    apt-fast install -y -qq                                                    \
+RUN apt-get update     -qq                                                  && \
+    apt-get install -y -qq                                                     \
+    aria2                                                                      \
+    git                                                                        \
     libglib2.0-0                                                               \
     libsm6                                                                     \
     libxrender1                                                                \
