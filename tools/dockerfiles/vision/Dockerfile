@@ -1,8 +1,23 @@
 FROM python:3.6-slim
 
+# Install apt-fast for faster APT downloads. ###################################
+WORKDIR /tmp
+RUN git clone https://github.com/ilikenwf/apt-fast.git
+RUN cp apt-fast/apt-fast /bin                                               && \
+    chmod +x /bin/apt-fast                                                  && \
+    cp apt-fast/apt-fast.conf /etc                                          && \
+    echo "VERBOSE_OUTPUT=n" > /etc/apt-fast.conf
+
 # install dependencies
-RUN apt-get update
-RUN apt-get install -y libglib2.0-0 libsm6 libxrender1 libxext6 libtk8.6 git cython
+RUN apt-get update     -qq                                                  && \
+    apt-get install -y -qq                                                     \
+    libglib2.0-0                                                               \
+    libsm6                                                                     \
+    libxrender1                                                                \
+    libxext6                                                                   \
+    libtk8.6                                                                   \
+    git                                                                        \
+    cython
 
 COPY ./src/vision/build/vision_requirements.txt /vision_requirements.txt
 RUN pip install -r /vision_requirements.txt
