@@ -16,6 +16,7 @@ cc_library(
     '//lib/motion_profile:motion_profile',
     "@cppzmq//:cppzmq",
     "@com_google_protobuf//:protobuf",
+    '//lib/rrt_avoidance:rrt_avoidance',
   ],
 )
 

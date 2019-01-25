@@ -10,7 +10,7 @@ namespace drone_plant {
 // use calculations of acceleration based on hover current draw and linear
 // acceleration to give accurate measure of battery usage
 // TODO:
-DronePlant::DronePlant(Position3D init_position, double loop_frequency,
+DronePlant::DronePlant(lib::Position3D init_position, double loop_frequency,
                        Battery battery) :
     position_(init_position),
     battery_(battery),
