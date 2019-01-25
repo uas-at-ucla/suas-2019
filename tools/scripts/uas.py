@@ -7,7 +7,6 @@ import textwrap
 import platform
 import subprocess
 import multiprocessing
-from psutil import virtual_memory
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir("../..")
@@ -52,7 +51,10 @@ NUKE_SCRIPT = "./tools/scripts/nuke.sh"
 if "CONTINUOUS_INTEGRATION" in os.environ \
         and os.environ["CONTINUOUS_INTEGRATION"] == "true":
     # Limit verbosity in CI logs.
-    CI_BUILD_RAM = virtual_memory().total * 3.0 / 4.0 / 1024 / 1024 # MB
+    meminfo = dict((i.split()[0].rstrip(':'),int(i.split()[1])) for i in open('/proc/meminfo').readlines())
+    mem_kib = meminfo['MemTotal']
+
+    CI_BUILD_RAM = mem_kib / 1024 # MB
     CI_BUILD_CPUS = max(multiprocessing.cpu_count() - 2, multiprocessing.cpu_count() / 2) # Number of CPUs
     CI_BUILD_IO = 1.0
 
