@@ -146,6 +146,7 @@ RUN pip2.7 install --user                                                      \
   eventlet==0.23.0                                                             \
   protobuf==3.5.2.post1                                                        \
   pyzmq==17.0.0                                                                \
+  psutil==5.4.7                                                                \
   zmq==0.0.0
 
 RUN rm -rf /home/uas/mavlink-router
