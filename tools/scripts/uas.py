@@ -54,11 +54,14 @@ if "CONTINUOUS_INTEGRATION" in os.environ \
 
     # Limit verbosity in CI logs.
     meminfo = dict((i.split()[0].rstrip(':'),int(i.split()[1])) for i in open('/proc/meminfo').readlines())
-    mem_kib = meminfo['MemTotal']
+    mem_kib = meminfo['MemFree']
 
     CI_BUILD_RAM = mem_kib / 1024 * 2.5 / 4.0 # MB
-    CI_BUILD_CPUS = max(1, multiprocessing.cpu_count() / 2) # Number of CPUs
+    CI_BUILD_CPUS = multiprocessing.cpu_count() # Number of CPUs
     CI_BUILD_IO = 1.0
+
+    print("RAM available: " + str(CI_BUILD_RAM) + "MB")
+    print("CPUs available: " + str(CI_BUILD_CPUS))
 
     CI_BUILD_LOCAL_RESOURCES = str(CI_BUILD_RAM) + "," \
             + str(CI_BUILD_CPUS) + "," \
