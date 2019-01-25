@@ -170,7 +170,13 @@ def kill_interop():
 
 def kill_controls():
     if kill_docker_container("uas-at-ucla_controls") == 0:
-        return "Killed ground docker container\n"
+        return "Killed controls docker container\n"
+    return ""
+
+
+def kill_controls_rqt():
+    if kill_docker_container("uas-at-ucla_ros-rqt") == 0:
+        return "Killed controls ros-rqt docker container\n"
     return ""
 
 
@@ -184,10 +190,6 @@ def kill_jenkins_client():
     if kill_docker_container("uas-at-ucla_jenkins-slave") == 0:
         return "Killed jenkins slave docker container\n"
     return ""
-
-
-def create_link(src, dst):
-    run_cmd_exit_failure("ln -sf " + src + " " + dst)
 
 
 def run_and_die_if_error(command):
@@ -205,6 +207,10 @@ def run_cmd_exit_failure(cmd):
         print_update(status, "FAILURE")
 
         sys.exit(1)
+
+
+def create_link(src, dst):
+    run_cmd_exit_failure("ln -sf " + src + " " + dst)
 
 
 def kill_running_simulators():
@@ -290,6 +296,14 @@ def run_controls_build(args=None, show_complete=True, raspi=True):
     if show_complete:
         print_update("\n\nBuild successful :^) LONG LIVE SPINNY!", \
                 msg_type="SUCCESS")
+
+
+def run_controls_rqt(args=None):
+    shutdown_functions.append(kill_controls_rqt)
+
+    print_update("Starting ROS rqt...")
+
+    run_cmd_exit_failure("./tools/scripts/controls/run_rqt.sh")
 
 
 def run_unittest(args=None, show_complete=True):
@@ -652,6 +666,8 @@ if __name__ == '__main__':
     controls_simulate_parser.set_defaults(func=run_controls_simulate)
     controls_build_parser = controls_subparsers.add_parser('build')
     controls_build_parser.set_defaults(func=run_controls_build)
+    controls_ros_parser = controls_subparsers.add_parser('rqt')
+    controls_ros_parser.set_defaults(func=run_controls_rqt)
     controls_test_parser = controls_subparsers.add_parser('test')
     controls_test_subparsers = controls_test_parser.add_subparsers()
     controls_test_all = controls_test_subparsers.add_parser('all')
