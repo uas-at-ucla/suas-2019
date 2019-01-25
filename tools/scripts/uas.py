@@ -6,6 +6,8 @@ import argparse
 import textwrap
 import platform
 import subprocess
+import multiprocessing
+from psutil import virtual_memory
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir("../..")
@@ -49,10 +51,19 @@ NUKE_SCRIPT = "./tools/scripts/nuke.sh"
 # Command chains.
 if "CONTINUOUS_INTEGRATION" in os.environ \
         and os.environ["CONTINUOUS_INTEGRATION"] == "true":
-
     # Limit verbosity in CI logs.
-    BAZEL_BUILD = "bazel build --noshow_progress "
-    BAZEL_TEST = "bazel test --noshow_progress "
+    CI_BUILD_RAM = virtual_memory().total * 3.0 / 4.0 / 1024 / 1024 # MB
+    CI_BUILD_CPUS = max(multiprocessing.cpu_count() - 2, multiprocessing.cpu_count() / 2) # Number of CPUs
+    CI_BUILD_IO = 1.0
+
+    CI_BUILD_LOCAL_RESOURCES = str(CI_BUILD_RAM) + "," \
+            + str(CI_BUILD_CPUS) + "," \
+            + str(CI_BUILD_IO)
+
+    print(CI_BUILD_LOCAL_RESOURCES)
+
+    BAZEL_BUILD = "bazel build --noshow_progress --local_resources " + CI_BUILD_LOCAL_RESOURCES + " "
+    BAZEL_TEST = "bazel test --noshow_progress --local_resources " + CI_BUILD_LOCAL_RESOURCES + " "
 else:
     BAZEL_BUILD = "bazel build "
     BAZEL_TEST = "bazel test "
