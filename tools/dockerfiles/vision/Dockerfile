@@ -19,6 +19,7 @@ RUN apt-fast update     -qq                                                 && \
     libxrender1                                                                \
     libxext6                                                                   \
     libtk8.6                                                                   \
+    build-essential                                                            \
     cython
 
 COPY ./src/vision/build/vision_requirements.txt /vision_requirements.txt
