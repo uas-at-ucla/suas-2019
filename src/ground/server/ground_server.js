@@ -1,10 +1,14 @@
 // use require() to load libraries from node_modules
+const fs = require('fs');
 const socketIOServer = require('socket.io');
 const loadProtobufUtils = require('./protobuf_utils/protobuf_utils');
 const loadInteropClient = require('./interop_client/interop_client');
+const constants = require('./utils/constants');
 
 const port = 8081;
 const USE_FAKE_DRONE = true;
+const uiSendFrequency = 5; //Hz
+const uiSendInterval = Math.floor(constants.droneTelemetryFrequency / uiSendFrequency);
 var drone_connected = false;
 
 // create server
@@ -22,58 +26,53 @@ loadProtobufUtils((theProtobufUtils) => {
 });
 
 var interopClient = null;
-// loadInteropClient("192.168.2.30", 80, "testuser", "testpass")
-loadInteropClient("localhost", 8000, "testuser", "testpass")
-  .then(theInteropClient => {
-    interopClient = theInteropClient;
-  }).catch(error => {
-    console.log(error);
-  });
+(fs.existsSync("/.dockerenv") // If inside Docker container
+  ? loadInteropClient("192.168.2.30", 80, "testuser", "testpass")
+  : loadInteropClient("localhost", 8000, "testuser", "testpass")
+).then(theInteropClient => {
+  interopClient = theInteropClient;
+}).catch(error => {
+  console.log(error);
+});
 
 drone_io.on('connect', (socket) => {
   drone_connected = true;
   console.log("drone connected!");
 
+  telemetryCount = 0;
   socket.on('telemetry', (data) => {
     if (protobufUtils) {
-      if (data.telemetry.sensors) {
-        data.telemetry.sensors = protobufUtils.decodeSensors(data.telemetry.sensors);
-        if (interopClient) {
-          interopClient.postTelemetry({
-            latitude: data.telemetry.sensors.latitude,
-            longitude: data.telemetry.sensors.longitude,
-            altitude_msl: data.telemetry.sensors.altitude,
-            uas_heading: data.telemetry.sensors.heading
-          }).then(msg => console.log(msg));
-        }
+      data.telemetry = protobufUtils.decodeTelemetry(data.telemetry);
+      if (interopClient) {
+        interopClient.newTelemetry(data.telemetry);
       }
-      if (data.telemetry.goal) {
-        data.telemetry.goal = protobufUtils.decodeGoal(data.telemetry.goal);
-      }
-      if (data.telemetry.output) {
-        data.telemetry.output = protobufUtils.decodeOutput(data.telemetry.output);
+      // When telemetry is received from the drone, send it to clients on the UI namespace
+      if (telemetryCount >= uiSendInterval) {
+        console.log(JSON.stringify(data, null, 2) + ",");
+        ui_io.emit('telemetry', data);
+        telemetryCount = 0;
       }
     }
-    console.log(JSON.stringify(data, null, 2) + ",");
-    
-    // When telemetry is received from the drone, send it to clients on the UI namespace
-    ui_io.emit('telemetry', data);
+    telemetryCount++;
   });
 });
 
+// FAKE DRONE
+fakeTelemetryCount = 0;
 fake_drone_io.on('connect', (socket) => {
+  console.log("fake drone connected!");
   socket.on('telemetry', (data) => {
-    if (!drone_connected) {
-      if (data.telemetry.sensors && interopClient) {
-        interopClient.postTelemetry({
-          latitude: data.telemetry.sensors.latitude,
-          longitude: data.telemetry.sensors.longitude,
-          altitude_msl: data.telemetry.sensors.altitude,
-          uas_heading: data.telemetry.sensors.heading
-        }).then(msg => console.log(msg));
+    if (!drone_connected) { // only do stuff if the real drone is not connected
+      if (interopClient) {
+        interopClient.newTelemetry(data.telemetry);
       }
-      console.log(data);
-      ui_io.emit('telemetry', data);
+      // When telemetry is received from the drone, send it to clients on the UI namespace
+      if (fakeTelemetryCount >= uiSendInterval) {
+        console.log(JSON.stringify(data, null, 2) + ",");
+        ui_io.emit('telemetry', data);
+        fakeTelemetryCount = 0;
+      }
+      fakeTelemetryCount++;
     }
   });
 });

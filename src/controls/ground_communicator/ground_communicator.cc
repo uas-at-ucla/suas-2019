@@ -150,7 +150,9 @@ void GroundCommunicator::RunIteration() {
   all_data->get_map()["telemetry"] = telemetry;
   all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
 
-  client_.socket("drone")->emit("telemetry", all_data);
+  if (client_.opened()) {
+    client_.socket("drone")->emit("telemetry", all_data);
+  }
 }
 
 void GroundCommunicator::OnConnect() {

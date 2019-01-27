@@ -11,7 +11,9 @@ const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
     commandPoints: derivedData.missionPlan.commandPoints,
-    protoInfo: derivedData.missionPlan.protoInfo
+    protoInfo: derivedData.missionPlan.protoInfo,
+    telemetry: state.telemetry,
+    droneLatLng: derivedData.telemetry.droneLatLng 
   };
 };
 
@@ -32,6 +34,10 @@ class Map extends Component {
           }}
           onDblClick={this.mapDblClick}
         >
+          {this.props.droneLatLng ? 
+            <Marker position={this.props.droneLatLng} label="drone"></Marker> 
+          : null}
+
           {this.props.commandPoints.map((commandPoint, index) => 
             commandPoint ?
               <Marker {...commandPoint.marker} key={commandPoint.id}>
@@ -52,7 +58,6 @@ class Map extends Component {
               </Marker>
             : null
           )}
-          <Marker position={{ lat: -34.397, lng: 150.644 }} />
         </GoogleMap>
       </div>
     );
