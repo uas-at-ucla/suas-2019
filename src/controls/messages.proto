@@ -87,7 +87,7 @@ message Output {
 
 message UasMessage {
   optional double time                                                     = 1;
-  
+
   oneof payload {
     Sensors sensors                                                        = 2;
     Goal goal                                                              = 3;
