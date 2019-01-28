@@ -26,21 +26,38 @@ loadProtobufUtils((theProtobufUtils) => {
 });
 
 var interopClient = null;
-(fs.existsSync("/.dockerenv") // If inside Docker container
-  ? loadInteropClient("192.168.2.30", 80, "testuser", "testpass")
-  : loadInteropClient("localhost", 8000, "testuser", "testpass")
-).then(theInteropClient => {
-  interopClient = theInteropClient;
-}).catch(error => {
-  console.log(error);
-});
+var missionAndObstacles = null;
+if (fs.existsSync("/.dockerenv")) { // If inside Docker container
+  connectToInterop("192.168.2.30", 80, "testuser", "testpass");
+} else {
+  connectToInterop("localhost", 8000, "testuser", "testpass");
+}
+
+function connectToInterop(ip, port, username, password) {
+  interopClient = null;
+  loadInteropClient(ip, port, username, password)
+    .then(theInteropClient => {
+      interopClient = theInteropClient;
+      interopClient.getMissions().then(missions =>
+        interopClient.getObstacles().then(obstacles => {
+          missionAndObstacles = {
+            mission: missions[0],
+            obstacles: obstacles
+          }
+          ui_io.emit('INTEROP_DATA', missionAndObstacles);
+        })
+      );
+    }).catch(error => {
+      console.log(error);
+    });
+}
 
 drone_io.on('connect', (socket) => {
   drone_connected = true;
   console.log("drone connected!");
 
   telemetryCount = 0;
-  socket.on('telemetry', (data) => {
+  socket.on('TELEMETRY', (data) => {
     if (protobufUtils) {
       data.telemetry = protobufUtils.decodeTelemetry(data.telemetry);
       if (interopClient) {
@@ -49,7 +66,7 @@ drone_io.on('connect', (socket) => {
       // When telemetry is received from the drone, send it to clients on the UI namespace
       if (telemetryCount >= uiSendInterval) {
         console.log(JSON.stringify(data, null, 2) + ",");
-        ui_io.emit('telemetry', data);
+        ui_io.emit('TELEMETRY', data);
         telemetryCount = 0;
       }
     }
@@ -61,7 +78,7 @@ drone_io.on('connect', (socket) => {
 fakeTelemetryCount = 0;
 fake_drone_io.on('connect', (socket) => {
   console.log("fake drone connected!");
-  socket.on('telemetry', (data) => {
+  socket.on('TELEMETRY', (data) => {
     if (!drone_connected) { // only do stuff if the real drone is not connected
       if (interopClient) {
         interopClient.newTelemetry(data.telemetry);
@@ -69,7 +86,7 @@ fake_drone_io.on('connect', (socket) => {
       // When telemetry is received from the drone, send it to clients on the UI namespace
       if (fakeTelemetryCount >= uiSendInterval) {
         console.log(JSON.stringify(data, null, 2) + ",");
-        ui_io.emit('telemetry', data);
+        ui_io.emit('TELEMETRY', data);
         fakeTelemetryCount = 0;
       }
       fakeTelemetryCount++;
@@ -79,6 +96,9 @@ fake_drone_io.on('connect', (socket) => {
 
 ui_io.on('connect', (socket) => {
   console.log("ui connected!");
+  if (missionAndObstacles) {
+    socket.emit('INTEROP_DATA', missionAndObstacles);
+  }
 
   socket.on("TEST", (data) => {
     console.log("TEST " + data);
@@ -86,6 +106,12 @@ ui_io.on('connect', (socket) => {
   socket.on("CHANGE_DRONE_STATE", (data) => {
     drone_io.emit("CHANGE_DRONE_STATE", data);
     console.log("THE DRONE is asked to " + data + ". Hey DRONE, are you listening?");
+  });
+
+  socket.on("RUN_MISSION", (commands) => {
+    console.log("received mission from UI");
+    // TODO: Make GroundProgram using commands and missionAndObstacles.
+    // If missionAndObstacles is null, create an emtpy list of obstacles.
   });
 });
 

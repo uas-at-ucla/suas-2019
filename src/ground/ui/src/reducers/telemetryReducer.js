@@ -17,11 +17,14 @@ export default {
   },
 
   selector: createStructuredSelector({
-    droneLatLng: (state) => {
+    droneMarker: (state) => {
       if (state && state.telemetry.sensors) {
         return {
-          lat: state.telemetry.sensors.latitude,
-          lng: state.telemetry.sensors.longitude
+          position: {
+            lat: state.telemetry.sensors.latitude,
+            lng: state.telemetry.sensors.longitude
+          }
+          // TODO make it an icon, rotate with drone heading, and show location uncertainty as a semi-transparent circle (HDOP)
         }
       } else {
         return null;

@@ -8,6 +8,7 @@
     "bootstrap": "^4.1.2",
     "dot-prop-immutable": "^1.5.0",
     "electron-is-dev": "^1.0.1",
+    "font-awesome": "^4.7.0",
     "google_maps_js_api": "github:uas-at-ucla/google_maps_js_api#master",
     "protobufjs": "^6.8.8",
     "react": "^16.5.2",

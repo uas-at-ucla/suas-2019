@@ -10,6 +10,6 @@ const telemetry = require('./test_telemetry.json').list;
 const sleepTime = 1000 / constants.droneTelemetryFrequency;
 let i = 0;
 setInterval(() => {
-  socket.emit('telemetry', telemetry[i]);
+  socket.emit('TELEMETRY', telemetry[i]);
   i = (i+1) % telemetry.length;
 }, sleepTime);
