@@ -3,5 +3,6 @@ cc_binary(
   srcs = ["my_test.cc"],
   deps = [
     '//lib/ros:ros',
+    '//src/controls:messages_cpp'
   ],
 )

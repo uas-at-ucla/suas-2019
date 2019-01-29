@@ -170,7 +170,7 @@ new_git_repository(
 
 new_git_repository(
   name = "ros_bazel",
-  commit = "1d8833d972c02c06dfbd7281c3e1469806668643",
+  commit = "652439a8061403f434701b61913547febca46a38",
   remote = "https://github.com/uas-at-ucla/ros_bazel.git",
   build_file = "third_party/ros_bazel.BUILD"
 )
@@ -209,3 +209,26 @@ local_repository(
   path = "./src/ground/ui/node_modules/rxjs/src",
 )
 
+new_http_archive(
+    name='genmsg_repo',
+    build_file='external/third_party/genmsg.BUILD',
+    sha256='d7627a2df169e4e8208347d9215e47c723a015b67ef3ed8cda8b61b6cfbf94d2',
+    urls = ['https://github.com/ros/genmsg/archive/0.5.8.tar.gz'],
+    strip_prefix='genmsg-0.5.8',
+)
+
+new_http_archive(
+    name='genpy_repo',
+    build_file='external/third_party/genpy.BUILD',
+    sha256='35e5cd2032f52a1f77190df5c31c02134dc460bfeda3f28b5a860a95309342b9',
+    urls = ['https://github.com/ros/genpy/archive/0.6.5.tar.gz'],
+    strip_prefix='genpy-0.6.5',
+)
+
+new_http_archive(
+    name='gencpp',
+    build_file='external/third_party/gencpp.BUILD',
+    sha256='d7627a2df169e4e8208347d9215e47c723a015b67ef3ed8cda8b61b6cfbf94d2',
+    urls = ['https://github.com/ros/gencpp/archive/0.5.5.tar.gz'],
+    strip_prefix='gencpp-0.5.5',
+)
