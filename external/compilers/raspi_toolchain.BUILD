@@ -59,28 +59,21 @@ filegroup(
 cc_library(
   name = 'librt',
   srcs = [
-    'arm-linux-gnueabihf/sysroot/usr/lib/arm-linux-gnueabihf/librt.so',
+    'arm-linux-gnueabihf/lib/librt.so',
   ],
 )
 
 cc_library(
   name = 'libdl',
   srcs = [
-    'arm-linux-gnueabihf/sysroot/usr/lib/arm-linux-gnueabihf/libdl.so',
+    'arm-linux-gnueabihf/lib/libdl.so',
   ],
 )
 
 cc_library(
   name = 'libm',
   srcs = [
-    'arm-linux-gnueabihf/sysroot/usr/lib/arm-linux-gnueabihf/libm.so',
-  ],
-)
-
-cc_library(
-  name = 'libpthread',
-  deps = [
-    '@//tools/cpp/raspi-toolchain:libpthread',
+    'arm-linux-gnueabihf/lib/libm.so',
   ],
 )
 
@@ -88,8 +81,9 @@ filegroup(
   name = 'compiler_pieces',
   srcs = glob([
     'arm-linux-gnueabihf/**',
-    'lib/**',
-    '**/*'
+    'libexec/**',
+    'lib/gcc/arm-linux-gnueabihf/**',
+    'include/**',
   ]),
 )
 
