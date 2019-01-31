@@ -21,10 +21,8 @@ import vision
 MAX_TIMEOUT = 5  # seconds
 MOCK_RECEIVERS = ['rsync', 'yolo', 'snip', 'classify_shape', 'classify_letter']
 DEFAULT_IMG_PATH = os.path.dirname(__file__) + '/../data_local/sample_img.jpg'
-# DEFAULT_IMG_PATH = '/Users/Andy/Andy/Undergrad/Year_1/uas/drone_code/src/vision/data_local/sample_img.jpg'
-# DEFAULT_INFO_PATH = os.path.dirname(
-#     __file__) + '/../data_local/sample_drone_info.json'
-DEFAULT_INFO_PATH = '/Users/Andy/Andy/Undergrad/Year_1/uas/drone_code/src/vision/data_local/sample_drone_info.json'
+DEFAULT_INFO_PATH = os.path.dirname(
+    __file__) + '/../data_local/sample_drone_info.json'
 
 class TestVisionServer(unittest.TestCase):
     def setUp(self):
@@ -149,14 +147,10 @@ if __name__ == '__main__':
     elif args.type == 'send':
         print('send argument detected')
         with socketIO_client.SocketIO('0.0.0.0', 8099) as socket:
-            print('emitting image')
-            print(args.target);
-            print(args.info);
             socket.emit('process_image', {
                 'file_path': args.target,
                 'info_path': args.info
             })
-            print('done emitting')
     elif args.type == 'evaluate':
         with socketIO_client.SocketIO('0.0.0.0', 8099) as socket:
 
