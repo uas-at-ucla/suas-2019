@@ -24,7 +24,6 @@ DEFAULT_IMG_PATH = os.path.dirname(__file__) + '/../data_local/sample_img.jpg'
 DEFAULT_INFO_PATH = os.path.dirname(
     __file__) + '/../data_local/sample_drone_info.json'
 
-
 class TestVisionServer(unittest.TestCase):
     def setUp(self):
         # create a list to save the collected socketio messages
@@ -134,6 +133,7 @@ def sample_manual_request(args):
 
 
 if __name__ == '__main__':
+    print('script was called')
     parser = argparse.ArgumentParser()
     parser.add_argument('type')
     parser.add_argument('-t', dest='target', default=DEFAULT_IMG_PATH)
@@ -145,6 +145,7 @@ if __name__ == '__main__':
     elif args.type == 'listen':
         create_mock_listeners()
     elif args.type == 'send':
+        print('send argument detected')
         with socketIO_client.SocketIO('0.0.0.0', 8099) as socket:
             socket.emit('process_image', {
                 'file_path': args.target,

@@ -222,8 +222,6 @@ toolchain {
   compilation_mode_flags {
     mode: OPT
 
-    compiler_flag: "-O2"
-
     # Disable assertions
     compiler_flag: "-DNDEBUG"
 
@@ -303,7 +301,6 @@ toolchain {
   compiler_flag: "-DUAS_AT_UCLA_DEPLOYMENT"
   cxx_flag: "-std=c++11"
   linker_flag: "-lstdc++"
-  #linker_flag: "-lsupc++"
 
   # Link to all of the shared libraries.
   linker_flag: "--sysroot=external/raspi-toolchain/arm-linux-gnueabihf/sysroot"
@@ -446,8 +443,6 @@ toolchain {
 
   compilation_mode_flags {
     mode: OPT
-
-    compiler_flag: "-O2"
 
     # Disable assertions
     compiler_flag: "-DNDEBUG"

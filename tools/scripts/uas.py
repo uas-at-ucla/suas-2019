@@ -6,6 +6,7 @@ import argparse
 import textwrap
 import platform
 import subprocess
+import multiprocessing
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 os.chdir("../..")
@@ -49,10 +50,25 @@ NUKE_SCRIPT = "./tools/scripts/nuke.sh"
 # Command chains.
 if "CONTINUOUS_INTEGRATION" in os.environ \
         and os.environ["CONTINUOUS_INTEGRATION"] == "true":
+    print("CI ENABLED!")
 
     # Limit verbosity in CI logs.
-    BAZEL_BUILD = "bazel build --noshow_progress "
-    BAZEL_TEST = "bazel test --noshow_progress "
+    meminfo = dict((i.split()[0].rstrip(':'),int(i.split()[1])) for i in open('/proc/meminfo').readlines())
+    mem_kib = meminfo['MemAvailable']
+
+    CI_BUILD_RAM = mem_kib / 1024 * 2.5 / 4.0 # MB
+    CI_BUILD_CPUS = multiprocessing.cpu_count() # Number of CPUs
+    CI_BUILD_IO = 1.0
+
+    print("RAM available: " + str(CI_BUILD_RAM) + "MB")
+    print("CPUs available: " + str(CI_BUILD_CPUS))
+
+    CI_BUILD_LOCAL_RESOURCES = str(CI_BUILD_RAM) + "," \
+            + str(CI_BUILD_CPUS) + "," \
+            + str(CI_BUILD_IO)
+
+    BAZEL_BUILD = "bazel build --noshow_progress --local_resources " + CI_BUILD_LOCAL_RESOURCES + " "
+    BAZEL_TEST = "bazel test --noshow_progress --local_resources " + CI_BUILD_LOCAL_RESOURCES + " "
 else:
     BAZEL_BUILD = "bazel build "
     BAZEL_TEST = "bazel test "
@@ -170,7 +186,13 @@ def kill_interop():
 
 def kill_controls():
     if kill_docker_container("uas-at-ucla_controls") == 0:
-        return "Killed ground docker container\n"
+        return "Killed controls docker container\n"
+    return ""
+
+
+def kill_controls_rqt():
+    if kill_docker_container("uas-at-ucla_ros-rqt") == 0:
+        return "Killed controls ros-rqt docker container\n"
     return ""
 
 
@@ -184,10 +206,6 @@ def kill_jenkins_client():
     if kill_docker_container("uas-at-ucla_jenkins-slave") == 0:
         return "Killed jenkins slave docker container\n"
     return ""
-
-
-def create_link(src, dst):
-    run_cmd_exit_failure("ln -sf " + src + " " + dst)
 
 
 def run_and_die_if_error(command):
@@ -205,6 +223,10 @@ def run_cmd_exit_failure(cmd):
         print_update(status, "FAILURE")
 
         sys.exit(1)
+
+
+def create_link(src, dst):
+    run_cmd_exit_failure("ln -sf " + src + " " + dst)
 
 
 def kill_running_simulators():
@@ -290,6 +312,14 @@ def run_controls_build(args=None, show_complete=True, raspi=True):
     if show_complete:
         print_update("\n\nBuild successful :^) LONG LIVE SPINNY!", \
                 msg_type="SUCCESS")
+
+
+def run_controls_rqt(args=None):
+    shutdown_functions.append(kill_controls_rqt)
+
+    print_update("Starting ROS rqt...")
+
+    run_cmd_exit_failure("./tools/scripts/controls/run_rqt.sh")
 
 
 def run_unittest(args=None, show_complete=True):
@@ -652,6 +682,8 @@ if __name__ == '__main__':
     controls_simulate_parser.set_defaults(func=run_controls_simulate)
     controls_build_parser = controls_subparsers.add_parser('build')
     controls_build_parser.set_defaults(func=run_controls_build)
+    controls_ros_parser = controls_subparsers.add_parser('rqt')
+    controls_ros_parser.set_defaults(func=run_controls_rqt)
     controls_test_parser = controls_subparsers.add_parser('test')
     controls_test_subparsers = controls_test_parser.add_subparsers()
     controls_test_all = controls_test_subparsers.add_parser('all')
