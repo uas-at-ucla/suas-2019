@@ -7,16 +7,15 @@
 int main(int argc, char **argv) {
   ::ros::init(argc, argv, "my_test");
   ::ros::start();
-  ::ros::Rate loop(100);
+  ::ros::Rate loop(10);
 
   ::ros::NodeHandle n;
   ::ros::Publisher chatter_pub = n.advertise<std_msgs::String>("chatter", 1000);
   ::ros::Publisher proto_pub =
-      n.advertise<::src::controls::Output>("proto", 1000);
+      n.advertise<::src::controls::Output>("output", 1000);
 
   for (int i = 0; i < 10000 && ::ros::ok(); i++) {
     ::std::cout << "Here " << i << ::std::endl;
-    loop.sleep();
     ROS_INFO_STREAM("Hello "
                     << "World " << i);
 
@@ -25,7 +24,7 @@ int main(int argc, char **argv) {
     output.set_flight_time(0);
     output.set_current_command_index(0);
 
-    output.set_velocity_x(0);
+    output.set_velocity_x(i);
     output.set_velocity_y(0);
     output.set_velocity_z(0);
     output.set_yaw_setpoint(0);
@@ -48,6 +47,8 @@ int main(int argc, char **argv) {
     std_msgs::String msg;
     msg.data = "test";
     chatter_pub.publish(msg);
+
+    loop.sleep();
   }
 
   return 0;

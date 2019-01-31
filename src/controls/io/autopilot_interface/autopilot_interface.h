@@ -2,12 +2,18 @@
 
 #include "lib/mavconn_udp/interface.h"
 
+#include <iostream>
+#include <functional>
 #include <signal.h>
 #include <sys/time.h>
 #include <time.h>
 #include <unistd.h>
 
 #include <common/mavlink.h>
+#include <ros/ros.h>
+
+#include "src/controls/messages.pb.h"
+#include "src/controls/io/autopilot_interface/ros_publisher/ros_publisher.h"
 
 namespace src {
 namespace controls {
@@ -126,6 +132,8 @@ class AutopilotInterface {
   void handle_quit(int sig);
 
  private:
+  ros_publisher::RosPublisher ros_publisher_;
+
   ::mavconn::MAVConnInterface::Ptr pixhawk_;
 
   mavlink_set_position_target_local_ned_t current_setpoint;
