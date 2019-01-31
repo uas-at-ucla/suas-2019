@@ -8,7 +8,6 @@ namespace io {
 namespace autopilot_interface {
 
 AutopilotInterface::AutopilotInterface(const char *address) :
-    write_tid_(0),
     reading_status_(0),
     writing_status_(0),
     write_count_(0),
@@ -137,6 +136,17 @@ void AutopilotInterface::set_yaw_rate(float yaw_rate, mavlink_set_position_targe
   sp.yaw_rate = yaw_rate;
 }
 
+/*
+void *AutopilotInterface::start_autopilot_interface_write_thread() {
+  
+  AutopilotInterface *autopilot_interface = (AutopilotInterface *)args;
+  autopilot_interface->start_write_thread();
+  
+  this->start_write_thread();
+  return NULL;
+}
+*/
+
 void AutopilotInterface::update_setpoint(
     mavlink_set_position_target_local_ned_t setpoint) {
   current_setpoint = setpoint;
@@ -164,8 +174,6 @@ void AutopilotInterface::write_setpoint() {
 }
 
 void AutopilotInterface::start() {
-  int result;
-
   // Component ID
   if (not autopilot_id) {
     autopilot_id = current_messages.compid;
@@ -191,10 +199,7 @@ void AutopilotInterface::start() {
   initial_position.yaw = local_data.attitude.yaw;
   initial_position.yaw_rate = local_data.attitude.yawspeed;
 
-  result = pthread_create(&write_tid_, NULL,
-                          &start_autopilot_interface_write_thread, this);
-  if (result)
-    throw result;
+  thread_ = ::std::thread(&AutopilotInterface::start_write_thread, this);
 
   // Wait for write thread to be started.
   while (not writing_status_)
@@ -440,7 +445,7 @@ void AutopilotInterface::stop() {
   time_to_exit_ = true;
   // pixhawk_->close();
 
-  pthread_join(write_tid_, NULL);
+  //pthread_join(write_tid_, NULL);
 }
 
 void AutopilotInterface::start_write_thread(void) {
@@ -495,13 +500,6 @@ void AutopilotInterface::write_thread(void) {
   writing_status_ = false;
 
   return;
-}
-
-void *start_autopilot_interface_write_thread(void *args) {
-  AutopilotInterface *autopilot_interface = (AutopilotInterface *)args;
-  autopilot_interface->start_write_thread();
-
-  return NULL;
 }
 
 } // namespace autopilot_interface

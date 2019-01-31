@@ -1,5 +1,21 @@
 package(default_visibility = ['//visibility:public'])
+"""
+load('//tools/build_rules:message_generation.bzl', 'generate_messages')
 
+# Implicitly creates a msgs_py target in the current scope
+generate_messages(
+    srcs=glob(['msg/*.msg']),
+    ros_package_name='test_msgs',
+)
+
+py_binary(
+    name='main',
+    srcs=['scripts/main.py'],
+    deps=[
+        ':msgs_py',
+    ],
+)
+"""
 cc_binary(
   name = 'flight_loop',
   visibility = ['//visibility:public'],

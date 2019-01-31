@@ -23,8 +23,6 @@ namespace autopilot_interface {
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_ANGLE 0b0000100111111111
 #define MAVLINK_MSG_SET_POSITION_TARGET_LOCAL_NED_YAW_RATE 0b0000010111111111
 
-void *start_autopilot_interface_write_thread(void *args);
-
 struct TimeStamps {
   TimeStamps() { reset_timestamps(); }
 
@@ -96,6 +94,7 @@ class AutopilotInterface {
                     mavlink_set_position_target_local_ned_t &sp);
   void set_yaw(float yaw, mavlink_set_position_target_local_ned_t &sp);
   void set_yaw_rate(float yaw_rate, mavlink_set_position_target_local_ned_t &sp);
+  //void *start_autopilot_interface_write_thread();
 
   void Arm();
   void Disarm();
@@ -134,7 +133,7 @@ class AutopilotInterface {
 
   void write_setpoint();
 
-  pthread_t write_tid_;
+  ::std::thread thread_;
 
   char reading_status_;
   char writing_status_;
