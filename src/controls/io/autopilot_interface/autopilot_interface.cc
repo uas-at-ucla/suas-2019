@@ -26,72 +26,15 @@ AutopilotInterface::AutopilotInterface(const char *address) :
 
   pixhawk_ = ::mavconn::MAVConnInterface::open_url(udp, 0, 0);
   pixhawk_->set_protocol_version(mavconn::Protocol::V20);
-  pixhawk_->message_received_cb = [this](const mavlink_message_t *msg,
+  /*
+     pixhawk_->message_received_cb = [this](const mavlink_message_t *msg,
                                          const ::mavconn::Framing framing) {
-    switch (msg->msgid) {
-      case MAVLINK_MSG_ID_HEARTBEAT:
-        mavlink_msg_heartbeat_decode(msg, &(current_messages.heartbeat));
-        current_messages.time_stamps.heartbeat = get_time_usec();
-        break;
-
-      case MAVLINK_MSG_ID_SYS_STATUS:
-        mavlink_msg_sys_status_decode(msg, &(current_messages.sys_status));
-        current_messages.time_stamps.sys_status = get_time_usec();
-        break;
-
-      case MAVLINK_MSG_ID_BATTERY_STATUS:
-        mavlink_msg_battery_status_decode(msg,
-                                          &(current_messages.battery_status));
-        current_messages.time_stamps.battery_status = get_time_usec();
-        break;
-
-      case MAVLINK_MSG_ID_RADIO_STATUS:
-        mavlink_msg_radio_status_decode(msg, &(current_messages.radio_status));
-        current_messages.time_stamps.radio_status = get_time_usec();
-        break;
-
-      case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
-        mavlink_msg_local_position_ned_decode(
-            msg, &(current_messages.local_position_ned));
-        current_messages.time_stamps.local_position_ned = get_time_usec();
-        break;
-
-      case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
-        mavlink_msg_global_position_int_decode(
-            msg, &(current_messages.global_position_int));
-        current_messages.time_stamps.global_position_int = get_time_usec();
-        break;
-
-      case MAVLINK_MSG_ID_GPS_RAW_INT:
-        mavlink_msg_gps_raw_int_decode(msg, &(current_messages.gps_raw_int));
-        current_messages.time_stamps.gps_raw_int = get_time_usec();
-        break;
-
-      case MAVLINK_MSG_ID_HIGHRES_IMU:
-        mavlink_msg_highres_imu_decode(msg, &(current_messages.highres_imu));
-        current_messages.time_stamps.highres_imu = get_time_usec();
-        break;
-
-      case MAVLINK_MSG_ID_ATTITUDE:
-        mavlink_msg_attitude_decode(msg, &(current_messages.attitude));
-        current_messages.time_stamps.attitude = get_time_usec();
-        break;
-
-      case MAVLINK_MSG_ID_VFR_HUD:
-        mavlink_msg_vfr_hud_decode(msg, &(current_messages.vfr_hud));
-        current_messages.time_stamps.vfr_hud = get_time_usec();
-        break;
-
-      case MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET:
-        mavlink_msg_actuator_control_target_decode(
-            msg, &(current_messages.control_target));
-
-        break;
-
-      default:
-        break;
+     publish_message(msg, framing);
     }
-  };
+    */
+  void (*publishPtr)(const mavlink_message_t, const ::mavconn::Framing) = 
+     ros_publisher_.publish_message;
+  pixhawk_->message_received_cb = publishPtr;
 }
 
 AutopilotInterface::~AutopilotInterface() {}
@@ -500,6 +443,72 @@ void AutopilotInterface::write_thread(void) {
   writing_status_ = false;
 
   return;
+}
+
+void ROSPublisher::publish_message(const mavlink_message_t *msg, const ::mavconn::Framing framing) {
+    switch (msg->msgid) {
+      case MAVLINK_MSG_ID_HEARTBEAT:
+        mavlink_msg_heartbeat_decode(msg, &(current_messages.heartbeat));
+        current_messages.time_stamps.heartbeat = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_SYS_STATUS:
+        mavlink_msg_sys_status_decode(msg, &(current_messages.sys_status));
+        current_messages.time_stamps.sys_status = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_BATTERY_STATUS:
+        mavlink_msg_battery_status_decode(msg,
+                                          &(current_messages.battery_status));
+        current_messages.time_stamps.battery_status = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_RADIO_STATUS:
+        mavlink_msg_radio_status_decode(msg, &(current_messages.radio_status));
+        current_messages.time_stamps.radio_status = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_LOCAL_POSITION_NED:
+        mavlink_msg_local_position_ned_decode(
+            msg, &(current_messages.local_position_ned));
+        current_messages.time_stamps.local_position_ned = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_GLOBAL_POSITION_INT:
+        mavlink_msg_global_position_int_decode(
+            msg, &(current_messages.global_position_int));
+        current_messages.time_stamps.global_position_int = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_GPS_RAW_INT:
+        mavlink_msg_gps_raw_int_decode(msg, &(current_messages.gps_raw_int));
+        current_messages.time_stamps.gps_raw_int = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_HIGHRES_IMU:
+        mavlink_msg_highres_imu_decode(msg, &(current_messages.highres_imu));
+        current_messages.time_stamps.highres_imu = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_ATTITUDE:
+        mavlink_msg_attitude_decode(msg, &(current_messages.attitude));
+        current_messages.time_stamps.attitude = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_VFR_HUD:
+        mavlink_msg_vfr_hud_decode(msg, &(current_messages.vfr_hud));
+        current_messages.time_stamps.vfr_hud = get_time_usec();
+        break;
+
+      case MAVLINK_MSG_ID_ACTUATOR_CONTROL_TARGET:
+        mavlink_msg_actuator_control_target_decode(
+            msg, &(current_messages.control_target));
+
+        break;
+
+      default:
+        break;
+
 }
 
 } // namespace autopilot_interface

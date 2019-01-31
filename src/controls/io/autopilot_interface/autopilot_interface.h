@@ -127,6 +127,8 @@ class AutopilotInterface {
  private:
   ::mavconn::MAVConnInterface::Ptr pixhawk_;
 
+  ROSPublisher ros_publisher_;
+
   mavlink_set_position_target_local_ned_t current_setpoint;
 
   void write_thread(void);
@@ -141,6 +143,27 @@ class AutopilotInterface {
   uint64_t write_count_;
 
   bool time_to_exit_;
+};
+
+class ROSPublisher {
+   public:
+      // Overloaded functions for the publisher
+      /*
+      void publish_message(mavlink_heartbeat_t heartbeat);
+      void publish_message(mavlink_sys_status_t sys_status);
+      void publish_message(mavlink_battery_status_t battery_status);
+      void publish_message(mavlink_radio_status_t radio_status);
+      void publish_message(mavlink_local_position_ned_t local_position_ned);
+      void publish_message(mavlink_global_position_int_t global_position_int);
+      void publish_message(mavlink_gps_raw_int_t gps_raw_int);
+      void publish_message(mavlink_position_target_local_ned_t position_target_local_ned);
+      void publish_message(mavlink_position_target_global_int_t position_target_global_int);
+      void publish_message(mavlink_highres_imu_t highres_imu);
+      void publish_message(mavlink_attitude_t attitude);
+      void publish_message(mavlink_vfr_hud_t vfr_hud);
+      void publish_message(mavlink_actuator_control_target_t control_target);
+      */
+      void publish_message(const mavlink_message_t *msg, const ::mavconn::Framing framing);
 };
 
 } // namespace autopilot_interface
