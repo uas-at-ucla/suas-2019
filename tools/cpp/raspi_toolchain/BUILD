@@ -3,7 +3,7 @@ package(default_visibility = ['//tools/cpp:__pkg__'])
 filegroup(
   name = 'gcc',
   srcs = [
-    '@raspi-toolchain//:gcc',
+    '@raspi_toolchain//:gcc',
     'arm-linux-gnueabihf-gcc',
   ],
 )
@@ -11,7 +11,7 @@ filegroup(
 filegroup(
   name = 'ar',
   srcs = [
-    '@raspi-toolchain//:ar',
+    '@raspi_toolchain//:ar',
     'arm-linux-gnueabihf-ar',
   ],
 )
@@ -19,7 +19,7 @@ filegroup(
 filegroup(
   name = 'ld',
   srcs = [
-    '@raspi-toolchain//:ld',
+    '@raspi_toolchain//:ld',
     'arm-linux-gnueabihf-ld',
   ],
 )
@@ -27,7 +27,7 @@ filegroup(
 filegroup(
   name = 'nm',
   srcs = [
-    '@raspi-toolchain//:nm',
+    '@raspi_toolchain//:nm',
     'arm-linux-gnueabihf-nm',
   ],
 )
@@ -35,7 +35,7 @@ filegroup(
 filegroup(
   name = 'objcopy',
   srcs = [
-    '@raspi-toolchain//:objcopy',
+    '@raspi_toolchain//:objcopy',
     'arm-linux-gnueabihf-objcopy',
   ],
 )
@@ -43,7 +43,7 @@ filegroup(
 filegroup(
   name = 'objdump',
   srcs = [
-    '@raspi-toolchain//:objdump',
+    '@raspi_toolchain//:objdump',
     'arm-linux-gnueabihf-objdump',
   ],
 )
@@ -51,7 +51,7 @@ filegroup(
 filegroup(
   name = 'strip',
   srcs = [
-    '@raspi-toolchain//:strip',
+    '@raspi_toolchain//:strip',
     'arm-linux-gnueabihf-strip',
   ],
 )
@@ -59,7 +59,7 @@ filegroup(
 filegroup(
   name = 'as',
   srcs = [
-    '@raspi-toolchain//:as',
+    '@raspi_toolchain//:as',
     'arm-linux-gnueabihf-as',
   ],
 )

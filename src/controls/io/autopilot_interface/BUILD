@@ -8,6 +8,10 @@ cc_library(
     'autopilot_interface.h',
   ],
   deps = [
+    '//src/controls:messages_cpp',
+    '//src/controls/io/autopilot_interface/ros_publisher:ros_publisher',
+
+    '//lib/ros:ros',
     '//lib/mavconn_udp:mavconn_udp'
   ],
   copts = [
