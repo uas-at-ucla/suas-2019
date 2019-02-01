@@ -53,7 +53,7 @@ class InteropClient {
         }
         // console.log(interopTelemetry);
         this.postTelemetry(interopTelemetry).then(
-          msg => console.log(msg)
+          msg => { if (constants.verbose) console.log(msg) }
         );
         this.telemetryCount = 0;
       }

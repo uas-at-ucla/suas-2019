@@ -21,6 +21,34 @@ class ProtobufUtils {
     this.Output = telemetryRoot.lookupType("src.controls.Output");
   }
 
+  makeGroundProgram(commands, missionAndObstacles) {
+    let obstacles_proto = []
+    let fieldBoundary_proto = []
+    if (missionAndObstacles) {
+      for (let obstacle of missionAndObstacles.obstacles.stationary_obstacles) {
+        obstacles_proto.push({
+          location: {
+            latitude: obstacle.latitude,
+            longitude: obstacle.longitude
+          },
+          cylinderRadius: obstacle.cylinder_radius,
+          cylinderHeight: obstacle.cylinder_height
+        });
+      }
+      for (let point of missionAndObstacles.mission.fly_zones[0].boundary_pts) {
+        fieldBoundary_proto.push({
+          latitude: point.latitude,
+          longitude: point.longitude
+        });
+      }
+    }
+    return {
+      commands: commands,
+      staticObstacles: obstacles_proto,
+      fieldBoundary: fieldBoundary_proto
+    }
+  }
+
   encodeGroundProgram(message) {
     return ProtobufUtils.encode(this.GroundProgram, message);
   }
@@ -66,6 +94,10 @@ class ProtobufUtils {
   }
   
   static encode(Type, message) {
+    let errMsg = Type.verify(message);
+    if (errMsg) {
+      throw Error(errMsg);
+    }
     return ProtobufUtils.encodeBase64(Type.encode(message).finish());
   }
 }

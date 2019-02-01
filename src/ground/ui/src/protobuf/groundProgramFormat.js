@@ -38,13 +38,13 @@ var Command = { command: UgvDropCommand };
 
 // StaticObstacle
 var Position2D = { latitude: 1.23, longitude: 1.57 };
-var StaticObstacle = { location: Position2D, cylinderRadius: 2.54 };
+var StaticObstacle = { location: Position2D, cylinderRadius: 2.54, cylinderHeight: 2.54 };
 
 // GroundProgram (using SurveyCommand here as example)
 var Position2D = { latitude: 1.23, longitude: 1.57 };
 var SurveyCommand = { surveyPolygon: [Position2D, Position2D], altitude: 14.3 };
 var Command = { command: SurveyCommand };
-var StaticObstacle = { location: Position2D, cylinderRadius: 2.54 };
+var StaticObstacle = { location: Position2D, cylinderRadius: 2.54, cylinderHeight: 2.54 };
 var GroundProgram = { commands: [Command, Command], staticObstacles: [StaticObstacle, StaticObstacle], fieldBoundary: [Position2D, Position2D] };
 
 var sampleGroundPRogram = {
@@ -107,14 +107,16 @@ var sampleGroundPRogram = {
         "latitude": 1.23,
         "longitude": 1.57
       },
-      "cylinderRadius": 2.54
+      "cylinderRadius": 2.54,
+      "cylinderHeight": 2.54
     },
     {
       "location": {
         "latitude": 1.23,
         "longitude": 1.57
       },
-      "cylinderRadius": 2.54
+      "cylinderRadius": 2.54,
+      "cylinderHeight": 2.54
     }
   ],
   "fieldBoundary": [

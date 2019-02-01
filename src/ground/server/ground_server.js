@@ -65,7 +65,7 @@ drone_io.on('connect', (socket) => {
       }
       // When telemetry is received from the drone, send it to clients on the UI namespace
       if (telemetryCount >= uiSendInterval) {
-        console.log(JSON.stringify(data, null, 2) + ",");
+        if (constants.verbose) console.log(JSON.stringify(data, null, 2));
         ui_io.emit('TELEMETRY', data);
         telemetryCount = 0;
       }
@@ -85,7 +85,7 @@ fake_drone_io.on('connect', (socket) => {
       }
       // When telemetry is received from the drone, send it to clients on the UI namespace
       if (fakeTelemetryCount >= uiSendInterval) {
-        console.log(JSON.stringify(data, null, 2) + ",");
+        if (constants.verbose) console.log(JSON.stringify(data, null, 2));
         ui_io.emit('TELEMETRY', data);
         fakeTelemetryCount = 0;
       }
@@ -100,18 +100,22 @@ ui_io.on('connect', (socket) => {
     socket.emit('INTEROP_DATA', missionAndObstacles);
   }
 
-  socket.on("TEST", (data) => {
+  socket.on('TEST', (data) => {
     console.log("TEST " + data);
   });
-  socket.on("CHANGE_DRONE_STATE", (data) => {
-    drone_io.emit("CHANGE_DRONE_STATE", data);
+  socket.on('CHANGE_DRONE_STATE', (data) => {
+    drone_io.emit('CHANGE_DRONE_STATE', data);
     console.log("THE DRONE is asked to " + data + ". Hey DRONE, are you listening?");
   });
 
-  socket.on("RUN_MISSION", (commands) => {
+  socket.on('RUN_MISSION', (commands) => {
     console.log("received mission from UI");
-    // TODO: Make GroundProgram using commands and missionAndObstacles.
-    // If missionAndObstacles is null, create an emtpy list of obstacles.
+    if (protobufUtils) {
+      let groundProgram = protobufUtils.makeGroundProgram(commands, missionAndObstacles);
+      console.log(JSON.stringify(groundProgram, null, 2));
+      let encodedGroundProgram = protobufUtils.encodeGroundProgram(groundProgram);
+      drone_io.emit('RUN_MISSION', encodedGroundProgram);
+    }
   });
 });
 
