@@ -9,42 +9,46 @@ namespace ros_publisher {
 RosPublisher::RosPublisher() :
     heartbeat_publisher_(
         ros_node_handle_.advertise<::src::controls::SensorsHeartbeat>(
-            "/sensors/local_position_ned", 1000)),
+            "/sensors/heartbeat", kRosQueueSize)),
     sys_status_publisher_(
         ros_node_handle_.advertise<::src::controls::SensorsSysStatus>(
-            "/sensors/local_position_ned", 1000)),
+            "/sensors/sys_status", kRosQueueSize)),
     battery_status_publisher_(
         ros_node_handle_.advertise<::src::controls::SensorsBatteryStatus>(
-            "/sensors/battery_status", 1000)),
+            "/sensors/battery_status", kRosQueueSize)),
     radio_status_publisher_(
         ros_node_handle_.advertise<::src::controls::SensorsRadioStatus>(
-            "/sensors/radio_status", 1000)),
+            "/sensors/radio_status", kRosQueueSize)),
     local_position_ned_publisher_(
         ros_node_handle_.advertise<::src::controls::SensorsLocalPositionNed>(
-            "/sensors/local_position_ned", 1000)),
+            "/sensors/local_position_ned", kRosQueueSize)),
     global_position_int_publisher_(
         ros_node_handle_.advertise<::src::controls::SensorsGlobalPositionInt>(
-            "/sensors/global_position_int", 1000)),
+            "/sensors/global_position_int", kRosQueueSize)),
     gps_raw_int_publisher_(
         ros_node_handle_.advertise<::src::controls::SensorsGpsRawInt>(
-            "/sensors/gps_raw_int", 1000)),
+            "/sensors/gps_raw_int", kRosQueueSize)),
     highres_imu_publisher_(
         ros_node_handle_.advertise<::src::controls::SensorsHighresImu>(
-            "/sensors/highres_imu", 1000)),
+            "/sensors/highres_imu", kRosQueueSize)),
     attitude_publisher_(
         ros_node_handle_.advertise<::src::controls::SensorsAttitude>(
-            "/sensors/attitude", 1000)),
+            "/sensors/attitude", kRosQueueSize)),
     vfr_hud_publisher_(
         ros_node_handle_.advertise<::src::controls::SensorsVfrHud>(
-            "/sensors/vfr_hud", 1000)),
+            "/sensors/vfr_hud", kRosQueueSize)),
     actuator_control_target_publisher_(
         ros_node_handle_
             .advertise<::src::controls::SensorsActuatorControlTarget>(
-                "/sensors/actuator_control_target", 1000)) {}
+                "/sensors/actuator_control_target", kRosQueueSize)),
+    altitude_publisher_(ros_node_handle_.advertise<std_msgs::Int32>(
+        "/sensors/altitude", kRosQueueSize)) {}
 
 void RosPublisher::WriteMessage(const mavlink_message_t *msg,
                                 const ::mavconn::Framing framing) {
   (void)framing;
+
+  ROS_DEBUG_STREAM("Received Mavlink message (" << msg->msgid << ")");
 
   switch (msg->msgid) {
     case MAVLINK_MSG_ID_HEARTBEAT: {
@@ -70,6 +74,7 @@ void RosPublisher::WriteMessage(const mavlink_message_t *msg,
 
       ::src::controls::SensorsSysStatus sys_status_proto;
       sys_status_proto.set_battery_remaining(sys_status.battery_remaining);
+      sys_status_proto.set_current_battery(sys_status.current_battery);
       sys_status_proto.set_drop_rate_comm(sys_status.drop_rate_comm);
       sys_status_proto.set_errors_comm(sys_status.errors_comm);
       sys_status_proto.set_errors_count1(sys_status.errors_count1);
@@ -171,6 +176,10 @@ void RosPublisher::WriteMessage(const mavlink_message_t *msg,
       global_position_int_proto.set_vx(global_position_ned.vx);
       global_position_int_proto.set_vy(global_position_ned.vy);
       global_position_int_proto.set_vz(global_position_ned.vz);
+
+      std_msgs::Int32 msg;
+      msg.data = global_position_ned.alt;
+      altitude_publisher_.publish(msg);
 
       global_position_int_publisher_.publish(global_position_int_proto);
       break;
@@ -285,6 +294,8 @@ void RosPublisher::WriteMessage(const mavlink_message_t *msg,
     default:
       break;
   }
+
+  ::ros::spinOnce();
 }
 
 } // namespace ros_publisher

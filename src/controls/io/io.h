@@ -11,6 +11,8 @@
 #include <wiringPi.h>
 #endif
 
+#include <ros/ros.h>
+
 #include "lib/dslr_interface/dslr_interface.h"
 #include "lib/logger/log_sender.h"
 #include "lib/proto_comms/proto_comms.h"
@@ -52,22 +54,6 @@ enum AutopilotState {
 
 void quit_handler(int sig);
 
-class AutopilotSensorReader : public LoopHandler {
- public:
-  AutopilotSensorReader(autopilot_interface::AutopilotInterface *copter_io);
-
- private:
-  virtual void RunIteration() override;
-  virtual void Stop() override{};
-
-  autopilot_interface::AutopilotInterface *copter_io_;
-  autopilot_interface::TimeStamps last_timestamps_;
-
-  double last_gps_;
-
-  ::lib::proto_comms::ProtoSender<::src::controls::UasMessage> sensors_sender_;
-};
-
 class AutopilotOutputWriter : public LoopHandler {
  public:
   AutopilotOutputWriter(autopilot_interface::AutopilotInterface *copter_io);
@@ -85,7 +71,7 @@ class AutopilotOutputWriter : public LoopHandler {
 
   ::lib::DSLRInterface dslr_interface_;
 
-  autopilot_interface::AutopilotInterface *copter_io_;
+  autopilot_interface::AutopilotInterface *autopilot_interface_;
 
   ::lib::proto_comms::ProtoReceiver<::src::controls::Output> output_receiver_;
 
@@ -105,10 +91,10 @@ class IO {
   void Quit();
 
  private:
-  autopilot_interface::AutopilotInterface copter_io_;
+  autopilot_interface::AutopilotInterface autopilot_interface_;
   ::std::atomic<bool> run_{true};
 
-  AutopilotSensorReader autopilot_sensor_reader_;
+  // AutopilotSensorReader autopilot_sensor_reader_;
   AutopilotOutputWriter autopilot_output_writer_;
 };
 

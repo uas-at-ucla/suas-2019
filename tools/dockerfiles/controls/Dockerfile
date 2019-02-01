@@ -11,18 +11,9 @@ FROM debian:stretch
 RUN apt-get update     -qq                                                  && \
     apt-get install -y -qq curl                                             && \
     apt-get install -y -qq                                                     \
-    aria2                                                                      \
     git                                                                        \
     gnupg                                                                      \
     gnupg2
-
-# Install apt-fast for faster APT downloads. ###################################
-WORKDIR /tmp
-RUN git clone https://github.com/ilikenwf/apt-fast.git
-RUN cp apt-fast/apt-fast /bin                                               && \
-    chmod +x /bin/apt-fast                                                  && \
-    cp apt-fast/apt-fast.conf /etc                                          && \
-    echo "VERBOSE_OUTPUT=n" > /etc/apt-fast.conf
 
 # Add apt-get repositories containing required packages. #######################
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
@@ -34,9 +25,9 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
   "stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 
 # Install apt dependencies. ####################################################
-RUN apt-fast update -qq                                                     && \
-    apt-fast upgrade -y -qq                                                 && \
-    apt-fast install -y                                                        \
+RUN apt-get update -qq                                                      && \
+    apt-get upgrade -y -qq                                                  && \
+    apt-get install -y                                                         \
     bmon                                                                       \
     build-essential                                                            \
     ca-certificates-java                                                       \
@@ -103,7 +94,7 @@ RUN usermod -aG sudo uas
 # User env setup. ##############################################################
 RUN mkdir /external_libs
 
-RUN apt-fast install -y openssh-client openssh-server
+RUN apt-get install -y openssh-client openssh-server
 
 USER uas
 RUN mkdir -p /home/uas/code_env
@@ -153,7 +144,7 @@ RUN rm -rf /home/uas/mavlink-router
 # ROS dependencies.
 RUN pip install --user rosinstall_generator wstool
 RUN sudo rosdep init && rosdep update
-RUN sudo apt-fast install -y libxmlrpcpp-dev librosconsole-dev
+RUN sudo apt-get install -y libxmlrpcpp-dev librosconsole-dev
 
 # Use a stable version of bazel. ###############################################
 WORKDIR /tmp
