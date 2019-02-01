@@ -94,3 +94,5 @@ message UasMessage {
     Output output                                                          = 4;
   }
 }
+
+// ADD ROS SENSOR INFORMATION (you'll need to check online for the definitions of the messages)
