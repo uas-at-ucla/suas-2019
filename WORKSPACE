@@ -2,11 +2,11 @@ workspace(name = "com_uclauas")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
 
-new_git_repository(
-  name = 'raspi-toolchain',
-  remote = 'https://github.com/uas-at-ucla/raspi-toolchain.git',
-  build_file = 'compilers/raspi-toolchain.BUILD',
-  commit = 'a3147acb2a75dcc54d33665882c2e399229d4824',
+http_archive(
+  name='raspi_toolchain',
+  build_file='compilers/raspi_toolchain.BUILD',
+  urls = ['https://github.com/uas-at-ucla/raspi-toolchain/releases/download/1.1/raspi_toolchain.zip'],
+  strip_prefix='raspi_toolchain',
 )
 
 new_git_repository(
@@ -116,8 +116,8 @@ new_git_repository(
 
 git_repository(
   name = "gtest",
-  commit = "fe14e3030737509c2b9f9adad80ff56f80e988a2",
-  remote = "https://github.com/abseil/googletest.git"
+  commit = "d85b96280a55aa70ace9b86c9773cfe6634a1686",
+  remote = "https://github.com/uas-at-ucla/googletest.git"
 )
 
 git_repository(
@@ -143,8 +143,8 @@ new_git_repository(
 
 new_git_repository(
   name = "pigpio",
-  commit = "934874be2fa34a525beb33e8cb75e378df587860",
-  remote = "https://github.com/joan2937/pigpio.git",
+  commit = "94025d38ed3d6c1f713d3cb7fc809499ce18b5e4",
+  remote = "https://github.com/uas-at-ucla/pigpio.git",
   build_file = "third_party/pigpio.BUILD",
 )
 
@@ -209,25 +209,25 @@ local_repository(
   path = "./src/ground/ui/node_modules/rxjs/src",
 )
 
-new_http_archive(
+http_archive(
     name='genmsg_repo',
-    build_file='external/third_party/genmsg.BUILD',
+    build_file='third_party/genmsg.BUILD',
     sha256='d7627a2df169e4e8208347d9215e47c723a015b67ef3ed8cda8b61b6cfbf94d2',
     urls = ['https://github.com/ros/genmsg/archive/0.5.8.tar.gz'],
     strip_prefix='genmsg-0.5.8',
 )
 
-new_http_archive(
+http_archive(
     name='genpy_repo',
-    build_file='external/third_party/genpy.BUILD',
+    build_file='third_party/genpy.BUILD',
     sha256='35e5cd2032f52a1f77190df5c31c02134dc460bfeda3f28b5a860a95309342b9',
     urls = ['https://github.com/ros/genpy/archive/0.6.5.tar.gz'],
     strip_prefix='genpy-0.6.5',
 )
 
-new_http_archive(
+http_archive(
     name='gencpp',
-    build_file='external/third_party/gencpp.BUILD',
+    build_file='third_party/gencpp.BUILD',
     sha256='d7627a2df169e4e8208347d9215e47c723a015b67ef3ed8cda8b61b6cfbf94d2',
     urls = ['https://github.com/ros/gencpp/archive/0.5.5.tar.gz'],
     strip_prefix='gencpp-0.5.5',

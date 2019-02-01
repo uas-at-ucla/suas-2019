@@ -1,7 +1,5 @@
 #include "autopilot_interface.h"
 
-#include <iostream>
-
 namespace src {
 namespace controls {
 namespace io {
@@ -80,13 +78,29 @@ void AutopilotInterface::set_yaw_rate(float yaw_rate, mavlink_set_position_targe
 }
 
 /*
-void *AutopilotInterface::start_autopilot_interface_write_thread() {
-  
-  AutopilotInterface *autopilot_interface = (AutopilotInterface *)args;
-  autopilot_interface->start_write_thread();
-  
-  this->start_write_thread();
-  return NULL;
+AutopilotInterface::AutopilotInterface(const char *address) :
+    write_tid_(0),
+    reading_status_(0),
+    writing_status_(0),
+    write_count_(0),
+    time_to_exit_(false) {
+  system_id = 1;
+  autopilot_id = 1;
+  companion_id = 3;
+
+  current_messages.sysid = system_id;
+  current_messages.compid = autopilot_id;
+
+  char udp[30];
+  strcpy(udp, "udp://");
+  strcat(udp, address);
+  strcat(udp, ":8084@:8084");
+
+  pixhawk_ = ::mavconn::MAVConnInterface::open_url(udp, 0, 0);
+  pixhawk_->set_protocol_version(mavconn::Protocol::V20);
+  pixhawk_->message_received_cb =
+      ::std::bind(&ros_publisher::RosPublisher::WriteMessage, &ros_publisher_,
+                  ::std::placeholders::_1, ::std::placeholders::_2);
 }
 */
 
