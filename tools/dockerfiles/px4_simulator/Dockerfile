@@ -57,11 +57,8 @@ RUN apt-get install -y                                                         \
 
 # Set up Oracle Java8. #########################################################
 RUN add-apt-repository                                                         \
-     "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"     && \
-    gpg --no-tty --keyserver pgpkeys.mit.edu --recv-key C2518248EEA14886    && \
-    gpg --no-tty -a --export C2518248EEA14886                                | \
-    sudo apt-key add -                                                      && \
-    apt-get update                                                          && \
+     "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
+RUN apt-get update                                                          && \
     echo debconf shared/accepted-oracle-license-v1-1 select true             | \
     debconf-set-selections                                                  && \
     apt-get install -y                                                         \
@@ -76,7 +73,7 @@ RUN usermod -aG sudo uas
 
 # User env setup. ##############################################################
 RUN apt-get install -y \
-bzip2 \
+    bzip2 \
     ca-certificates \
     ccache \
     cmake \

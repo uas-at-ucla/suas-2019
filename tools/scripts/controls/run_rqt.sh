@@ -47,6 +47,7 @@ docker run \
   -e ROS_MASTER_URI="http://$UAS_AT_UCLA_CONTROLS_CONTAINER_IP:11311" \
   --name $CONTAINER_NAME \
   --net uas_bridge  \
+  -v /tmp/rqt:/tmp/rqt \
   diegoferigo/ros \
   rqt
 

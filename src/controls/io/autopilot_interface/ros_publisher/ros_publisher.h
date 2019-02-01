@@ -4,6 +4,7 @@
 
 #include <common/mavlink.h>
 #include <ros/ros.h>
+#include <std_msgs/Int32.h>
 
 #include "lib/mavconn_udp/interface.h"
 #include "src/controls/io/autopilot_interface/ros_publisher/ros_publisher.h"
@@ -14,6 +15,9 @@ namespace controls {
 namespace io {
 namespace autopilot_interface {
 namespace ros_publisher {
+namespace {
+static const int kRosQueueSize = 1;
+} // namespace
 
 class RosPublisher {
  public:
@@ -36,6 +40,7 @@ class RosPublisher {
   ::ros::Publisher attitude_publisher_;
   ::ros::Publisher vfr_hud_publisher_;
   ::ros::Publisher actuator_control_target_publisher_;
+  ::ros::Publisher altitude_publisher_;
 };
 
 } // namespace ros_publisher
