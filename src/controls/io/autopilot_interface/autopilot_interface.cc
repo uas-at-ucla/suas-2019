@@ -77,7 +77,6 @@ void AutopilotInterface::set_yaw_rate(float yaw_rate, mavlink_set_position_targe
   sp.yaw_rate = yaw_rate;
 }
 
-/*
 AutopilotInterface::AutopilotInterface(const char *address) :
     write_tid_(0),
     reading_status_(0),
@@ -102,7 +101,6 @@ AutopilotInterface::AutopilotInterface(const char *address) :
       ::std::bind(&ros_publisher::RosPublisher::WriteMessage, &ros_publisher_,
                   ::std::placeholders::_1, ::std::placeholders::_2);
 }
-*/
 
 void AutopilotInterface::update_setpoint(
     mavlink_set_position_target_local_ned_t setpoint) {
