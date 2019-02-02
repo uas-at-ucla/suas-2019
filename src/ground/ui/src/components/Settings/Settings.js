@@ -119,6 +119,8 @@ class Settings extends Component {
           <Col>
             <h2>File Browser</h2>
             <Input type="file" />
+            <br />
+            <Button onClick={this.updateSettings}>Update Settings</Button>
           </Col>
           <br />
           <Col>
@@ -144,7 +146,6 @@ class Settings extends Component {
               </GoogleMap>
             </div>
           </Col>
-          <Button onClick={this.updateSettings}>Update Settings</Button>
         </Row>
       </Container>
     );
