@@ -7,10 +7,12 @@ import loadTimelineGrammar from './protobuf/timelineGrammarUtil';
 
 import telemetryReducer from './reducers/telemetryReducer';
 import missionReducer from './reducers/missionReducer';
+import settingsReducer from "./reducers/settingsReducer";
 
 export const { reducer, selector } = combineReducersAndSelectors({
   telemetry: telemetryReducer,
-  missionPlan: missionReducer
+  missionPlan: missionReducer,
+  settings: settingsReducer
 });
 
 const logger = createLogger({

@@ -1,0 +1,23 @@
+.Settings {
+  text-align: center;
+}
+
+.Settings p {
+  margin-top: auto;
+  font-size: 20px;
+}
+
+.Settings h1 {
+  text-align: center;
+  font-size: 40px;
+}
+
+.Settings h2 {
+  font-size: 30px;
+}
+
+.Settings button {
+  display: inline-block;
+  width: 300px;
+  padding: 10px;
+}
