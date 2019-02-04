@@ -161,6 +161,8 @@ RUN ln /usr/lib/x86_64-linux-gnu/librospack.so.2.5.2 /usr/lib/x86_64-linux-gnu/l
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
 
+ENV ROS_MASTER_URI http://0.0.0.0:11311
+
 EXPOSE 8085/udp
 EXPOSE 8086/udp
 EXPOSE 8090/udp
