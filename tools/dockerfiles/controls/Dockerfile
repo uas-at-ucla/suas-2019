@@ -17,7 +17,6 @@ RUN apt-get update     -qq                                                  && \
 
 # Add apt-get repositories containing required packages. #######################
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN echo "deb http://deb.debian.org/debian testing main" \
   | tee /etc/apt/sources.list.d/python3_6.list
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
@@ -53,7 +52,6 @@ RUN apt-get update -qq                                                      && \
     libyajl-dev                                                                \
     libz-dev                                                                   \
     make                                                                       \
-    nodejs                                                                     \
     nmap                                                                       \
     openjdk-11-jdk                                                             \
     pkg-config                                                                 \
@@ -67,7 +65,6 @@ RUN apt-get update -qq                                                      && \
     python-matplotlib                                                          \
     python-empy                                                                \
     python-jinja2                                                              \
-    ros-base                                                                   \
     screen                                                                     \
     sudo                                                                       \
     tmux                                                                       \
@@ -141,22 +138,36 @@ RUN pip2.7 install --user                                                      \
 
 RUN rm -rf /home/uas/mavlink-router
 
-# ROS dependencies.
-RUN pip install --user rosinstall_generator wstool
-RUN sudo rosdep init && rosdep update
-RUN sudo apt-get install -y libxmlrpcpp-dev librosconsole-dev
-
 # Use a stable version of bazel. ###############################################
 WORKDIR /tmp
 USER root
 RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.22.0/bazel_0.22.0-linux-x86_64.deb > bazel_0.22.0-linux-x86_64.deb
+RUN apt-get install -y bash-completion
 RUN dpkg -i bazel_0.22.0-linux-x86_64.deb
 
 #RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
 
-RUN ln /usr/lib/x86_64-linux-gnu/libroscpp.so.2d /usr/lib/x86_64-linux-gnu/libroscpp.so
-RUN ln /usr/lib/x86_64-linux-gnu/libroslib.so.1.14.4 /usr/lib/x86_64-linux-gnu/libroslib.so
-RUN ln /usr/lib/x86_64-linux-gnu/librospack.so.2.5.2 /usr/lib/x86_64-linux-gnu/librospack.so
+# ROS dependencies.
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu stretch main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN apt-key adv --keyserver hkp://ha.pool.sks-keyservers.net:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+RUN apt-get update && apt-get install -y ros-melodic-ros-base ros-melodic-mavros
+
+RUN printf "source /opt/ros/melodic/setup.bash" > /home/uas/.bashrc
+
+WORKDIR /tmp
+RUN wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh && \
+  chmod +x install_geographiclib_datasets.sh && \
+  ./install_geographiclib_datasets.sh
+
+
+#RUN pip install --user rosinstall_generator wstool
+#RUN sudo rosdep init && rosdep update
+#RUN sudo apt-get install -y libxmlrpcpp-dev librosconsole-dev
+
+# TODO: Do we need these?
+#RUN ln /usr/lib/x86_64-linux-gnu/libroscpp.so.2d /usr/lib/x86_64-linux-gnu/libroscpp.so
+#RUN ln /usr/lib/x86_64-linux-gnu/libroslib.so.1.14.4 /usr/lib/x86_64-linux-gnu/libroslib.so
+#RUN ln /usr/lib/x86_64-linux-gnu/librospack.so.2.5.2 /usr/lib/x86_64-linux-gnu/librospack.so
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
