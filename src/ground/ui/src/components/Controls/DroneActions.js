@@ -1,8 +1,13 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import droneActions from "../../actions/droneActions"
 
-const mapStateToProps = state => { return {}; };
+import droneActions from "../../actions/droneActions";
+
+const mapStateToProps = state => { 
+  return {
+    missionCommands: state.missionPlan.commands
+  }; 
+};
 
 // Makes an object with the same function names as droneActions, 
 // but with every action creator wrapped into a dispatch call.
@@ -11,14 +16,22 @@ const mapDispatchToProps = droneActions;
 class DroneActions extends Component {
   render() {
     return (
-      <div>
+      <div className="DroneActions">
         <span>Change Drone State</span>
-        <button onClick={this.props.droneTakeoff}>TAKEOFF</button>
-        <button onClick={this.props.droneLand}>LAND</button>
-        <button onClick={this.props.droneFailsafe}>FAILSAFE</button>
-        <button onClick={this.props.droneThrottleCut}>THROTTLE_CUT</button>
+        
+        <div className="buttonArray">
+          <button id="takeoffButton" onClick={this.runMission}>Run Mission</button>
+          <button id="takeoffButton" onClick={this.props.droneTakeoff}>Takeoff</button>
+          <button id="landButton" onClick={this.props.droneLand}>Land</button>
+          <button id="failsafeButton" onClick={this.props.droneFailsafe}>Failsafe Landing</button>
+          <button id="throttleCutButton" onClick={this.props.droneThrottleCut}>Throttle Cut</button>
+        </div>
       </div>
     );
+  }
+
+  runMission = () => {
+    this.props.runMission(this.props.missionCommands);
   }
 }
 

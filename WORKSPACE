@@ -3,10 +3,10 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
 
 new_git_repository(
-  name = 'gcc_linaro_arm_linux_gnueabihf_raspbian_repo',
+  name = 'raspi-toolchain',
   remote = 'https://github.com/uas-at-ucla/raspi-toolchain.git',
-  build_file = 'compilers/gcc_linaro_arm_linux_gnueabihf_raspbian.BUILD',
-  commit = 'f1c0b5666ab9fdb0cf491a5e18cea312a077f34b',
+  build_file = 'compilers/raspi-toolchain.BUILD',
+  commit = 'a3147acb2a75dcc54d33665882c2e399229d4824',
 )
 
 new_git_repository(
@@ -166,6 +166,13 @@ new_git_repository(
   commit = "da6db6f79edc4291f7a5ff38d825b8f3102d6270",
   remote = "https://github.com/maldworth/gphoto2pp.git",
   build_file = "third_party/gphoto2pp.BUILD"
+)
+
+new_git_repository(
+  name = "ros_bazel",
+  commit = "1d8833d972c02c06dfbd7281c3e1469806668643",
+  remote = "https://github.com/uas-at-ucla/ros_bazel.git",
+  build_file = "third_party/ros_bazel.BUILD"
 )
 
 new_local_repository(

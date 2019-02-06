@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { Marker, InfoWindow } from 'react-google-maps';
+import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
 import GoogleMap from '../Utils/GoogleMap/GoogleMap';
@@ -10,7 +11,9 @@ const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
     commandPoints: derivedData.missionPlan.commandPoints,
-    protoInfo: derivedData.missionPlan.protoInfo
+    protoInfo: derivedData.missionPlan.protoInfo,
+    telemetry: state.telemetry,
+    droneMarker: derivedData.telemetry.droneMarker 
   };
 };
 
@@ -56,21 +59,37 @@ class Map extends Component {
           onClick ={this.onMapClick}
           onDblClick={this.mapDblClick}
         >
-          {this.props.commandPoints.map(commandPoint => 
+          {this.props.droneMarker ? 
+            <Marker {...this.props.droneMarker}></Marker> 
+          : null}
+
+          {this.props.commandPoints.map((commandPoint, index) => 
             commandPoint ?
               <Marker {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.onToggleOpen(commandPoint.id)}>
                 {this.state.isOpen[commandPoint.id] && <InfoWindow {...commandPoint.infobox} onCloseClick = {() =>this.onToggleOpen(commandPoint.id)}>
                   <div className="map-infobox">
-                    {commandPoint.infobox.content}
+                    <div>
+                      {/* TODO: add title */}
+                      {commandPoint.infobox.title}
+                    </div>
+                    <div>
+                      {commandPoint.infobox.content}
+                    </div>
+                    <Button onClick={this.deleteCommand} data-index={index}>
+                      Delete Command
+                    </Button>
                   </div>
                 </InfoWindow>}
               </Marker>
             : null
           )}
-          <Marker position={{ lat: -34.397, lng: 150.644 }} />
         </GoogleMap>
       </div>
     );
+  }
+
+  deleteCommand = (event) => {
+    this.props.deleteCommand(event.target.dataset.index);
   }
 
   mapDblClick = (event) => {

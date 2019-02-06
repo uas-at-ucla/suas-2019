@@ -2,8 +2,8 @@
 
 const tests = {
   interop: () => {
-    const interopClientFactory = require('./interop_client/interop_client');
-    interopClientFactory("localhost", 8000, "testadmin", "testpass")
+    const loadInteropClient = require('./interop_client/interop_client');
+    loadInteropClient("localhost", 8000, "testadmin", "testpass")
       .then(interopClient => {
         interopClient.getMissions().then(missions => {
           console.log(JSON.stringify(missions, null, 2));

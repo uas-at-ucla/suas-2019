@@ -18,8 +18,9 @@ TEST(DronePlantTest, GoFromPointAToPointB) {
   const int kLoopIteration = 100;
   const int kPrintWidth = 12;
   const int kPrintDecimals = 6;
+  Battery battery(32, 32, .125, 0);
 
-  DronePlant plant({0, 0, 0}, kLoopIteration);
+  DronePlant plant({0, 0, 0}, kLoopIteration, battery);
   Position3D goal = {0.001, 0.001, 100};
 
   int iteration = 0;
@@ -34,6 +35,7 @@ TEST(DronePlantTest, GoFromPointAToPointB) {
     Position3D start = plant.position();
     plant.MoveDrone(velocity_pid);
     Position3D end = plant.position();
+    Battery current = plant.battery();
 
     double distance_3d = GetDistance2D(start, end);
     distance_3d = ::std::sqrt(::std::pow(distance_3d, 2) +
@@ -49,10 +51,14 @@ TEST(DronePlantTest, GoFromPointAToPointB) {
                 << plant.position().longitude
                 << " Altitude: " << ::std::setw(kPrintWidth)
                 << plant.position().altitude << " Speed: " << speed
-                << ::std::endl;
+                << " Battery Remaining: " << std::setw(kPrintWidth)
+                << current.GetRemainingCapacity() << ::std::endl;
 
     if (iteration++ > 1e5) {
       FAIL() << "Simulated drone took to long to complete test!";
+    } else if (!current.CanSourceCurrent()) {
+      FAIL() << "The drone ran out of battery at "
+             << iteration * 1.0 / kLoopIteration;
     }
   }
 }

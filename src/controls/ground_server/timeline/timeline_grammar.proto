@@ -17,6 +17,7 @@ message Position3D {
 message StaticObstacle {
   required Position2D        location                                      = 1;
   required double            cylinder_radius                               = 2;
+  required double            cylinder_height                               = 3;
 }
 
 // Ground language /////////////////////////////////////////////////////////////

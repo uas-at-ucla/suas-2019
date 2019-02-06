@@ -14,11 +14,11 @@ const mapStateToProps = state => {
 class Telemetry extends Component {
   render() {
     return (
-      <div className="Telemetry">
-        <div>{JSON.stringify(this.props.telemetry)}</div>
+      <span className="Telemetry">
+        <div className="Readout">{JSON.stringify(this.props.telemetry)}</div>
         <AttitudeIndicator/>
         <Altimeter/>
-      </div>
+      </span>
     );
   }
 }

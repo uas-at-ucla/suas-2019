@@ -15,6 +15,7 @@ export default function loadTimelineGrammar(dispatch) {
       timelineGrammar = nested;
     }
     console.log(timelineGrammar);
+    // console.log(JSON.stringify(timelineGrammar, null, 2));
 
     // Send to Redux store
     dispatch({
