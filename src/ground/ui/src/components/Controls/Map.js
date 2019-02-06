@@ -17,29 +17,30 @@ const mapStateToProps = state => {
 const mapDispatchToProps = missionActions;
 
 class Map extends Component {
-  /*constructor(props){
+ /* constructor(props){
     super(props);
   
     this.state = {
       isOpen: false
     }
-  }
-  onToggleOpen = () => {
-    this.setState({
-      isOpen: true
-    });
-  }*/
+  
+ */ 
   state = {
-    isOpen: false
-    /*onToggleOpen: ({ isOpen }) => () => ({
-      isOpen: !isOpen})*/
+    isOpen: {}
   };
-
-   onToggleOpen(){
-      this.setState({
-        isOpen: !this.state.isOpen
-      });
+  onToggleOpen = (id) => {
+    this.setState({
+      isOpen: {...this.state.isOpen, [id]: !this.state.isOpen.id}
+    });
   }
+ 
+  onMapClick = () => {
+    if (this.state.isOpen) {
+      this.setState({
+        isOpen: {}
+      })
+    }
+  };
   render() {
     return (
       <div className="Map">
@@ -52,13 +53,13 @@ class Map extends Component {
             disableDoubleClickZoom: true,
             scaleControl: true
           }}
+          onClick ={this.onMapClick}
           onDblClick={this.mapDblClick}
         >
           {this.props.commandPoints.map(commandPoint => 
             commandPoint ?
-              <Marker {...commandPoint.marker} key={commandPoint.id} onCLick = {this.onToggleOpen}>
-              //define toggle open
-                {this.isOpen && <InfoWindow {...commandPoint.infobox} onCloseCLick = {this.onToggleOpen}>
+              <Marker {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.onToggleOpen(commandPoint.id)}>
+                {this.state.isOpen[commandPoint.id] && <InfoWindow {...commandPoint.infobox} onCloseClick = {() =>this.onToggleOpen(commandPoint.id)}>
                   <div className="map-infobox">
                     {commandPoint.infobox.content}
                   </div>
