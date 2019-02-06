@@ -12,7 +12,12 @@ const google = window.google;
 const customTilesMapType = new google.maps.ImageMapType({
   getTileUrl: (coord, zoom) => {
     if (coord.y >= 0) {
-      let url = `https://khms0.googleapis.com/kh?v=821&hl=en-US&x=${coord.x}&y=${coord.y}&z=${zoom}`;
+      let url = null;
+      try {
+        url = require(`google_maps_js_api/map_images/${zoom}/mag-${zoom}_x-${coord.x}_y-${coord.y}.jpg`);
+      } catch(e) {
+        url = `https://khms0.googleapis.com/kh?v=821&hl=en-US&x=${coord.x}&y=${coord.y}&z=${zoom}`;
+      }
       
       // for testing only
       if (!tileBounds[zoom]) {
