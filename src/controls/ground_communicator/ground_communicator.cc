@@ -322,12 +322,12 @@ void GroundCommunicator::SetGoal(GoalState new_state) {
 void GroundCommunicator::SetState(::std::string new_state_string) {
   GoalState new_state;
 
-  if (new_state_string == "MISSION") {
+  if (new_state_string == "RUN_MISSION") {
     // TODO(comran): Check if at safe altitude.
     new_state = RUN_MISSION;
   } else if (new_state_string == "FAILSAFE") {
     new_state = FAILSAFE;
-  } else if (new_state_string == "THROTTLE CUT") {
+  } else if (new_state_string == "THROTTLE_CUT") {
     new_state = THROTTLE_CUT;
   } else if (new_state_string == "TAKEOFF") {
     new_state = TAKEOFF;
