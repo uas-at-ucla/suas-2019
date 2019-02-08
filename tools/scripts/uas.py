@@ -2,6 +2,7 @@ import os
 import sys
 import signal
 import time
+import math
 import argparse
 import textwrap
 import platform
@@ -225,6 +226,64 @@ def run_cmd_exit_failure(cmd):
         sys.exit(1)
 
 
+def tmux_cmd(cmd):
+    run_cmd_exit_failure("tmux send-keys \"" + cmd + "\" C-m")
+
+
+def tmux_move_pane(direction):
+    if direction == "down":
+        run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+    elif direction == "up":
+        run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    elif direction == "right":
+        run_cmd_exit_failure("tmux select-pane -t uas_env -R")
+    elif direction == "left":
+        run_cmd_exit_failure("tmux select-pane -t uas_env -L")
+    else:
+        print("Unknown direction: " + direction)
+        signal_received(2, 0)
+
+
+def tmux_select_window(index):
+    run_cmd_exit_failure("tmux select-window -t uas_env:" + str(index))
+
+
+def tmux_split(direction, times):
+    direction_flag = None
+    direction_move = None
+
+    if direction == "horizontal":
+        direction_flag = "-h"
+        direction_move = "left"
+    elif direction == "vertical":
+        direction_flag = "-v"
+        direction_move = "up"
+    else:
+        print("Unknown direction: " + direction)
+        sys.exit(1)
+
+    # Split the pane.
+    for i in range(0, times - 1):
+        amount = int(math.floor((1 - 1.0 / (times - i)) * 100))
+        run_cmd_exit_failure("tmux split-window " \
+            + direction_flag \
+            + " -p " + str(amount) \
+            + " -t uas_env")
+
+    # Move back to the top left.
+    for i in range(0, times - 1):
+        tmux_move_pane(direction_move)
+
+
+
+def tmux_rename_pane(name):
+    run_cmd_exit_failure("tmux rename-window -t uas_env \"" + name + "\"")
+
+
+def tmux_new_window(name):
+    run_cmd_exit_failure("tmux new-window -t uas_env -n " + name)
+
+
 def create_link(src, dst):
     run_cmd_exit_failure("ln -sf " + src + " " + dst)
 
@@ -351,26 +410,29 @@ def run_controls_simulate(args):
     shutdown_functions.append(kill_simulator)
     shutdown_functions.append(kill_tmux_session_uas_env)
 
-    print_update("Building the code...")
-    run_controls_build(show_complete=False, raspi=False)
+    # Make sure the simulator is not already running.
+    if processes.spawn_process_wait_for_code( \
+            "tmux has-session -t uas_env > /dev/null 2>&1") == 0:
+        print_update("UAS simulation is already running!", \
+                msg_type="FAILURE")
+        sys.exit(1)
 
-    print_update("Build complete! Starting simulator...")
+    run_cmd_exit_failure("tmux kill-session " \
+            "-t uas_env " \
+            "> /dev/null 2>&1 || true")
+
     kill_running_simulators()
 
+    # Build the docker image for our PX4 simulator environment.
     print_update("Building UAS@UCLA software env docker...")
 
-    # Build the image for our docker environment.
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
             "git clone " \
             "https://github.com/uas-at-ucla/Firmware.git " \
             "tools/cache/px4_simulator || true")
 
     # Set up tmux panes.
-    run_cmd_exit_failure("tmux start-server ")
-
-    run_cmd_exit_failure("tmux kill-session " \
-            "-t uas_env " \
-            "> /dev/null || true")
+    run_cmd_exit_failure("tmux start-server")
 
     run_cmd_exit_failure("tmux " \
             "-2 " \
@@ -379,23 +441,9 @@ def run_controls_simulate(args):
             "-s " \
             "uas_env")
 
-    run_cmd_exit_failure("tmux renamew -t uas_env controls")
+    tmux_rename_pane("PX4")
 
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "rm /tmp/uasatucla_* || true")
-
-    run_cmd_exit_failure("tmux split-window -h -p 50 -t uas_env")
-
-    # Set up right side with 4 panes.
-    run_cmd_exit_failure("tmux split-window -v -p 75 -t uas_env")
-    run_cmd_exit_failure("tmux split-window -v -p 66 -t uas_env")
-    run_cmd_exit_failure("tmux split-window -v -p 50 -t uas_env")
-
-    # Set up left side with 3 panes
-    run_cmd_exit_failure("tmux select-pane -t uas_env -L")
-    run_cmd_exit_failure("tmux split-window -v -p 66 -t uas_env")
-    run_cmd_exit_failure("tmux split-window -v -p 50 -t uas_env")
-    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
 
     sim_command = DOCKER_RUN_SIM_SCRIPT
     mavlink_router_command = "./tools/scripts/px4_simulator/exec_mavlink_router.sh"
@@ -405,50 +453,92 @@ def run_controls_simulate(args):
         mavlink_router_command = "echo 'Not running mavlink router'"
         io_command = "bazel run //src/controls/io_sim:io_sim"
 
+    tmux_split("horizontal", 2)
+    tmux_cmd(sim_command)
+
+    tmux_move_pane("right")
+    tmux_split("vertical", 2)
+    tmux_cmd(mavlink_router_command)
+    tmux_move_pane("down")
+    tmux_cmd(DOCKER_EXEC_SCRIPT \
+        + "roslaunch mavros px4.launch "
+        + "fcu_url:=\"udp://:8084@0.0.0.0:8084\"")
+
+    tmux_new_window("Raspi")
+
+    tmux_new_window("ROS")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + "rostopic echo /mavros/global_position/global")
+
+    # tmux_select_window(0)
+
+    # run_cmd_exit_failure("tmux split-window -h -p 50 -t uas_env")
+
+    # # Set up right side with 4 panes.
+    # run_cmd_exit_failure("tmux split-window -v -p 75 -t uas_env")
+    # run_cmd_exit_failure("tmux split-window -v -p 66 -t uas_env")
+    # run_cmd_exit_failure("tmux split-window -v -p 50 -t uas_env")
+
+    # # Set up left side with 4 panes
+    # run_cmd_exit_failure("tmux select-pane -t uas_env -L")
+    # run_cmd_exit_failure("tmux split-window -v -p 75 -t uas_env")
+    # run_cmd_exit_failure("tmux split-window -v -p 66 -t uas_env")
+    # run_cmd_exit_failure("tmux split-window -v -p 50 -t uas_env")
+    # run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    # run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+    # run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+
+    # tmux_move_pane("down")
+    # tmux_cmd(mavlink_router_command)
     # Run scripts on the left side.
-    run_cmd_exit_failure("tmux send-keys \"" + sim_command + "\" C-m")
+#     run_cmd_exit_failure("tmux send-keys \"" + sim_command + "\" C-m")
 
-    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+#     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
-    run_cmd_exit_failure("tmux send-keys \"" + mavlink_router_command + "\" C-m")
+#     run_cmd_exit_failure("tmux send-keys \"" + mavlink_router_command + "\" C-m")
 
-    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+#     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
-    run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_EXEC_SCRIPT + " tail -F /tmp/drone_code.csv\" C-m")
+#     run_cmd_exit_failure("tmux send-keys \"" + \
+#             DOCKER_EXEC_SCRIPT + " tail -F /tmp/drone_code.csv\" C-m")
 
-    # Run scripts on the right side.
-    run_cmd_exit_failure("tmux select-pane -t uas_env -R")
-    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-    run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+#     # Run scripts on the right side.
+#     run_cmd_exit_failure("tmux select-pane -t uas_env -R")
+#     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+#     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
+#     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
 
-    run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_EXEC_SCRIPT + \
-            "bazel run //src/controls/loops:flight_loop\" C-m")
+#     run_cmd_exit_failure("tmux send-keys \"" + \
+#             DOCKER_EXEC_SCRIPT + \
+#             "bazel run //src/controls/loops:flight_loop\" C-m")
 
-    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+#     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
-    run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_EXEC_SCRIPT + io_command + "\" C-m")
+#     run_cmd_exit_failure("tmux send-keys \"" + \
+#             DOCKER_EXEC_SCRIPT + io_command + "\" C-m")
 
-    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+#     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
-    run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_EXEC_SCRIPT + \
-            "bazel run //src/controls/ground_communicator:ground_communicator\" C-m")
+#     run_cmd_exit_failure("tmux send-keys \"" + \
+#             DOCKER_EXEC_SCRIPT + \
+#             "bazel run //src/controls/ground_communicator:ground_communicator\" C-m")
 
-    run_cmd_exit_failure("tmux select-pane -t uas_env -D")
+#     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
 
-    run_cmd_exit_failure("tmux send-keys \"" + \
-            DOCKER_EXEC_SCRIPT + \
-            "./tools/scripts/bazel_run.sh //lib/logger:log_writer\" C-m")
+#     run_cmd_exit_failure("tmux send-keys \"" + \
+#             DOCKER_EXEC_SCRIPT + \
+#             "./tools/scripts/bazel_run.sh //lib/logger:log_writer\" C-m")
 
     print_update("\n\nSimulation running! \n" \
             "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
             msg_type="SUCCESS")
 
     while True:
+        if processes.spawn_process_wait_for_code( \
+            "tmux has-session -t uas_env > /dev/null 2>&1") == 1:
+            print_update("Tmux session closed, killing simulator...", "FAILURE")
+            # Session exited.
+            signal_received(2, 0)
+
         time.sleep(1)
 
 
