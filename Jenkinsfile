@@ -52,7 +52,7 @@ pipeline {
       parallel {
         stage('SITL TESTS') {
           steps {
-            echo 'Test SITL'
+            sh './uas controls sitl'
           }
         }
         stage('HITL TESTS') {

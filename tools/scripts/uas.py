@@ -405,6 +405,22 @@ def run_unittest(args=None, show_complete=True):
                 msg_type="SUCCESS")
 
 
+def run_controls_sitl(args):
+    processes.spawn_process("./uas controls simulate", show_output=False)
+    return_code = processes.spawn_process_wait_for_code(DOCKER_EXEC_SCRIPT \
+        + "timeout 360s rostopic echo -p -n 100 " \
+        + "/mavros/global_position/global/altitude")
+
+    if return_code == 0:
+        print_update("Success!", msg_type="SUCCESS")
+        processes.killall()
+        sys.exit(0)
+    else:
+        print_update("Simulator timed out :(", msg_type="FAILURE")
+        processes.killall()
+        sys.exit(1)
+
+
 def run_controls_simulate(args):
     shutdown_functions.append(kill_processes_in_uas_env_container)
     shutdown_functions.append(kill_simulator)
@@ -457,14 +473,12 @@ def run_controls_simulate(args):
     tmux_cmd(sim_command)
 
     tmux_move_pane("right")
-    tmux_split("vertical", 2)
     tmux_cmd(mavlink_router_command)
-    tmux_move_pane("down")
+
+    tmux_new_window("Raspi")
     tmux_cmd(DOCKER_EXEC_SCRIPT \
         + "roslaunch mavros px4.launch "
         + "fcu_url:=\"udp://:8084@0.0.0.0:8084\"")
-
-    tmux_new_window("Raspi")
 
     tmux_new_window("ROS")
     tmux_cmd(DOCKER_EXEC_SCRIPT + "rostopic echo /mavros/global_position/global")
@@ -767,6 +781,8 @@ if __name__ == '__main__':
     controls_docker_kill.set_defaults(func=run_controls_docker_kill)
     controls_docker_shell = controls_docker_subparsers.add_parser('shell')
     controls_docker_shell.set_defaults(func=run_controls_docker_shell)
+    controls_sitl_parser = controls_subparsers.add_parser('sitl')
+    controls_sitl_parser.set_defaults(func=run_controls_sitl)
     controls_simulate_parser = controls_subparsers.add_parser('simulate')
     controls_simulate_parser.add_argument('--lite', action='store_true')
     controls_simulate_parser.set_defaults(func=run_controls_simulate)
