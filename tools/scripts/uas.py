@@ -408,7 +408,7 @@ def run_unittest(args=None, show_complete=True):
 def run_controls_sitl(args):
     processes.spawn_process("./uas controls simulate", show_output=False)
     return_code = processes.spawn_process_wait_for_code(DOCKER_EXEC_SCRIPT \
-        + "timeout 600s rostopic echo -p -n 100 " \
+        + "timeout 1200s rostopic echo -p -n 100 " \
         + "/mavros/global_position/global/altitude")
 
     if return_code == 0:
