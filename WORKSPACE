@@ -122,8 +122,8 @@ git_repository(
 
 git_repository(
   name = "com_github_nelhage_rules_boost",
-  commit = "6d6fd834281cb8f8e758dd9ad76df86304bf1869",
-  remote = "https://github.com/nelhage/rules_boost",
+  commit = "0a63e8f7939024bb4acef9c9daaa27956bc94c61",
+  remote = "https://github.com/uas-at-ucla/rules_boost.git",
 )
 
 
@@ -189,11 +189,11 @@ cc_library(
     """
 )
 
-new_git_repository(
+http_archive(
   name = "com_google_protobuf",
-  remote = "https://github.com/protocolbuffers/protobuf.git",
-  commit = "66dc42d891a4fc8e9190c524fd67961688a37bbe",
-  build_file = 'third_party/com_google_protobuf.BUILD'
+  build_file = 'third_party/com_google_protobuf.BUILD',
+  urls = ['https://github.com/google/protobuf/archive/v3.6.1.3.zip'],
+  strip_prefix = 'protobuf-3.6.1.3',
 )
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
