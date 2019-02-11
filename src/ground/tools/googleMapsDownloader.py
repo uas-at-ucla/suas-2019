@@ -2,12 +2,15 @@ import urllib
 import requests
 import os
 import json
+import sys
+
+#Use python ./googleMapsDownloader
 
 def downloadImage(mag, image_list = [], *args):
     for download_data in image_list:
         x = str(download_data['x'])
         y = str(download_data['y'])
-        image_name = 'mag-' + mag + '_x-' + x + '_y-' + y + '.png'
+        image_name = 'mag-' + mag + '_x-' + x + '_y-' + y + '.jpg'
         if not os.path.isfile(image_name):
             url = download_data['url']
             r = requests.get(url) # create HTTP response object 
@@ -23,13 +26,15 @@ def downloadImage(mag, image_list = [], *args):
         
 
 def main():
+    os.chdir(os.path.dirname(sys.argv[0]))
     current_directory = os.getcwd()
-    if (not current_directory ==  '/media/ausar/Work/projects/tmpUAS'):
-        os.chdir("../")
     json_file = open('tileUrls.json')
     json_str = json_file.read()
     json_data = json.loads(json_str)
-    os.chdir("./tmp")
+    download_destination = str("googleMapsImages")
+    if not os.path.exists(os.path.join(current_directory, download_destination)):
+            os.makedirs(download_destination)
+    os.chdir("./" + download_destination)
     for magnification, image_list in json_data.items():
         current_directory = os.getcwd()
         tmp_path = os.path.join(current_directory, magnification)
