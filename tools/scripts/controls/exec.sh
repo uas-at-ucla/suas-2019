@@ -32,7 +32,7 @@ function docker_exec {
     docker exec -t -u $(id -u):$(id -g) \
        -e COLUMNS="`tput cols`" -e LINES="`tput lines`" \
        $UAS_AT_UCLA_IMAGE \
-      bash -c "echo \"\$\$\" > \"$PIDFILE\"; echo \"$*\" > \"$NAMEFILE\";$*"
+      bash -c "echo \"\$\$\" > \"$PIDFILE\"; echo \"$*\" > \"$NAMEFILE\";source /home/uas/.bashrc;$*"
     CODE=$?
 
     docker exec -t $UAS_AT_UCLA_IMAGE sh -c "rm -f $PIDFILE"
