@@ -55,22 +55,12 @@ pipeline {
             sh './uas controls sitl'
           }
         }
-        stage('HITL TESTS') {
-          steps {
-            echo 'test hitl'
-          }
-        }
         stage('UNIT TESTS') {
           steps {
             echo 'unit tests'
             sh './uas unittest'
           }
         }
-      }
-    }
-    stage('STATIC ANALYZER') {
-      steps {
-        echo 'Static analyzer'
       }
     }
   }
