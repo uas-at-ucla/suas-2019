@@ -426,6 +426,8 @@ def run_controls_simulate(args):
     shutdown_functions.append(kill_simulator)
     shutdown_functions.append(kill_tmux_session_uas_env)
 
+    run_controls_docker_start(None, show_complete=False)
+
     # Make sure the simulator is not already running.
     if processes.spawn_process_wait_for_code( \
             "tmux has-session -t uas_env > /dev/null 2>&1") == 0:
