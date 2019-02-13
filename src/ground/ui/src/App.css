@@ -1,39 +1,35 @@
-ul {
+.viewNav > ul {
   list-style-type: none;
   margin: 0;
-  padding-top: 10px;
-  padding-bottom: 10px;
+  padding-left: 10px;
+  height: 50px;
   overflow: hidden;
-  background-color: #808080;
-  color: black;
+  background-color: rgba(0 , 0 , 0 , .6);
 }
 
-li {
-  display: inline;
+
+.viewNav > ul > li {
+  display: inline-block;
   text-decoration: none;
+  height: 100%;
 }
 
-li a {
-  text-align: center;
-  padding: 20px;
-  color: black;
-  font-family: 'Georgia';
+.viewNav > ul > li > a {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  
+  padding-left: 20px;
+  padding-right: 20px;
+  height: 100%;
+  color: #f7f7f7;
+  font-family: Arial, Helvetica, sans-serif;
   text-decoration: none;
+  transition: .5s;
 }
 
-li a :hover, a :visited, a :link, a :active {
+
+.viewNav > ul > li > a:hover {
   text-decoration: none;
-  color: black;
-  all: unset;
-}
-
-li :hover{
-    text-decoration: none;
-    color: white;
-    background-color: black;
-}
-
-a :hover {
-  text-decoration: none;
-  all: unset;
+  background-color: #000000;
 }

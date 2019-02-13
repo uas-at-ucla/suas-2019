@@ -22,16 +22,16 @@ class App extends Component {
             <nav className="viewNav">
               <ul>
                 <li>
-                  <Link to="/controls">CONTROLS</Link>
+                  <Link to="/controls"> Controls </Link>
                 </li>
                 <li>
-                  <Link to="/vision">VISION</Link>
+                  <Link to="/vision"> Vision </Link>
                 </li>
                 <li>
-                  <Link to="/analytics">ANALYTICS</Link>
+                  <Link to="/analytics"> Analytics </Link>
                 </li>
                 <li>
-                  <Link to="/settings">SETTINGS</Link>
+                  <Link to="/settings"> Settings </Link>
                 </li>
               </ul>
             </nav>
