@@ -35,15 +35,16 @@
   },
   "scripts": {
     "react-start": "PORT=3001 BROWSER=none react-scripts start",
-    "electron-start": "ELECTRON_DEV=1 electron .",
+    "electron-start-prod": "ELECTRON_IS_DEV=0 electron .",
+    "electron-start": "ELECTRON_IS_DEV=1 electron .",
     "start": "concurrently \"npm run react-start\" \"wait-on http://localhost:3001/ && npm run  electron-start\"",
     "start-web": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
-    "package-mac": "npm run build && electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds  #--icon=assets/icons/mac/icon.icns",
-    "package-win": "npm run build && electron-packager . Flight-Deck --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Flight Deck\"  #--icon=assets/icons/win/icon.ico",
-    "package-linux": "npm run build && electron-packager . Flight-Deck --overwrite --asar=true --platform=linux --arch=x64 --prune=true --out=release-builds  #--icon=assets/icons/png/1024x1024.png"
+    "package-mac": "npm run build && electron-packager . --overwrite --platform=darwin --arch=x64 --prune=true --out=release-builds --ignore='node_modules'  #--icon=assets/icons/mac/icon.icns",
+    "package-win": "npm run build && electron-packager . Flight-Deck --overwrite --asar=true --platform=win32 --arch=ia32 --prune=true --out=release-builds --ignore='node_modules' --version-string.CompanyName=CE --version-string.FileDescription=CE --version-string.ProductName=\"Flight Deck\"  #--icon=assets/icons/win/icon.ico",
+    "package-linux": "npm run build && electron-packager . Flight-Deck --overwrite --asar=true --platform=linux --arch=x64 --prune=true --out=release-builds --ignore='node_modules'  #--icon=assets/icons/png/1024x1024.png"
   },
   "browserslist": [
     ">0.2%",
