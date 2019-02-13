@@ -1,8 +1,27 @@
+.MissionPlannerContainer {
+  position: relative;
+  top: 50px;
+}
+
+
+.MissionPlannerContainer > .missionPlannerHeader {
+  display: flex;
+  flex-direction: row;
+}
+
+
+.MissionPlannerContainer > .missionPlannerHeader > h1 {
+  font-size: 30px;
+  margin-right: 20px;
+}
+
+
 .MissionPlannerContainer .mission-planner-div {
   margin-top: 10px;
   width: 400px;
   background: rgba(0, 0, 0, 0.6);
   overflow: scroll;
+  overflow-x: hidden;
 }
 
 .MissionPlannerContainer.modal-dialog {
