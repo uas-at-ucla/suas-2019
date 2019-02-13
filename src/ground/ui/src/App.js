@@ -18,7 +18,7 @@ class App extends Component {
     return (
       <div>
         <Router>
-          <div>
+          <div className="routerDiv">
             <nav className="viewNav">
               <ul>
                 <li>
