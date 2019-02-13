@@ -20,7 +20,7 @@ class DroneActions extends Component {
         <span>Change Drone State</span>
         
         <div className="buttonArray">
-          <button id="takeoffButton" onClick={this.runMission}>Run Mission</button>
+          <button id="runMissionButton" onClick={this.runMission}>Run Mission</button>
           <button id="takeoffButton" onClick={this.props.droneTakeoff}>Takeoff</button>
           <button id="landButton" onClick={this.props.droneLand}>Land</button>
           <button id="failsafeButton" onClick={this.props.droneFailsafe}>Failsafe Landing</button>

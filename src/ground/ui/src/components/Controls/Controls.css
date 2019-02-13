@@ -87,16 +87,29 @@
 }
 
 
-#takeoffButton 
+#runMissionButton
 {
   color: #56a54f;
   border-color: #56a54f;
 }
 
-#takeoffButton:hover
+#runMissionButton:hover
 {
   color: #4e8c48;
   border-color: #4e8c48;
+}
+
+
+#takeoffButton 
+{
+  color: #e9d902;
+  border-color: #e9d902;
+}
+
+#takeoffButton:hover
+{
+  color: #ccbe00;
+  border-color: #ccbe00;
 }
 
 
