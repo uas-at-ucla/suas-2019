@@ -196,8 +196,8 @@ function putOdlcs(c, alpha)
     });
 }
 function switchTest(){
-   
-    var f;
+   console.log(cookieobj.cookie);
+   /* var f;
     var index;
     var functions;
 functions = ['getMission', 'getObstacles', 'postOdlcs','getOdlcs', 'putOdlcs','telemetry','exit']
@@ -237,6 +237,8 @@ switch(f)
     default:
     console.log('went to default... pl try again \n');
 }
+*/
+postOdlcs(cookieobj.cookie, odlcs_1);
 
 }
 gc();
