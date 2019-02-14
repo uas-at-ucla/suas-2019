@@ -3,6 +3,7 @@
   top: 50px;
   padding: 10px;
   background: rgba(0, 0, 0, 0.6);
+  width: 300px;
 }
 
 
@@ -13,7 +14,7 @@
 
 
 .MissionPlannerContainer > .missionPlannerHeader > h1 {
-  font-size: 30px;
+  font-size: 25px;
   margin-right: 20px;
 }
 

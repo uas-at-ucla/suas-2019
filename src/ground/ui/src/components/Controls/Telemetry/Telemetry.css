@@ -1,3 +1,9 @@
+.Telemetry {
+    position: relative;
+    width: 300px;
+}
+
+
 .Telemetry .Readout {
     background: rgba(0, 0, 0, 0.6);
 }
