@@ -36,7 +36,7 @@ class Navball extends Component {
         var texture = new THREE.TextureLoader().load(NavballImg);
         var material = new THREE.MeshPhongMaterial({map: texture});
         this.ball = new THREE.Mesh(sphereGeom , material);
-        this.ball.position.set(0 , 0 , 0);
+        this.ball.position.set(this.props.x , this.props.y , this.props.z);
         this.scene.add(this.ball);
 
         this.start();
@@ -56,8 +56,9 @@ class Navball extends Component {
 
 
     animate = () => {
-       this.ball.rotation.x += 0.01
-       this.ball.rotation.y += 0.01
+       this.ball.rotation.x = this.props.x;
+       this.ball.rotation.y = this.props.y - 3.1415926 / 2;     // Zero me!
+       this.ball.rotation.z = this.props.z;
        this.renderScene()
        this.frameId = window.requestAnimationFrame(this.animate)
     }
