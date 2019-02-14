@@ -1,9 +1,31 @@
-from django.conf.urls import url
-from rest_framework import routers
-from project.appname.views import StudentViewSet, UniversityViewSet
+from .models import Data,Shape,Character,Orientation,Color
+from rest_framework import serializers
 
-router = routers.DefaultRouter()
-router.register(r'students', StudentViewSet)
-router.register(r'universities', UniversityViewSet)
 
-urlpatterns = router.urls
+class DataSerializer(serializers.HyperlinkedModelSerializer):
+    image = serializers.ImageField(max_length=None, use_url=True,
+                                   )
+    class Meta:
+        model = Data
+        fields = '__all__'
+
+
+class ShapeSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Shape
+        fields = '__all__'
+
+class CharacterSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Character
+        fields = '__all__'
+
+class OrientationSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Orientation
+        fields = '__all__'
+
+class ColorSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Color
+        fields = '__all__'
