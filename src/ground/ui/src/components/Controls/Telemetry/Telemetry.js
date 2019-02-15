@@ -22,11 +22,9 @@ class Telemetry extends Component {
   update(rawTelmet) {
     if (rawTelmet != null) {
       this.telmet = {
-        navball: {
-          navX: rawTelmet["telemetry"]["sensors"]["gyroX"],
-          navY: rawTelmet["telemetry"]["sensors"]["gyroY"],
-          navZ: rawTelmet["telemetry"]["sensors"]["gyroZ"],
-        },
+        navX: rawTelmet["telemetry"]["sensors"]["gyroX"],
+        navY: rawTelmet["telemetry"]["sensors"]["gyroY"],
+        navZ: rawTelmet["telemetry"]["sensors"]["gyroZ"],
         speed: 0,
         lat: rawTelmet["telemetry"]["sensors"]["latitude"],
         long: rawTelmet["telemetry"]["sensors"]["longitude"],
@@ -39,11 +37,9 @@ class Telemetry extends Component {
     }
     else {
       this.telmet = {
-        navball: {
-          navX: 0,
-          navY: 0,
-          navZ: 0,
-        },
+        navX: 0,
+        navY: 0,
+        navZ: 0,
         speed: 0,
         lat: 0,
         long: 0,
@@ -66,7 +62,7 @@ class Telemetry extends Component {
 
     return (
       <span className="Telemetry">
-        <AttitudeIndicator data={this.telmet.navball} />
+        <AttitudeIndicator data={this.telmet} />
         
         <Altimeter/>
       </span>
