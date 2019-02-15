@@ -1,22 +1,22 @@
 cc_binary(
-  name = 'actuators_writer',
+  name = 'gpio_writer',
   visibility = ['//visibility:public'],
   srcs = [
-    'actuators_writer_main.cc'
+    'gpio_writer_main.cc'
   ],
   deps = [
-    ":actuators_writer_lib"
+    ":gpio_writer_lib"
   ],
 )
 
 cc_library(
-  name = 'actuators_writer_lib',
+  name = 'gpio_writer_lib',
   visibility = ['//visibility:public'],
   srcs = [
-    'actuators_writer.cc'
+    'gpio_writer.cc'
   ],
   hdrs = [
-    'actuators_writer.h'
+    'gpio_writer.h'
   ],
   deps = [
     '//src/controls:messages_cpp',
@@ -24,5 +24,6 @@ cc_library(
     '//lib/alarm:alarm',
     "@WiringPi//:WiringPi",
     "@pigpio//:pigpio",
+    "@mavros_msgs//:mavros_msgs",
   ],
 )

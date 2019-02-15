@@ -13,7 +13,7 @@ namespace camera_interface {
 class CameraInterface {
  public:
   CameraInterface();
-  void ImageCaptureRequested(const std_msgs::String& ret);
+  void ImageCaptureRequested(const std_msgs::String &ret);
 
  private:
   ::ros::NodeHandle ros_node_handle_;

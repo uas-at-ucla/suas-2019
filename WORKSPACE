@@ -23,6 +23,12 @@ new_git_repository(
   commit = 'daabb88e001f562e1f7df5f44d7fed32a0c107c2',
 )
 
+git_repository(
+  name = 'mavros_msgs',
+  remote = 'https://github.com/uas-at-ucla/mavros_msgs.git',
+  commit = '12a3dc130769c43a1b449128da19f8cfe6a7823e',
+)
+
 new_git_repository(
   name = 'rpi_ws281x',
   remote = 'https://github.com/uas-at-ucla/rpi_ws281x.git',
