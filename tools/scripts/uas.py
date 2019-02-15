@@ -57,16 +57,17 @@ if "CONTINUOUS_INTEGRATION" in os.environ \
     meminfo = dict((i.split()[0].rstrip(':'),int(i.split()[1])) for i in open('/proc/meminfo').readlines())
     mem_kib = meminfo['MemAvailable']
 
-    CI_BUILD_RAM = mem_kib / 1024 * 2.5 / 4.0 # MB
-    CI_BUILD_CPUS = multiprocessing.cpu_count() # Number of CPUs
+    CI_BUILD_RAM = mem_kib / 1024 # MB
+    CI_BUILD_CPUS = multiprocessing.cpu_count()
     CI_BUILD_IO = 1.0
 
     print("RAM available: " + str(CI_BUILD_RAM) + "MB")
     print("CPUs available: " + str(CI_BUILD_CPUS))
 
-    CI_BUILD_LOCAL_RESOURCES = str(CI_BUILD_RAM) + "," \
-            + str(CI_BUILD_CPUS) + "," \
-            + str(CI_BUILD_IO)
+    CI_BUILD_LOCAL_RESOURCES = ""
+    #CI_BUILD_LOCAL_RESOURCES = str(CI_BUILD_RAM) + "," \
+    #        + str(CI_BUILD_CPUS) + "," \
+    #        + str(CI_BUILD_IO)
 
     BAZEL_BUILD = "bazel build --noshow_progress --local_resources " + CI_BUILD_LOCAL_RESOURCES + " "
     BAZEL_TEST = "bazel test --noshow_progress --local_resources " + CI_BUILD_LOCAL_RESOURCES + " "

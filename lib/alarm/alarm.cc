@@ -7,6 +7,14 @@ Alarm::Alarm(double frequency) : progress_(0), loop_period_(1 / frequency) {}
 
 void Alarm::AddAlert(AlertPeriod alert_period) { alerts_.push(alert_period); }
 
+void Alarm::ClearAlerts() {
+  while(!alerts_.empty()) {
+    alerts_.pop();
+  }
+
+  progress_ = 0;
+}
+
 bool Alarm::ShouldAlarm() {
   AlertPeriod current_alert;
 

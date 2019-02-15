@@ -23,7 +23,6 @@ cc_library(
   ],
   deps = [
     ':loop_handler',
-    '//src/controls/io/autopilot_interface:autopilot_interface',
     '//src/controls:messages_cpp',
     '//lib/logger:log_sender',
     '//lib/dslr_interface:dslr_interface',

@@ -226,3 +226,7 @@ message SensorsActuatorControlTarget {
   required float group_mlx                                                 = 2;
   required float time_usec                                                 = 3;
 }
+
+message AlarmSequence {
+  repeated float on_off_cycles                                             = 1;
+}
