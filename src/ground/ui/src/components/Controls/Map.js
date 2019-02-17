@@ -7,6 +7,8 @@ import GoogleMap from '../Utils/GoogleMap/GoogleMap';
 import missionActions from '../../actions/missionActions';
 import { selector } from '../../store';
 import { Circle } from "react-google-maps";
+import {Polyline } from 'react-google-maps';
+
 
 const mapStateToProps = state => {
   let derivedData = selector(state);
@@ -116,6 +118,11 @@ class Map extends Component {
     }
   };
   render() {
+    const lineCoordinates = [
+      { lat: this.state.mission[0].fly_zones[0].boundary_pts[0].latitude ,lng: this.state.mission[0].fly_zones[0].boundary_pts[0].longitude},
+      { lat: this.state.mission[0].fly_zones[0].boundary_pts[1].latitude ,lng: this.state.mission[0].fly_zones[0].boundary_pts[1].longitude},
+      { lat: this.state.mission[0].fly_zones[0].boundary_pts[2].latitude ,lng: this.state.mission[0].fly_zones[0].boundary_pts[2].longitude}
+       ];
     return (
       <div className="Map">
         <GoogleMap
@@ -152,8 +159,28 @@ class Map extends Component {
             <div className="map-infobox">Home Position</div>
             </InfoWindow>}          
             </Marker>
+          
+       {/*    let lineCoordinates = new Array();
+            for(i = 0; i< this.state.mission[0].fly_zones.length; i++){ 
+                lineCoordinates[i] = {{lat: this.state.mission[0].fly_zones[0].boundary_pts[i].latitude ,lng: this.state.mission[0].fly_zones[0].boundary_pts[i].longitude}} ;
+            }
+      
+                
 
-
+          
+           var flightPath = new google.maps.Polyline({
+          path: lineCoordinates,
+          geodesic: true,
+          strokeColor: '#FF0000',
+          strokeOpacity: 1.0,
+          strokeWeight: 2
+        });
+        flightPath.setMap(map);
+      */}
+            <Polyline
+                path = {lineCoordinates} strokeOpacity= {1.0} strokeWeight= {2}
+            />    
+          
             <Circle
               radius={this.state.stationary_obstacles[0].cylinder_radius}
               center={{lat: this.state.stationary_obstacles[0].latitude, lng: this.state.stationary_obstacles[0].longitude}}
