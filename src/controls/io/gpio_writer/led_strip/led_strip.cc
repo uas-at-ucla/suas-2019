@@ -53,9 +53,7 @@ LedStrip::LedStrip() {
   }
 }
 
-LedStrip::~LedStrip() {
-  ws2811_fini(&leds_);
-}
+LedStrip::~LedStrip() { ws2811_fini(&leds_); }
 
 bool LedStrip::Render() {
   ws2811_return_t ret = ws2811_render(&leds_);
@@ -67,7 +65,8 @@ bool LedStrip::Render() {
   return true;
 }
 
-void LedStrip::SetLed(int led, unsigned char r, unsigned char g, unsigned char b) {
+void LedStrip::SetLed(int led, unsigned char r, unsigned char g,
+                      unsigned char b) {
   ws2811_led_t led_color = (b << 16) | (g << 8) | r;
 
   leds_.channel[0].leds[led] = led_color;

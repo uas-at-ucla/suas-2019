@@ -19,7 +19,6 @@
 #include "lib/phased_loop/phased_loop.h"
 #include "lib/proto_comms/proto_comms.h"
 #include "lib/serial_comms/serial_comms_bridge.h"
-#include "src/controls/io/io.h"
 #include "src/controls/loops/flight_loop.h"
 #include "src/controls/messages.pb.h"
 

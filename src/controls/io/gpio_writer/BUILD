@@ -20,6 +20,7 @@ cc_library(
   ],
   deps = [
     '//src/controls:messages_cpp',
+    '//src/controls/io/gpio_writer/led_strip:led_strip',
     '//lib/ros:ros',
     '//lib/alarm:alarm',
     "@WiringPi//:WiringPi",

@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <iostream>
+#include <string>
 #include <thread>
 
 #include <ros/console.h>
@@ -14,31 +15,37 @@
 
 #include <mavros_msgs/RCIn.h>
 
-#include "lib/alarm/alarm.h"
 #include "src/controls/messages.pb.h"
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+#include "src/controls/io/gpio_writer/led_strip/led_strip.h"
+#endif
+#include "lib/alarm/alarm.h"
 
 namespace src {
 namespace controls {
 namespace io {
 namespace gpio_writer {
 namespace {
-const int kAlarmGPIOPin = 0;
-const int kGimbalGPIOPin = 18;
+static const int kAlarmGPIOPin = 0;
+static const int kGimbalGPIOPin = 18;
 
-const int kAlarmOverrideRcChannel = 7;
-const int kAlarmOverrideRcSignalThreshold = 1800;
+static const int kAlarmOverrideRcChannel = 7;
+static const int kAlarmOverrideRcSignalThreshold = 1800;
 
-const int kWriterThreadLogIntervalSeconds = 10;
+static const int kWriterThreadLogIntervalSeconds = 10;
 
-const int kWriterPhasedLoopFrequency = 250;
-const ::ros::Duration kAlarmOverrideTimeGap = ::ros::Duration(1.0 / 10);
+static const int kWriterPhasedLoopFrequency = 250;
+static const ::ros::Duration kAlarmOverrideTimeGap = ::ros::Duration(1.0 / 10);
 
-const int kLedWriterFramesPerSecond = 30;
-const ::ros::Duration kLedWriterPeriod = ::ros::Duration(1.0 / kLedWriterFramesPerSecond);
+static const int kLedWriterFramesPerSecond = 30;
+static const ::ros::Duration kLedWriterPeriod =
+    ::ros::Duration(1.0 / kLedWriterFramesPerSecond);
 
-const int kRosMessageQueueSize = 1;
-const char *kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
-const char *kRosRcInTopic = "/mavros/rc/in";
+static const double kStartupChirpDuration = 0.005;
+
+static const int kRosMessageQueueSize = 1;
+static const ::std::string kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
+static const ::std::string kRosRcInTopic = "/mavros/rc/in";
 } // namespace
 
 class GpioWriter {
@@ -64,6 +71,7 @@ class GpioWriter {
   ::ros::Subscriber rc_input_subscriber_;
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
+  led_strip::LedStrip led_strip_;
   int pigpio_;
 #endif
 };

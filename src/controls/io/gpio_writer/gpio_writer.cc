@@ -15,23 +15,25 @@ GpioWriter::GpioWriter() :
     alarm_subscriber_(
         ros_node_handle_.subscribe(kRosAlarmTriggerTopic, kRosMessageQueueSize,
                                    &GpioWriter::AlarmTriggered, this)),
-    rc_input_subscriber_(
-        ros_node_handle_.subscribe(kRosRcInTopic, kRosMessageQueueSize,
-                                   &GpioWriter::RcInReceived, this)) {
+    rc_input_subscriber_(ros_node_handle_.subscribe(
+        kRosRcInTopic, kRosMessageQueueSize, &GpioWriter::RcInReceived, this)) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.
   wiringPiSetup();
   pinMode(kAlarmGPIOPin, OUTPUT);
 #endif
+
+  alarm_.AddAlert({kStartupChirpDuration, 0});
 }
 
 void GpioWriter::WriterThread() {
   while (::ros::ok()) {
-    ROS_INFO_STREAM_THROTTLE(
-        kWriterThreadLogIntervalSeconds, "gpio_writer wrote "
-        << kWriterThreadLogIntervalSeconds << " seconds of data to actuators @ "
-        << kWriterPhasedLoopFrequency << "hz");
+    ROS_INFO_STREAM_THROTTLE(kWriterThreadLogIntervalSeconds,
+                             "gpio_writer wrote "
+                                 << kWriterThreadLogIntervalSeconds
+                                 << " seconds of data to actuators @ "
+                                 << kWriterPhasedLoopFrequency << "hz");
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
     // Write out the alarm signal.
@@ -41,13 +43,13 @@ void GpioWriter::WriterThread() {
          last_alarm_override_ + kAlarmOverrideTimeGap > ::ros::Time::now());
 
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
-#endif
 
-    if(::ros::Time::now() > next_led_write_) {
-      //TODO: Write out led states.
+    if (::ros::Time::now() > next_led_write_) {
+      led_strip_.Render();
 
       next_led_write_ = ::ros::Time::now() + kLedWriterPeriod;
     }
+#endif
 
     // Wait until next iteration of loop.
     writer_phased_loop_.sleep();
@@ -74,7 +76,8 @@ void GpioWriter::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   bool new_should_override_alarm = should_override_alarm_;
 
   // Trigger the alarm if the RC controller override switch was flipped.
-  if (rc_in.channels[kAlarmOverrideRcChannel - 1] > kAlarmOverrideRcSignalThreshold) {
+  if (rc_in.channels[kAlarmOverrideRcChannel - 1] >
+      kAlarmOverrideRcSignalThreshold) {
     new_should_override_alarm = true;
     last_alarm_override_ = ::ros::Time::now();
   } else {
@@ -82,9 +85,10 @@ void GpioWriter::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   }
 
   // Record a log message on every edge.
-  if(new_should_override_alarm != should_override_alarm_) {
-    ROS_DEBUG_STREAM("Alarm RC override changed: " << should_override_alarm_
-        << " -> " << new_should_override_alarm);
+  if (new_should_override_alarm != should_override_alarm_) {
+    ROS_DEBUG_STREAM("Alarm RC override changed: "
+                     << should_override_alarm_ << " -> "
+                     << new_should_override_alarm);
   }
 
   should_override_alarm_ = new_should_override_alarm;

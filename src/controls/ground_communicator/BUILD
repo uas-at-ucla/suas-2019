@@ -20,7 +20,6 @@ cc_library(
   ],
   deps = [
     '//src/controls/loops:flight_loop_lib',
-    '//src/controls/io:io_lib',
     '//src/controls:messages_cpp',
     '//lib/mission_message_queue:mission_message_queue',
     '//lib/logger:log_sender',
