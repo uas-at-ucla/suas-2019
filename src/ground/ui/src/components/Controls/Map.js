@@ -6,8 +6,7 @@ import { connect } from 'react-redux';
 import GoogleMap from '../Utils/GoogleMap/GoogleMap';
 import missionActions from '../../actions/missionActions';
 import { selector } from '../../store';
-import { Circle } from "react-google-maps";
-import {Polyline } from 'react-google-maps';
+import { Circle, Polygon } from "react-google-maps";
 
 
 const mapStateToProps = state => {
@@ -26,81 +25,60 @@ class Map extends Component {
   state = {
     isOpen: {},
     mission:
-    [ 
-        {
-            "id": 1,
-            "active": true,
-            "air_drop_pos": {
-                "latitude": 38.141833,
-                "longitude": -76.425263
-            },
-            "fly_zones": [
-                {
-                    "altitude_msl_max": 200.0,
-                    "altitude_msl_min": 100.0,
-                    "boundary_pts": [
-                        {
-                            "latitude": 38.142544,
-                            "longitude": -76.434088,
-                            "order": 1
-                        },
-                        {
-                            "latitude": 38.141833,
-                            "longitude": -76.425263,
-                            "order": 2
-                        },
-                        {
-                            "latitude": 38.144678,
-                            "longitude": -76.427995,
-                            "order": 3
-                        }
-                    ]
-                }
-            ],
-            "home_pos": {
-                "latitude": 38.14792,
-                "longitude": -76.427995
-            },
-            "mission_waypoints": [
-                {
-                    "altitude_msl": 200.0,
-                    "latitude": 38.142544,
-                    "longitude": -76.434088,
-                    "order": 1
-                }
-            ],
-            "off_axis_odlc_pos": {
-                "latitude": 38.142544,
-                "longitude": -76.434088
-            },
-            "emergent_last_known_pos": {
-                "latitude": 38.145823,
-                "longitude": -76.422396
-            },
-            "search_grid_points": [
-                {
-                    "altitude_msl": 200.0,
-                    "latitude": 38.142544,
-                    "longitude": -76.434088,
-                    "order": 1
-                }
-            ]
-        }
-      ],
-    stationary_obstacles : [
+    {
+      "fly_zones": [
           {
-              "cylinder_height": 750.0,
-              "cylinder_radius": 300.0,
-              "latitude": 38.140578,
-              "longitude": -76.428997
-          },
-          {
-              "cylinder_height": 400.0,
-              "cylinder_radius": 100.0,
-              "latitude": 38.149156,
-              "longitude": -76.430622
+              "altitude_msl_min": 0,
+              "altitude_msl_max": 750,
+              "boundary_pts": [
+                  { "latitude": 38.14627, "longitude": -76.42816 },
+                  { "latitude": 38.15162, "longitude": -76.42868 },
+                  { "latitude": 38.15189, "longitude": -76.43147 },
+                  { "latitude": 38.15059, "longitude": -76.43536 },
+                  { "latitude": 38.14757, "longitude": -76.43234 },
+                  { "latitude": 38.14467, "longitude": -76.43295 },
+                  { "latitude": 38.14326, "longitude": -76.43477 },
+                  { "latitude": 38.14046, "longitude": -76.43264 },
+                  { "latitude": 38.14072, "longitude": -76.42601 },
+                  { "latitude": 38.14376, "longitude": -76.42121 },
+                  { "latitude": 38.14735, "longitude": -76.42321 },
+                  { "latitude": 38.14613, "longitude": -76.42665 }
+              ]
           }
-        ]
+      ],
+      "search_grid_points": [
+          { "latitude": 38.14576, "longitude": -76.42969 },
+          { "latitude": 38.14323, "longitude": -76.43379 },
+          { "latitude": 38.14123, "longitude": -76.43233 },
+          { "latitude": 38.14139, "longitude": -76.42709 },
+          { "latitude": 38.14221, "longitude": -76.42611 }
+      ],
+      "mission_waypoints": [
+          { "latitude": 38.15079, "longitude": -76.43044, "altitude_msl": 150 },
+          { "latitude": 38.14961, "longitude": -76.43295, "altitude_msl": 200 },
+          { "latitude": 38.14218, "longitude": -76.42564, "altitude_msl": 200 },
+          { "latitude": 38.14388, "longitude": -76.42263, "altitude_msl": 200 },
+          { "latitude": 38.14564, "longitude": -76.42424, "altitude_msl": 200 },
+          { "latitude": 38.14400, "longitude": -76.42875, "altitude_msl": 250 }
+      ],
+      "emergent_last_known_pos": { "latitude": 38.145762, "longitude": -76.423065 },
+      "off_axis_odlc_pos": { "latitude": 38.147635, "longitude": -76.427249 },
+      "home_pos": { "latitude": 38.145323, "longitude": -76.428000 },
+      "air_drop_pos": { "latitude": 38.145830, "longitude": -76.426391 },
+      "stationary_obstacles": [
+          { "latitude": 38.15079, "longitude": -76.43044, "cylinder_radius": 100, "cylinder_height": 100 }
+      ],
+      "moving_obstacles": [
+          { 
+              "sphere_radius": 300,
+              "speed_avg": 30,
+              "waypoints": [
+                  { "latitude": 38.15079, "longitude": -76.43044, "altitude_msl": 100},
+                  { "latitude": 38.14139, "longitude": -76.42709, "altitude_msl": 150}
+              ]
+          }
+      ]
+    }
   };
 
 
@@ -118,11 +96,16 @@ class Map extends Component {
     }
   };
   render() {
-    const lineCoordinates = [
-      { lat: this.state.mission[0].fly_zones[0].boundary_pts[0].latitude ,lng: this.state.mission[0].fly_zones[0].boundary_pts[0].longitude},
-      { lat: this.state.mission[0].fly_zones[0].boundary_pts[1].latitude ,lng: this.state.mission[0].fly_zones[0].boundary_pts[1].longitude},
-      { lat: this.state.mission[0].fly_zones[0].boundary_pts[2].latitude ,lng: this.state.mission[0].fly_zones[0].boundary_pts[2].longitude}
-       ];
+    var lineCoordinates =[];
+    const boundaryCoordinates = this.state.mission.fly_zones[0].boundary_pts.map((coord, index) => {
+      lineCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
+      return lineCoordinates[index];
+    })
+    /*const lineCoordinates = [
+      { lat: this.state.mission.fly_zones[0].boundary_pts[0].latitude ,lng: this.state.mission.fly_zones[0].boundary_pts[0].longitude},
+      { lat: this.state.mission.fly_zones[0].boundary_pts[1].latitude ,lng: this.state.mission.fly_zones[0].boundary_pts[1].longitude},
+      { lat: this.state.mission.fly_zones[0].boundary_pts[2].latitude ,lng: this.state.mission.fly_zones[0].boundary_pts[2].longitude}
+       ];*/
     return (
       <div className="Map">
         <GoogleMap
@@ -144,7 +127,7 @@ class Map extends Component {
 
             <Marker  
             title="airDropPosition"
-            position={{lat: this.state.mission[0].air_drop_pos.latitude, lng: this.state.mission[0].air_drop_pos.longitude}}
+            position={{lat: this.state.mission.air_drop_pos.latitude, lng: this.state.mission.air_drop_pos.longitude}}
             onClick = {()=>this.onToggleOpen("air_drop_pos")}>          
             {this.state.isOpen["air_drop_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("air_drop_pos")}>
            <div className="map-infobox">Air Drop Position</div>
@@ -153,11 +136,11 @@ class Map extends Component {
           
             <Marker  
             title="homePosition"
-            position={{lat: this.state.mission[0].home_pos.latitude, lng: this.state.mission[0].home_pos.longitude}}
+            position={{lat: this.state.mission.home_pos.latitude, lng: this.state.mission.home_pos.longitude}}
             onClick = {()=>this.onToggleOpen("home_pos")}>        
             {this.state.isOpen["home_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("home_pos")}>
             <div className="map-infobox">Home Position</div>
-            </InfoWindow>}          
+          </InfoWindow> }          
             </Marker>
           
        {/*    let lineCoordinates = new Array();
@@ -177,20 +160,15 @@ class Map extends Component {
         });
         flightPath.setMap(map);
       */}
-            <Polyline
+            <Polygon
                 path = {lineCoordinates} strokeOpacity= {1.0} strokeWeight= {2}
             />    
           
-            <Circle
-              radius={this.state.stationary_obstacles[0].cylinder_radius}
-              center={{lat: this.state.stationary_obstacles[0].latitude, lng: this.state.stationary_obstacles[0].longitude}}
-          />
-
-            <Circle 
-            radius={this.state.stationary_obstacles[1].cylinder_radius}
-            center={{lat: this.state.stationary_obstacles[1].latitude, lng: this.state.stationary_obstacles[1].longitude}}
-            ></Circle>
-    
+          {
+            this.state.mission.stationary_obstacles.map((obstacle, index) => {
+            return <Circle radius={obstacle.cylinder_radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}/>;
+            })
+          }
 
           {this.props.commandPoints.map((commandPoint, index) => 
             commandPoint ?
