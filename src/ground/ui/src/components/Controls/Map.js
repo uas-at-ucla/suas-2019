@@ -101,6 +101,11 @@ class Map extends Component {
       lineCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
       return lineCoordinates[index];
     })
+     var searchCoordinates = [];
+      const searchGridPoints = this.state.mission.search_grid_points.map((coord, index) => {
+        searchCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
+        return searchCoordinates[index];
+    })
     /*const lineCoordinates = [
       { lat: this.state.mission.fly_zones[0].boundary_pts[0].latitude ,lng: this.state.mission.fly_zones[0].boundary_pts[0].longitude},
       { lat: this.state.mission.fly_zones[0].boundary_pts[1].latitude ,lng: this.state.mission.fly_zones[0].boundary_pts[1].longitude},
@@ -143,27 +148,15 @@ class Map extends Component {
           </InfoWindow> }          
             </Marker>
           
-       {/*    let lineCoordinates = new Array();
-            for(i = 0; i< this.state.mission[0].fly_zones.length; i++){ 
-                lineCoordinates[i] = {{lat: this.state.mission[0].fly_zones[0].boundary_pts[i].latitude ,lng: this.state.mission[0].fly_zones[0].boundary_pts[i].longitude}} ;
-            }
-      
-                
 
-          
-           var flightPath = new google.maps.Polyline({
-          path: lineCoordinates,
-          geodesic: true,
-          strokeColor: '#FF0000',
-          strokeOpacity: 1.0,
-          strokeWeight: 2
-        });
-        flightPath.setMap(map);
-      */}
             <Polygon
-                path = {lineCoordinates} strokeOpacity= {1.0} strokeWeight= {2}
-            />    
-          
+                path = {lineCoordinates} strokeOpacity= {0.8} strokeWeight= {2}
+            />  
+           <Polygon
+                path = {searchGridPoints} strokeOpacity= {0.5} strokeWeight= {2}
+            />  
+            
+
           {
             this.state.mission.stationary_obstacles.map((obstacle, index) => {
             return <Circle radius={obstacle.cylinder_radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}/>;
