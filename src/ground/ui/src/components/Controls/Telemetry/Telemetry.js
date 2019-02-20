@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import './Telemetry.css';
 import AttitudeIndicator from './AttitudeIndicator';
 import Altimeter from './Altimeter';
+import Readout from './Readout';
+
 
 const mapStateToProps = state => {
   return {
@@ -53,17 +55,40 @@ class Telemetry extends Component {
   }
 
 
+  readoutData() {
+    return [
+      {
+        key: "Speed",
+        values: [this.telmet.speed.toFixed(3) , " mph"]
+      },
+      {
+        key: "Position",
+        values: [this.telmet.lat.toFixed(3) , ", " , this.telmet.long.toFixed(3)]
+      },
+      {
+        key: "Altitude",
+        values: [this.telmet.alt.toFixed(3) , " meters"]
+      },
+      {
+        key: "Satellite Count",
+        values: [this.telmet.satCount]
+      },
+    ];
+  }
+
+
   render() {
     let telmet = JSON.parse(JSON.stringify(this.props.telemetry));
 
     this.update(telmet);
 
     console.log(telmet);
+    console.log(this.readoutData());
 
     return (
       <span className="Telemetry">
         <AttitudeIndicator data={this.telmet} />
-        
+        <Readout data={this.readoutData()} />
         <Altimeter/>
       </span>
     );
