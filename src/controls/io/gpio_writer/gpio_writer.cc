@@ -19,7 +19,10 @@ GpioWriter::GpioWriter() :
         kRosRcInTopic, kRosMessageQueueSize, &GpioWriter::RcInReceived, this)),
     battery_status_subscriber_(
         ros_node_handle_.subscribe(kRosBatteryStatusTopic, kRosMessageQueueSize,
-                                   &GpioWriter::BatteryStatusReceived, this)) {
+                                   &GpioWriter::BatteryStatusReceived, this)),
+    state_subscriber_(
+        ros_node_handle_.subscribe(kRosStateTopic, kRosMessageQueueSize,
+                                   &GpioWriter::StateReceived, this)) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.
@@ -101,6 +104,10 @@ void GpioWriter::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
 void GpioWriter::BatteryStatusReceived(
     const ::sensor_msgs::BatteryState battery_state) {
   led_strip_.set_battery_percentage(battery_state.percentage);
+}
+
+void GpioWriter::StateReceived(const ::mavros_msgs::State state) {
+  led_strip_.set_armed(state.armed);
 }
 
 } // namespace gpio_writer

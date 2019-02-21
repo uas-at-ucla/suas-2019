@@ -1,7 +1,6 @@
 #pragma once
 
 #include <functional>
-#include <iostream>
 #include <string>
 #include <thread>
 
@@ -14,6 +13,7 @@
 #endif
 
 #include <mavros_msgs/RCIn.h>
+#include <mavros_msgs/State.h>
 #include <sensor_msgs/BatteryState.h>
 
 #include "lib/alarm/alarm.h"
@@ -46,6 +46,7 @@ static const int kRosMessageQueueSize = 1;
 static const ::std::string kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
 static const ::std::string kRosRcInTopic = "/mavros/rc/in";
 static const ::std::string kRosBatteryStatusTopic = "/mavros/battery";
+static const ::std::string kRosStateTopic = "/mavros/state";
 } // namespace
 
 class GpioWriter {
@@ -58,6 +59,9 @@ class GpioWriter {
   void AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence);
   void RcInReceived(const ::mavros_msgs::RCIn rc_in);
   void BatteryStatusReceived(const ::sensor_msgs::BatteryState battery_state);
+  void StateReceived(const ::mavros_msgs::State state);
+
+  led_strip::LedStrip led_strip_;
 
   ::std::thread writer_thread_;
   ::ros::Rate writer_phased_loop_;
@@ -71,8 +75,7 @@ class GpioWriter {
   ::ros::Subscriber alarm_subscriber_;
   ::ros::Subscriber rc_input_subscriber_;
   ::ros::Subscriber battery_status_subscriber_;
-
-  led_strip::LedStrip led_strip_;
+  ::ros::Subscriber state_subscriber_;
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   int pigpio_;

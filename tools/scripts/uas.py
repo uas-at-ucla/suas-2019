@@ -35,6 +35,7 @@ DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/controls/exec_kill.sh "
 VISION_DOCKER_BUILD_SCRIPT  = "./tools/scripts/docker/vision/docker_build.sh "
 VISION_DOCKER_RUN_SCRIPT    = "./tools/scripts/docker/vision/docker_run.sh "
 
+CONTROLS_DEPLOY_SCRIPT = "./tools/scripts/controls/deploy.sh "
 CONTROLS_TEST_RRT_AVOIDANCE_SCRIPT = "./bazel-out/k8-fastbuild/bin/lib/rrt_avoidance/rrt_avoidance_test --plot"
 
 JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
@@ -378,6 +379,8 @@ def run_controls_deploy(args=None):
     run_controls_build(show_complete=False)
 
     print_update("Deploying to raspi...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + CONTROLS_DEPLOY_SCRIPT \
+            + "src/controls/io/gpio_writer/gpio_writer")
 
 
 def run_controls_rqt(args=None):
