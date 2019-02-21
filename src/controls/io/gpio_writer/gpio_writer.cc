@@ -12,6 +12,7 @@ GpioWriter::GpioWriter() :
     alarm_(kWriterPhasedLoopFrequency),
     should_override_alarm_(false),
     last_alarm_override_(::lib::phased_loop::GetCurrentTime()),
+    did_arm_(false),
     alarm_subscriber_(
         ros_node_handle_.subscribe(kRosAlarmTriggerTopic, kRosMessageQueueSize,
                                    &GpioWriter::AlarmTriggered, this)),
@@ -30,7 +31,7 @@ GpioWriter::GpioWriter() :
   pinMode(kAlarmGPIOPin, OUTPUT);
 #endif
 
-  alarm_.AddAlert({kStartupChirpDuration, 0});
+  alarm_.AddAlert({kAlarmChirpDuration, 0});
 }
 
 void GpioWriter::WriterThread() {
@@ -41,15 +42,14 @@ void GpioWriter::WriterThread() {
                                  << " seconds of data to actuators @ "
                                  << kWriterPhasedLoopFrequency << "hz");
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
     // Write out the alarm signal.
     bool should_alarm =
         alarm_.ShouldAlarm() || (should_override_alarm_ &&
                                  last_alarm_override_ + kAlarmOverrideTimeGap >
                                      ::lib::phased_loop::GetCurrentTime());
 
+#ifdef UAS_AT_UCLA_DEPLOYMENT
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
-
 #endif
 
     if (::lib::phased_loop::GetCurrentTime() > next_led_write_) {
@@ -57,6 +57,12 @@ void GpioWriter::WriterThread() {
 
       next_led_write_ = ::lib::phased_loop::GetCurrentTime() + kLedWriterPeriod;
     }
+
+    ROS_DEBUG_STREAM("Writer thread iteration: "
+                     << ::std::endl
+                     << "alarm[" << should_alarm << "]" << ::std::endl
+                     << "led_strip[" << led_strip_.GetStrip() << ::std::endl
+                     << "]");
 
     // Wait until next iteration of loop.
     writer_phased_loop_.sleep();
@@ -93,9 +99,9 @@ void GpioWriter::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
 
   // Record a log message on every edge.
   if (new_should_override_alarm != should_override_alarm_) {
-    ROS_DEBUG_STREAM("Alarm RC override changed: "
-                     << should_override_alarm_ << " -> "
-                     << new_should_override_alarm);
+    ROS_INFO_STREAM("Alarm RC override changed: " << should_override_alarm_
+                                                  << " -> "
+                                                  << new_should_override_alarm);
   }
 
   should_override_alarm_ = new_should_override_alarm;
@@ -107,6 +113,19 @@ void GpioWriter::BatteryStatusReceived(
 }
 
 void GpioWriter::StateReceived(const ::mavros_msgs::State state) {
+  if (state.armed != did_arm_) {
+    ROS_INFO_STREAM("Arming state changed: "
+                    << (did_arm_ ? "ARMED" : "DISARMED") << " -> "
+                    << (state.armed ? "ARMED" : "DISARMED"));
+
+    if (state.armed) {
+      // Send out the armed chirp.
+      alarm_.AddAlert({kAlarmChirpDuration, 0});
+    }
+
+    did_arm_ = state.armed;
+  }
+
   led_strip_.set_armed(state.armed);
 }
 

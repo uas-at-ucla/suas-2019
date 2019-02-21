@@ -493,7 +493,10 @@ def run_controls_simulate(args):
         + "fcu_url:=\"udp://:8084@0.0.0.0:8084\"")
 
     tmux_new_window("ROS")
+    tmux_split("horizontal", 2)
     tmux_cmd(DOCKER_EXEC_SCRIPT + "rostopic echo /mavros/global_position/global")
+    tmux_move_pane("right")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/io/gpio_writer:gpio_writer")
 
     # tmux_select_window(0)
 

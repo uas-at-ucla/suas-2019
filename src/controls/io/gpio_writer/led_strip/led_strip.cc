@@ -65,10 +65,6 @@ LedStrip::~LedStrip() {
 }
 
 bool LedStrip::Render() {
-#ifndef UAS_AT_UCLA_DEPLOYMENT
-  bool set[10];
-#endif
-
   // Render the arming state indicator.
   {
     bool should_blink =
@@ -79,19 +75,10 @@ bool LedStrip::Render() {
     for (int i = 0; i < 5; i++) {
       if (armed_) {
         SetLed(i, 255, 0, 0);
-#ifndef UAS_AT_UCLA_DEPLOYMENT
-        set[i] = true;
-#endif
       } else if (should_blink) {
         SetLed(i, 0, 255, 0);
-#ifndef UAS_AT_UCLA_DEPLOYMENT
-        set[i] = true;
-#endif
       } else {
         SetLed(i, 0, 0, 0);
-#ifndef UAS_AT_UCLA_DEPLOYMENT
-        set[i] = false;
-#endif
       }
     }
   }
@@ -109,15 +96,9 @@ bool LedStrip::Render() {
       if (i < solid || should_blink) {
         // LED should be solid.
         SetLed(9 - i, 0, 255, 0);
-#ifndef UAS_AT_UCLA_DEPLOYMENT
-        set[9 - i] = true;
-#endif
       } else {
         // LED should be off.
         SetLed(9 - i, 0, 0, 0);
-#ifndef UAS_AT_UCLA_DEPLOYMENT
-        set[9 - i] = false;
-#endif
       }
     }
   }
@@ -128,29 +109,39 @@ bool LedStrip::Render() {
   if (ret != WS2811_SUCCESS) {
     return false;
   }
-#else
-  for (int i = 0; i < 10; i++) {
-    ::std::cout << set[i] << " ";
-  }
-  ::std::cout << ::std::endl;
+  // #else
+  // ::std::string led_string;
+  // for (int i = 0; i < 10; i++) {
+  //   led_string += led_pixels_[i] > 0 ? "*" : " ";
+  //   led_string += " ";
+  // }
+
+  // ROS_DEBUG_STREAM("LED strip status: " << led_string);
 #endif
 
   return true;
 }
 
+::std::string LedStrip::GetStrip() {
+  ::std::ostringstream strip_string;
+  for (int i = 0; i < kNumberOfLeds; i++) {
+    int red = led_pixels_[i] & 0xFF;
+    int green = (led_pixels_[i] >> 8) & 0xFF;
+    int blue = (led_pixels_[i] >> 16) & 0xFF;
+
+    strip_string << ::std::endl
+                 << ::std::setw(4) << red << ::std::setw(4) << green
+                 << ::std::setw(4) << blue;
+  }
+
+  return strip_string.str();
+}
+
 void LedStrip::SetLed(int led, unsigned char r, unsigned char g,
                       unsigned char b) {
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
   ws2811_led_t led_color = (b << 16) | (g << 8) | r;
-
   led_pixels_[led] = led_color;
-#else
-  (void)led;
-  (void)r;
-  (void)g;
-  (void)b;
-#endif
 }
 
 } // namespace led_strip

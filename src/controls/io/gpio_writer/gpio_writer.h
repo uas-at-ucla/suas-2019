@@ -40,7 +40,7 @@ static const double kAlarmOverrideTimeGap = 1.0 / 10;
 static const int kLedWriterFramesPerSecond = 30;
 static const double kLedWriterPeriod = 1.0 / kLedWriterFramesPerSecond;
 
-static const double kStartupChirpDuration = 0.005;
+static const double kAlarmChirpDuration = 0.010;
 
 static const int kRosMessageQueueSize = 1;
 static const ::std::string kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
@@ -70,6 +70,8 @@ class GpioWriter {
   ::lib::alarm::Alarm alarm_;
   bool should_override_alarm_;
   double last_alarm_override_;
+
+  bool did_arm_;
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber alarm_subscriber_;

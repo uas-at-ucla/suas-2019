@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <ros/ros.h>
+#include <sstream>
 #include <stdint.h>
 
 #include "ws2811.h"
@@ -30,6 +31,7 @@ class LedStrip {
   ~LedStrip();
 
   bool Render();
+  ::std::string GetStrip();
 
   void set_battery_percentage(float battery_percentage) {
     battery_percentage_ = battery_percentage;
