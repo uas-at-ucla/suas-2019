@@ -1,3 +1,5 @@
+--output_base=tools/cache/bazel
+
 # Use our CROSSTOOL.
 build --crosstool_top=//tools/cpp:toolchain
 # Don't switch HOST compilers.
@@ -11,7 +13,8 @@ build --show_result 15
 # Dump the output of the failing test to stdout.
 test --test_output=errors
 
-startup --output_user_root=tools/cache/bazel
+# startup --output_user_root=tools/cache/bazel
+startup --output_base=tools/cache/bazel
 build --symlink_prefix=/
 
 build --incompatible_remove_native_git_repository=false

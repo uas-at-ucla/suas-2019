@@ -8,6 +8,8 @@ cc_library(
     'led_strip.h'
   ],
   deps = [
+    '//lib/phased_loop:phased_loop',
+    '//lib/ros:ros',
     "@rpi_ws281x//:rpi_ws281x",
   ],
 )

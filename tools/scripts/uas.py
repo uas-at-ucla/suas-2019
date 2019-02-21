@@ -374,6 +374,12 @@ def run_controls_build(args=None, show_complete=True, raspi=True):
                 msg_type="SUCCESS")
 
 
+def run_controls_deploy(args=None):
+    run_controls_build(show_complete=False)
+
+    print_update("Deploying to raspi...")
+
+
 def run_controls_rqt(args=None):
     shutdown_functions.append(kill_controls_rqt)
 
@@ -791,6 +797,8 @@ if __name__ == '__main__':
     controls_simulate_parser.set_defaults(func=run_controls_simulate)
     controls_build_parser = controls_subparsers.add_parser('build')
     controls_build_parser.set_defaults(func=run_controls_build)
+    controls_deploy_parser = controls_subparsers.add_parser('deploy')
+    controls_deploy_parser.set_defaults(func=run_controls_deploy)
     controls_ros_parser = controls_subparsers.add_parser('rqt')
     controls_ros_parser.set_defaults(func=run_controls_rqt)
     controls_test_parser = controls_subparsers.add_parser('test')

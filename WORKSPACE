@@ -29,11 +29,17 @@ git_repository(
   commit = '12a3dc130769c43a1b449128da19f8cfe6a7823e',
 )
 
+git_repository(
+  name = 'sensor_msgs',
+  remote = 'https://github.com/uas-at-ucla/sensor_msgs.git',
+  commit = '541751ee4b7ef345694357b3913b214c7b1db23e',
+)
+
 new_git_repository(
   name = 'rpi_ws281x',
   remote = 'https://github.com/uas-at-ucla/rpi_ws281x.git',
   build_file = 'third_party/rpi_ws281x.BUILD',
-  commit = 'e3345674e5405777b61f4f509cd817d4923e99e4',
+  commit = '74927784671de0c839e41b4525876455777393da',
 )
 
 new_git_repository(

@@ -8,15 +8,18 @@ namespace gpio_writer {
 GpioWriter::GpioWriter() :
     writer_thread_(&GpioWriter::WriterThread, this),
     writer_phased_loop_(kWriterPhasedLoopFrequency),
-    next_led_write_(::ros::Time::now()),
+    next_led_write_(::lib::phased_loop::GetCurrentTime()),
     alarm_(kWriterPhasedLoopFrequency),
     should_override_alarm_(false),
-    last_alarm_override_(::ros::Time::now()),
+    last_alarm_override_(::lib::phased_loop::GetCurrentTime()),
     alarm_subscriber_(
         ros_node_handle_.subscribe(kRosAlarmTriggerTopic, kRosMessageQueueSize,
                                    &GpioWriter::AlarmTriggered, this)),
     rc_input_subscriber_(ros_node_handle_.subscribe(
-        kRosRcInTopic, kRosMessageQueueSize, &GpioWriter::RcInReceived, this)) {
+        kRosRcInTopic, kRosMessageQueueSize, &GpioWriter::RcInReceived, this)),
+    battery_status_subscriber_(
+        ros_node_handle_.subscribe(kRosBatteryStatusTopic, kRosMessageQueueSize,
+                                   &GpioWriter::BatteryStatusReceived, this)) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.
@@ -38,18 +41,19 @@ void GpioWriter::WriterThread() {
 #ifdef UAS_AT_UCLA_DEPLOYMENT
     // Write out the alarm signal.
     bool should_alarm =
-        alarm_.ShouldAlarm() ||
-        (should_override_alarm_ &&
-         last_alarm_override_ + kAlarmOverrideTimeGap > ::ros::Time::now());
+        alarm_.ShouldAlarm() || (should_override_alarm_ &&
+                                 last_alarm_override_ + kAlarmOverrideTimeGap >
+                                     ::lib::phased_loop::GetCurrentTime());
 
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
 
-    if (::ros::Time::now() > next_led_write_) {
+#endif
+
+    if (::lib::phased_loop::GetCurrentTime() > next_led_write_) {
       led_strip_.Render();
 
-      next_led_write_ = ::ros::Time::now() + kLedWriterPeriod;
+      next_led_write_ = ::lib::phased_loop::GetCurrentTime() + kLedWriterPeriod;
     }
-#endif
 
     // Wait until next iteration of loop.
     writer_phased_loop_.sleep();
@@ -79,7 +83,7 @@ void GpioWriter::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   if (rc_in.channels[kAlarmOverrideRcChannel - 1] >
       kAlarmOverrideRcSignalThreshold) {
     new_should_override_alarm = true;
-    last_alarm_override_ = ::ros::Time::now();
+    last_alarm_override_ = ::lib::phased_loop::GetCurrentTime();
   } else {
     new_should_override_alarm = false;
   }
@@ -92,6 +96,11 @@ void GpioWriter::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   }
 
   should_override_alarm_ = new_should_override_alarm;
+}
+
+void GpioWriter::BatteryStatusReceived(
+    const ::sensor_msgs::BatteryState battery_state) {
+  led_strip_.set_battery_percentage(battery_state.percentage);
 }
 
 } // namespace gpio_writer

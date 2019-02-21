@@ -23,8 +23,10 @@ cc_library(
     '//src/controls/io/gpio_writer/led_strip:led_strip',
     '//lib/ros:ros',
     '//lib/alarm:alarm',
+    '//lib/phased_loop:phased_loop',
     "@WiringPi//:WiringPi",
     "@pigpio//:pigpio",
     "@mavros_msgs//:mavros_msgs",
+    "@sensor_msgs//:sensor_msgs",
   ],
 )

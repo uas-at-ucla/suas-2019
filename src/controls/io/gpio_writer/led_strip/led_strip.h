@@ -1,8 +1,12 @@
 #pragma once
 
+#include <cmath>
+#include <ros/ros.h>
 #include <stdint.h>
 
 #include "ws2811.h"
+
+#include "lib/phased_loop/phased_loop.h"
 
 namespace src {
 namespace controls {
@@ -10,11 +14,12 @@ namespace io {
 namespace gpio_writer {
 namespace led_strip {
 namespace {
-static const int kNumberOfLeds = 8;
+static const int kNumberOfLeds = 10;
 static const int kLedStripTargetFrequency = 800000;
-static const int kLedStripGpioPin = 18;
+static const int kLedStripGpioPin = 10;
 static const int kLedStripDma = 5;
 static const int kLedStripType = WS2811_STRIP_GBR;
+static constexpr double kBatteryBlinkFrequency = 1.5;
 } // namespace
 
 class LedStrip {
@@ -24,10 +29,17 @@ class LedStrip {
 
   bool Render();
 
+  void set_battery_percentage(float battery_percentage) {
+    battery_percentage_ = battery_percentage;
+  }
+
  private:
   void SetLed(int led, unsigned char r, unsigned char g, unsigned char b);
 
+  ws2811_channel_t channel_0_;
+  ws2811_channel_t channel_1_;
   ws2811_t leds_;
+  float battery_percentage_;
 };
 
 } // namespace led_strip

@@ -14,12 +14,12 @@
 #endif
 
 #include <mavros_msgs/RCIn.h>
+#include <sensor_msgs/BatteryState.h>
 
-#include "src/controls/messages.pb.h"
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-#include "src/controls/io/gpio_writer/led_strip/led_strip.h"
-#endif
 #include "lib/alarm/alarm.h"
+#include "lib/phased_loop/phased_loop.h"
+#include "src/controls/io/gpio_writer/led_strip/led_strip.h"
+#include "src/controls/messages.pb.h"
 
 namespace src {
 namespace controls {
@@ -35,17 +35,17 @@ static const int kAlarmOverrideRcSignalThreshold = 1800;
 static const int kWriterThreadLogIntervalSeconds = 10;
 
 static const int kWriterPhasedLoopFrequency = 250;
-static const ::ros::Duration kAlarmOverrideTimeGap = ::ros::Duration(1.0 / 10);
+static const double kAlarmOverrideTimeGap = 1.0 / 10;
 
 static const int kLedWriterFramesPerSecond = 30;
-static const ::ros::Duration kLedWriterPeriod =
-    ::ros::Duration(1.0 / kLedWriterFramesPerSecond);
+static const double kLedWriterPeriod = 1.0 / kLedWriterFramesPerSecond;
 
 static const double kStartupChirpDuration = 0.005;
 
 static const int kRosMessageQueueSize = 1;
 static const ::std::string kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
 static const ::std::string kRosRcInTopic = "/mavros/rc/in";
+static const ::std::string kRosBatteryStatusTopic = "/mavros/battery";
 } // namespace
 
 class GpioWriter {
@@ -57,21 +57,24 @@ class GpioWriter {
 
   void AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence);
   void RcInReceived(const ::mavros_msgs::RCIn rc_in);
+  void BatteryStatusReceived(const ::sensor_msgs::BatteryState battery_state);
 
   ::std::thread writer_thread_;
   ::ros::Rate writer_phased_loop_;
-  ::ros::Time next_led_write_;
+  double next_led_write_;
 
   ::lib::alarm::Alarm alarm_;
   bool should_override_alarm_;
-  ::ros::Time last_alarm_override_;
+  double last_alarm_override_;
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber alarm_subscriber_;
   ::ros::Subscriber rc_input_subscriber_;
+  ::ros::Subscriber battery_status_subscriber_;
+
+  led_strip::LedStrip led_strip_;
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-  led_strip::LedStrip led_strip_;
   int pigpio_;
 #endif
 };
