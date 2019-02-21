@@ -66,12 +66,12 @@ if "CONTINUOUS_INTEGRATION" in os.environ \
     print("CPUs available: " + str(CI_BUILD_CPUS))
 
     CI_BUILD_LOCAL_RESOURCES = ""
-    #CI_BUILD_LOCAL_RESOURCES = str(CI_BUILD_RAM) + "," \
+    #CI_BUILD_LOCAL_RESOURCES = "--local_resources " + str(CI_BUILD_RAM) + "," \
     #        + str(CI_BUILD_CPUS) + "," \
     #        + str(CI_BUILD_IO)
 
-    BAZEL_BUILD = "bazel build --noshow_progress --local_resources " + CI_BUILD_LOCAL_RESOURCES + " "
-    BAZEL_TEST = "bazel test --noshow_progress --local_resources " + CI_BUILD_LOCAL_RESOURCES + " "
+    BAZEL_BUILD = "bazel build --noshow_progress " + CI_BUILD_LOCAL_RESOURCES + " "
+    BAZEL_TEST = "bazel test --noshow_progress " + CI_BUILD_LOCAL_RESOURCES + " "
 else:
     BAZEL_BUILD = "bazel build "
     BAZEL_TEST = "bazel test "
