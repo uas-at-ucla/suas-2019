@@ -11,3 +11,5 @@ rsync \
   -e "ssh -p $PORT" \
   --progress \
   "$LOCAL_BAZEL_RASPI_OUTPUT_ROOT/$1" "$USER@$HOST":"$REMOTE_PATH"
+
+ssh -p $PORT "$USER@$HOST" killall gpio_writer

@@ -31,17 +31,11 @@ GpioWriter::GpioWriter() :
   pinMode(kAlarmGPIOPin, OUTPUT);
 #endif
 
-  alarm_.AddAlert({kAlarmChirpDuration, 0});
+  //alarm_.AddAlert({kAlarmChirpDuration, 0});
 }
 
 void GpioWriter::WriterThread() {
   while (::ros::ok()) {
-    ROS_INFO_STREAM_THROTTLE(kWriterThreadLogIntervalSeconds,
-                             "gpio_writer wrote "
-                                 << kWriterThreadLogIntervalSeconds
-                                 << " seconds of data to actuators @ "
-                                 << kWriterPhasedLoopFrequency << "hz");
-
     // Write out the alarm signal.
     bool should_alarm =
         alarm_.ShouldAlarm() || (should_override_alarm_ &&
@@ -120,7 +114,7 @@ void GpioWriter::StateReceived(const ::mavros_msgs::State state) {
 
     if (state.armed) {
       // Send out the armed chirp.
-      alarm_.AddAlert({kAlarmChirpDuration, 0});
+      // alarm_.AddAlert({kAlarmChirpDuration, 0});
     }
 
     did_arm_ = state.armed;

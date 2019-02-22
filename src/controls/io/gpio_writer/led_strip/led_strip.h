@@ -17,9 +17,8 @@ namespace gpio_writer {
 namespace led_strip {
 namespace {
 static const int kNumberOfLeds = 10;
-static const int kLedStripTargetFrequency = 800000;
 static const int kLedStripGpioPin = 10;
-static const int kLedStripDma = 5;
+static const int kLedStripDma = 10;
 static const int kLedStripType = WS2811_STRIP_GBR;
 static constexpr double kDisarmedBlinkFrequency = 0.5;
 static constexpr double kBatteryBlinkFrequency = 1.5;

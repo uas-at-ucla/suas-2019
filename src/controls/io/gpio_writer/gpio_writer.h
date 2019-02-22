@@ -32,8 +32,6 @@ static const int kGimbalGPIOPin = 18;
 static const int kAlarmOverrideRcChannel = 7;
 static const int kAlarmOverrideRcSignalThreshold = 1800;
 
-static const int kWriterThreadLogIntervalSeconds = 10;
-
 static const int kWriterPhasedLoopFrequency = 250;
 static const double kAlarmOverrideTimeGap = 1.0 / 10;
 

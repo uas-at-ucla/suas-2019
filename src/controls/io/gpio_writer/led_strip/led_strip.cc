@@ -30,7 +30,7 @@ LedStrip::LedStrip() : battery_percentage_(0.0), armed_(false) {
       0,             // Number of LEDs, 0 if channel is unused.
       kLedStripType, // Strip color layout
       nullptr,       // LED buffer
-      255,           // Brightness value
+      0,             // Brightness value
       0,             // White shift value
       0,             // Red shift value
       0,             // Green shift value
@@ -42,7 +42,7 @@ LedStrip::LedStrip() : battery_percentage_(0.0), armed_(false) {
       0,                        // Render wait time
       nullptr,                  // Device
       nullptr,                  // Raspi hardware information
-      kLedStripTargetFrequency, // Required output frequency
+      WS2811_TARGET_FREQ, // Required output frequency
       kLedStripDma,             // DMA number
       {channel_0_, channel_1_}  // Channels
   };
@@ -51,6 +51,7 @@ LedStrip::LedStrip() : battery_percentage_(0.0), armed_(false) {
   ws2811_return_t ret = ws2811_init(&leds_);
 
   if (ret != WS2811_SUCCESS) {
+    ::std::cout << "ERROR!\n";
     return;
   }
 #endif
@@ -95,7 +96,7 @@ bool LedStrip::Render() {
                               1.0 / (2 * kBatteryBlinkFrequency);
       if (i < solid || should_blink) {
         // LED should be solid.
-        SetLed(9 - i, 0, 255, 0);
+        SetLed(9 - i, 0, 0, 255);
       } else {
         // LED should be off.
         SetLed(9 - i, 0, 0, 0);
@@ -107,16 +108,9 @@ bool LedStrip::Render() {
   ws2811_return_t ret = ws2811_render(&leds_);
 
   if (ret != WS2811_SUCCESS) {
+    ::std::cout << "Could not render\n";
     return false;
   }
-  // #else
-  // ::std::string led_string;
-  // for (int i = 0; i < 10; i++) {
-  //   led_string += led_pixels_[i] > 0 ? "*" : " ";
-  //   led_string += " ";
-  // }
-
-  // ROS_DEBUG_STREAM("LED strip status: " << led_string);
 #endif
 
   return true;
@@ -125,9 +119,9 @@ bool LedStrip::Render() {
 ::std::string LedStrip::GetStrip() {
   ::std::ostringstream strip_string;
   for (int i = 0; i < kNumberOfLeds; i++) {
-    int red = led_pixels_[i] & 0xFF;
-    int green = (led_pixels_[i] >> 8) & 0xFF;
-    int blue = (led_pixels_[i] >> 16) & 0xFF;
+    int red = leds_.channel[0].leds[i] & 0xFF;
+    int green = (leds_.channel[0].leds[i] >> 8) & 0xFF;
+    int blue = (leds_.channel[0].leds[i] >> 16) & 0xFF;
 
     strip_string << ::std::endl
                  << ::std::setw(4) << red << ::std::setw(4) << green
@@ -141,7 +135,7 @@ void LedStrip::SetLed(int led, unsigned char r, unsigned char g,
                       unsigned char b) {
 
   ws2811_led_t led_color = (b << 16) | (g << 8) | r;
-  led_pixels_[led] = led_color;
+  leds_.channel[0].leds[led] = led_color;
 }
 
 } // namespace led_strip
