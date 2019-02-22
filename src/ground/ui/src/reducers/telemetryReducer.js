@@ -23,7 +23,8 @@ export default {
           position: {
             lat: state.telemetry.sensors.latitude,
             lng: state.telemetry.sensors.longitude
-          }
+          },
+          eph: 100
           // TODO make it an icon, rotate with drone heading, and show location uncertainty as a semi-transparent circle (HDOP)
         }
       } else {

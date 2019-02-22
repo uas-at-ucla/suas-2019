@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Marker, InfoWindow } from 'react-google-maps';
+import { Marker, InfoWindow, Circle } from 'react-google-maps';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
@@ -13,7 +13,7 @@ const mapStateToProps = state => {
     commandPoints: derivedData.missionPlan.commandPoints,
     protoInfo: derivedData.missionPlan.protoInfo,
     telemetry: state.telemetry,
-    droneMarker: derivedData.telemetry.droneMarker 
+    droneMarker: derivedData.telemetry.droneMarker
   };
 };
 
@@ -34,11 +34,16 @@ class Map extends Component {
           }}
           onDblClick={this.mapDblClick}
         >
-          {this.props.droneMarker ? 
-            <Marker {...this.props.droneMarker}></Marker> 
+          {this.props.droneMarker ?
+            <Marker {...this.props.droneMarker} icon={"/drone_marker.svg"}>
+            <Circle
+              center={this.props.droneMarker.position}
+              radius={this.props.droneMarker.eph}
+              ></Circle>
+            </Marker>
           : null}
 
-          {this.props.commandPoints.map((commandPoint, index) => 
+          {this.props.commandPoints.map((commandPoint, index) =>
             commandPoint ?
               <Marker {...commandPoint.marker} key={commandPoint.id}>
                 <InfoWindow {...commandPoint.infobox}>
