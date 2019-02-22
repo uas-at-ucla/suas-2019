@@ -27,6 +27,8 @@ UAS_AT_UCLA_TEXT = '\033[96m' + \
 
 
 # Script locations.
+GROUND_DOCKER_EXEC_SCRIPT = "./tools/scripts/ground/exec.sh "
+
 DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/controls/run_env.sh "
 DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/px4_simulator/start_sim.sh "
 DOCKER_EXEC_SCRIPT      = "./tools/scripts/controls/exec.sh "
@@ -230,7 +232,7 @@ def run_cmd_exit_failure(cmd):
 
 
 def tmux_cmd(cmd):
-    run_cmd_exit_failure("tmux send-keys \"" + cmd + "\" C-m")
+    run_cmd_exit_failure("tmux send-keys \"unset HISTFILE;" + cmd + "\" C-m")
 
 
 def tmux_move_pane(direction):
@@ -436,6 +438,7 @@ def run_controls_simulate(args):
     shutdown_functions.append(kill_processes_in_uas_env_container)
     shutdown_functions.append(kill_simulator)
     shutdown_functions.append(kill_tmux_session_uas_env)
+    shutdown_functions.append(kill_ground)
 
     run_controls_docker_start(None, show_complete=False)
 
@@ -481,7 +484,7 @@ def run_controls_simulate(args):
     tmux_move_pane("right")
     tmux_cmd(mavlink_router_command)
 
-    tmux_new_window("Mavros")
+    tmux_new_window("MAVROS")
     tmux_cmd(DOCKER_EXEC_SCRIPT + CONTROLS_MAVROS_SCRIPT)
 
     tmux_new_window("ROS")
@@ -489,6 +492,11 @@ def run_controls_simulate(args):
     tmux_cmd(DOCKER_EXEC_SCRIPT + "rostopic echo /mavros/global_position/global")
     tmux_move_pane("right")
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/io/gpio_writer:gpio_writer")
+
+    tmux_new_window("GROUND")
+    tmux_cmd("./uas ground run")
+
+    tmux_select_window(2)
 
     print_update("\n\nSimulation running! \n" \
             "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
@@ -548,8 +556,8 @@ def run_ground(arg1, args):
     print_update("Running the Ground Station...")
 
     # Run ground.py and pass command line arguments
-    run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
-           " ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args))
+    run_cmd_exit_failure(GROUND_DOCKER_EXEC_SCRIPT + \
+           "python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args))
 
     kill_ground()
 
