@@ -487,7 +487,7 @@ def run_controls_simulate(args):
     tmux_move_pane("right")
     tmux_cmd(mavlink_router_command)
 
-    tmux_new_window("Raspi")
+    tmux_new_window("Mavros")
     tmux_cmd(DOCKER_EXEC_SCRIPT \
         + "roslaunch mavros px4.launch "
         + "fcu_url:=\"udp://:8084@0.0.0.0:8084\"")

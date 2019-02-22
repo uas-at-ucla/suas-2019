@@ -137,25 +137,26 @@ DOCKER_BUILD_CMD="set -x; \
   usermod -u $(id -u) -g $(id -g) uas; \
   usermod -d /home/uas uas; \
   chown uas /home/uas; \
+  chown uas /home/uas/.cache; \
   echo STARTED > /tmp/uas_init; \
   sudo -u uas bash -c \"bazel; \
   source /home/uas/.bashrc; \
   /opt/ros/melodic/bin/roscore &> /dev/null; \
   sleep infinity\""
 
-docker run \
-  -d \
-  --rm \
-  --cap-add=SYS_PTRACE \
+docker run                          \
+  -d                                \
+  --rm                              \
+  --cap-add=SYS_PTRACE              \
   --security-opt seccomp=unconfined \
-  --net uas_bridge \
-  --ip 192.168.2.21 \
-  -v $ROOT_PATH:/home/uas/code_env \
-  -e DISPLAY=$DISPLAY \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  --dns 8.8.8.8 \
-  --name uas-at-ucla_controls \
-  uas-at-ucla_controls \
+  --net uas_bridge                  \
+  --ip 192.168.2.21                 \
+  -v $ROOT_PATH:/home/uas/code_env  \
+  -e DISPLAY=$DISPLAY               \
+  -v /tmp/.X11-unix:/tmp/.X11-unix  \
+  --dns 8.8.8.8                     \
+  --name uas-at-ucla_controls       \
+  uas-at-ucla_controls              \
   bash -c "$DOCKER_BUILD_CMD"
 
 echo "Started uas-at-ucla_controls docker image. Waiting for it to boot..."
