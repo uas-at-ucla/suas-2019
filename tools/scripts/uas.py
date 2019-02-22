@@ -35,6 +35,7 @@ DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/controls/exec_kill.sh "
 VISION_DOCKER_BUILD_SCRIPT  = "./tools/scripts/docker/vision/docker_build.sh "
 VISION_DOCKER_RUN_SCRIPT    = "./tools/scripts/docker/vision/docker_run.sh "
 
+CONTROLS_DEPLOY_SCRIPT = "./tools/scripts/controls/deploy.sh "
 CONTROLS_TEST_RRT_AVOIDANCE_SCRIPT = "./bazel-out/k8-fastbuild/bin/lib/rrt_avoidance/rrt_avoidance_test --plot"
 
 JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
@@ -57,19 +58,20 @@ if "CONTINUOUS_INTEGRATION" in os.environ \
     meminfo = dict((i.split()[0].rstrip(':'),int(i.split()[1])) for i in open('/proc/meminfo').readlines())
     mem_kib = meminfo['MemAvailable']
 
-    CI_BUILD_RAM = mem_kib / 1024 * 2.5 / 4.0 # MB
-    CI_BUILD_CPUS = multiprocessing.cpu_count() # Number of CPUs
+    CI_BUILD_RAM = mem_kib / 1024 # MB
+    CI_BUILD_CPUS = multiprocessing.cpu_count()
     CI_BUILD_IO = 1.0
 
     print("RAM available: " + str(CI_BUILD_RAM) + "MB")
     print("CPUs available: " + str(CI_BUILD_CPUS))
 
-    CI_BUILD_LOCAL_RESOURCES = str(CI_BUILD_RAM) + "," \
-            + str(CI_BUILD_CPUS) + "," \
-            + str(CI_BUILD_IO)
+    CI_BUILD_LOCAL_RESOURCES = ""
+    #CI_BUILD_LOCAL_RESOURCES = "--local_resources " + str(CI_BUILD_RAM) + "," \
+    #        + str(CI_BUILD_CPUS) + "," \
+    #        + str(CI_BUILD_IO)
 
-    BAZEL_BUILD = "bazel build --noshow_progress --local_resources " + CI_BUILD_LOCAL_RESOURCES + " "
-    BAZEL_TEST = "bazel test --noshow_progress --local_resources " + CI_BUILD_LOCAL_RESOURCES + " "
+    BAZEL_BUILD = "bazel build --noshow_progress " + CI_BUILD_LOCAL_RESOURCES + " "
+    BAZEL_TEST = "bazel test --noshow_progress " + CI_BUILD_LOCAL_RESOURCES + " "
 else:
     BAZEL_BUILD = "bazel build "
     BAZEL_TEST = "bazel test "
@@ -373,6 +375,14 @@ def run_controls_build(args=None, show_complete=True, raspi=True):
                 msg_type="SUCCESS")
 
 
+def run_controls_deploy(args=None):
+    run_controls_build(show_complete=False)
+
+    print_update("Deploying to raspi...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + CONTROLS_DEPLOY_SCRIPT \
+            + "src/controls/io/gpio_writer/gpio_writer")
+
+
 def run_controls_rqt(args=None):
     shutdown_functions.append(kill_controls_rqt)
 
@@ -477,13 +487,16 @@ def run_controls_simulate(args):
     tmux_move_pane("right")
     tmux_cmd(mavlink_router_command)
 
-    tmux_new_window("Raspi")
+    tmux_new_window("Mavros")
     tmux_cmd(DOCKER_EXEC_SCRIPT \
         + "roslaunch mavros px4.launch "
         + "fcu_url:=\"udp://:8084@0.0.0.0:8084\"")
 
     tmux_new_window("ROS")
+    tmux_split("horizontal", 2)
     tmux_cmd(DOCKER_EXEC_SCRIPT + "rostopic echo /mavros/global_position/global")
+    tmux_move_pane("right")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/io/gpio_writer:gpio_writer")
 
     # tmux_select_window(0)
 
@@ -790,6 +803,8 @@ if __name__ == '__main__':
     controls_simulate_parser.set_defaults(func=run_controls_simulate)
     controls_build_parser = controls_subparsers.add_parser('build')
     controls_build_parser.set_defaults(func=run_controls_build)
+    controls_deploy_parser = controls_subparsers.add_parser('deploy')
+    controls_deploy_parser.set_defaults(func=run_controls_deploy)
     controls_ros_parser = controls_subparsers.add_parser('rqt')
     controls_ros_parser.set_defaults(func=run_controls_rqt)
     controls_test_parser = controls_subparsers.add_parser('test')

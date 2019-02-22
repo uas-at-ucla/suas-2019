@@ -37,7 +37,13 @@ RUN apt-get install -y -qq                                                     \
   openssh-server                                                               \
   python2.7                                                                    \
   software-properties-common                                                   \
-  tmux
+  tmux                                                                         \
+  htop                                                                         \
+  bmon                                                                         \
+  nmap                                                                         \
+  tree                                                                         \
+  sudo                                                                         \
+  vim
 
 RUN apt upgrade -y -qq
 
@@ -55,6 +61,7 @@ RUN apt-get install -y -qq docker-ce
 RUN useradd -ms /bin/bash jenkins_uasatucla
 RUN echo 'jenkins_uasatucla:spinny' | chpasswd
 RUN usermod -aG docker jenkins_uasatucla
+RUN usermod -aG sudo jenkins_uasatucla
 
 WORKDIR /home/jenkins_uasatucla/
 
