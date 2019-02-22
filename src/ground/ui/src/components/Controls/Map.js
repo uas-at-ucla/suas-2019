@@ -106,14 +106,11 @@ class Map extends Component {
         searchCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
         return searchCoordinates[index];
     })
-    /*const lineCoordinates = [
-      { lat: this.state.mission.fly_zones[0].boundary_pts[0].latitude ,lng: this.state.mission.fly_zones[0].boundary_pts[0].longitude},
-      { lat: this.state.mission.fly_zones[0].boundary_pts[1].latitude ,lng: this.state.mission.fly_zones[0].boundary_pts[1].longitude},
-      { lat: this.state.mission.fly_zones[0].boundary_pts[2].latitude ,lng: this.state.mission.fly_zones[0].boundary_pts[2].longitude}
-       ];*/
+    const {google} = this.props;
     return (
       <div className="Map">
         <GoogleMap
+          google = {google}
           defaultZoom={16}
           defaultCenter={{ lat: 38.147483, lng: -76.427778 }}
           defaultMapTypeId="satellite"
@@ -133,7 +130,11 @@ class Map extends Component {
             <Marker  
             title="airDropPosition"
             position={{lat: this.state.mission.air_drop_pos.latitude, lng: this.state.mission.air_drop_pos.longitude}}
-            onClick = {()=>this.onToggleOpen("air_drop_pos")}>          
+            onClick = {()=>this.onToggleOpen("air_drop_pos")}
+            icon = {{url: "https://image.shutterstock.com/image-vector/funny-bomb-vector-illustration-260nw-137186951.jpg",
+            Size: {width: 40, height:40} ,
+            scaledSize: {width: 20, height: 20} }}
+            >          
             {this.state.isOpen["air_drop_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("air_drop_pos")}>
            <div className="map-infobox">Air Drop Position</div>
             </InfoWindow>}
@@ -142,7 +143,11 @@ class Map extends Component {
             <Marker  
             title="homePosition"
             position={{lat: this.state.mission.home_pos.latitude, lng: this.state.mission.home_pos.longitude}}
-            onClick = {()=>this.onToggleOpen("home_pos")}>        
+            onClick = {()=>this.onToggleOpen("home_pos")}
+            icon = {{url: "http://www.clker.com/cliparts/F/t/X/o/S/p/simple-blue-house-md.png",
+            Size: {width: "40", height:40} ,
+            scaledSize: {width: 20, height: 20} }}
+            >        
             {this.state.isOpen["home_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("home_pos")}>
             <div className="map-infobox">Home Position</div>
           </InfoWindow> }          
@@ -150,16 +155,17 @@ class Map extends Component {
           
 
             <Polygon
-                path = {lineCoordinates} strokeOpacity= {0.8} strokeWeight= {2}
-            />  
+                paths = {[lineCoordinates, lineCoordinates]} strokeOpacity= {0.8} strokeWeight= {2}
+            > <InfoWindow> <div className="map=infobox"> Boundaries</div> = </InfoWindow></Polygon>  
            <Polygon
-                path = {searchGridPoints} strokeOpacity= {0.5} strokeWeight= {2}
+                paths = {[searchGridPoints, searchGridPoints]} strokeOpacity= {0.5} strokeWeight= {2}
             />  
             
 
           {
             this.state.mission.stationary_obstacles.map((obstacle, index) => {
-            return <Circle radius={obstacle.cylinder_radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}/>;
+            return <Circle radius={obstacle.cylinder_radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}
+             />;
             })
           }
 
@@ -177,7 +183,7 @@ class Map extends Component {
                     </div>
                    
                     <Button onClick={this.deleteCommand} data-index={index}>
-                      Delete Command
+                      🚮
                     </Button>
                   </div>
                 </InfoWindow>}
