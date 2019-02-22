@@ -39,12 +39,12 @@ LedStrip::LedStrip() : battery_percentage_(0.0), armed_(false) {
   };
 
   leds_ = {
-      0,                        // Render wait time
-      nullptr,                  // Device
-      nullptr,                  // Raspi hardware information
-      WS2811_TARGET_FREQ, // Required output frequency
-      kLedStripDma,             // DMA number
-      {channel_0_, channel_1_}  // Channels
+      0,                       // Render wait time
+      nullptr,                 // Device
+      nullptr,                 // Raspi hardware information
+      WS2811_TARGET_FREQ,      // Required output frequency
+      kLedStripDma,            // DMA number
+      {channel_0_, channel_1_} // Channels
   };
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT

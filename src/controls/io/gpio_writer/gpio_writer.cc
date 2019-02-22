@@ -31,7 +31,7 @@ GpioWriter::GpioWriter() :
   pinMode(kAlarmGPIOPin, OUTPUT);
 #endif
 
-  //alarm_.AddAlert({kAlarmChirpDuration, 0});
+  // alarm_.AddAlert({kAlarmChirpDuration, 0});
 }
 
 void GpioWriter::WriterThread() {
