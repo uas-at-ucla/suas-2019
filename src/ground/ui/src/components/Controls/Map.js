@@ -96,10 +96,15 @@ class Map extends Component {
     }
   };
   render() {
+    var boxCenter =  this.state.mission.fly_zones[0].boundary_pts[0];
+    var boxCoordinates =[{lat: boxCenter.latitude+.1, lng: boxCenter.longitude+.1}, 
+      {lat: boxCenter.latitude+.1, lng: boxCenter.longitude-.1},
+      {lat: boxCenter.latitude-.1, lng: boxCenter.longitude-.1},
+      {lat: boxCenter.latitude-.1, lng: boxCenter.longitude+.1}];
     var lineCoordinates =[];
     const boundaryCoordinates = this.state.mission.fly_zones[0].boundary_pts.map((coord, index) => {
-      lineCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
-      return lineCoordinates[index];
+      lineCoordinates[this.state.mission.fly_zones[0].boundary_pts.length - index-1] = {lat: coord.latitude, lng: coord.longitude };
+      return lineCoordinates;
     })
      var searchCoordinates = [];
       const searchGridPoints = this.state.mission.search_grid_points.map((coord, index) => {
@@ -131,9 +136,9 @@ class Map extends Component {
             title="airDropPosition"
             position={{lat: this.state.mission.air_drop_pos.latitude, lng: this.state.mission.air_drop_pos.longitude}}
             onClick = {()=>this.onToggleOpen("air_drop_pos")}
-            icon = {{url: "https://image.shutterstock.com/image-vector/funny-bomb-vector-illustration-260nw-137186951.jpg",
+            icon = {{url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/WA_80_cm_archery_target.svg/180px-WA_80_cm_archery_target.svg.png",
             Size: {width: 40, height:40} ,
-            scaledSize: {width: 20, height: 20} }}
+            scaledSize: {width: 25, height: 25} }}
             >          
             {this.state.isOpen["air_drop_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("air_drop_pos")}>
            <div className="map-infobox">Air Drop Position</div>
@@ -155,7 +160,14 @@ class Map extends Component {
           
 
             <Polygon
-                paths = {[lineCoordinates, lineCoordinates]} strokeOpacity= {0.8} strokeWeight= {2}
+                paths = {[boxCoordinates, lineCoordinates]} strokeOpacity= {0.8} strokeWeight= {2} 
+                options={{
+                  strokeColor: '#FF0000',
+                  fillColor: '#FF0000',
+                  strokeOpacity: 0.8,
+                  strokeWeight: 1,
+                  fillOpacity: 0.5
+              }}
             > <InfoWindow> <div className="map=infobox"> Boundaries</div> = </InfoWindow></Polygon>  
            <Polygon
                 paths = {[searchGridPoints, searchGridPoints]} strokeOpacity= {0.5} strokeWeight= {2}
