@@ -23,7 +23,10 @@ GpioWriter::GpioWriter() :
                                    &GpioWriter::BatteryStatusReceived, this)),
     state_subscriber_(
         ros_node_handle_.subscribe(kRosStateTopic, kRosMessageQueueSize,
-                                   &GpioWriter::StateReceived, this)) {
+                                   &GpioWriter::StateReceived, this)),
+    imu_subscriber_(
+        ros_node_handle_.subscribe(kRosImuTopic, kRosMessageQueueSize,
+                                   &GpioWriter::ImuReceived, this)) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.
@@ -121,6 +124,11 @@ void GpioWriter::StateReceived(const ::mavros_msgs::State state) {
   }
 
   led_strip_.set_armed(state.armed);
+}
+
+void GpioWriter::ImuReceived(const ::sensor_msgs::Imu imu) {
+  (void) imu;
+  led_strip_.set_last_imu(::lib::phased_loop::GetCurrentTime());
 }
 
 } // namespace gpio_writer

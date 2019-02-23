@@ -557,7 +557,7 @@ def run_ground(arg1, args):
 
     # Run ground.py and pass command line arguments
     run_cmd_exit_failure(GROUND_DOCKER_EXEC_SCRIPT + \
-           "python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args))
+           "ssh -o StrictHostKeyChecking=no git@github.com || python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args))
 
     kill_ground()
 
@@ -706,9 +706,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers()
-
-    deploy_parser = subparsers.add_parser('deploy')
-    deploy_parser.set_defaults(func=run_deploy)
 
     install_parser = subparsers.add_parser('install')
     install_parser.set_defaults(func=run_install)

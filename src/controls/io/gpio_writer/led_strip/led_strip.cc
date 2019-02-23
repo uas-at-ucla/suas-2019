@@ -104,6 +104,22 @@ bool LedStrip::Render() {
     }
   }
 
+  // Override everything and rapidly flash if there hasn't been an IMU message
+  // from the Pixhawk recently.
+  if(last_imu_ + kImuTimeout < ::lib::phased_loop::GetCurrentTime()) {
+    bool should_light = ::std::fmod(::lib::phased_loop::GetCurrentTime(),
+                                      1.0 / kFlightControllerDisconnectBlinkFrequency) <
+                              1.0 / (2 * kFlightControllerDisconnectBlinkFrequency);
+
+    for(int i = 0;i < kNumberOfLeds;i++) {
+      if(should_light) {
+        SetLed(i, 255, 0, 0);
+      } else {
+        SetLed(i, 255, 255, 255);
+      }
+    }
+  }
+
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   ws2811_return_t ret = ws2811_render(&leds_);
 
