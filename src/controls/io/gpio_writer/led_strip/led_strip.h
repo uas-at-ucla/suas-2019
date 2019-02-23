@@ -23,7 +23,7 @@ static const int kLedStripType = WS2811_STRIP_GBR;
 static constexpr double kDisarmedBlinkFrequency = 0.5;
 static constexpr double kBatteryBlinkFrequency = 1.5;
 static constexpr double kImuTimeout = 1.0 / 10;
-static constexpr double kFlightControllerDisconnectBlinkFrequency = 5;
+static constexpr double kFlightControllerDisconnectBlinkFrequency = 4;
 } // namespace
 
 class LedStrip {
@@ -40,6 +40,7 @@ class LedStrip {
 
   void set_armed(bool armed) { armed_ = armed; }
   void set_last_imu(double last_imu) { last_imu_ = last_imu; }
+  void set_alarm(bool alarm) { alarm_ = alarm; }
 
  private:
   void SetLed(int led, unsigned char r, unsigned char g, unsigned char b);
@@ -52,6 +53,7 @@ class LedStrip {
   float battery_percentage_;
   bool armed_;
   double last_imu_;
+  bool alarm_;
 };
 
 } // namespace led_strip

@@ -6,7 +6,7 @@ namespace io {
 namespace gpio_writer {
 namespace led_strip {
 
-LedStrip::LedStrip() : battery_percentage_(0.0), armed_(false) {
+LedStrip::LedStrip() : battery_percentage_(0.0), armed_(false), alarm_(false) {
   led_pixels_ =
       static_cast<ws2811_led_t *>(malloc(sizeof(ws2811_led_t) * kNumberOfLeds));
 
@@ -90,16 +90,18 @@ bool LedStrip::Render() {
     bool blinky = ::std::fmod(battery_percentage_, 0.2) < 0.1;
 
     for (int i = 0; i < 5; i++) {
+      int current_led = 9 - i;
+
       bool should_blink = i == solid && blinky &&
                           ::std::fmod(::lib::phased_loop::GetCurrentTime(),
                                       1.0 / kBatteryBlinkFrequency) <
                               1.0 / (2 * kBatteryBlinkFrequency);
       if (i < solid || should_blink) {
         // LED should be solid.
-        SetLed(9 - i, 0, 0, 255);
+        SetLed(current_led, 0, 0, 255);
       } else {
         // LED should be off.
-        SetLed(9 - i, 0, 0, 0);
+        SetLed(current_led, 0, 0, 0);
       }
     }
   }
@@ -115,6 +117,11 @@ bool LedStrip::Render() {
       if(should_light) {
         SetLed(i, 255, 0, 0);
       } else {
+        SetLed(i, 255, 255, 255);
+      }
+
+      // If an alarm is active, override the current LED value.
+      if(alarm_) {
         SetLed(i, 255, 255, 255);
       }
     }

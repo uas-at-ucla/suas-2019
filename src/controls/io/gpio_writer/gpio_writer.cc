@@ -40,10 +40,12 @@ GpioWriter::GpioWriter() :
 void GpioWriter::WriterThread() {
   while (::ros::ok()) {
     // Write out the alarm signal.
-    bool should_alarm =
-        alarm_.ShouldAlarm() || (should_override_alarm_ &&
+    bool should_override_alarm = (should_override_alarm_ &&
                                  last_alarm_override_ + kAlarmOverrideTimeGap >
                                      ::lib::phased_loop::GetCurrentTime());
+    bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
+
+    led_strip_.set_alarm(should_override_alarm);
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
