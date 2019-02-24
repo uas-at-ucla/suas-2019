@@ -1,6 +1,3 @@
-// Copied from src/controls/ground_server/timeline
-// Ideally we wouldn't need to have two copies, but for now it's here so we can test with it easily
-
 syntax = "proto2";
 
 package src.controls.ground_server.timeline;
@@ -20,6 +17,7 @@ message Position3D {
 message StaticObstacle {
   required Position2D        location                                      = 1;
   required double            cylinder_radius                               = 2;
+  required double            cylinder_height                               = 3;
 }
 
 // Ground language /////////////////////////////////////////////////////////////

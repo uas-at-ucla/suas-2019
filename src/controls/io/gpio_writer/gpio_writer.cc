@@ -23,7 +23,9 @@ GpioWriter::GpioWriter() :
                                    &GpioWriter::BatteryStatusReceived, this)),
     state_subscriber_(
         ros_node_handle_.subscribe(kRosStateTopic, kRosMessageQueueSize,
-                                   &GpioWriter::StateReceived, this)) {
+                                   &GpioWriter::StateReceived, this)),
+    imu_subscriber_(ros_node_handle_.subscribe(
+        kRosImuTopic, kRosMessageQueueSize, &GpioWriter::ImuReceived, this)) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.
@@ -31,22 +33,18 @@ GpioWriter::GpioWriter() :
   pinMode(kAlarmGPIOPin, OUTPUT);
 #endif
 
-  alarm_.AddAlert({kAlarmChirpDuration, 0});
+  // alarm_.AddAlert({kAlarmChirpDuration, 0});
 }
 
 void GpioWriter::WriterThread() {
   while (::ros::ok()) {
-    ROS_INFO_STREAM_THROTTLE(kWriterThreadLogIntervalSeconds,
-                             "gpio_writer wrote "
-                                 << kWriterThreadLogIntervalSeconds
-                                 << " seconds of data to actuators @ "
-                                 << kWriterPhasedLoopFrequency << "hz");
-
     // Write out the alarm signal.
-    bool should_alarm =
-        alarm_.ShouldAlarm() || (should_override_alarm_ &&
-                                 last_alarm_override_ + kAlarmOverrideTimeGap >
-                                     ::lib::phased_loop::GetCurrentTime());
+    bool should_override_alarm = (should_override_alarm_ &&
+                                  last_alarm_override_ + kAlarmOverrideTimeGap >
+                                      ::lib::phased_loop::GetCurrentTime());
+    bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
+
+    led_strip_.set_alarm(should_override_alarm);
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
@@ -120,13 +118,18 @@ void GpioWriter::StateReceived(const ::mavros_msgs::State state) {
 
     if (state.armed) {
       // Send out the armed chirp.
-      alarm_.AddAlert({kAlarmChirpDuration, 0});
+      // alarm_.AddAlert({kAlarmChirpDuration, 0});
     }
 
     did_arm_ = state.armed;
   }
 
   led_strip_.set_armed(state.armed);
+}
+
+void GpioWriter::ImuReceived(const ::sensor_msgs::Imu imu) {
+  (void)imu;
+  led_strip_.set_last_imu(::lib::phased_loop::GetCurrentTime());
 }
 
 } // namespace gpio_writer

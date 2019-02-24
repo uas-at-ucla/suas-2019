@@ -24,10 +24,9 @@ do
       --out udp:0.0.0.0:8084 \
       --out tcp:$DOCKER_IP:8090 \
       --baud 921600
-
-    exit 0
   else
     echo "Waiting for Pixhawk sim to start..."
-    sleep 1
   fi
+
+  sleep 1
 done
