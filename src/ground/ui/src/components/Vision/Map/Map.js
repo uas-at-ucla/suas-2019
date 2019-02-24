@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import CustomMarker from './CustomMarker';
 import { Marker } from 'react-google-maps';
-import Modal from 'react-modal';
 
 import GoogleMap from '../../Utils/GoogleMap/GoogleMap';
 
