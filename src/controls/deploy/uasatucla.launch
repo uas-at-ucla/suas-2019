@@ -1,0 +1,19 @@
+<launch>
+  <node name="mavlink_router"
+        type="mavlink_router.sh"
+        pkg="uasatucla_controls"
+        output="log"
+        respawn="true" />
+
+  <node name="ros_bagger"
+        type="ros_bagger.sh"
+        pkg="uasatucla_controls"
+        output="log"
+        respawn="true" />
+
+  <include file="$(find mavros)/launch/px4.launch">
+    <arg name="log_output" value="log" />
+    <arg name="respawn_mavros" value="true" />
+  </include>
+</launch>
+

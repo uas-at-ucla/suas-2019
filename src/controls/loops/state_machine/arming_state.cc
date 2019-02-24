@@ -14,9 +14,9 @@ void ArmingState::Handle(::src::controls::Sensors &sensors,
 
   // Check if we have GPS.
   if (sensors.last_gps() < sensors.time() - 0.5) {
-    LOG_LINE("can't arm; no GPS "
-             << "(last gps: " << sensors.last_gps()
-             << " current time: " << sensors.time());
+    //  LOG_LINE("can't arm; no GPS "
+    //           << "(last gps: " << sensors.last_gps()
+    //           << " current time: " << sensors.time());
 
     output.set_state(STANDBY);
   }

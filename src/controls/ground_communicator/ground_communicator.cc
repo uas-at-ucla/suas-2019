@@ -24,7 +24,7 @@ GroundCommunicator::GroundCommunicator() :
   socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
-  LOG_LINE("ground_communicator started.");
+  // LOG_LINE("ground_communicator started.");
   SetGoal(INIT);
 
   ::std::thread ground_socket_thread(connect);
@@ -35,12 +35,18 @@ void GroundCommunicator::ConnectToGround() {
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   client_.connect("http://192.168.2.20:8081");
 #else
-  client_.connect("http://0.0.0.0:8081");
+  // client_.connect("http://0.0.0.0:8081");
+  client_.connect("http://192.168.2.20:8081");
 #endif
 }
 
 void GroundCommunicator::Run() {
   running_ = true;
+
+  sensors_receiver_.Connect();
+  goal_receiver_.Connect();
+  output_receiver_.Connect();
+  goal_sender_.Connect();
 
   while (running_) {
     RunIteration();
@@ -67,35 +73,41 @@ void GroundCommunicator::RunIteration() {
   bool send_sensors = false;
   bool send_goal = false;
   bool send_output = false;
+  (void)send_sensors;
+  (void)send_goal;
+  (void)send_output;
 
   // Fetch the latest data from queues with messages.
   if (sensors_receiver_.HasMessages()) {
-    send_sensors = true;
-
     ::src::controls::UasMessage message = sensors_receiver_.GetLatest();
     ::src::controls::Sensors sensors = message.sensors();
-    ::std::string sensors_serialized;
-    sensors.SerializeToString(&sensors_serialized);
 
-    telemetry->get_map()["sensors"] = ::sio::string_message::create(
-        ::lib::base64_tools::Encode(sensors_serialized));
+    if (sensors.has_latitude()) { // sometimes all the fields are missing???
+      send_sensors = true;
 
-    if (current_time - last_serial_telemetry_sent_ > 0.3) {
-      // Time to send another serial telemetry message.
-      ::lib::serial_comms::SerialCommsMessage message;
-      message.set_latitude(sensors.latitude());
-      message.set_longitude(sensors.longitude());
-      message.set_altitude(sensors.relative_altitude());
-      message.set_heading(sensors.heading());
+      ::std::string sensors_serialized;
+      sensors.SerializeToString(&sensors_serialized);
 
-      ::std::cout << "Lat: " << message.latitude()
-                  << " Lng: " << message.longitude()
-                  << " Alt: " << message.altitude()
-                  << " Heading: " << message.heading() << ::std::endl;
+      telemetry->get_map()["sensors"] = ::sio::string_message::create(
+          ::lib::base64_tools::Encode(sensors_serialized));
 
-      serial_comms_bridge_.SendData(message);
+      if (current_time - last_serial_telemetry_sent_ > 0.3) {
+        // Time to send another serial telemetry message.
+        ::lib::serial_comms::SerialCommsMessage message;
+        message.set_latitude(sensors.latitude());
+        message.set_longitude(sensors.longitude());
+        message.set_altitude(sensors.relative_altitude());
+        message.set_heading(sensors.heading());
 
-      last_serial_telemetry_sent_ = current_time;
+        ::std::cout << "Lat: " << message.latitude()
+                    << " Lng: " << message.longitude()
+                    << " Alt: " << message.altitude()
+                    << " Heading: " << message.heading() << ::std::endl;
+
+        serial_comms_bridge_.SendData(message);
+
+        last_serial_telemetry_sent_ = current_time;
+      }
     }
   }
 
@@ -121,10 +133,10 @@ void GroundCommunicator::RunIteration() {
         ::lib::base64_tools::Encode(output_serialized));
   }
 
-  LOG_LINE("sending telemetry: "               //
-           << (send_sensors ? "sensors " : "") //
-           << (send_goal ? "goal " : "")       //
-           << (send_output ? "output " : ""));
+  // LOG_LINE("sending telemetry: "               //
+  //         << (send_sensors ? "sensors " : "") //
+  //         << (send_goal ? "goal " : "")       //
+  //         << (send_output ? "output " : ""));
 
   // Grab information about the latest mission.
   ::lib::mission_manager::Mission mission =
@@ -141,14 +153,13 @@ void GroundCommunicator::RunIteration() {
   all_data->get_map()["telemetry"] = telemetry;
   all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
 
-  client_.socket()->emit("telemetry", all_data);
+  client_.socket("drone")->emit("telemetry", all_data);
 }
 
 void GroundCommunicator::OnConnect() {
-  LOG_LINE("Someone connected to ground_communicator");
-  client_.socket()->emit("join_room", sio::string_message::create("drone"));
+  // LOG_LINE("Someone connected to ground_communicator");
 
-  client_.socket()->on(
+  client_.socket("drone")->on(
       "drone_execute_commands",
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
@@ -174,7 +185,7 @@ void GroundCommunicator::OnConnect() {
             SetState("MISSION");
           }));
 
-  client_.socket()->on(
+  client_.socket("drone")->on(
       "interop_data",
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
@@ -197,8 +208,8 @@ void GroundCommunicator::OnConnect() {
             mission_message_queue_sender_.SendData(ground_data);
           }));
 
-  client_.socket()->on(
-      "drone_set_state",
+  client_.socket("drone")->on(
+      "CHANGE_DRONE_STATE",
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
               bool isAck, ::sio::message::list &ack_resp) {
@@ -206,7 +217,7 @@ void GroundCommunicator::OnConnect() {
             (void)isAck;
             (void)ack_resp;
 
-            SetState(data->get_map()["state"]->get_string());
+            SetState(data->get_string());
           }));
 }
 
@@ -249,7 +260,7 @@ void GroundCommunicator::SetGoal(GoalState new_state) {
     case LAND:
       goal_.set_run_mission(false);
       goal_.set_trigger_land(time);
-      LOG_LINE("GOT LAND @ TIME " << time);
+      //    LOG_LINE("GOT LAND @ TIME " << time);
       break;
 
     case FAILSAFE:
@@ -266,47 +277,47 @@ void GroundCommunicator::SetGoal(GoalState new_state) {
 
     case TAKEOFF:
       goal_.set_trigger_takeoff(time);
-      LOG_LINE("GOT TAKEOFF @ TIME " << time);
+      //    LOG_LINE("GOT TAKEOFF @ TIME " << time);
       break;
 
     case HOLD:
       goal_.set_trigger_hold(time);
-      LOG_LINE("GOT HOLD @ TIME " << time);
+      //    LOG_LINE("GOT HOLD @ TIME " << time);
       break;
 
     case OFFBOARD:
       goal_.set_trigger_offboard(time);
-      LOG_LINE("GOT OFFBOARD @ TIME " << time);
+      //    LOG_LINE("GOT OFFBOARD @ TIME " << time);
       break;
 
     case RTL:
       goal_.set_trigger_rtl(time);
-      LOG_LINE("GOT RTL @ TIME " << time);
+      //    LOG_LINE("GOT RTL @ TIME " << time);
       break;
 
     case ARM:
       goal_.set_trigger_arm(time);
-      LOG_LINE("GOT ARM @ TIME " << time);
+      //    LOG_LINE("GOT ARM @ TIME " << time);
       break;
 
     case DISARM:
       goal_.set_trigger_disarm(time);
-      LOG_LINE("GOT DISARM @ TIME " << time);
+      //    LOG_LINE("GOT DISARM @ TIME " << time);
       break;
 
     case ALARM:
       goal_.set_trigger_alarm(time);
-      LOG_LINE("GOT ALARM @ TIME " << time);
+      //    LOG_LINE("GOT ALARM @ TIME " << time);
       break;
 
     case BOMB_DROP:
       goal_.set_trigger_bomb_drop(time);
-      LOG_LINE("GOT BOMB DROP @ TIME " << time);
+      //    LOG_LINE("GOT BOMB DROP @ TIME " << time);
       break;
 
     case DSLR:
       goal_.set_trigger_dslr(time);
-      LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
+      //    LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
       break;
   }
 }

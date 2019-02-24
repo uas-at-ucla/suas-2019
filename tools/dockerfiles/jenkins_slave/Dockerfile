@@ -32,18 +32,20 @@ RUN apt-get install -y -qq                                                     \
   ca-certificates                                                              \
   ca-certificates-java                                                         \
   netcat                                                                       \
-  openjdk-10-jdk                                                               \
+  openjdk-11-jdk                                                               \
   openssh-client                                                               \
   openssh-server                                                               \
   python2.7                                                                    \
   software-properties-common                                                   \
-  tmux
+  tmux                                                                         \
+  htop                                                                         \
+  bmon                                                                         \
+  nmap                                                                         \
+  tree                                                                         \
+  sudo                                                                         \
+  vim
 
 RUN apt upgrade -y -qq
-
-# Fix git certificate bug with open JDK. #######################################
-RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
-  /etc/java-10-openjdk/security/java.security
 
 # Install docker ###############################################################
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | apt-key add -
@@ -59,6 +61,7 @@ RUN apt-get install -y -qq docker-ce
 RUN useradd -ms /bin/bash jenkins_uasatucla
 RUN echo 'jenkins_uasatucla:spinny' | chpasswd
 RUN usermod -aG docker jenkins_uasatucla
+RUN usermod -aG sudo jenkins_uasatucla
 
 WORKDIR /home/jenkins_uasatucla/
 

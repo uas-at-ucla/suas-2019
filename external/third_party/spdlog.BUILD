@@ -6,6 +6,7 @@ cc_library(
   ]),
   hdrs = glob([
     'include/**/*.h',
+    'include/spdlog/details/mpmc_bounded_q.h',
     'include/spdlog/fmt/bundled/format.cc',
   ]),
   includes = [

@@ -5,18 +5,20 @@ namespace controls {
 namespace ground_server {
 namespace timeline {
 namespace context_visitors {
+
 namespace {
 constexpr double kLatitudeInf = 10000.;
 }
 
 ContextVisitor::ContextVisitor() {}
 
-void ContextVisitor::Process(::std::string input) {
+void ContextVisitor::Process(::std::string input, Position3D drone_position) {
   GroundProgram input_program;
+
   try {
     if (input_program.ParseFromString(input)) {
       // if parsing is successful
-      Visit(&input_program);
+      Visit(&input_program, drone_position);
     } else {
       throw "cannot parse input string";
     }
@@ -25,8 +27,12 @@ void ContextVisitor::Process(::std::string input) {
   }
 }
 
+::std::vector<Position3D> ContextVisitor::getAvoidancePath() {
+  return avoidance_path_;
+}
+
 // Visitors ////////////////////////////////////////////////////////////////////
-void ContextVisitor::Visit(GroundProgram *n) {
+void ContextVisitor::Visit(GroundProgram *n, Position3D drone_position) {
   // get the obstacles from n, store into visitor
   this->static_obstacles_ = n->static_obstacles();
   // get field boundary from n, store into visitor
@@ -35,15 +41,15 @@ void ContextVisitor::Visit(GroundProgram *n) {
   // Visit all commands.
   for (int i = 0; i < n->commands_size(); i++) {
     GroundCommand *current_command = n->mutable_commands(i);
-    Visit(current_command);
+    Visit(current_command, drone_position);
   }
 }
 
-void ContextVisitor::Visit(GroundCommand *n) {
+void ContextVisitor::Visit(GroundCommand *n, Position3D drone_position) {
   // Select the specific command that this generic command type encloses, if
   // any.
   if (n->has_waypoint_command()) {
-    Visit(n->mutable_waypoint_command());
+    Visit(n->mutable_waypoint_command(), drone_position);
   } else if (n->has_ugv_drop_command()) {
     Visit(n->mutable_ugv_drop_command());
   } else if (n->has_survey_command()) {
@@ -55,7 +61,7 @@ void ContextVisitor::Visit(GroundCommand *n) {
   }
 }
 
-void ContextVisitor::Visit(WaypointCommand *n) {
+void ContextVisitor::Visit(WaypointCommand *n, Position3D drone_position) {
 
   // Create a GotoCommand to fly to the waypoint while avoiding obstacles on the
   // field.
@@ -63,10 +69,12 @@ void ContextVisitor::Visit(WaypointCommand *n) {
     GotoCommand *goto_command = new GotoCommand();
     goto_command->mutable_goal()->CopyFrom(n->goal());
     if (!WithinBoundary(goto_command->mutable_goal())) {
-      // if going out of bounds, throw exception
-      throw "going out of bounds";
+      // if destination is out of bounds, throw exception
+      throw "destination out of bounds";
+    } else {
+      Visit(goto_command, drone_position);
     }
-    delete (goto_command);
+    delete goto_command;
   }
 }
 
@@ -88,6 +96,50 @@ void ContextVisitor::Visit(OffAxisCommand *n) {
 }
 
 void ContextVisitor::Visit(WaitCommand *n) { (void)n; }
+
+void ContextVisitor::Visit(GotoCommand *n, Position3D drone_position) {
+  lib::rrt_avoidance::RRTAvoidance rrt_avoidance_;
+  // Go to a certain location on the field while avoiding obstacles by
+  // calculating a safe path to travel
+  ::lib::Position3D start = {drone_position.latitude(),
+                             drone_position.longitude(),
+                             drone_position.altitude()};
+  ::lib::Position3D end = {n->goal().latitude(), n->goal().longitude(),
+                           n->goal().altitude()};
+  Obstacles obstacles;
+  obstacles.mutable_static_obstacles()->CopyFrom(this->static_obstacles_);
+
+  // Prints additional info
+  // using namespace std;
+  // if (obstacles.static_obstacles_size() > 0) {
+  //   cout << obstacles.static_obstacles(0).cylinder_radius() << endl;
+  //   cout << obstacles.static_obstacles(0).location().latitude() << ' '
+  //        << obstacles.static_obstacles(0).location().longitude() << endl;
+  // }
+  // cout << start.latitude << ' ' << start.longitude << ' ' << start.altitude
+  //      << endl;
+  // cout << end.latitude << ' ' << end.longitude << ' ' << end.altitude <<
+  // endl;
+
+  ::std::vector<::lib::Position3D> current_avoidance_path =
+      rrt_avoidance_.Process(start, end, obstacles);
+
+  // checks if the flight path is within the flight boundary
+  Position3D prev_position = drone_position;
+  Position3D cur_position;
+  for (lib::Position3D goto_step : current_avoidance_path) {
+    cur_position.set_latitude(goto_step.latitude);
+    cur_position.set_longitude(goto_step.longitude);
+    cur_position.set_altitude(goto_step.altitude);
+
+    if (!WithinBoundary(&prev_position, &cur_position)) {
+      throw "calculated avoidance path out of bounds";
+    }
+    // add step to overall avoidance path
+    avoidance_path_.push_back(cur_position);
+    prev_position = cur_position;
+  }
+}
 
 bool ContextVisitor::WithinBoundary(Position2D *p1, Position2D *p2) {
   ::google::protobuf::RepeatedPtrField<Position2D> field_boundary =
@@ -112,10 +164,23 @@ bool ContextVisitor::WithinBoundary(Position2D *p1, Position2D *p2) {
   }
   return true;
 }
+bool ContextVisitor::WithinBoundary(Position3D *p1, Position3D *p2) {
+  Position2D *p1_2D = new Position2D();
+  Position2D *p2_2D = new Position2D();
+  p1_2D->set_latitude(p1->latitude());
+  p1_2D->set_longitude(p1->longitude());
+  p2_2D->set_latitude(p2->latitude());
+  p2_2D->set_longitude(p2->longitude());
+
+  bool within = ContextVisitor::WithinBoundary(p1_2D, p2_2D);
+  delete (p1_2D);
+  delete (p2_2D);
+
+  return within;
+}
 bool ContextVisitor::WithinBoundary(Position3D *p) {
   // check if a 3D point is within the flight boundary, by converting it to a 2D
-  // point, considering only latitude and longitude, assuming that the points in
-  // flight boundary are given in CW order
+  // point, considering only latitude and longitude
   Position2D *p_2D = new Position2D();
   p_2D->set_latitude(p->latitude());
   p_2D->set_longitude(p->longitude());

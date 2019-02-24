@@ -1,9 +1,6 @@
 #!/bin/bash
 
-if [ $(uname -s) == "Darwin" ]
-then
-  source tools/scripts/docker/start_machine_mac.sh
-fi
+source tools/scripts/docker/start_machine_mac.sh
 
 unset ENV_DOCKER_RUNNING_CONTAINER
 unset ENV_DOCKER_CONTAINER
@@ -98,12 +95,13 @@ do
 done
 
 # Build docker container.
-if [[ -z $TRAVIS ]]
-then
-  docker build $BUILD_FLAGS tools/dockerfiles/controls
-else
-  docker build $BUILD_FLAGS tools/dockerfiles/controls > /dev/null
-fi
+docker build $BUILD_FLAGS tools/dockerfiles/controls
+# if [[ -z $TRAVIS ]]
+# then
+#   docker build $BUILD_FLAGS tools/dockerfiles/controls
+# else
+#   docker build $BUILD_FLAGS tools/dockerfiles/controls > /dev/null
+# fi
 
 if [ $? -ne 0 ]
 then
@@ -112,7 +110,7 @@ then
 fi
 
 # Create network for docker container to use.
-docker network create -d bridge uas_bridge > /dev/null 2>&1 || true
+./tools/scripts/docker/create_network.sh > /dev/null 2>&1 || true
 
 mkdir -p tools/cache/bazel
 pwd
@@ -142,19 +140,23 @@ DOCKER_BUILD_CMD="set -x; \
   chown uas /home/uas/.cache; \
   echo STARTED > /tmp/uas_init; \
   sudo -u uas bash -c \"bazel; \
+  source /home/uas/.bashrc; \
+  /opt/ros/melodic/bin/roscore &> /dev/null; \
   sleep infinity\""
 
-docker run \
-  -d \
-  --rm \
-  --net uas_bridge \
-  -v $ROOT_PATH:/home/uas/code_env \
-  -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
-  -e DISPLAY=$DISPLAY \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  --dns 8.8.8.8 \
-  --name uas-at-ucla_controls \
-  uas-at-ucla_controls \
+docker run                          \
+  -d                                \
+  --rm                              \
+  --cap-add=SYS_PTRACE              \
+  --security-opt seccomp=unconfined \
+  --net uas_bridge                  \
+  --ip 192.168.2.21                 \
+  -v $ROOT_PATH:/home/uas/code_env  \
+  -e DISPLAY=$DISPLAY               \
+  -v /tmp/.X11-unix:/tmp/.X11-unix  \
+  --dns 8.8.8.8                     \
+  --name uas-at-ucla_controls       \
+  uas-at-ucla_controls              \
   bash -c "$DOCKER_BUILD_CMD"
 
 echo "Started uas-at-ucla_controls docker image. Waiting for it to boot..."

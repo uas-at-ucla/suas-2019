@@ -25,14 +25,15 @@ void FlightLoop::Run() {
   // Don't allow two instances of the loop to run simultaneously on different
   // threads.
   if (running_) {
-    LOG_LINE("Loop already running.");
+    //  LOG_LINE("Loop already running.");
     return;
   }
   running_ = true;
 
   while (running_) {
+    ::std::cout << "IT " << ::lib::phased_loop::GetCurrentTime() << "\n";
     // Run loop at a set frequency.
-    phased_loop_.SleepUntilNext();
+    phased_loop_.sleep();
 
     // Fetch latest messages.
     if (!sensors_receiver_.HasMessages()) {
@@ -51,15 +52,15 @@ void FlightLoop::Run() {
     }
     ::src::controls::Sensors sensors_message = sensors_uas_message.sensors();
 
+    // Set the current time in inputted sensors message.
+    double current_time = ::lib::phased_loop::GetCurrentTime();
+    sensors_message.set_time(current_time);
+
     ::src::controls::UasMessage goal_uas_message = goal_receiver_.GetLatest();
     if (!goal_uas_message.has_goal()) {
       continue;
     }
     ::src::controls::Goal goal_message = goal_uas_message.goal();
-
-    // Set the current time in inputted sensors message.
-    double current_time = ::lib::phased_loop::GetCurrentTime();
-    sensors_message.set_time(current_time);
 
     // Run control loop iteration.
     ::src::controls::Output output_message =
@@ -78,20 +79,21 @@ FlightLoop::RunIteration(::src::controls::Sensors sensors,
 
   ::src::controls::Output output = GenerateDefaultOutput();
 
-  DumpProtobufMessages(sensors, goal, output);
   state_machine_.Handle(sensors, goal, output);
   WriteActuators(sensors, goal, output);
+  DumpProtobufMessages(sensors, goal, output);
 
   return output;
 }
 
 void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
-  LOG_LINE("Flight Loop dt: " << ::std::setprecision(14)
-                              << sensors.time() - last_loop_ - 0.01);
+  // LOG_LINE("Flight Loop dt: " << ::std::setprecision(14)
+  //                            << sensors.time() - last_loop_ - 0.01);
 
   if (sensors.time() - last_loop_ > 0.01 + 0.002) {
-    LOG_LINE("Flight LOOP RUNNING SLOW: dt: "
-             << std::setprecision(14) << sensors.time() - last_loop_ - 0.01);
+    //  LOG_LINE("Flight LOOP RUNNING SLOW: dt: "
+    //           << std::setprecision(14) << sensors.time() - last_loop_ -
+    //           0.01);
   }
   last_loop_ = sensors.time();
 }
@@ -136,7 +138,7 @@ void FlightLoop::WriteActuators(::src::controls::Sensors &sensors,
     if (!did_alarm_) {
       did_alarm_ = true;
       alarm_.AddAlert({0.30, 0.30});
-      LOG_LINE("Alarm was manually triggered");
+      //    LOG_LINE("Alarm was manually triggered");
     }
   } else {
     did_alarm_ = false;
@@ -195,7 +197,7 @@ void FlightLoop::LogProtobufMessage(::std::string name,
     output << name << "... " << field << "\n";
   }
 
-  LOG_LINE(output.str());
+  // LOG_LINE(output.str());
 }
 
 } // namespace loops

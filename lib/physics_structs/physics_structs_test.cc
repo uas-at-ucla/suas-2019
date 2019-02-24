@@ -38,8 +38,8 @@ TEST(PhysicsStructsTest, VectorOperations) {
 TEST(PhysicsStructsTest, Distance2DLongDistanceTest) {
   double kDistanceTolerance = 5e3;
 
-  Position3D kLosAngelesCoordinate = {40.730610, -73.93524233, 0};
-  Position3D kNewYorkCoordinate = {34.052235, -118.243683, 0};
+  lib::Position3D kLosAngelesCoordinate = {40.730610, -73.93524233, 0};
+  lib::Position3D kNewYorkCoordinate = {34.052235, -118.243683, 0};
   double kDistanceBetweenLosAngelesAndNewYorkInMeters = 3.95026e6;
 
   double calculated_distance =
@@ -54,8 +54,8 @@ TEST(PhysicsStructsTest, Distance2DLongDistanceTest) {
 TEST(PhysicsStructsTest, PointTowardsTest) {
   double kAngleTolerance = 1e-6;
 
-  Position3D start = {0, 0, 0};
-  Position3D end = {1, 1, 0};
+  lib::Position3D start = {0, 0, 0};
+  lib::Position3D end = {1, 1, 0};
 
   Vector3D pointing_to = PointTowards(start, end);
 
