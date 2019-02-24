@@ -3,7 +3,6 @@ syntax = "proto2";
 package src.controls.ground_server.timeline;
 import "lib/mission_manager/mission_commands.proto";
 
-
 // Ground language /////////////////////////////////////////////////////////////
 // This is the timeline representation for a mission, as received from the
 // ground. Ground timeline commands are abstract and should only convey the

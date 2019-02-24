@@ -27,6 +27,8 @@ UAS_AT_UCLA_TEXT = '\033[96m' + \
 
 
 # Script locations.
+GROUND_DOCKER_EXEC_SCRIPT = "./tools/scripts/ground/exec.sh "
+
 DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/controls/run_env.sh "
 DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/px4_simulator/start_sim.sh "
 DOCKER_EXEC_SCRIPT      = "./tools/scripts/controls/exec.sh "
@@ -37,6 +39,7 @@ VISION_DOCKER_RUN_SCRIPT    = "./tools/scripts/docker/vision/docker_run.sh "
 
 CONTROLS_DEPLOY_SCRIPT = "./tools/scripts/controls/deploy.sh "
 CONTROLS_TEST_RRT_AVOIDANCE_SCRIPT = "./bazel-out/k8-fastbuild/bin/lib/rrt_avoidance/rrt_avoidance_test --plot"
+CONTROLS_MAVROS_SCRIPT = "./tools/scripts/controls/run_mavros.sh"
 
 JENKINS_SERVER_START_SCRIPT = "./tools/scripts/jenkins_server/run_jenkins_server.sh "
 JENKINS_SLAVE_START_SCRIPT = "./tools/scripts/jenkins_slave/start_jenkins_slave.sh"
@@ -229,7 +232,7 @@ def run_cmd_exit_failure(cmd):
 
 
 def tmux_cmd(cmd):
-    run_cmd_exit_failure("tmux send-keys \"" + cmd + "\" C-m")
+    run_cmd_exit_failure("tmux send-keys \"unset HISTFILE;" + cmd + "\" C-m")
 
 
 def tmux_move_pane(direction):
@@ -435,6 +438,7 @@ def run_controls_simulate(args):
     shutdown_functions.append(kill_processes_in_uas_env_container)
     shutdown_functions.append(kill_simulator)
     shutdown_functions.append(kill_tmux_session_uas_env)
+    shutdown_functions.append(kill_ground)
 
     run_controls_docker_start(None, show_complete=False)
 
@@ -454,11 +458,6 @@ def run_controls_simulate(args):
     # Build the docker image for our PX4 simulator environment.
     print_update("Building UAS@UCLA software env docker...")
 
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + \
-            "git clone " \
-            "https://github.com/uas-at-ucla/Firmware.git " \
-            "tools/cache/px4_simulator || true")
-
     # Set up tmux panes.
     run_cmd_exit_failure("tmux start-server")
 
@@ -470,8 +469,6 @@ def run_controls_simulate(args):
             "uas_env")
 
     tmux_rename_pane("PX4")
-
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + "rm /tmp/uasatucla_* || true")
 
     sim_command = DOCKER_RUN_SIM_SCRIPT
     mavlink_router_command = "./tools/scripts/px4_simulator/exec_mavlink_router.sh"
@@ -487,10 +484,8 @@ def run_controls_simulate(args):
     tmux_move_pane("right")
     tmux_cmd(mavlink_router_command)
 
-    tmux_new_window("Mavros")
-    tmux_cmd(DOCKER_EXEC_SCRIPT \
-        + "roslaunch mavros px4.launch "
-        + "fcu_url:=\"udp://:8084@0.0.0.0:8084\"")
+    tmux_new_window("MAVROS")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + CONTROLS_MAVROS_SCRIPT)
 
     tmux_new_window("ROS")
     tmux_split("horizontal", 2)
@@ -498,64 +493,10 @@ def run_controls_simulate(args):
     tmux_move_pane("right")
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/io/gpio_writer:gpio_writer")
 
-    # tmux_select_window(0)
+    tmux_new_window("GROUND")
+    tmux_cmd("./uas ground run")
 
-    # run_cmd_exit_failure("tmux split-window -h -p 50 -t uas_env")
-
-    # # Set up right side with 4 panes.
-    # run_cmd_exit_failure("tmux split-window -v -p 75 -t uas_env")
-    # run_cmd_exit_failure("tmux split-window -v -p 66 -t uas_env")
-    # run_cmd_exit_failure("tmux split-window -v -p 50 -t uas_env")
-
-    # # Set up left side with 4 panes
-    # run_cmd_exit_failure("tmux select-pane -t uas_env -L")
-    # run_cmd_exit_failure("tmux split-window -v -p 75 -t uas_env")
-    # run_cmd_exit_failure("tmux split-window -v -p 66 -t uas_env")
-    # run_cmd_exit_failure("tmux split-window -v -p 50 -t uas_env")
-    # run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-    # run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-    # run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-
-    # tmux_move_pane("down")
-    # tmux_cmd(mavlink_router_command)
-    # Run scripts on the left side.
-#     run_cmd_exit_failure("tmux send-keys \"" + sim_command + "\" C-m")
-
-#     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
-
-#     run_cmd_exit_failure("tmux send-keys \"" + mavlink_router_command + "\" C-m")
-
-#     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
-
-#     run_cmd_exit_failure("tmux send-keys \"" + \
-#             DOCKER_EXEC_SCRIPT + " tail -F /tmp/drone_code.csv\" C-m")
-
-#     # Run scripts on the right side.
-#     run_cmd_exit_failure("tmux select-pane -t uas_env -R")
-#     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-#     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-#     run_cmd_exit_failure("tmux select-pane -t uas_env -U")
-
-#     run_cmd_exit_failure("tmux send-keys \"" + \
-#             DOCKER_EXEC_SCRIPT + \
-#             "bazel run //src/controls/loops:flight_loop\" C-m")
-
-#     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
-
-#     run_cmd_exit_failure("tmux send-keys \"" + \
-#             DOCKER_EXEC_SCRIPT + io_command + "\" C-m")
-
-#     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
-
-#     run_cmd_exit_failure("tmux send-keys \"" + \
-#             DOCKER_EXEC_SCRIPT + \
-#             "bazel run //src/controls/ground_communicator:ground_communicator\" C-m")
-
-#     run_cmd_exit_failure("tmux select-pane -t uas_env -D")
-
-#     run_cmd_exit_failure("tmux send-keys \"" + \
-#             DOCKER_EXEC_SCRIPT + \
-#             "./tools/scripts/bazel_run.sh //lib/logger:log_writer\" C-m")
+    tmux_select_window(2)
 
     print_update("\n\nSimulation running! \n" \
             "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
@@ -615,8 +556,8 @@ def run_ground(arg1, args):
     print_update("Running the Ground Station...")
 
     # Run ground.py and pass command line arguments
-    run_cmd_exit_failure("./tools/scripts/ground/exec.sh python3 " \
-           " ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args))
+    run_cmd_exit_failure(GROUND_DOCKER_EXEC_SCRIPT + \
+           "ssh -o StrictHostKeyChecking=no git@github.com || python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args))
 
     kill_ground()
 
@@ -765,9 +706,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     subparsers = parser.add_subparsers()
-
-    deploy_parser = subparsers.add_parser('deploy')
-    deploy_parser.set_defaults(func=run_deploy)
 
     install_parser = subparsers.add_parser('install')
     install_parser.set_defaults(func=run_install)
