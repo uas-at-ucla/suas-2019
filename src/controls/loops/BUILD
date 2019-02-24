@@ -22,7 +22,7 @@ cc_binary(
   ],
   deps = [
     ':flight_loop_lib',
-    '@gtest//:googletest',
+    '@gtest//:gtest',
   ],
 )
 
@@ -37,12 +37,14 @@ cc_library(
   ],
   deps = [
     '//src/controls/ground_server/timeline/executor:executor',
+    '//src/controls/loops/state_machine:state_machine',
     '//src/controls:messages_cpp',
     '//lib/proto_comms:proto_comms',
     '//lib/physics_structs:physics_structs',
-    '//lib/logger:log_sender',
     '//lib/phased_loop:phased_loop',
     '//lib/alarm:alarm',
+    '//lib/ros:ros',
     "@cppzmq//:cppzmq",
+    '@boost//:algorithm',
   ],
 )

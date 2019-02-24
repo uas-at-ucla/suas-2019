@@ -10,6 +10,8 @@ cc_library(
   deps = [
     '@eigen',
     '//lib/motion_profile:motion_profile',
+    '//src/controls/ground_server/timeline:timeline_grammar_cc',
+    '//lib/battery:battery',
   ],
 )
 
@@ -20,6 +22,6 @@ cc_binary(
   ],
   deps = [
     ':drone_plant',
-    '@gtest//:googletest_main',
+    '@gtest//:gtest_main',
   ],
 )

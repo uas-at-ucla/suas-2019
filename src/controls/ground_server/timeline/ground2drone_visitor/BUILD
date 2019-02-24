@@ -8,7 +8,8 @@ cc_library(
     'ground2drone_visitor.h'
   ],
   deps = [
-    '//src/controls/ground_server/timeline:timeline_grammar_cc'
+    '//src/controls/ground_server/timeline:timeline_grammar_cc',
+    '//lib/rrt_avoidance:rrt_avoidance',
   ],
 )
 
@@ -19,6 +20,6 @@ cc_binary(
   ],
   deps = [
     ':ground2drone_visitor',
-    '@gtest//:googletest_main',
+    '@gtest//:gtest_main',
   ],
 )

@@ -8,38 +8,25 @@
 FROM debian:stretch
 
 # Install compilation and testing dependencies #################################
-RUN apt update     -qq                                                      && \
-    apt install -y -qq curl                                                 && \
-    apt install -y -qq gnupg
+RUN apt-get update     -qq                                                  && \
+    apt-get install -y -qq curl                                             && \
+    apt-get install -y -qq                                                     \
+    git                                                                        \
+    gnupg                                                                      \
+    gnupg2
 
-# Add apt repositories containing required packages. ###########################
-#RUN echo "deb http://deb.debian.org/debian buster main contrib non-free\n" \
-#  "deb-src http://deb.debian.org/debian buster main\n\n" \
-#  "deb http://deb.debian.org/debian buster-updates main contrib non-free\n" \
-#  "deb-src http://deb.debian.org/debian buster-updates main\n\n" \
-#  "deb http://deb.debian.org/debian sid main contrib non-free\n" \
-#  "deb-src http://deb.debian.org/debian sid main" > \
-#  /etc/apt/sources.list
-
+# Add apt-get repositories containing required packages. #######################
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash -
 RUN echo "deb http://deb.debian.org/debian testing main" \
   | tee /etc/apt/sources.list.d/python3_6.list
 RUN curl https://bazel.build/bazel-release.pub.gpg | apt-key add -
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
   "stable jdk1.8" | tee /etc/apt/sources.list.d/bazel.list
 
-RUN apt update     -qq                                                      && \
-    apt upgrade -y -qq
-
 # Install apt dependencies. ####################################################
-RUN apt-get update                                                          && \
-  apt install -y                                                               \
-    ant                                                                        \
-    autoconf                                                                   \
-    autoconf                                                                   \
-    automake                                                                   \
-    bazel                                                                      \
+RUN apt-get update -qq                                                      && \
+    apt-get upgrade -y -qq                                                  && \
+    apt-get install -y                                                         \
     bmon                                                                       \
     build-essential                                                            \
     ca-certificates-java                                                       \
@@ -65,8 +52,8 @@ RUN apt-get update                                                          && \
     libyajl-dev                                                                \
     libz-dev                                                                   \
     make                                                                       \
-    nodejs                                                                     \
-    openjdk-10-jdk                                                             \
+    nmap                                                                       \
+    openjdk-11-jdk                                                             \
     pkg-config                                                                 \
     protobuf-compiler                                                          \
     python2.7                                                                  \
@@ -78,33 +65,18 @@ RUN apt-get update                                                          && \
     python-matplotlib                                                          \
     python-empy                                                                \
     python-jinja2                                                              \
-    ruby                                                                       \
     screen                                                                     \
     sudo                                                                       \
     tmux                                                                       \
     uthash-dev                                                                 \
+    unzip                                                                      \
     vim
-
-# May need these dependencies later:
-# libgazebo7-dev
-# libopencv-dev
-# libeigen3-dev
-# liblz4-dev
-# lib32stdc++6
-
-RUN apt upgrade -y -qq
-
-# Fix git certificate bug with open JDK. #######################################
-RUN sed -i -e 's/keystore.type=pkcs12/keystore.type=jks/g' \
-  /etc/java-10-openjdk/security/java.security
-RUN rm /etc/ssl/certs/java/cacerts
-RUN update-ca-certificates -f
 
 # Install pip and python dependencies. #########################################
 RUN curl https://bootstrap.pypa.io/get-pip.py | python2.7
-RUN curl https://bootstrap.pypa.io/get-pip.py | python3.6
+RUN curl https://bootstrap.pypa.io/get-pip.py | python3.7
 RUN pip2.7 install --upgrade pip                                            && \
-    pip3.6 install --upgrade pip
+    pip3.7 install --upgrade pip
 
 # Set up workspace. ############################################################
 # Fix xlocale.h renamed to locale.h
@@ -119,7 +91,7 @@ RUN usermod -aG sudo uas
 # User env setup. ##############################################################
 RUN mkdir /external_libs
 
-RUN apt install -y openssh-client openssh-server
+RUN apt-get install -y openssh-client openssh-server
 
 USER uas
 RUN mkdir -p /home/uas/code_env
@@ -155,7 +127,8 @@ RUN pip2.7 install --user                                                      \
   Flask-SocketIO==2.9.2                                                        \
   futures==3.1.1                                                               \
   socketIO-client==0.7.2                                                       \
-  numpy==1.15.2                                                                \
+  numpy==1.16                                                                  \
+  shap==0.23.0                                                                 \
   empy==3.3.2                                                                  \
   toml==0.9.4                                                                  \
   eventlet==0.23.0                                                             \
@@ -163,16 +136,39 @@ RUN pip2.7 install --user                                                      \
   pyzmq==17.0.0                                                                \
   zmq==0.0.0
 
+RUN rm -rf /home/uas/mavlink-router
+
+# Use a stable version of bazel. ###############################################
+WORKDIR /tmp
+USER root
+RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.22.0/bazel_0.22.0-linux-x86_64.deb > bazel_0.22.0-linux-x86_64.deb
+RUN apt-get install -y bash-completion
+RUN dpkg -i bazel_0.22.0-linux-x86_64.deb
+
+#RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
+
+# ROS dependencies.
+RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu stretch main" > /etc/apt/sources.list.d/ros-latest.list'
+RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
+RUN apt-get update && apt-get install -y ros-melodic-ros-base ros-melodic-mavros
+
+RUN printf "source /opt/ros/melodic/setup.bash" > /home/uas/.bashrc
+
+WORKDIR /tmp
+RUN wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/install_geographiclib_datasets.sh && \
+  chmod +x install_geographiclib_datasets.sh && \
+  ./install_geographiclib_datasets.sh
+
+USER uas
+RUN ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+USER root
+
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
 
-RUN rm -rf /home/uas/mavlink-router
+ENV ROS_MASTER_URI http://0.0.0.0:11311
 
 EXPOSE 8085/udp
 EXPOSE 8086/udp
 EXPOSE 8090/udp
 EXPOSE 8091/udp
-
-# Set user to root so that we can set the appropriate permissions for file #####
-# access later on. #############################################################
-USER root

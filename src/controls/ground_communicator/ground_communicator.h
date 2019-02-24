@@ -15,11 +15,9 @@
 #include "zmq.hpp"
 
 #include "lib/base64_tools/base64_tools.h"
-#include "lib/logger/log_sender.h"
 #include "lib/phased_loop/phased_loop.h"
 #include "lib/proto_comms/proto_comms.h"
 #include "lib/serial_comms/serial_comms_bridge.h"
-#include "src/controls/io/io.h"
 #include "src/controls/loops/flight_loop.h"
 #include "src/controls/messages.pb.h"
 
@@ -81,7 +79,6 @@ class GroundCommunicator {
   ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
       sensors_receiver_;
   ::lib::proto_comms::ProtoReceiver<::src::controls::Goal> goal_receiver_;
-  ::lib::proto_comms::ProtoReceiver<::src::controls::Status> status_receiver_;
   ::lib::proto_comms::ProtoReceiver<::src::controls::Output> output_receiver_;
 
   ::lib::proto_comms::ProtoSender<::src::controls::Goal> goal_sender_;

@@ -14,7 +14,7 @@ then
     if [ $? -ne 0 ]
     then
       # Script must be able to ask for sudo privileges to run properly.
-      if [ ! -t 1 ]
+      if [ ! -t 0 ]
       then
         echo "Run ./tools/scripts/docker/start_machine_mac.sh to start docker VM."
         exit 1
@@ -28,6 +28,7 @@ then
       VBoxManage controlvm "uas-env" natpf1 "ground_ui,tcp,,3000,,3000"
       VBoxManage controlvm "uas-env" natpf1 "ground_server,tcp,,8081,,8081"
       VBoxManage controlvm "uas-env" natpf1 "interop,tcp,,8000,,8000"
+      VBoxManage controlvm "uas-env" natpf1 "vision_server,tcp,,8099,,8099"
       docker-machine-nfs uas-env --shared-folder=$(pwd) -f --nfs-config="-alldirs -mapall=$(id -u):20"
       echo ""
       echo "Started uas-env docker machine. To stop it, run \"docker-machine stop uas-env\""
@@ -43,6 +44,4 @@ then
     fi
     eval $(docker-machine env uas-env)
   fi
-else
-  echo "This script should only be run on MacOS."
 fi

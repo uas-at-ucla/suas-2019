@@ -56,17 +56,16 @@ RUN apt-get install -y                                                         \
   vim
 
 # Set up Oracle Java8. #########################################################
-RUN add-apt-repository                                                         \
-     "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"     && \
-    gpg --keyserver pgpkeys.mit.edu --recv-key C2518248EEA14886             && \
-    gpg -a --export C2518248EEA14886                                         | \
-    sudo apt-key add -                                                      && \
+COPY java.key /tmp/java.key
+RUN cat /tmp/java.key && apt-key add /tmp/java.key
+RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1            \
+      select true | debconf-set-selections                                  && \
     apt-get update                                                          && \
-    echo debconf shared/accepted-oracle-license-v1-1 select true             | \
-    debconf-set-selections                                                  && \
-    apt-get install -y                                                         \
-      oracle-java8-installer
-
+    apt-get install -y software-properties-common                           && \
+    add-apt-repository -y ppa:webupd8team/java                              && \
+    apt-get update                                                          && \
+    apt-get install -y oracle-java8-installer                               && \
+    rm -rf /var/cache/oracle-jdk8-installer
 
 # Set up workspace. ############################################################
 RUN useradd -ms /bin/bash uas
@@ -76,7 +75,7 @@ RUN usermod -aG sudo uas
 
 # User env setup. ##############################################################
 RUN apt-get install -y \
-bzip2 \
+    bzip2 \
     ca-certificates \
     ccache \
     cmake \
@@ -105,7 +104,7 @@ bzip2 \
     xsltproc \
     zip
 
-RUN python -m pip install --upgrade \
+RUN python -m pip install --upgrade pip \
       && pip install setuptools wheel \
       && pip install argparse coverage jinja2 empy numpy requests serial toml pyyaml cerberus
 

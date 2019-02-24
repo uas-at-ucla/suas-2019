@@ -1,13 +1,61 @@
 #!/bin/bash
 
-if [ $(uname -s) == "Darwin" ]
-then
-  source tools/scripts/docker/start_machine_mac.sh
-fi
+source tools/scripts/docker/start_machine_mac.sh
 
 unset ENV_DOCKER_RUNNING_CONTAINER
 unset ENV_DOCKER_CONTAINER
 unset RUNNING_DOCKER_CONTAINERS
+
+# Check if Dockerfile was updated, indicating that the existing docker container
+# needs to be killed.
+mkdir -p tools/cache/checksums
+CHECKSUM=$(md5sum tools/dockerfiles/controls/Dockerfile)
+MATCH=0
+
+if [ -f tools/cache/checksums/controls_dockerfile.md5 ]
+then
+  LAST_CHECKSUM=$(cat tools/cache/checksums/controls_dockerfile.md5)
+
+  CHECKSUM=$(echo -e "${CHECKSUM}" | tr -d '[:space:]')
+  LAST_CHECKSUM=$(echo -e "${LAST_CHECKSUM}" | tr -d '[:space:]')
+
+  if [ "$CHECKSUM" = "$LAST_CHECKSUM" ]
+  then
+    MATCH=1
+  fi
+fi
+
+if [ $MATCH -eq 0 ]
+then
+  RUNNING_DOCKER_CONTAINERS=$(docker ps \
+    --filter name=uas-at-ucla_controls \
+    --filter status=running \
+    --format "{{.ID}}" \
+    --latest \
+  )
+
+  if [ ! -z $RUNNING_DOCKER_CONTAINERS ]
+  then
+    echo "controls dockerfile updated; killing existing container"
+
+    docker kill $RUNNING_DOCKER_CONTAINERS
+
+    while [ ! -z $RUNNING_DOCKER_CONTAINERS ]
+    do
+      RUNNING_DOCKER_CONTAINERS=$(docker ps \
+        --filter name=uas-at-ucla_controls \
+        --filter status=running \
+        --format "{{.ID}}" \
+        --latest \
+      )
+
+      sleep 0.25
+    done
+  fi
+
+  CHECKSUM=$(md5sum tools/dockerfiles/controls/Dockerfile)
+  echo $CHECKSUM > tools/cache/checksums/controls_dockerfile.md5
+fi
 
 ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
   --filter name=uas-at-ucla_controls \
@@ -35,14 +83,25 @@ then
   docker rm $ENV_DOCKER_CONTAINER
 fi
 
+BUILD_FLAGS="-t uas-at-ucla_controls"
+
+while test $# -gt 0
+do
+    case "$1" in
+        --rebuild) BUILD_FLAGS="$BUILD_FLAGS --no-cache"
+            ;;
+    esac
+    shift
+done
 
 # Build docker container.
-if [[ -z $TRAVIS ]]
-then
-  docker build -t uas-at-ucla_controls tools/dockerfiles/controls
-else
-  docker build -t uas-at-ucla_controls tools/dockerfiles/controls > /dev/null
-fi
+docker build $BUILD_FLAGS tools/dockerfiles/controls
+# if [[ -z $TRAVIS ]]
+# then
+#   docker build $BUILD_FLAGS tools/dockerfiles/controls
+# else
+#   docker build $BUILD_FLAGS tools/dockerfiles/controls > /dev/null
+# fi
 
 if [ $? -ne 0 ]
 then
@@ -51,7 +110,7 @@ then
 fi
 
 # Create network for docker container to use.
-docker network create -d bridge uas_bridge > /dev/null 2>&1 || true
+./tools/scripts/docker/create_network.sh > /dev/null 2>&1 || true
 
 mkdir -p tools/cache/bazel
 pwd
@@ -81,19 +140,23 @@ DOCKER_BUILD_CMD="set -x; \
   chown uas /home/uas/.cache; \
   echo STARTED > /tmp/uas_init; \
   sudo -u uas bash -c \"bazel; \
+  source /home/uas/.bashrc; \
+  /opt/ros/melodic/bin/roscore &> /dev/null; \
   sleep infinity\""
 
-docker run \
-  -d \
-  --rm \
-  --net uas_bridge \
-  -v $ROOT_PATH:/home/uas/code_env \
-  -v $ROOT_PATH/tools/cache/bazel:/home/uas/.cache/bazel  \
-  -e DISPLAY=$DISPLAY \
-  -v /tmp/.X11-unix:/tmp/.X11-unix \
-  --dns 8.8.8.8 \
-  --name uas-at-ucla_controls \
-  uas-at-ucla_controls \
+docker run                          \
+  -d                                \
+  --rm                              \
+  --cap-add=SYS_PTRACE              \
+  --security-opt seccomp=unconfined \
+  --net uas_bridge                  \
+  --ip 192.168.2.21                 \
+  -v $ROOT_PATH:/home/uas/code_env  \
+  -e DISPLAY=$DISPLAY               \
+  -v /tmp/.X11-unix:/tmp/.X11-unix  \
+  --dns 8.8.8.8                     \
+  --name uas-at-ucla_controls       \
+  uas-at-ucla_controls              \
   bash -c "$DOCKER_BUILD_CMD"
 
 echo "Started uas-at-ucla_controls docker image. Waiting for it to boot..."
