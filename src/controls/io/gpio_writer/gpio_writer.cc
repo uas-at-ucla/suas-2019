@@ -24,9 +24,8 @@ GpioWriter::GpioWriter() :
     state_subscriber_(
         ros_node_handle_.subscribe(kRosStateTopic, kRosMessageQueueSize,
                                    &GpioWriter::StateReceived, this)),
-    imu_subscriber_(
-        ros_node_handle_.subscribe(kRosImuTopic, kRosMessageQueueSize,
-                                   &GpioWriter::ImuReceived, this)) {
+    imu_subscriber_(ros_node_handle_.subscribe(
+        kRosImuTopic, kRosMessageQueueSize, &GpioWriter::ImuReceived, this)) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.
@@ -41,8 +40,8 @@ void GpioWriter::WriterThread() {
   while (::ros::ok()) {
     // Write out the alarm signal.
     bool should_override_alarm = (should_override_alarm_ &&
-                                 last_alarm_override_ + kAlarmOverrideTimeGap >
-                                     ::lib::phased_loop::GetCurrentTime());
+                                  last_alarm_override_ + kAlarmOverrideTimeGap >
+                                      ::lib::phased_loop::GetCurrentTime());
     bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
 
     led_strip_.set_alarm(should_override_alarm);
@@ -129,7 +128,7 @@ void GpioWriter::StateReceived(const ::mavros_msgs::State state) {
 }
 
 void GpioWriter::ImuReceived(const ::sensor_msgs::Imu imu) {
-  (void) imu;
+  (void)imu;
   led_strip_.set_last_imu(::lib::phased_loop::GetCurrentTime());
 }
 
