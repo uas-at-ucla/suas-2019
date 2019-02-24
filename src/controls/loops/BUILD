@@ -46,5 +46,7 @@ cc_library(
     '//lib/ros:ros',
     "@cppzmq//:cppzmq",
     '@boost//:algorithm',
+    "@mavros_msgs//:mavros_msgs",
+    "@sensor_msgs//:sensor_msgs",
   ],
 )
