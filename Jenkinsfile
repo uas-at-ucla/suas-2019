@@ -43,7 +43,7 @@ pipeline {
         }
         stage('BUILD GROUND') {
           steps {
-            echo "Ground CI is disabled until we fix proto issues.
+            sh 'echo "Ground CI is disabled until we fix proto issues."'
           }
         }
       }
