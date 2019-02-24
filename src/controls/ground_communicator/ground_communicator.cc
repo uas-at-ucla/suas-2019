@@ -153,14 +153,16 @@ void GroundCommunicator::RunIteration() {
   all_data->get_map()["telemetry"] = telemetry;
   all_data->get_map()["mission"] = sio::string_message::create(mission_base64);
 
-  client_.socket("drone")->emit("telemetry", all_data);
+  if (client_.opened()) {
+    client_.socket("drone")->emit("TELEMETRY", all_data);
+  }
 }
 
 void GroundCommunicator::OnConnect() {
   // LOG_LINE("Someone connected to ground_communicator");
 
   client_.socket("drone")->on(
-      "drone_execute_commands",
+      "drone_execute_commands",  // OLD version of mission
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
               bool isAck, ::sio::message::list &ack_resp) {
@@ -183,6 +185,22 @@ void GroundCommunicator::OnConnect() {
             mission_message_queue_sender_.SendData(ground_data);
 
             SetState("MISSION");
+          }));
+
+  client_.socket("drone")->on(
+      "RUN_MISSION",  // NEW version of mission
+      ::sio::socket::event_listener_aux(
+          [&](::std::string const &name, ::sio::message::ptr const &data,
+              bool isAck, ::sio::message::list &ack_resp) {
+            (void)name;
+            (void)isAck;
+            (void)ack_resp;
+
+            (void)data;
+
+            ::std::cout << "received GroundProgram (but I really want a DroneProgram)\n";
+            // TODO: put GroundProgram processing in the ground_server C++ code,
+            //       and have it create a DroneProgram and send it here
           }));
 
   client_.socket("drone")->on(
