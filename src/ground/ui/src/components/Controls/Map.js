@@ -106,6 +106,8 @@ class Map extends Component {
       lineCoordinates[this.state.mission.fly_zones[0].boundary_pts.length - index-1] = {lat: coord.latitude, lng: coord.longitude };
       return lineCoordinates;
     })
+
+    
      var searchCoordinates = [];
       const searchGridPoints = this.state.mission.search_grid_points.map((coord, index) => {
         searchCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
@@ -141,7 +143,11 @@ class Map extends Component {
             scaledSize: {width: 25, height: 25} }}
             >          
             {this.state.isOpen["air_drop_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("air_drop_pos")}>
-           <div className="map-infobox">Air Drop Position</div>
+           <div className="map-infobox">Air Drop Position 
+           <button onClick = {() =>this.addWaypointCommand(this.state.mission.air_drop_pos.latitude, this.state.mission.air_drop_pos.longitude)}>
+              add
+            </button>
+           </div>
             </InfoWindow>}
             </Marker>
           
@@ -154,7 +160,11 @@ class Map extends Component {
             scaledSize: {width: 20, height: 20} }}
             >        
             {this.state.isOpen["home_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("home_pos")}>
-            <div className="map-infobox">Home Position</div>
+            <div className="map-infobox">Home Position
+            <button onClick = {() =>this.addWaypointCommand(this.state.mission.home_pos.latitude, this.state.mission.home_pos.longitude)}>
+              add
+            </button>
+            </div>
           </InfoWindow> }          
             </Marker>
           
@@ -195,7 +205,7 @@ class Map extends Component {
                     </div>
                    
                     <Button onClick={this.deleteCommand} data-index={index}>
-                      🚮
+                      <div><i className="fa fa-trash"></i></div>
                     </Button>
                   </div>
                 </InfoWindow>}
