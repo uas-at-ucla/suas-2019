@@ -1,24 +1,7 @@
 syntax = "proto2";
 
 package src.controls.ground_server.timeline;
-
-// Useful structs //////////////////////////////////////////////////////////////
-message Position2D {
-  required double            latitude                                      = 1;
-  required double            longitude                                     = 2;
-}
-
-message Position3D {
-  required double            latitude                                      = 1;
-  required double            longitude                                     = 2;
-  required double            altitude                                      = 3;
-}
-
-message StaticObstacle {
-  required Position2D        location                                      = 1;
-  required double            cylinder_radius                               = 2;
-  required double            cylinder_height                               = 3;
-}
+import "lib/mission_manager/mission_commands.proto";
 
 // Ground language /////////////////////////////////////////////////////////////
 // This is the timeline representation for a mission, as received from the
@@ -31,9 +14,9 @@ message StaticObstacle {
 // commands to execute and characteristics of the field, as received by the
 // interop server.
 message GroundProgram {
-  repeated GroundCommand     commands                                      = 1;
-  repeated StaticObstacle    static_obstacles                              = 2;
-  repeated Position2D        field_boundary                                = 3;
+  repeated GroundCommand     commands                                                          = 1;
+  repeated lib.mission_manager.StaticObstacle    static_obstacles                              = 2;
+  repeated lib.mission_manager.Position2D        field_boundary                                = 3;
 }
 
 // GroundCommand wraps all of the valid commands that are possible for ground
@@ -41,41 +24,21 @@ message GroundProgram {
 // so whichever one is set will determine the type of this command.
 message GroundCommand {
   oneof command {
-    WaypointCommand          waypoint_command                              = 1;
-    UgvDropCommand           ugv_drop_command                              = 2;
-    SurveyCommand            survey_command                                = 3;
-    OffAxisCommand           off_axis_command                              = 4;
+    lib.mission_manager.WaypointCommand          waypoint_command                              = 1;
+    UgvDropCommand           ugv_drop_command                                = 2;
+    lib.mission_manager.SurveyCommand            survey_command                                = 3;
+    lib.mission_manager.OffAxisCommand           off_axis_command                              = 4;
     WaitCommand              wait_command                                  = 5;
   }
 }
 
-message WaypointCommand {
-  required Position3D        goal                                          = 1;
-}
-
 message UgvDropCommand {
-  required Position2D        ground_target                                 = 1;
+  required lib.mission_manager.Position2D        ground_target                                 = 1;
   required double            drop_height                                   = 2;
-}
-
-message SurveyCommand {
-  repeated Position2D        survey_polygon                                = 1;
-  required double altitude                                                 = 2;
-}
-
-message OffAxisCommand {
-  required Position3D        photographer_location                         = 1;
-  required Position2D        subject_location                              = 2;
 }
 
 message WaitCommand {
   required double            time                                          = 1;
-}
-
-// Intermediate language ///////////////////////////////////////////////////////
-message GotoCommand {
-  required Position3D        goal                                          = 1;
-  required bool              come_to_stop                                  = 2;
 }
 
 // Drone language //////////////////////////////////////////////////////////////
@@ -85,9 +48,9 @@ message DroneProgram {
 
 message DroneCommand {
   oneof command {
-    NothingCommand           nothing_command                                = 1;
-    SleepCommand             sleep_command                                  = 2;
-    GotoCommand              goto_command                                   = 3;
+    lib.mission_manager.NothingCommand           nothing_command                                = 1;
+    lib.mission_manager.SleepCommand             sleep_command                                  = 2;
+    lib.mission_manager.GotoCommand              goto_command                                   = 3;
     TranslateCommand         goto_raw_command                               = 4;
     TriggerBombDropCommand   trigger_bomb_drop_command                      = 5;
     TriggerAlarmCommand      trigger_alarm_command                          = 6;
@@ -95,14 +58,8 @@ message DroneCommand {
   }
 }
 
-message NothingCommand {}
-
-message SleepCommand {
-  required double            time                                          = 1;
-}
-
 message TranslateCommand {
-  required Position3D        goal                                          = 1;
+  required lib.mission_manager.Position3D        goal                                          = 1;
   required bool              come_to_stop                                  = 2;
 }
 

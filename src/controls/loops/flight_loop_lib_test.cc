@@ -9,7 +9,6 @@
 
 #include "gtest/gtest.h"
 
-#include "lib/logger/log_writer.h"
 #include "src/controls/loops/state_machine/state_machine.h"
 
 namespace src {
@@ -199,10 +198,8 @@ int main(int argc, char **argv) {
     }
   }
 
-  ::lib::logger::LogWriter log_writer(false);
-
   usleep(1e6);
-  LOG_LINE("BEGIN!");
+  // LOG_LINE("BEGIN!");
 
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

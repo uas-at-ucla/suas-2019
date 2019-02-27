@@ -24,7 +24,7 @@ GroundCommunicator::GroundCommunicator() :
   socketio_ground_communicator = this;
 
   client_.set_open_listener(on_connect);
-  LOG_LINE("ground_communicator started.");
+  // LOG_LINE("ground_communicator started.");
   SetGoal(INIT);
 
   ::std::thread ground_socket_thread(connect);
@@ -73,6 +73,9 @@ void GroundCommunicator::RunIteration() {
   bool send_sensors = false;
   bool send_goal = false;
   bool send_output = false;
+  (void)send_sensors;
+  (void)send_goal;
+  (void)send_output;
 
   // Fetch the latest data from queues with messages.
   if (sensors_receiver_.HasMessages()) {
@@ -130,10 +133,10 @@ void GroundCommunicator::RunIteration() {
         ::lib::base64_tools::Encode(output_serialized));
   }
 
-  LOG_LINE("sending telemetry: "               //
-           << (send_sensors ? "sensors " : "") //
-           << (send_goal ? "goal " : "")       //
-           << (send_output ? "output " : ""));
+  // LOG_LINE("sending telemetry: "               //
+  //         << (send_sensors ? "sensors " : "") //
+  //         << (send_goal ? "goal " : "")       //
+  //         << (send_output ? "output " : ""));
 
   // Grab information about the latest mission.
   ::lib::mission_manager::Mission mission =
@@ -156,10 +159,10 @@ void GroundCommunicator::RunIteration() {
 }
 
 void GroundCommunicator::OnConnect() {
-  LOG_LINE("Someone connected to ground_communicator");
+  // LOG_LINE("Someone connected to ground_communicator");
 
   client_.socket("drone")->on(
-      "drone_execute_commands",  // OLD version of mission
+      "drone_execute_commands", // OLD version of mission
       ::sio::socket::event_listener_aux(
           [&](::std::string const &name, ::sio::message::ptr const &data,
               bool isAck, ::sio::message::list &ack_resp) {
@@ -185,20 +188,22 @@ void GroundCommunicator::OnConnect() {
           }));
 
   client_.socket("drone")->on(
-      "RUN_MISSION",  // NEW version of mission
-      ::sio::socket::event_listener_aux(
-          [&](::std::string const &name, ::sio::message::ptr const &data,
-              bool isAck, ::sio::message::list &ack_resp) {
-            (void)name;
-            (void)isAck;
-            (void)ack_resp;
+      "RUN_MISSION", // NEW version of mission
+      ::sio::socket::event_listener_aux([&](::std::string const &name,
+                                            ::sio::message::ptr const &data,
+                                            bool isAck,
+                                            ::sio::message::list &ack_resp) {
+        (void)name;
+        (void)isAck;
+        (void)ack_resp;
 
-            (void)data;
+        (void)data;
 
-            ::std::cout << "received GroundProgram (but I really want a DroneProgram)\n";
-            // TODO: put GroundProgram processing in the ground_server C++ code,
-            //       and have it create a DroneProgram and send it here
-          }));
+        ::std::cout
+            << "received GroundProgram (but I really want a DroneProgram)\n";
+        // TODO: put GroundProgram processing in the ground_server C++ code,
+        //       and have it create a DroneProgram and send it here
+      }));
 
   client_.socket("drone")->on(
       "interop_data",
@@ -275,7 +280,7 @@ void GroundCommunicator::SetGoal(GoalState new_state) {
     case LAND:
       goal_.set_run_mission(false);
       goal_.set_trigger_land(time);
-      LOG_LINE("GOT LAND @ TIME " << time);
+      //    LOG_LINE("GOT LAND @ TIME " << time);
       break;
 
     case FAILSAFE:
@@ -292,47 +297,47 @@ void GroundCommunicator::SetGoal(GoalState new_state) {
 
     case TAKEOFF:
       goal_.set_trigger_takeoff(time);
-      LOG_LINE("GOT TAKEOFF @ TIME " << time);
+      //    LOG_LINE("GOT TAKEOFF @ TIME " << time);
       break;
 
     case HOLD:
       goal_.set_trigger_hold(time);
-      LOG_LINE("GOT HOLD @ TIME " << time);
+      //    LOG_LINE("GOT HOLD @ TIME " << time);
       break;
 
     case OFFBOARD:
       goal_.set_trigger_offboard(time);
-      LOG_LINE("GOT OFFBOARD @ TIME " << time);
+      //    LOG_LINE("GOT OFFBOARD @ TIME " << time);
       break;
 
     case RTL:
       goal_.set_trigger_rtl(time);
-      LOG_LINE("GOT RTL @ TIME " << time);
+      //    LOG_LINE("GOT RTL @ TIME " << time);
       break;
 
     case ARM:
       goal_.set_trigger_arm(time);
-      LOG_LINE("GOT ARM @ TIME " << time);
+      //    LOG_LINE("GOT ARM @ TIME " << time);
       break;
 
     case DISARM:
       goal_.set_trigger_disarm(time);
-      LOG_LINE("GOT DISARM @ TIME " << time);
+      //    LOG_LINE("GOT DISARM @ TIME " << time);
       break;
 
     case ALARM:
       goal_.set_trigger_alarm(time);
-      LOG_LINE("GOT ALARM @ TIME " << time);
+      //    LOG_LINE("GOT ALARM @ TIME " << time);
       break;
 
     case BOMB_DROP:
       goal_.set_trigger_bomb_drop(time);
-      LOG_LINE("GOT BOMB DROP @ TIME " << time);
+      //    LOG_LINE("GOT BOMB DROP @ TIME " << time);
       break;
 
     case DSLR:
       goal_.set_trigger_dslr(time);
-      LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
+      //    LOG_LINE("GOT DSLR TRIGGER @ TIME " << time);
       break;
   }
 }

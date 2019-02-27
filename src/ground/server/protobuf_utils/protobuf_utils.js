@@ -6,6 +6,7 @@
   });
 */
 
+const path = require("path");
 const protobuf = require("protobufjs");
 
 class ProtobufUtils {
@@ -56,7 +57,7 @@ class ProtobufUtils {
   decodeSensors(message) {
     return ProtobufUtils.decode(this.Sensors, message);
   }
-  
+
   decodeGoal(message) {
     return ProtobufUtils.decode(this.Goal, message);
   }
@@ -64,7 +65,7 @@ class ProtobufUtils {
   decodeOutput(message) {
     return ProtobufUtils.decode(this.Output, message);
   }
-  
+
   decodeTelemetry(telemetry) {
     let decoded = {};
     if (telemetry.sensors) {
@@ -84,15 +85,15 @@ class ProtobufUtils {
     protobuf.util.base64.decode(string, decoded, 0);
     return decoded;
   }
-  
+
   static encodeBase64(bytes) {
     return protobuf.util.base64.encode(bytes, 0, bytes.length);
   }
-  
+
   static decode(Type, message) {
     return Type.decode(ProtobufUtils.decodeBase64(message));
   }
-  
+
   static encode(Type, message) {
     let errMsg = Type.verify(message);
     if (errMsg) {
@@ -103,11 +104,15 @@ class ProtobufUtils {
 }
 
 module.exports = (callback) => {
-  protobuf.load("../../controls/ground_server/timeline/timeline_grammar.proto", (err, timelineRoot) => {
+  process.chdir("../../..")
+  protobuf.load({file: "src/controls/ground_server/timeline/timeline_grammar.proto", root: path.resolve(".")}, (err, timelineRoot) => {
     if (err) throw err;
-    protobuf.load("../../controls/messages.proto", (err, telemetryRoot) => {
+
+    protobuf.load({file: "src/controls/messages.proto", root: path.resolve(".")}, (err, telemetryRoot) => {
       if (err) throw err;
+
       callback(new ProtobufUtils(timelineRoot, telemetryRoot));
     });
   });
 }
+

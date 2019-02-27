@@ -12,8 +12,14 @@ class MissionPlannerContainer extends Component {
   render() {
     return (
       <div className="MissionPlannerContainer">
-        <div className="mission-planner-div">
+        
+        <div className="missionPlannerHeader"> 
+          <h1> Mission Planner </h1>
           <Button onClick={this.expand}>Expand</Button>
+        </div>
+        
+        
+        <div className="mission-planner-div">
           <div className="SmallMissionPlanner">
             <MissionPlanner/>
           </div>
