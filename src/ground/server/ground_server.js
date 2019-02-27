@@ -19,12 +19,11 @@ const ui_io = io.of('/ui');
 const drone_io = io.of('/drone');
 const fake_drone_io = io.of('/fake-drone');
 
-// Temporarily commented
-// // For decoding and encoding drone messages
-// var protobufUtils = null;
-// loadProtobufUtils((theProtobufUtils) => {
-//   protobufUtils = theProtobufUtils;
-// });
+// For decoding and encoding drone messages
+var protobufUtils = null;
+loadProtobufUtils((theProtobufUtils) => {
+  protobufUtils = theProtobufUtils;
+});
 
 var interopClient = null;
 var missionAndObstacles = null;
