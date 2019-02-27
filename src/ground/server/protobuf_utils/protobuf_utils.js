@@ -8,6 +8,10 @@
 
 const path = require("path");
 const protobuf = require("protobufjs");
+// Fix import statement in .proto file:
+protobuf.Root.prototype.resolvePath = (origin, target) => {
+  return target;
+}
 
 class ProtobufUtils {
   // GroundProgram;
@@ -105,8 +109,14 @@ class ProtobufUtils {
 
 module.exports = (callback) => {
   process.chdir("../../..")
-  timelineRoot = protobuf.loadSync("src/controls/ground_server/timeline/timeline_grammar.proto");
-  telemetryRoot = protobuf.loadSync("src/controls/messages.proto");
-  callback(new ProtobufUtils(timelineRoot, telemetryRoot));
+  protobuf.load("src/controls/ground_server/timeline/timeline_grammar.proto", (err, timelineRoot) => {
+    if (err) throw err;
+
+    protobuf.load("src/controls/messages.proto", (err, telemetryRoot) => {
+      if (err) throw err;
+
+      callback(new ProtobufUtils(timelineRoot, telemetryRoot));
+    });
+  });
 }
 
