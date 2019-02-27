@@ -48,8 +48,8 @@ class Map extends Component {
       {lat: boxCenter.latitude-.1, lng: boxCenter.longitude-.1},
       {lat: boxCenter.latitude-.1, lng: boxCenter.longitude+.1}];
     var lineCoordinates =[];
-    const boundaryCoordinates = this.this.props.interopData.mission.fly_zones[0].boundary_pts.map((coord, index) => {
-      lineCoordinates[this.state.mission.fly_zones[0].boundary_pts.length - index-1] = {lat: coord.latitude, lng: coord.longitude };
+    const boundaryCoordinates = this.props.interopData.mission.fly_zones[0].boundary_pts.map((coord, index) => {
+      lineCoordinates[this.props.interopData.mission.fly_zones[0].boundary_pts.length - index-1] = {lat: coord.latitude, lng: coord.longitude };
       return lineCoordinates;
     })
 
@@ -103,8 +103,8 @@ class Map extends Component {
             >          
             {this.state.isOpen["air_drop_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("air_drop_pos")}>
            <div className="map-infobox">Air Drop Position 
-           <button onClick = {() =>this.addWaypointCommand(this.state.mission.air_drop_pos.latitude, this.state.mission.air_drop_pos.longitude)}>
-              add
+           <button onClick = {() =>this.addWaypointCommand(this.props.interopData.mission.air_drop_pos.latitude, this.props.interopData.mission.air_drop_pos.longitude)}>
+              add to mission
             </button>
            </div>
             </InfoWindow>}
@@ -120,7 +120,7 @@ class Map extends Component {
             >        
             {this.state.isOpen["home_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("home_pos")}>
             <div className="map-infobox">Home Position
-            <button onClick = {() =>this.addWaypointCommand(this.state.mission.home_pos.latitude, this.state.mission.home_pos.longitude)}>
+            <button onClick = {() =>this.addWaypointCommand(this.props.interopData.mission.home_pos.latitude, this.props.interopData.mission.home_pos.longitude)}>
               add
             </button>
             </div>
