@@ -41,7 +41,7 @@ class Map extends Component {
     }
   };
   render() {
-    var boxCenter =  this.state.mission.fly_zones[0].boundary_pts[0];
+    var boxCenter =  this.props.interopData.mission.fly_zones[0].boundary_pts[0];
     var boxCoordinates =[{lat: boxCenter.latitude+.1, lng: boxCenter.longitude+.1}, 
       {lat: boxCenter.latitude+.1, lng: boxCenter.longitude-.1},
       {lat: boxCenter.latitude-.1, lng: boxCenter.longitude-.1},
@@ -72,7 +72,6 @@ class Map extends Component {
           searchCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
           return searchCoordinates[index];
       })
-    }
 
 
     return (
