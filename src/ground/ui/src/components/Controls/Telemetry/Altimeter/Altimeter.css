@@ -1,0 +1,44 @@
+.Altimeter .progress-bar {
+  position: relative;
+  height: 200px;
+  width: 50px;
+  border-radius: 50px;
+  border: 3px solid #333;
+  background: rgba(0, 0, 0, 0);
+}
+
+.Altimeter .filler {
+  background: #1DA598;
+  height: 100%;
+  border-radius: inherit;
+  transition: width .2s ease-in;
+  float: bottom
+}
+
+.Altimeter .filler.warning {
+  background: red;
+}
+
+.Altimeter button {
+  margin-right: 10px;
+  padding: 7px 12px;
+  font-size: 14px;
+  background: pink;
+  color: red;
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+  outline: 0;
+  border-radius: 0px;
+}
+
+.Altimeter button1 {
+  margin-right: 10px;
+  padding: 15px 26px;
+  font-size: 14px;
+  background: blue;
+  color: yellow;
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+  outline: 0;
+  border-radius: 50%;
+}
