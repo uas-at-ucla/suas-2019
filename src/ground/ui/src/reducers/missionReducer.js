@@ -93,7 +93,14 @@ const commandMarkersSelector = createObjectSelector(
             text: '\uf192',
             fontSize: '15px'
           }
-        }
+        } /*else if (cmd.type === 'UgvCommand') {
+          label = {
+            fontFamily: 'Fontawesome',
+            text: '\uf192',
+            fontSize: '15px'
+          }
+          }*/
+        
         let location = cmd[cmd.type][locationField];
         return {
           position: {
@@ -125,6 +132,24 @@ export default {
           if (!marker) {
             return null;
           }
+
+          let content = "";
+
+          let showThing = (thing) => {
+            let thisContent = ""
+            for (let key in thing) {
+              if (thing[key] === "object") {
+                thisContent = thisContent + key + ": " + showThing(thing[key]) + "\n";
+              }
+              thisContent = thisContent + key + ": " + thing[key] + "\n";
+            }
+            return thisContent;
+          }
+
+          for (let key in cmd[cmd.type]) {
+            content = content + key + ": " + showThing(cmd[cmd.type][key]) + "\n";
+          }
+
           return {
             id: cmd.id,
             marker: marker,
@@ -133,7 +158,8 @@ export default {
               options: {
                 //enableEventPropagation: true //we might need this if there are some buttons in the infobox.
               },
-              content: (index+1)
+              content: content,
+              title: (index+1)+": " + cmd.type
             }
           }
         });
