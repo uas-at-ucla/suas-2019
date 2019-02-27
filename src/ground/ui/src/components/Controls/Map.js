@@ -53,21 +53,6 @@ class Map extends Component {
       return lineCoordinates;
     })
 
-   /* 
-     var searchCoordinates = [];
-      const searchGridPoints = this.state.mission.search_grid_points.map((coord, index) => {
-        searchCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
-        return searchCoordinates[index];
-    })
-    
-    if (this.props.interopData) {    
-      var lineCoordinates =[];
-      const boundaryCoordinates = this.props.interopData.mission.fly_zones[0].boundary_pts.map((coord, index) => {
-        lineCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
-        return lineCoordinates[index];
-      })
-      */
-     //const {google} = this.props;
       var searchCoordinates = [];
         var searchGridPoints = this.props.interopData.mission.search_grid_points.map((coord, index) => {
           searchCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
