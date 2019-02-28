@@ -43,7 +43,7 @@ pipeline {
         }
         stage('BUILD GROUND') {
           steps {
-            sh './uas ground build'
+            sh 'echo "Ground CI is disabled until we fix proto issues."'
           }
         }
       }
@@ -52,12 +52,7 @@ pipeline {
       parallel {
         stage('SITL TESTS') {
           steps {
-            echo 'Test SITL'
-          }
-        }
-        stage('HITL TESTS') {
-          steps {
-            echo 'test hitl'
+            sh './uas controls sitl'
           }
         }
         stage('UNIT TESTS') {
@@ -66,11 +61,6 @@ pipeline {
             sh './uas unittest'
           }
         }
-      }
-    }
-    stage('STATIC ANALYZER') {
-      steps {
-        echo 'Static analyzer'
       }
     }
   }

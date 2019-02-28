@@ -1,8 +1,0 @@
-#!/bin/bash --norc
-
-#$(pwd)/${BAZEL_OUTPUT_ROOT}external/gcc_linaro_arm_linux_gnueabihf_raspbian_repo/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-gcc
-
-PATH="$(pwd)/${BAZEL_OUTPUT_ROOT}external/lib/gcc/arm-linux-gnueabihf/4.9.3:$PATH" \
-  exec \
-  $(pwd)/${BAZEL_OUTPUT_ROOT}external/raspi-toolchain/bin/arm-linux-gnueabihf-gcc \
-  "$@"

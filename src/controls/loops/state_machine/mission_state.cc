@@ -12,8 +12,8 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Output &output) {
   (void)goal;
 
-  Position3D position = {sensors.latitude(), sensors.longitude(),
-                         sensors.relative_altitude()};
+  lib::Position3D position = {sensors.latitude(), sensors.longitude(),
+                              sensors.relative_altitude()};
 
   ::Eigen::Vector3d velocity(sensors.velocity_x(), sensors.velocity_y(),
                              sensors.velocity_z());

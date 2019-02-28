@@ -39,7 +39,7 @@ void Executor::PreprocessorThread() {
   while (run_) {
     if (position_set_) {
       position_semaphore_.Wait();
-      Position3D position = position_;
+      lib::Position3D position = position_;
       position_semaphore_.Notify();
 
       mission_message_queue_receiver_.RunPreprocessor(position);
@@ -217,7 +217,7 @@ ExecutorOutput Executor::VelocityNavigator() {
 
 bool Executor::MetGoal() { return met_goal_ && !setpoint_reset_; }
 
-ExecutorOutput Executor::Calculate(Position3D position,
+ExecutorOutput Executor::Calculate(lib::Position3D position,
                                    ::Eigen::Vector3d velocity) {
   if (!position_set_) {
     start_ = position;

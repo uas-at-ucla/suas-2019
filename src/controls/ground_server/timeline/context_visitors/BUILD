@@ -8,7 +8,8 @@ cc_library(
     'context_visitor.h'
   ],
   deps = [
-    '//src/controls/ground_server/timeline:timeline_grammar_cc'
+    '//src/controls/ground_server/timeline:timeline_grammar_cc',
+    '//lib/rrt_avoidance:rrt_avoidance',
   ],
 )
 

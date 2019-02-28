@@ -1,0 +1,10 @@
+<package>
+  <description brief="uasatucla_controls">
+     uasatucla_controls
+  </description>
+  <author>uas</author>
+  <license>BSD</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/uasatucla_controls</url>
+</package>
+

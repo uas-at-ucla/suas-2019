@@ -28,17 +28,16 @@ class Drone2StateVisitor {
   void AddState(DroneStateMachine::StatePtr state);
   void AddBranchingState(std::shared_ptr<BranchingDroneState> branching_state,
                          BranchId branch_id);
-  
-  template<typename T>
-  std::shared_ptr<T> MakeBranchingState();
 
-  template<typename T>
+  template <typename T> std::shared_ptr<T> MakeBranchingState();
+
+  template <typename T>
   std::shared_ptr<T> MakeBranchingState(BranchId branch_id);
 
   void Visit(const timeline::DroneProgram &drone_program);
   void Visit(const timeline::DroneCommand &drone_command);
-  void Visit(const timeline::NothingCommand &drone_command);
-  void Visit(const timeline::SleepCommand &drone_command);
+  void Visit(const lib::mission_manager::NothingCommand &drone_command);
+  void Visit(const lib::mission_manager::SleepCommand &drone_command);
   void Visit(const timeline::TranslateCommand &drone_command);
   void Visit(const timeline::TriggerAlarmCommand &drone_command);
   void Visit(const timeline::TriggerBombDropCommand &drone_command);
@@ -57,12 +56,12 @@ class UnsupportedDroneCommandException : public std::exception {
   std::string message_;
 };
 
-template<typename T>
+template <typename T>
 std::shared_ptr<T> Drone2StateVisitor::MakeBranchingState() {
   return MakeBranchingState<T>(T::NEXT);
 }
 
-template<typename T>
+template <typename T>
 std::shared_ptr<T> Drone2StateVisitor::MakeBranchingState(BranchId branch_id) {
   auto state = std::make_shared<T>();
   AddBranchingState(state, branch_id);

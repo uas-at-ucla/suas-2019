@@ -112,8 +112,8 @@ class ProcessManager:
                     break
 
             if not process_already_killed:
-                killed_status += "Killed " + str(proc.pid) + " in " \
-                        + str(time.time() - start) + " seconds.\n"
+                killed_status += "Killed pid #" + str(proc.pid) + " in " \
+                        + "%.2f" % (time.time() - start) + " seconds.\n"
 
         return killed_status
 
