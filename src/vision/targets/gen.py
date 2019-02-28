@@ -71,9 +71,11 @@ class SingleTarget:
 
 def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir, 
                transforms, draw_box, rescale_ratio, shape_color_name, 
-               letter_color_name, target_pos_conf, white_balance, origin_pos):
+               letter_color_name, target_pos_conf, white_balance, origin_pos,
+               start_num, file_digits):
     background_files = os.scandir(bg_dir)
-    field_width = math.trunc(math.log10(n))
+    if file_digits is None:
+        field_width = math.trunc(math.log10(n + start_num))
     labels = []
     for i in range(n):
         if i % 100 == 0:
@@ -159,7 +161,7 @@ def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir,
             target_pos = target_pos_conf
 
         # create annotation
-        im_filename = ('{:0=' + str(field_width) + 'd}').format(i)
+        im_filename = ('{:0=' + str(field_width) + 'd}').format(i + start_num)
         target_bounds = [(target_pos[0], target_pos[1]),
                          (target_pos[0] + t_size, target_pos[1] + t_size)]
         labels.append([
@@ -325,6 +327,16 @@ if __name__ == '__main__':
         help='x, y coordinate of the alternative origin to crop the image as a \
         tuple. By default it is (0,0) and max they can get is the width and \
         height of the background minus image_size')
+    parser.add_argument(
+        '--start-num',
+        type=int,
+        default=0,
+        help='numbering offset for the image file names')
+    parser.add_argument(
+        '--file-digits',
+        type=int,
+        default=None,
+        help='number of digits for the image file names')
 
     args = parser.parse_args()
 
@@ -378,4 +390,6 @@ if __name__ == '__main__':
         origin_pos=args.origin_pos,
         shape_color_name=args.shape_color,
         letter_color_name=args.letter_color,
-        target_pos_conf=args.target_pos)
+        target_pos_conf=args.target_pos,
+        start_num=args.start_num,
+        file_digits=args.file_digits)
