@@ -17,7 +17,7 @@ fi
 docker exec -t $UAS_AT_UCLA_IMAGE sh -c " \
   for f in /tmp/docker-exec-*.pid
   do
-    if [ ! -f \"$f\" ]
+    if [ ! -f \"\$f\" ]
     then
       continue
     fi

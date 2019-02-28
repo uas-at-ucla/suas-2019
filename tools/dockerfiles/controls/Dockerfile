@@ -167,6 +167,7 @@ USER root
 WORKDIR /home/uas/code_env
 
 ENV ROS_MASTER_URI http://0.0.0.0:11311
+COPY htoprc /home/uas/.config/htop/htoprc
 
 EXPOSE 8085/udp
 EXPOSE 8086/udp

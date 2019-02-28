@@ -43,7 +43,7 @@ pipeline {
         }
         stage('BUILD GROUND') {
           steps {
-            sh './uas ground build'
+            sh 'echo "Ground CI is disabled until we fix proto issues."'
           }
         }
       }

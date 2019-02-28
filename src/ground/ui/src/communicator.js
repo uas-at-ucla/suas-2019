@@ -10,8 +10,12 @@ const socket = socketIOClient("http://"+socketHost+':'+socketPort+'/ui', { trans
 export default (store) => {
   console.log("Initializing communicator");
 
-  socket.on('telemetry', (data) => {
+  socket.on('TELEMETRY', (data) => {
     store.dispatch({ type: 'TELEMETRY', payload: data });
+  });
+
+  socket.on('INTEROP_DATA', (data) => {
+    store.dispatch({ type: 'INTEROP_DATA', payload: data });
   });
 
   return (next) => (action) => {
