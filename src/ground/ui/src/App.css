@@ -1,4 +1,7 @@
 ul {
+  display:flex;
+  align-items: stretch;
+  z-index: 100; 
   list-style-type: none;
   margin: 0;
   padding-top: 10px;
@@ -6,6 +9,8 @@ ul {
   overflow: hidden;
   background-color: #808080;
   color: black;
+  position: fixed;
+  width: 100%;
 }
 
 li {
