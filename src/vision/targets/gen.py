@@ -8,6 +8,7 @@ import math
 import urllib.request
 import subprocess
 
+# yapf: disable
 COLORS = {
     'white':  (0, (255, 255, 255)),
     'black':  (1, (79,  86,  100)),
@@ -20,6 +21,7 @@ COLORS = {
     'brown':  (8, (219, 187, 137)),
     'orange': (9, (250, 149, 41))
 }
+# yapf: enable
 
 KELVIN_TEMP = {
     4500: (255, 219, 186),
@@ -38,8 +40,8 @@ KELVIN_TEMP = {
 
 LETTERS = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 
-    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
+    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', '0', '1', '2', '3',
+    '4', '5', '6', '7', '8', '9'
 ]
 
 TRANSFORMS = ('rotate', 'perspective', 'affine')
@@ -69,8 +71,8 @@ class SingleTarget:
         return self.target
 
 
-def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir, 
-               transforms, draw_box, rescale_ratio, shape_color_name, 
+def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir,
+               transforms, draw_box, rescale_ratio, shape_color_name,
                letter_color_name, target_pos_conf, white_balance, origin_pos,
                start_num, file_digits):
     background_files = os.scandir(bg_dir)
@@ -147,8 +149,8 @@ def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir,
             letter_color=letter_color)
         if r_angle > 0:
             target = target.rotate(
-                r_angle, resample=Image.BICUBIC,
-                expand=1).resize((t_size, t_size), resample=Image.BOX)
+                r_angle, resample=Image.BICUBIC, expand=1).resize(
+                    (t_size, t_size), resample=Image.BOX)
         elif 'rotate' in transforms:
             target = target.rotate(
                 random.randint(0, 359), resample=Image.BICUBIC,
@@ -165,19 +167,19 @@ def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir,
         target_bounds = [(target_pos[0], target_pos[1]),
                          (target_pos[0] + t_size, target_pos[1] + t_size)]
         labels.append([
-            i, # name
-            i_size[0], # width
-            i_size[1], # height
-            3, # depth
-            r_angle, # rotation
-            targets.TARGET_TYPES.index(type(generator).__name__), # shape
-            LETTERS.index(letter_choice), # letter
-            shape_color_choice[0], # shape color
-            letter_color_choice[0], # letter color
-            target_bounds[0][0], # xmin
-            target_bounds[0][1], # ymin
-            target_bounds[1][0], # xmax
-            target_bounds[1][1] # ymax
+            i,  # name
+            i_size[0],  # width
+            i_size[1],  # height
+            3,  # depth
+            r_angle,  # rotation
+            targets.TARGET_TYPES.index(type(generator).__name__),  # shape
+            LETTERS.index(letter_choice),  # letter
+            shape_color_choice[0],  # shape color
+            letter_color_choice[0],  # letter color
+            target_bounds[0][0],  # xmin
+            target_bounds[0][1],  # ymin
+            target_bounds[1][0],  # xmax
+            target_bounds[1][1]  # ymax
         ])
 
         # Draw a bounding box
@@ -205,7 +207,12 @@ def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir,
                          im_filename + '.' + background_file.split('.')[1]))
 
     with open(os.path.join(dest_dir, 'labels.csv'), 'w', newline='') as f:
-        csv.writer(f).writerows(labels)
+        writer = csv.writer(f)
+        writer.writerow([
+            'name', 'width', 'height', 'depth', 'rotation', 'shape', 'letter',
+            'shape_color', 'letter_color', 'xmin', 'ymin', 'xmax', 'ymax'
+        ])
+        writer.writerows(labels)
 
 
 if __name__ == '__main__':
