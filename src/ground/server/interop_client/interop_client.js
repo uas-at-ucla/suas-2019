@@ -84,5 +84,6 @@ module.exports = (ip, port, username, password) => {
   .catch(error => {
     console.log("Failed to login to interop!");
     console.log(error);
+    throw error;
   });
 }
