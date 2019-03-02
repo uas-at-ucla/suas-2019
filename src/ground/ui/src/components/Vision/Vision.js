@@ -10,13 +10,6 @@ class Vision extends Component {
       <div className="Vision">
         <div className = "Map">
           <Map />
-
-          <div className="Tagging">
-            <Tagging />
-          </div>
-          <div className="Pipeline">
-            <Pipeline />
-          </div> 
         </div>
       </div>
     );

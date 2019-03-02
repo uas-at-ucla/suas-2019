@@ -184,12 +184,48 @@ class Map extends Component {
         'rgba(127, 0, 63, 1)',
         'rgba(191, 0, 31, 1)',
         'rgba(255, 0, 0, 1)'
-      ]
+      ],
+      hmRadius:70, hmOpacity:1, hmdissipating:true, hmHeatmapOn:true,
+      heatMapOpen:true
     }
       
-
   }
 
+  toggleHeatmap=(props)=>{
+    if (this.state.hmOpacity==0) {
+      this.setState({
+        hmOpacity: 1,
+        hmHeatmapOn: true
+      });
+      return;
+    }
+    else{
+      this.setState({
+        hmOpacity: 0,
+        hmHeatmapOn: false
+      });
+    }
+  };
+
+  heatmapOptions=(props)=>{
+    if(props.open){
+      return (
+      <div className="buttonPanel">
+        <button className="heatmap" onClick={this.toggleHeatmap}>Toggle Heatmap</button>
+        <button className="heatmap">Set Radius</button>
+      </div>
+      );
+    }
+    else{
+      return(
+        <div className="closedButtonPanel">
+            Heatmap:
+              radius: {this.state.hmRadius}
+              opacity: {this.state.hmOpacity}
+        </div>
+      );
+    }
+  }
 
   render() {
     let customMarkers;
@@ -204,30 +240,37 @@ class Map extends Component {
 
     console.log(customMarkers);
     return (
-      <div id="visionMap" className="Map">
-        <button className="heatmap">HeatMap</button>
-        <GoogleMap
-          defaultZoom={13}
-          defaultCenter={{lat: 37.782551, lng:- 122.445368}}
-          defaultMapTypeId="satellite"
-          defaultOptions={{
-            disableDefaultUI: true,
-            disableDoubleClickZoom: true,
-            scaleControl: true
-          }}
-        >
-          {customMarkers}
-          <HeatmapLayer
-            options={{
-            data:this.state.hmData,
-            radius:40,
-            opacity:1,
-            gradient:this.state.hmGradient,
-            dissipating:true
+      <div className="VisionMap">
+        <div className="buttonPanel">
+          <button className="heatmap" onClick={this.toggleHeatmap}>Toggle Heatmap</button>
+          <button className="heatmap">Set Radius</button>
+        </div>
+        {/* <div className="tagging">Tagging</div>
+        <div className="pipeline">Pipeline</div> */}
+        <div className="Map">
+          <GoogleMap
+            defaultZoom={16}
+            defaultCenter={{lat: 37.782551, lng: - 122.445368}}
+            defaultMapTypeId="satellite"
+            defaultOptions={{
+              disableDefaultUI: true,
+              disableDoubleClickZoom: true,
+              scaleControl: true
             }}
+          >
+            {customMarkers}
+            <HeatmapLayer
+              options={{
+                data: this.state.hmData,
+                radius: this.state.hmRadius,
+                opacity: this.state.hmOpacity,
+                gradient: this.state.hmGradient,
+                dissipating: true
+              }}
             >
-          </HeatmapLayer>
-        </GoogleMap>
+            </HeatmapLayer>
+          </GoogleMap>
+        </div>
       </div>
     );
   }
