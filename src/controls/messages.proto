@@ -4,42 +4,44 @@ package src.controls;
 
 message Sensors {
   optional double time                                                     = 1;
-  required double latitude                                                 = 2;
-  required double longitude                                                = 3;
-  required float altitude                                                  = 4;
-  required float relative_altitude                                         = 5;
-  required float heading                                                   = 6;
+  /*required*/optional double latitude                                                 = 2;
+  /*required*/optional double longitude                                                = 3;
+  /*required*/optional float altitude                                                  = 4;
+  /*required*/optional float relative_altitude                                         = 5;
+  /*required*/optional float heading                                                   = 6;
 
-  required float velocity_x                                                = 7;
-  required float velocity_y                                                = 8;
-  required float velocity_z                                                = 9;
+  /*required*/optional float velocity_x                                                = 7;
+  /*required*/optional float velocity_y                                                = 8;
+  /*required*/optional float velocity_z                                                = 9;
 
-  required float gps_ground_speed                                          = 10;
+  /*required*/optional float gps_ground_speed                                          = 10;
 
-  required int32 gps_satellite_count                                       = 11;
-  required int32 gps_eph                                                   = 12;
-  required int32 gps_epv                                                   = 13;
+  /*required*/optional int32 gps_satellite_count                                       = 11;
+  /*required*/optional int32 gps_eph                                                   = 12;
+  /*required*/optional int32 gps_epv                                                   = 13;
 
-  required float accelerometer_x                                           = 14;
-  required float accelerometer_y                                           = 15;
-  required float accelerometer_z                                           = 16;
+  /*required*/optional float accelerometer_x                                           = 14;
+  /*required*/optional float accelerometer_y                                           = 15;
+  /*required*/optional float accelerometer_z                                           = 16;
 
-  required float gyro_x                                                    = 17;
-  required float gyro_y                                                    = 18;
-  required float gyro_z                                                    = 19;
+  /*required*/optional float gyro_x                                                    = 17;
+  /*required*/optional float gyro_y                                                    = 18;
+  /*required*/optional float gyro_z                                                    = 19;
 
-  required float absolute_pressure                                         = 20;
-  required float relative_pressure                                         = 21;
-  required float pressure_altitude                                         = 22;
-  required float temperature                                               = 23;
+  /*required*/optional float absolute_pressure                                         = 20;
+  /*required*/optional float relative_pressure                                         = 21;
+  /*required*/optional float pressure_altitude                                         = 22;
+  /*required*/optional float temperature                                               = 23;
 
-  required float battery_voltage                                           = 24;
-  required float battery_current                                           = 25;
+  /*required*/optional float battery_voltage                                           = 24;
+  /*required*/optional float battery_current                                           = 25;
 
-  required bool armed                                                      = 26;
-  required int32 autopilot_state                                           = 27;
+  /*required*/optional bool armed                                                      = 26;
+  /*required*/optional int32 autopilot_state                                           = 27;
 
-  required double last_gps                                                 = 28;
+  /*required*/optional double last_gps                                                 = 28;
+
+  /*temporary for testing*/required string mode                                                     = 29;
 }
 
 message Goal {
