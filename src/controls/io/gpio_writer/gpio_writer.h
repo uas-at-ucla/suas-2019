@@ -15,6 +15,7 @@
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/State.h>
 #include <sensor_msgs/BatteryState.h>
+#include <sensor_msgs/Imu.h>
 
 #include "lib/alarm/alarm.h"
 #include "lib/phased_loop/phased_loop.h"
@@ -32,8 +33,6 @@ static const int kGimbalGPIOPin = 18;
 static const int kAlarmOverrideRcChannel = 7;
 static const int kAlarmOverrideRcSignalThreshold = 1800;
 
-static const int kWriterThreadLogIntervalSeconds = 10;
-
 static const int kWriterPhasedLoopFrequency = 250;
 static const double kAlarmOverrideTimeGap = 1.0 / 10;
 
@@ -47,6 +46,7 @@ static const ::std::string kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
 static const ::std::string kRosRcInTopic = "/mavros/rc/in";
 static const ::std::string kRosBatteryStatusTopic = "/mavros/battery";
 static const ::std::string kRosStateTopic = "/mavros/state";
+static const ::std::string kRosImuTopic = "/mavros/imu/data";
 } // namespace
 
 class GpioWriter {
@@ -60,6 +60,7 @@ class GpioWriter {
   void RcInReceived(const ::mavros_msgs::RCIn rc_in);
   void BatteryStatusReceived(const ::sensor_msgs::BatteryState battery_state);
   void StateReceived(const ::mavros_msgs::State state);
+  void ImuReceived(const ::sensor_msgs::Imu imu);
 
   led_strip::LedStrip led_strip_;
 
@@ -78,6 +79,7 @@ class GpioWriter {
   ::ros::Subscriber rc_input_subscriber_;
   ::ros::Subscriber battery_status_subscriber_;
   ::ros::Subscriber state_subscriber_;
+  ::ros::Subscriber imu_subscriber_;
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   int pigpio_;

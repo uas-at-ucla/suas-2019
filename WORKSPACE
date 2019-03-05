@@ -32,7 +32,7 @@ git_repository(
 git_repository(
   name = 'sensor_msgs',
   remote = 'https://github.com/uas-at-ucla/sensor_msgs.git',
-  commit = '541751ee4b7ef345694357b3913b214c7b1db23e',
+  commit = 'd64b571b99fa1a0f8796e5bffc3e15a6a60f795a',
 )
 
 new_git_repository(
