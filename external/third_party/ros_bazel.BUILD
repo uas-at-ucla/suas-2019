@@ -18,6 +18,7 @@ cc_library(
     "@boost//:filesystem",
     "@boost//:program_options",
     "@boost//:thread",
+    "@com_google_protobuf//:protobuf",
   ],
 )
 

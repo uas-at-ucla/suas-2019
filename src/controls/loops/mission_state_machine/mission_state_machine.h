@@ -15,7 +15,6 @@
 #include <google/protobuf/text_format.h>
 
 #include "lib/alarm/alarm.h"
-#include "lib/logger/log_sender.h"
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/phased_loop/phased_loop.h"
 #include "lib/physics_structs/physics_structs.h"

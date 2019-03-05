@@ -4,13 +4,17 @@ import { createObjectSelector } from 'reselect-map';
 
 const initialState = {
   timelineGrammar: null,
-  commands: []
+  commands: [],
+  interopData: null
 };
 
 function reducer(state=initialState, action) {
   switch (action.type) {
     case 'TIMELINE_PROTO_LOADED': {
       return dotProp.set(state, `timelineGrammar`, action.payload);
+    }
+    case 'INTEROP_DATA': {
+      return dotProp.set(state, `interopData`, action.payload);
     }
     case 'ADD_COMMAND': {
       return dotProp.set(state, `commands`, state.commands.concat(action.payload));
@@ -82,13 +86,21 @@ const commandMarkersSelector = createObjectSelector(
   (cmd, protoInfo) => {
     for (let locationField of protoInfo.locationFields) {
       if (cmd[cmd.type][locationField]) {
+        let label = null;
+        if (cmd.type === 'WaypointCommand') {
+          label = {
+            fontFamily: 'Fontawesome',
+            text: '\uf192',
+            fontSize: '15px'
+          }
+        }
         let location = cmd[cmd.type][locationField];
         return {
           position: {
             lat: location.latitude,
             lng: location.longitude
           },
-          label: cmd.type,
+          label: label,
           options: {
             //icon: url //if u want it to look different
           }
@@ -125,6 +137,21 @@ export default {
             }
           }
         });
+      }
+    ),
+
+    interopElements: createSelector(
+      [state => state.interopData],
+      (interopData) => {
+        if (interopData) {
+          return {
+            home_marker: {
+              position: interopData.mission.home_pos
+            }
+            // TODO: Add map elements to represent the rest of the mission/obstacles
+          }
+        }
+        return null;
       }
     )
   })

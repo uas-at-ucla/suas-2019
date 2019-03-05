@@ -21,6 +21,15 @@ export default {
   droneLand: () => changeDroneState(DroneStates.LAND),
   droneFailsafe: () => changeDroneState(DroneStates.FAILSAFE),
   droneThrottleCut: () => changeDroneState(DroneStates.THROTTLE_CUT),
+  runMission: (commands) => {
+    return {
+      type: 'TRANSMIT',
+      payload: {
+        msg: 'RUN_MISSION',
+        data: commands
+      }
+    }
+  },
   testTransmit: (data) => {
     return {
       type: 'TRANSMIT',

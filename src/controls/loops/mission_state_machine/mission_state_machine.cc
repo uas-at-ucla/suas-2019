@@ -27,9 +27,9 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
 
   // Use same state in next loop iteration, unless it is changed.
   output.set_state(state_);
-  LOG_LINE("Running flight loop iteration @ "
-           << ::std::fixed << ::std::setw(8) << ::std::setprecision(3)
-           << sensors.time() << " with state: " << StateToString(state_));
+  // LOG_LINE("Running flight loop iteration @ "
+  //         << ::std::fixed << ::std::setw(8) << ::std::setprecision(3)
+  //         << sensors.time() << " with state: " << StateToString(state_));
 
   // Bypass current state if a safety signal is received.
   if (SafetyStateOverride(goal, output)) {
@@ -37,7 +37,7 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
   }
 
   // Route to the correct state.
-  LOG_LINE("Routing to state: " + StateToString(state_));
+  // LOG_LINE("Routing to state: " + StateToString(state_));
   GetStateHandler(state_)->Handle(sensors, goal, output);
 
   StateTransition(output);
@@ -49,8 +49,8 @@ void MissionStateMachine::StateTransition(::src::controls::Output &output) {
 
   if (old_state != new_state) {
     // Handle state transitions.
-    LOG_LINE("Switching states: " << StateToString(old_state) << " -> "
-                                  << StateToString(new_state));
+    //  LOG_LINE("Switching states: " << StateToString(old_state) << " -> "
+    //                                << StateToString(new_state));
   }
 
   state_ = new_state;

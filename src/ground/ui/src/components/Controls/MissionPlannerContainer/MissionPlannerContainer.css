@@ -1,11 +1,37 @@
 .MissionPlannerContainer {
+  position: relative;
+  top: 50px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.6);
+  width: 300px;
+}
+
+
+.MissionPlannerContainer > .missionPlannerHeader {
+  display: flex;
+  flex-direction: row;
+}
+
+
+.MissionPlannerContainer > .missionPlannerHeader > h1 {
+  font-size: 25px;
+  margin-right: 20px;
+}
+
+
+.MissionPlannerContainer .mission-planner-div {
+  position: relative;
   margin-top: 10px;
   width: 400px;
-  background: rgba(0, 0, 0, 0.6);
-  overflow: scroll;
+  overflow: auto;
+  overflow-x: hidden;
+  z-index: 3;
 }
 
 .MissionPlannerContainer.modal-dialog {
+  position: absolute;
+  top: 0;
+  width: calc(100% - 40px);
   max-width: none;
   margin-left: 20px;
   margin-right: 20px;
@@ -67,6 +93,8 @@
 /* Small mission planner */
 .SmallMissionPlanner {
   font-size: 11px;
+  height: 100%;
+  max-height: 250px;
 }
 
 .SmallMissionPlanner .command-btn {

@@ -66,13 +66,13 @@ toolchain {
   cxx_builtin_include_directory: '/usr/lib/clang/3.9.1/include'
   cxx_builtin_include_directory: '/usr/include/python2.7'
 
-  cxx_flag: "-isystem"
-  cxx_flag: "/usr/include/libcxxabi"
+  # cxx_flag: "-isystem"
+  # cxx_flag: "/usr/include/libcxxabi"
 
   compiler_flag: "-Wno-error=unused-command-line-argument"
   linker_flag: "-lstdc++"
-  linker_flag: "-lc++"
-  linker_flag: "-lprofiler"
+  # linker_flag: "-lc++"
+  # linker_flag: "-lprofiler"
   linker_flag: "-B/usr/bin/"
 
   feature {
@@ -166,7 +166,7 @@ toolchain {
   compiler_flag: "-D_FILE_OFFSET_BITS=64"
 
   linker_flag: "-fuse-ld=gold"
-  linker_flag: "-lpthread"
+  # linker_flag: "-lpthread"
 
   # Make C++ compilation deterministic. Use linkstamping instead of these
   # compiler symbols.
@@ -357,7 +357,8 @@ toolchain {
       action: "c++-header-preprocessing"
       action: "c++-module-compile"
       flag_group {
-        flag: "-std=gnu++1y"
+        flag: "-std=c++11"
+        # flag: "-std=gnu++1y"
       }
     }
     flag_set {
@@ -403,7 +404,7 @@ toolchain {
 
   # Pretty much everything needs this, including parts of the glibc STL...
   linker_flag: "-lm"
-  linker_flag: "-lrt"
+  # linker_flag: "-lrt"
 
   compiler_flag: "-Wall"
   compiler_flag: "-Wextra"

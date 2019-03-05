@@ -56,14 +56,16 @@ RUN apt-get install -y                                                         \
   vim
 
 # Set up Oracle Java8. #########################################################
-RUN add-apt-repository                                                         \
-     "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
-RUN apt-get update                                                          && \
-    echo debconf shared/accepted-oracle-license-v1-1 select true             | \
-    debconf-set-selections                                                  && \
-    apt-get install -y                                                         \
-      oracle-java8-installer
-
+COPY java.key /tmp/java.key
+RUN cat /tmp/java.key && apt-key add /tmp/java.key
+RUN echo oracle-java8-installer shared/accepted-oracle-license-v1-1            \
+      select true | debconf-set-selections                                  && \
+    apt-get update                                                          && \
+    apt-get install -y software-properties-common                           && \
+    add-apt-repository -y ppa:webupd8team/java                              && \
+    apt-get update                                                          && \
+    apt-get install -y oracle-java8-installer                               && \
+    rm -rf /var/cache/oracle-jdk8-installer
 
 # Set up workspace. ############################################################
 RUN useradd -ms /bin/bash uas

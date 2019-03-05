@@ -23,11 +23,23 @@ new_git_repository(
   commit = 'daabb88e001f562e1f7df5f44d7fed32a0c107c2',
 )
 
+git_repository(
+  name = 'mavros_msgs',
+  remote = 'https://github.com/uas-at-ucla/mavros_msgs.git',
+  commit = '12a3dc130769c43a1b449128da19f8cfe6a7823e',
+)
+
+git_repository(
+  name = 'sensor_msgs',
+  remote = 'https://github.com/uas-at-ucla/sensor_msgs.git',
+  commit = 'd64b571b99fa1a0f8796e5bffc3e15a6a60f795a',
+)
+
 new_git_repository(
   name = 'rpi_ws281x',
   remote = 'https://github.com/uas-at-ucla/rpi_ws281x.git',
   build_file = 'third_party/rpi_ws281x.BUILD',
-  commit = 'e3345674e5405777b61f4f509cd817d4923e99e4',
+  commit = '74927784671de0c839e41b4525876455777393da',
 )
 
 new_git_repository(
@@ -122,8 +134,8 @@ git_repository(
 
 git_repository(
   name = "com_github_nelhage_rules_boost",
-  commit = "6d6fd834281cb8f8e758dd9ad76df86304bf1869",
-  remote = "https://github.com/nelhage/rules_boost",
+  commit = "0a63e8f7939024bb4acef9c9daaa27956bc94c61",
+  remote = "https://github.com/uas-at-ucla/rules_boost.git",
 )
 
 
@@ -189,11 +201,11 @@ cc_library(
     """
 )
 
-new_git_repository(
+http_archive(
   name = "com_google_protobuf",
-  remote = "https://github.com/protocolbuffers/protobuf.git",
-  commit = "66dc42d891a4fc8e9190c524fd67961688a37bbe",
-  build_file = 'third_party/com_google_protobuf.BUILD'
+  build_file = 'third_party/com_google_protobuf.BUILD',
+  urls = ['https://github.com/google/protobuf/archive/v3.6.1.3.zip'],
+  strip_prefix = 'protobuf-3.6.1.3',
 )
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")

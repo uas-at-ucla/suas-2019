@@ -11,12 +11,12 @@ void StandbyState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Goal &goal,
                           ::src::controls::Output &output) {
   if (goal.run_mission()) {
-    LOG_LINE("Run mission requested; attempting to arm.");
+    //  LOG_LINE("Run mission requested; attempting to arm.");
     output.set_state(ARMING);
   }
 
   if (sensors.armed()) {
-    LOG_LINE("Pixhawk is armed; switching to ARMED state.");
+    //  LOG_LINE("Pixhawk is armed; switching to ARMED state.");
     output.set_state(ARMED);
   }
 }
