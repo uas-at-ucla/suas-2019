@@ -1,0 +1,6 @@
+#!/bin/bash --norc
+
+PATH="external/raspi_toolchain/libexec/gcc/arm-linux-gnueabihf/6.3.0:$PATH" \
+  exec \
+  external/raspi_toolchain/bin/arm-linux-gnueabihf-gcc \
+  "$@"

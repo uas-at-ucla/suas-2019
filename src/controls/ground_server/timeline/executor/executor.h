@@ -22,6 +22,9 @@
 #include "lib/pid/pid.h"
 #include "lib/semaphore/semaphore.h"
 
+// using protobuf messages defined in this namespace
+using namespace lib::mission_manager;
+
 namespace src {
 namespace controls {
 namespace loops {
@@ -39,7 +42,8 @@ class Executor {
   Executor();
   ~Executor();
 
-  ExecutorOutput Calculate(Position3D position, ::Eigen::Vector3d velocity);
+  ExecutorOutput Calculate(lib::Position3D position,
+                           ::Eigen::Vector3d velocity);
   void PreprocessorThread();
   void SetMission(::lib::mission_manager::Mission mission);
   ExecutorOutput VelocityNavigator();
@@ -57,7 +61,7 @@ class Executor {
   ::lib::mission_manager::Command cmd_, last_cmd_;
   bool cmd_set_;
 
-  Position3D position_;
+  lib::Position3D position_;
   bool position_set_;
   ::lib::Semaphore position_semaphore_;
 
@@ -71,7 +75,7 @@ class Executor {
 
   bool setpoint_reset_;
   bool met_goal_;
-  Position3D start_, end_;
+  lib::Position3D start_, end_;
   ::Eigen::Vector3d current_physical_velocity_;
 };
 

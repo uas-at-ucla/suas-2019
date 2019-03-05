@@ -77,7 +77,6 @@ docker run \
   -d \
   --ip 192.168.2.20 \
   -p 3000:3000 \
-  -p 8081:8081 \
   -v $ROOT_PATH:/home/uas/code_env \
   --name uas-at-ucla_ground \
   --net uas_bridge \

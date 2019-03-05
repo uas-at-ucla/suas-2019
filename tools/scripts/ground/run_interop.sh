@@ -40,5 +40,15 @@ echo ""
 # Specify interop version (https://hub.docker.com/r/auvsisuas/interop-server/tags)
 docker pull auvsisuas/interop-server:2018.12 2> /dev/null
 
+# Create network for docker container to use.
+./tools/scripts/docker/create_network.sh > /dev/null 2>&1 || true
+
 # Start docker container and let it run forever.
-docker run --rm -t -p 8000:80 --name uas-at-ucla_interop-server auvsisuas/interop-server
+docker run \
+  --rm \
+  -t \
+  -p 8000:80 \
+  --net uas_bridge \
+  --ip 192.168.2.30 \
+  --name uas-at-ucla_interop-server \
+  auvsisuas/interop-server

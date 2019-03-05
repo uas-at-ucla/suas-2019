@@ -25,7 +25,7 @@ void FlightLoop::Run() {
   // Don't allow two instances of the loop to run simultaneously on different
   // threads.
   if (running_) {
-    LOG_LINE("Loop already running.");
+    //  LOG_LINE("Loop already running.");
     return;
   }
   running_ = true;
@@ -87,12 +87,13 @@ FlightLoop::RunIteration(::src::controls::Sensors sensors,
 }
 
 void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
-  LOG_LINE("Flight Loop dt: " << ::std::setprecision(14)
-                              << sensors.time() - last_loop_ - 0.01);
+  // LOG_LINE("Flight Loop dt: " << ::std::setprecision(14)
+  //                            << sensors.time() - last_loop_ - 0.01);
 
   if (sensors.time() - last_loop_ > 0.01 + 0.002) {
-    LOG_LINE("Flight LOOP RUNNING SLOW: dt: "
-             << std::setprecision(14) << sensors.time() - last_loop_ - 0.01);
+    //  LOG_LINE("Flight LOOP RUNNING SLOW: dt: "
+    //           << std::setprecision(14) << sensors.time() - last_loop_ -
+    //           0.01);
   }
   last_loop_ = sensors.time();
 }
@@ -137,7 +138,7 @@ void FlightLoop::WriteActuators(::src::controls::Sensors &sensors,
     if (!did_alarm_) {
       did_alarm_ = true;
       alarm_.AddAlert({0.30, 0.30});
-      LOG_LINE("Alarm was manually triggered");
+      //    LOG_LINE("Alarm was manually triggered");
     }
   } else {
     did_alarm_ = false;
@@ -196,7 +197,7 @@ void FlightLoop::LogProtobufMessage(::std::string name,
     output << name << "... " << field << "\n";
   }
 
-  LOG_LINE(output.str());
+  // LOG_LINE(output.str());
 }
 
 } // namespace loops

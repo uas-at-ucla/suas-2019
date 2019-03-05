@@ -2,23 +2,23 @@ import targets
 from PIL import Image, ImageDraw
 from argparse import ArgumentParser
 import random
+import csv
 import os
 import math
 import urllib.request
 import subprocess
-import xml.etree.ElementTree as ET
 
 COLORS = {
-    'white': (255, 255, 255),
-    'black': (0, 0, 0),
-    'gray': (128, 128, 128),
-    'red': (255, 0, 0),
-    'blue': (0, 0, 255),
-    'green': (55, 130, 70),
-    'yellow': (255, 255, 0),
-    'purple': (128, 0, 128),
-    'brown': (165, 42, 42),
-    'orange': (255, 165, 0)
+    'white':  (0, (255, 255, 255)),
+    'black':  (1, (79,  86,  100)),
+    'gray':   (2, (128, 128, 128)),
+    'red':    (3, (237, 73,  98)),
+    'blue':   (4, (55,  129, 205)),
+    'green':  (5, (103, 162, 114)),
+    'yellow': (6, (245, 223, 20)),
+    'purple': (7, (108, 73,  155)),
+    'brown':  (8, (219, 187, 137)),
+    'orange': (9, (250, 149, 41))
 }
 
 KELVIN_TEMP = {
@@ -38,17 +38,43 @@ KELVIN_TEMP = {
 
 LETTERS = [
     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
-    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'
+    'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
 ]
 
 TRANSFORMS = ('rotate', 'perspective', 'affine')
 
 
-def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
-               draw_box, rescale_ratio, shape_color_name, letter_color_name,
-               target_pos_conf, white_balance, origin_pos):
+class TargetSelector:
+    def __init__(self, target_names, font):
+        self.targets = []
+        for target_name in target_names:
+            self.targets += [getattr(targets, target_name)(font)]
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return random.choice(self.targets)
+
+
+class SingleTarget:
+    def __init__(self, target_name, font):
+        self.target = getattr(targets, target_name)(font)
+
+    def __iter__(self):
+        return self
+
+    def __next__(self):
+        return self.target
+
+
+def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir, 
+               transforms, draw_box, rescale_ratio, shape_color_name, 
+               letter_color_name, target_pos_conf, white_balance, origin_pos):
     background_files = os.scandir(bg_dir)
     field_width = math.trunc(math.log10(n))
+    labels = []
     for i in range(n):
         if i % 100 == 0:
             print('Generating image #{}'.format(i))
@@ -70,16 +96,19 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
                 resample=Image.BICUBIC)
 
         # Choose some colors
-        pure_shape_color = random.choice(list(COLORS.values(
+        shape_color_choice = random.choice(list(COLORS.values(
         ))) if shape_color_name == 'random' else COLORS[shape_color_name]
 
-        pure_letter_color = random.choice(list(COLORS.values(
+        letter_color_choice = random.choice(list(COLORS.values(
         ))) if letter_color_name == 'random' else COLORS[letter_color_name]
 
-        while (pure_letter_color == pure_shape_color
+        while (shape_color_choice == letter_color_choice
                and shape_color_name == 'random'
                and letter_color_name == 'random'):
-            pure_shape_color = random.choice(list(COLORS.values()))
+            shape_color_choice = random.choice(list(COLORS.values()))
+
+        pure_shape_color = shape_color_choice[1]
+        pure_letter_color = letter_color_choice[1]
 
         # randomize rgb values for the colors chosen
         shape_color_lst = []
@@ -105,12 +134,20 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
 
         # Draw a target with a generator decided by the iterator
         generator = next(t_gen)
+        if (letter == 'Random'):
+            letter_choice = random.choice(LETTERS)
+        else:
+            letter_choice = letter
         target = generator.draw_target(
             size=t_size,
             shape_color=shape_color,
-            letter=random.choice(LETTERS),
+            letter=letter_choice,
             letter_color=letter_color)
-        if 'rotate' in transforms:
+        if r_angle > 0:
+            target = target.rotate(
+                r_angle, resample=Image.BICUBIC,
+                expand=1).resize((t_size, t_size), resample=Image.BOX)
+        elif 'rotate' in transforms:
             target = target.rotate(
                 random.randint(0, 359), resample=Image.BICUBIC,
                 expand=1).resize((t_size, t_size), resample=Image.BOX)
@@ -123,30 +160,23 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
 
         # create annotation
         im_filename = ('{:0=' + str(field_width) + 'd}').format(i)
-        annotation = ET.Element('annotation')
-        annotation_xml = ET.ElementTree(element=annotation)
-        ET.SubElement(annotation, 'filename').text = im_filename + '.jpg'
-        ET.SubElement(ET.SubElement(annotation, 'source'),
-                      'database').text = 'Unknown'
-        size_e = ET.SubElement(annotation, 'size')
-        ET.SubElement(size_e, 'width').text = str(i_size[0])
-        ET.SubElement(size_e, 'height').text = str(i_size[1])
-        ET.SubElement(size_e, 'depth').text = '3'
-        ET.SubElement(annotation, 'segmented').text = '0'
-        obj_e = ET.SubElement(annotation, 'object')
-        ET.SubElement(obj_e, 'name').text = type(generator).__name__
-        ET.SubElement(obj_e, 'pose').text = 'Unspecified'
-        ET.SubElement(obj_e, 'truncated').text = '0'
-        ET.SubElement(obj_e, 'difficult').text = '0'
-
         target_bounds = [(target_pos[0], target_pos[1]),
                          (target_pos[0] + t_size, target_pos[1] + t_size)]
-        bnds_e = ET.SubElement(obj_e, 'bndbox')
-        ET.SubElement(bnds_e, 'xmin').text = str(target_bounds[0][0])
-        ET.SubElement(bnds_e, 'ymin').text = str(target_bounds[0][1])
-        ET.SubElement(bnds_e, 'xmax').text = str(target_bounds[1][0])
-        ET.SubElement(bnds_e, 'ymax').text = str(target_bounds[1][1])
-        annotation_xml.write(os.path.join(dest_dir, im_filename + '.xml'))
+        labels.append([
+            i, # name
+            i_size[0], # width
+            i_size[1], # height
+            3, # depth
+            r_angle, # rotation
+            targets.TARGET_TYPES.index(type(generator).__name__), # shape
+            LETTERS.index(letter_choice), # letter
+            shape_color_choice[0], # shape color
+            letter_color_choice[0], # letter color
+            target_bounds[0][0], # xmin
+            target_bounds[0][1], # ymin
+            target_bounds[1][0], # xmax
+            target_bounds[1][1] # ymax
+        ])
 
         # Draw a bounding box
         if draw_box:
@@ -172,6 +202,9 @@ def gen_images(t_gen, n, shape, t_size, i_size, bg_dir, dest_dir, transforms,
             os.path.join(dest_dir,
                          im_filename + '.' + background_file.split('.')[1]))
 
+    with open(os.path.join(dest_dir, 'labels.csv'), 'w', newline='') as f:
+        csv.writer(f).writerows(labels)
+
 
 if __name__ == '__main__':
     parser = ArgumentParser()
@@ -182,6 +215,13 @@ if __name__ == '__main__':
         default=1,
         dest='n_targets',
         help='number of targets to generate')
+    parser.add_argument(
+        '-l',
+        '--letter',
+        default='Random',
+        dest='letter',
+        choices=LETTERS + ['Random'],
+        help='type of letter to generate')
     parser.add_argument(
         '-s',
         '--shape',
@@ -229,6 +269,12 @@ if __name__ == '__main__':
         help='width and height of the image as a tuple (width, height). \
         By default it will crop the image to the target')
     parser.add_argument(
+        '--rotation-angle',
+        type=int,
+        default=0,
+        dest='rotation_angle',
+        help='angle to rotate the image by, in degrees.')
+    parser.add_argument(
         '-d',
         '--dest',
         default=None,
@@ -266,6 +312,11 @@ if __name__ == '__main__':
         dest='rescale_ratio',
         help='rescale the source image before using it as a background')
     parser.add_argument(
+        '--combine-labels',
+        action='store_true',
+        dest='combine_labels',
+        help='output a single csv file with labels for all generated images')
+    parser.add_argument(
         '--origin-pos',
         type=int,
         nargs=2,
@@ -302,28 +353,8 @@ if __name__ == '__main__':
         default_dest = os.path.join('output', args.target_shape)
         os.makedirs(default_dest, exist_ok=True)
         args.dest = default_dest
-
-    class TargetSelector:
-        def __init__(self, target_names, font):
-            self.targets = []
-            for target_name in target_names:
-                self.targets += [getattr(targets, target_name)(font)]
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            return random.choice(self.targets)
-
-    class SingleTarget:
-        def __init__(self, target_name, font):
-            self.target = getattr(targets, target_name)(font)
-
-        def __iter__(self):
-            return self
-
-        def __next__(self):
-            return self.target
+    else:
+        os.makedirs(args.dest, exist_ok=True)
 
     if args.target_shape == 'Random':
         generator = TargetSelector(
@@ -334,10 +365,11 @@ if __name__ == '__main__':
     gen_images(
         t_gen=generator,
         n=args.n_targets,
-        shape=args.target_shape,
+        letter=args.letter,
         white_balance=args.white_balance,
         t_size=args.target_size,
         i_size=args.image_size,
+        r_angle=args.rotation_angle,
         bg_dir=args.backgrounds,
         dest_dir=args.dest,
         transforms=args.transforms,

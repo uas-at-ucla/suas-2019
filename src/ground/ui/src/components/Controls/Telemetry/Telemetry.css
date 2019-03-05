@@ -1,3 +1,9 @@
+.Telemetry {
+    position: relative;
+    width: 300px;
+}
+
+
 .Telemetry .Readout {
     background: rgba(0, 0, 0, 0.6);
 }
@@ -16,4 +22,31 @@
     width: 200px;
 
     overflow: hidden;
+}
+
+
+.Telemetry > .Readout {
+    border: 2px solid #000000;
+    border-top-width: 0;
+    margin-bottom: 10px;
+}
+
+
+.Telemetry > .Readout > .KeyValue {
+    display: flex;
+    flex-direction: row;
+    border-top: 2px solid #000000;
+}
+
+
+.KeyValue > h1  , .KeyValue > h2 {
+    font-size: 15px;
+    padding: 10px;
+    margin: 0;
+}
+
+
+.KeyValue > h1 {
+    width: 150px;
+    border-right: 2px solid #000000;
 }

@@ -62,12 +62,14 @@ void Drone2StateVisitor::Visit(const timeline::DroneCommand &drone_command) {
   }
 }
 
-void Drone2StateVisitor::Visit(const timeline::NothingCommand &command) {
+void Drone2StateVisitor::Visit(
+    const ::lib::mission_manager::NothingCommand &command) {
   (void)command;
   MakeBranchingState<states::Nothing>();
 }
 
-void Drone2StateVisitor::Visit(const timeline::SleepCommand &command) {
+void Drone2StateVisitor::Visit(
+    const ::lib::mission_manager::SleepCommand &command) {
   auto sleep_state = MakeBranchingState<states::Sleep>();
   sleep_state->SetDurationSecs(command.time());
 }

@@ -2,11 +2,11 @@ workspace(name = "com_uclauas")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 load("@bazel_tools//tools/build_defs/repo:git.bzl", "git_repository", "new_git_repository")
 
-new_git_repository(
-  name = 'raspi-toolchain',
-  remote = 'https://github.com/uas-at-ucla/raspi-toolchain.git',
-  build_file = 'compilers/raspi-toolchain.BUILD',
-  commit = 'a3147acb2a75dcc54d33665882c2e399229d4824',
+http_archive(
+  name='raspi_toolchain',
+  build_file='compilers/raspi_toolchain.BUILD',
+  urls = ['https://github.com/uas-at-ucla/raspi-toolchain/releases/download/1.1/raspi_toolchain.zip'],
+  strip_prefix='raspi_toolchain',
 )
 
 new_git_repository(
@@ -23,11 +23,23 @@ new_git_repository(
   commit = 'daabb88e001f562e1f7df5f44d7fed32a0c107c2',
 )
 
+git_repository(
+  name = 'mavros_msgs',
+  remote = 'https://github.com/uas-at-ucla/mavros_msgs.git',
+  commit = '12a3dc130769c43a1b449128da19f8cfe6a7823e',
+)
+
+git_repository(
+  name = 'sensor_msgs',
+  remote = 'https://github.com/uas-at-ucla/sensor_msgs.git',
+  commit = 'd64b571b99fa1a0f8796e5bffc3e15a6a60f795a',
+)
+
 new_git_repository(
   name = 'rpi_ws281x',
   remote = 'https://github.com/uas-at-ucla/rpi_ws281x.git',
   build_file = 'third_party/rpi_ws281x.BUILD',
-  commit = 'e3345674e5405777b61f4f509cd817d4923e99e4',
+  commit = '74927784671de0c839e41b4525876455777393da',
 )
 
 new_git_repository(
@@ -116,14 +128,14 @@ new_git_repository(
 
 git_repository(
   name = "gtest",
-  commit = "fe14e3030737509c2b9f9adad80ff56f80e988a2",
-  remote = "https://github.com/abseil/googletest.git"
+  commit = "d85b96280a55aa70ace9b86c9773cfe6634a1686",
+  remote = "https://github.com/uas-at-ucla/googletest.git"
 )
 
 git_repository(
   name = "com_github_nelhage_rules_boost",
-  commit = "6d6fd834281cb8f8e758dd9ad76df86304bf1869",
-  remote = "https://github.com/nelhage/rules_boost",
+  commit = "0a63e8f7939024bb4acef9c9daaa27956bc94c61",
+  remote = "https://github.com/uas-at-ucla/rules_boost.git",
 )
 
 
@@ -143,8 +155,8 @@ new_git_repository(
 
 new_git_repository(
   name = "pigpio",
-  commit = "934874be2fa34a525beb33e8cb75e378df587860",
-  remote = "https://github.com/joan2937/pigpio.git",
+  commit = "94025d38ed3d6c1f713d3cb7fc809499ce18b5e4",
+  remote = "https://github.com/uas-at-ucla/pigpio.git",
   build_file = "third_party/pigpio.BUILD",
 )
 
@@ -170,7 +182,7 @@ new_git_repository(
 
 new_git_repository(
   name = "ros_bazel",
-  commit = "1d8833d972c02c06dfbd7281c3e1469806668643",
+  commit = "b32a4b5280efc056fa7fc522970523be85f149d9",
   remote = "https://github.com/uas-at-ucla/ros_bazel.git",
   build_file = "third_party/ros_bazel.BUILD"
 )
@@ -189,11 +201,11 @@ cc_library(
     """
 )
 
-new_git_repository(
+http_archive(
   name = "com_google_protobuf",
-  remote = "https://github.com/protocolbuffers/protobuf.git",
-  commit = "66dc42d891a4fc8e9190c524fd67961688a37bbe",
-  build_file = 'third_party/com_google_protobuf.BUILD'
+  build_file = 'third_party/com_google_protobuf.BUILD',
+  urls = ['https://github.com/google/protobuf/archive/v3.6.1.3.zip'],
+  strip_prefix = 'protobuf-3.6.1.3',
 )
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
@@ -209,3 +221,26 @@ local_repository(
   path = "./src/ground/ui/node_modules/rxjs/src",
 )
 
+http_archive(
+    name='genmsg_repo',
+    build_file='third_party/genmsg.BUILD',
+    sha256='d7627a2df169e4e8208347d9215e47c723a015b67ef3ed8cda8b61b6cfbf94d2',
+    urls = ['https://github.com/ros/genmsg/archive/0.5.8.tar.gz'],
+    strip_prefix='genmsg-0.5.8',
+)
+
+http_archive(
+    name='genpy_repo',
+    build_file='third_party/genpy.BUILD',
+    sha256='35e5cd2032f52a1f77190df5c31c02134dc460bfeda3f28b5a860a95309342b9',
+    urls = ['https://github.com/ros/genpy/archive/0.6.5.tar.gz'],
+    strip_prefix='genpy-0.6.5',
+)
+
+http_archive(
+    name='gencpp',
+    build_file='third_party/gencpp.BUILD',
+    sha256='d7627a2df169e4e8208347d9215e47c723a015b67ef3ed8cda8b61b6cfbf94d2',
+    urls = ['https://github.com/ros/gencpp/archive/0.5.5.tar.gz'],
+    strip_prefix='gencpp-0.5.5',
+)

@@ -16,7 +16,7 @@ const double kMetersPerCoordinate = GetDistance2D({0, 0, 0}, {1, 0, 0});
 
 class ExecutorPlant {
  public:
-  ExecutorPlant(Position3D init_position, double loop_frequency) :
+  ExecutorPlant(lib::Position3D init_position, double loop_frequency) :
       drone_position_(init_position),
       loop_frequency_(loop_frequency) {}
 
@@ -28,12 +28,12 @@ class ExecutorPlant {
     drone_position_.altitude -= flight_direction.z / loop_frequency_;
   }
 
-  Position3D GetPosition() { return drone_position_; }
+  lib::Position3D GetPosition() { return drone_position_; }
 
   double GetLoopFrequency() { return loop_frequency_; }
 
  private:
-  Position3D drone_position_;
+  lib::Position3D drone_position_;
   double loop_frequency_;
 };
 
@@ -41,11 +41,11 @@ class ExecutorTest : public ::testing::Test {
  protected:
   ExecutorTest() {}
 
-  bool CheckMetGoal(Position3D position, Position3D goal) {
+  bool CheckMetGoal(lib::Position3D position, lib::Position3D goal) {
     return GetDistance3D(position, goal) < kMetPositionTolerance;
   }
 
-  void MetGoal(Position3D position, Position3D goal) {
+  void MetGoal(lib::Position3D position, lib::Position3D goal) {
     EXPECT_LE(GetDistance3D(position, goal), kMetPositionTolerance);
   }
 
@@ -54,7 +54,7 @@ class ExecutorTest : public ::testing::Test {
 
 TEST_F(ExecutorTest, ReachesGoalTest) {
   ExecutorPlant plant({0, 0, 0}, 100);
-  Position3D goal = {0.0005, 0.0003, 10};
+  lib::Position3D goal = {0.0005, 0.0003, 10};
 
   ::lib::mission_manager::Mission mission;
   ::lib::mission_manager::GotoCommand *goto_cmd =
