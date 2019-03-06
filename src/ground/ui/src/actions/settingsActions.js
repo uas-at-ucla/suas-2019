@@ -1,8 +1,8 @@
 export default {
-  updateSettings: function(settings) {
+  updateSettings: function(newSettings) {
     return {
       type: "UPDATE_SETTINGS",
-      payload: settings
+      payload: newSettings
     };
   }
 };

@@ -15,39 +15,32 @@ import GoogleMap from "../Utils/GoogleMap/GoogleMap";
 import "./Settings.css";
 import settingsActions from "../../actions/settingsActions";
 
-const mapStateToProps = redux_state => {
+const mapStateToProps = state => {
   return {
-    redux_settings: redux_state.settings
+    settings: state.settings
   };
 };
 
 const mapDispatchToProps = settingsActions;
 
 class Settings extends Component {
-  constructor(props) {
-    super(props);
-    this.state = this.props.redux_settings;
-  }
-
   handleChange = event => {
-    this.setState({ [event.target.name]: event.target.value });
+    this.props.updateSettings({ [event.target.name]: event.target.value });
   };
 
-  handleSubmit = event => {
-    alert("Connected to: " + this.state.ip);
-    event.preventDefault();
+  connectToInterop = event => {
+    alert("Connected to: " + this.props.settings.connected_ip);
   };
 
   handleClickedMap = event => {
-    this.setState({ lat: event.latLng.lat(), long: event.latLng.lng() });
+    this.props.updateSettings({ lat: event.latLng.lat(), lng: event.latLng.lng() });
   };
 
   render() {
-    console.log(this.state);
     return (
       <Container className="Settings">
         <h1>Settings</h1>
-        <h2>Connected To: {this.state.ip}</h2>
+        <h2>Connected To: {this.props.settings.ip}</h2>
         <Row>
           <Col>
             <InputGroup>
@@ -55,8 +48,8 @@ class Settings extends Component {
                 Interop Username
               </InputGroupAddon>
               <Input
-                value={this.state.un}
-                name="un"
+                value={this.props.settings.username}
+                name="username"
                 type="text"
                 placeholder="Enter username..."
                 onChange={this.handleChange}
@@ -69,8 +62,8 @@ class Settings extends Component {
                 Interop Password
               </InputGroupAddon>
               <Input
-                value={this.state.pw}
-                name="pw"
+                value={this.props.settings.password}
+                name="password"
                 type="text"
                 placeholder="Enter password..."
                 onChange={this.handleChange}
@@ -84,10 +77,10 @@ class Settings extends Component {
             <InputGroup>
               <InputGroupAddon addonType="prepend">Interop IP</InputGroupAddon>
               <Input
-                value={this.state.ip}
-                name="ip"
+                value={this.props.settings.interopIp}
+                name="interopIp"
                 type="text"
-                placeholder={this.state.ip}
+                placeholder={this.props.settings.interopIp}
                 onChange={this.handleChange}
                 maxLength="18"
               />
@@ -95,7 +88,7 @@ class Settings extends Component {
           </Col>
           <br />
           <Col>
-            <Button color="danger" onClick={this.handleSubmit}>
+            <Button color="danger" onClick={this.connectToInterop}>
               Connect To Interop
             </Button>
           </Col>
@@ -106,8 +99,8 @@ class Settings extends Component {
           <InputGroup>
             <InputGroupAddon addonType="prepend">Ground IP</InputGroupAddon>
             <Input
-              value={this.state.gip}
-              name="gip"
+              value={this.props.settings.groundIp}
+              name="groundIp"
               type="text"
               placeholder="0"
               onChange={this.handleChange}
@@ -120,13 +113,12 @@ class Settings extends Component {
             <h2>File Browser</h2>
             <Input type="file" />
             <br />
-            <Button onClick={this.updateSettings}>Update Settings</Button>
           </Col>
           <br />
           <Col>
             <h2>Antenna Tracker Location:</h2>
             <p>
-              {this.state.lat}° , {this.state.long}°
+              {this.props.settings.lat}° , {this.props.settings.lng}°
             </p>
             <div style={{ height: "350px", width: "500px" }}>
               <GoogleMap
@@ -141,7 +133,7 @@ class Settings extends Component {
                 onDblClick={this.handleClickedMap}
               >
                 <Marker
-                  position={{ lat: this.state.lat, lng: this.state.long }}
+                  position={{ lat: this.props.settings.lat, lng: this.props.settings.lng }}
                 />
               </GoogleMap>
             </div>
@@ -150,10 +142,6 @@ class Settings extends Component {
       </Container>
     );
   }
-
-  updateSettings = () => {
-    this.props.updateSettings(this.state);
-  };
 }
 
 export default connect(
