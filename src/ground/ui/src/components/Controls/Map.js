@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import GoogleMap from '../Utils/GoogleMap/GoogleMap';
 import missionActions from '../../actions/missionActions';
 import { selector } from '../../store';
-import { Circle, Polygon } from "react-google-maps";
+import { Circle, Polygon, Polyline } from "react-google-maps";
 
 
 const mapStateToProps = state => {
@@ -24,7 +24,8 @@ const mapDispatchToProps = missionActions;
 
 class Map extends Component {
   state = {
-    isOpen: {}
+    isOpen: {},
+    commandPointPolyCoords: []
   };
 
   onToggleOpen = (id) => {
@@ -155,9 +156,9 @@ class Map extends Component {
                   </div>
                 </InfoWindow>}
               </Marker>
+
             : null
           )}
-
         </GoogleMap>
       </div>
     );
@@ -169,8 +170,12 @@ class Map extends Component {
 
   mapDblClick = (event) => {
     this.addWaypointCommand(event.latLng.lat(), event.latLng.lng());
+    this.addCommandPointCoord(event.latLng.lat(), event.latLng.lng());
   }
 
+  addCommandPointCoord = (lat, lng) => {
+    this.state.commandPointPolyCoords.push({lat: lat , lng: lng});
+  }
   addWaypointCommand = (lat, lng) => {
     let defaultWaypointCommand = { goal: {
       latitude: lat,
