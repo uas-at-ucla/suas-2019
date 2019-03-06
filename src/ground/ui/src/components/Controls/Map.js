@@ -24,8 +24,7 @@ const mapDispatchToProps = missionActions;
 
 class Map extends Component {
   state = {
-    isOpen: {},
-    commandPointPolyCoords: []
+    isOpen: {}
   };
 
   onToggleOpen = (id) => {
@@ -60,6 +59,10 @@ class Map extends Component {
           return searchCoordinates[index];
       })
     }
+    const commandPointPolyCoords = this.props.commandPoints.map((commandPoint, index) => {
+      return commandPoint.marker.position;
+    })
+
     return (
       <div className="Map">
         <GoogleMap
@@ -159,6 +162,9 @@ class Map extends Component {
 
             : null
           )}
+                <Polyline
+                 path = {commandPointPolyCoords} strokeOpacity= {1} strokeWeight= {5} 
+                />
         </GoogleMap>
       </div>
     );
@@ -170,12 +176,8 @@ class Map extends Component {
 
   mapDblClick = (event) => {
     this.addWaypointCommand(event.latLng.lat(), event.latLng.lng());
-    this.addCommandPointCoord(event.latLng.lat(), event.latLng.lng());
   }
 
-  addCommandPointCoord = (lat, lng) => {
-    this.state.commandPointPolyCoords.push({lat: lat , lng: lng});
-  }
   addWaypointCommand = (lat, lng) => {
     let defaultWaypointCommand = { goal: {
       latitude: lat,
