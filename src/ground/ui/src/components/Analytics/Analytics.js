@@ -11,27 +11,47 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = {}; //TODO Make action for recording telemetry
-
 class Analytics extends Component {
   render() {
     return (
       <div className="Analytics">
         Telemetry: {JSON.stringify(this.props.telemetry)}
-        <button>
-          Record!!! / Stop Recording (and save to file)!!
-        </button>
-        <button>
-          Load Telemetry File / Unload File
-        </button>
-        <button>
-          Run Loaded Telemetry / Pause Telemetry
-        </button>
+        <div>
+          <button>
+            Record!!! / Stop Recording (and save to file)!!
+          </button>
+          <button>
+            Load Telemetry File / Unload File
+          </button>
+          <button>
+            Run Loaded Telemetry / Pause Telemetry
+          </button>
+        </div>
+
+        <div>
+          <button>
+            Save Current Interop Mission
+          </button>
+          <button>
+            Load Interop Mission / Unload File
+          </button>
+        </div>
       </div>
     );
   }
 
+  saveInteropMission() {
+    //TODO: add the interop data to mapStateToProps (see Map.js)
+    //Save it to a file using JSON.stringify and downloadToBrowser
+  }
+
+  loadInteropMission() {
+    //TODO load JSON data from a file
+    this.props.dispatch({ type: 'INTEROP_DATA', payload: data });
+  }
+
   downloadTelemetry() {
-    downloadToBrowser("telemetry.json", "test content");
+    downloadToBrowser("telemetry.json", "file text content");
   }
 }
 
