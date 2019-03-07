@@ -163,10 +163,12 @@ USER uas
 RUN ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
 USER root
 
+RUN usermod -m -d /home/uas uas
+
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
 
-ENV ROS_MASTER_URI http://0.0.0.0:11311
+ENV ROS_MASTER_URI http://127.0.0.1:11311
 COPY htoprc /home/uas/.config/htop/htoprc
 
 EXPOSE 8085/udp

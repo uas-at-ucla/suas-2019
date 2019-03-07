@@ -141,7 +141,7 @@ DOCKER_BUILD_CMD="set -x; \
   echo STARTED > /tmp/uas_init; \
   sudo -u uas bash -c \"bazel; \
   source /home/uas/.bashrc; \
-  /opt/ros/melodic/bin/roscore &> /dev/null; \
+  /opt/ros/melodic/bin/roscore; \
   sleep infinity\""
 
 docker run                          \
