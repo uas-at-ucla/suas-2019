@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import './Telemetry.css';
 import AttitudeIndicator from './AttitudeIndicator';
-import Altimeter from './Altimeter';
+import Altimeter from './Altimeter/Altimeter';
 import Readout from './Readout';
 
 
