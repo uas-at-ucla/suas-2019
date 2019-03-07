@@ -1,16 +1,16 @@
 import cv2 as cv
-
-# Use matplotlib without GUI
-import matplotlib
-matplotlib.use('agg')
 import matplotlib.pyplot as plt
+
+__all__ = ['showHistogram', 'showThreshold', 'showContour']
 
 OUTPUT_PATH = 'output'
 
 # Save histogram to file
 def showHistogram(hist):
-	plt.plot(hist)
-	plt.savefig(OUTPUT_PATH + '/histogram.png')
+	fig, ax = plt.subplots()
+	ax.plot(hist)
+	fig.savefig(OUTPUT_PATH + '/histogram.png')
+	plt.close(fig)
 
 # Save binary image to file
 def showThreshold(thresh):

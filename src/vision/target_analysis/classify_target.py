@@ -5,6 +5,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots()
 
+__all__ = ['classifyShape', 'classifyLetter', 'classifyColor']
+
 class customShape:
     def __init__(self, poly, name, delSym):
         self.poly = poly
@@ -15,7 +17,7 @@ class customShape:
 def plotcoords(coords, label = None):
     pts = list(coords)
     x, y = zip(*pts)
-    plt.plot(x, y, label = label)
+    ax.plot(x, y, label = label)
 
 
 def carttopol(x, y):
@@ -76,6 +78,7 @@ def classifyColor(hue):
 # uses pyplot to display and show the given contour and the believed shape it matches
 
 def classifyShape(contour):
+    contour = [tuple(point) for point in contour.reshape(-1, 2)]
     shapes = []
 
     for sides in range(3, 10):
@@ -83,7 +86,7 @@ def classifyShape(contour):
 
     # for shape in shapes:
     #     print(shape.name, shape.sides, shape.delSym)
-    
+
     mPoly = sg.Polygon(sg.MultiPoint(contour).convex_hull)
     sf = 1/(mPoly.area**0.5)
     mPoly = shapely.affinity.scale(mPoly, sf, sf)
@@ -94,13 +97,13 @@ def classifyShape(contour):
             diff = mPoly.difference(shapely.affinity.rotate(shape.poly, i)).area
             if diff < best:
                 best, b_shape = diff, shape
-    
+
     plotcoords(mPoly.exterior.coords, 'givenpoly')
     plotcoords(b_shape.poly.exterior.coords, 'matchedpoly')
-    plt.legend(loc='upper left')
-    plt.axis('equal')
+    ax.legend(loc='upper left')
+    ax.axis('equal')
     plt.show()
-    print(b_shape.name)
+    return b_shape.name
 
 # Input: list of lists containing 2 integers (i.e. list of xy-pairs)
 # Output: character indicating which letter it is
@@ -110,7 +113,7 @@ def classifyLetter(contour):
 
 #currently testing using a near square quadrilateral
 def main():
-    classifyShape(((1, 0), (-.1, .9), (-1.2, -.1), (-.1, -.8)))
+    print(classifyShape(((1, 0), (-.1, .9), (-1.2, -.1), (-.1, -.8))))
 
 if __name__ == '__main__':
     main()

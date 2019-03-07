@@ -10,18 +10,19 @@ import sys
 # Histogram bin size (must divide 180)
 BIN_SIZE = 4
 
-# +/- degrees to allow in hue threshold
-HUE_MARGIN = 10
-
 # Valid contour area range (as percentage of image size)
-CAREA_MIN = 0.00005
-CAREA_MAX = 0.05
+AREA_MIN = 0.00005
+AREA_MAX = 0.05
+
+# Maximum number of points used to describe contour
+DETAIL_MAX = 500
 
 def range_lower(hue):
-	return (hue - HUE_MARGIN, 0, 32)
+	# Create overlap of one bin size and keep threshold centered on hue
+	return (hue - BIN_SIZE, 0, 32)
 
 def range_upper(hue):
-	return (hue + HUE_MARGIN, 255, 255)
+	return (hue + BIN_SIZE, 255, 255)
 
 # Range threshold that handles cylindrical coordinates
 def inRange_wrapHue(img, lower, upper):
@@ -44,8 +45,8 @@ img = cv.imread(sys.argv[1])
 size = np.prod(img.shape[:2])
 
 # 1. Calculate histogram of just hue channel
-imgHSV = cv.cvtColor(img, cv.COLOR_BGR2HLS) # Hue-Lightness-Saturation
-histHue = cv.calcHist([imgHSV], [0], None, [180 // BIN_SIZE], [0,180]).ravel()
+imgHLS = cv.cvtColor(img, cv.COLOR_BGR2HLS) # Hue-Lightness-Saturation
+histHue = cv.calcHist([imgHLS], [0], None, [180 // BIN_SIZE], [0,180]).ravel()
 
 showHistogram(histHue)
 
@@ -53,15 +54,15 @@ showHistogram(histHue)
 # Pad histogram with values from other end, to allow ends to be considered peaks
 peakIdxs = signal.argrelmax(np.pad(histHue, 1, 'wrap'))[0] - 1
 # Sort from most to least frequent hue
-peaks = sorted(zip(histHue[peakIdxs], peakIdxs), reverse=True)
+peaks = sorted(peakIdxs, key=histHue.__getitem__, reverse=True)
 
 print("All hues:", list(peakIdxs * BIN_SIZE))
 
 # 3. Find best hue (and target) by trying to find a target with each one
-for count,pos in peaks:
+for pos in peaks:
 	hue = int(pos) * BIN_SIZE
 
-	thresh = inRange_wrapHue(imgHSV, range_lower(hue), range_upper(hue))
+	thresh = inRange_wrapHue(imgHLS, range_lower(hue), range_upper(hue))
 	showThreshold(thresh)
 
 	# TODO: why does this happpen?
@@ -70,20 +71,20 @@ for count,pos in peaks:
 
 	# Find biggest contour by pixel area
 	contours, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-	target, area = max(zip(contours, map(cv.contourArea, contours)), key = lambda p: p[1])
+	target = max(contours, key=cv.contourArea)
+	area = cv.contourArea(target)
 
 	# Human-readable logging
 	summary = {
 		'hue': hue,
 		'contours': len(contours),
-		'pixel_ratio': count / size,
 		'area_ratio': area / size,
 		'bounding_box': cv.boundingRect(target),
 		'contour_detail': len(target)
 	}
 
-	# Filter by contour area to image size ratio
-	if not CAREA_MIN < area / size < CAREA_MAX:
+	# Filter by contour area to image size ratio, and by contour complexity
+	if not AREA_MIN < area / size < AREA_MAX or len(contours) > DETAIL_MAX:
 		print("Rejecting", summary)
 		continue
 
@@ -98,8 +99,8 @@ result = {
 	'location': cv.boundingRect(target),
 	'shape': classifyShape(target),
 	'shapeColor': classifyColor(hue),
-	'letter': classifyLetter(None), # TODO
-	'letterColor': classifyColor(None) # TODO
+	'letter': None, # classifyLetter(None), # TODO
+	'letterColor': None # classifyColor(None) # TODO
 }
 
 print("Target analysis:", result)
