@@ -29,7 +29,8 @@ void FlightLoop::Run() {
     phased_loop_.sleep();
 
     // TODO: Fetch latest messages.
-    ::src::controls::Sensors sensors_message; // = sensors_uas_message.sensors();
+    ::src::controls::Sensors
+        sensors_message; // = sensors_uas_message.sensors();
 
     // Set the current time in inputted sensors message.
     double current_time = ::lib::phased_loop::GetCurrentTime();

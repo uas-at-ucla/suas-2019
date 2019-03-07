@@ -9,10 +9,10 @@
 #include <string>
 #include <thread>
 
-#include <ros/ros.h>
 #include "zmq.hpp"
 #include <boost/algorithm/string.hpp>
 #include <google/protobuf/text_format.h>
+#include <ros/ros.h>
 
 #include "lib/alarm/alarm.h"
 #include "lib/mission_manager/mission_commands.pb.h"

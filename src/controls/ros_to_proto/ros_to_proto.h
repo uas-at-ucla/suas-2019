@@ -7,6 +7,7 @@
 
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <google/protobuf/text_format.h>
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/VFR_HUD.h>
@@ -14,7 +15,6 @@
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <std_msgs/Float64.h>
-#include <google/protobuf/text_format.h>
 
 #include "src/controls/messages.pb.h"
 
