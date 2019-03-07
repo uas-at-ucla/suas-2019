@@ -12,16 +12,9 @@ FlightLoop::FlightLoop() :
     did_alarm_(false),
     did_arm_(false),
     last_bomb_drop_(0),
-    last_dslr_(0),
-    sensors_receiver_("ipc:///tmp/uasatucla_sensors.ipc", kMaxMessageInQueues),
-    goal_receiver_("ipc:///tmp/uasatucla_goal.ipc", kMaxMessageInQueues),
-    output_sender_("ipc:///tmp/uasatucla_output.ipc") {}
+    last_dslr_(0) {}
 
 void FlightLoop::Run() {
-  sensors_receiver_.Connect();
-  goal_receiver_.Connect();
-  output_sender_.Connect();
-
   // Don't allow two instances of the loop to run simultaneously on different
   // threads.
   if (running_) {
@@ -35,41 +28,20 @@ void FlightLoop::Run() {
     // Run loop at a set frequency.
     phased_loop_.sleep();
 
-    // Fetch latest messages.
-    if (!sensors_receiver_.HasMessages()) {
-      continue;
-    }
-
-    if (!goal_receiver_.HasMessages()) {
-      continue;
-    }
-
-    // Extract messages from UasMessage wrapper.
-    ::src::controls::UasMessage sensors_uas_message =
-        sensors_receiver_.GetLatest();
-    if (!sensors_uas_message.has_sensors()) {
-      continue;
-    }
-    ::src::controls::Sensors sensors_message = sensors_uas_message.sensors();
+    // TODO: Fetch latest messages.
+    ::src::controls::Sensors sensors_message; // = sensors_uas_message.sensors();
 
     // Set the current time in inputted sensors message.
     double current_time = ::lib::phased_loop::GetCurrentTime();
     sensors_message.set_time(current_time);
 
-    ::src::controls::UasMessage goal_uas_message = goal_receiver_.GetLatest();
-    if (!goal_uas_message.has_goal()) {
-      continue;
-    }
-    ::src::controls::Goal goal_message = goal_uas_message.goal();
+    ::src::controls::Goal goal_message; //= goal_uas_message.goal();
 
     // Run control loop iteration.
     ::src::controls::Output output_message =
         RunIteration(sensors_message, goal_message);
 
-    // Send out output message.
-    ::src::controls::UasMessage output_uas_message;
-    output_uas_message.set_allocated_output(&output_message);
-    output_sender_.Send(output_uas_message);
+    // TODO: Send out output message.
   }
 }
 

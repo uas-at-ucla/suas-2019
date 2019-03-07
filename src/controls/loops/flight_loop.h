@@ -9,7 +9,7 @@
 #include <string>
 #include <thread>
 
-#include "ros/ros.h"
+#include <ros/ros.h>
 #include "zmq.hpp"
 #include <boost/algorithm/string.hpp>
 #include <google/protobuf/text_format.h>
@@ -88,13 +88,7 @@ class FlightLoop {
   double last_bomb_drop_;
   double last_dslr_;
 
-  ::lib::proto_comms::ProtoReceiver<::src::controls::Sensor>
-      sensors_receiver_;
-  ::lib::proto_comms::ProtoReceiver<::src::controls::Goal> goal_receiver_;
-  ::lib::proto_comms::ProtoSender<::src::controls::Output> output_sender_;
-
   ::ros::NodeHandle ros_node_handle_;
-
 };
 
 } // namespace loops
