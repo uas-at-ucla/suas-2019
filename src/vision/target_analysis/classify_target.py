@@ -113,7 +113,8 @@ def classifyLetter(contour):
 
 #currently testing using a near square quadrilateral
 def main():
-    print(classifyShape(((1, 0), (-.1, .9), (-1.2, -.1), (-.1, -.8))))
+    testContour = np.array([[[1, 0]], [[-.1, .9]], [[-1.2, -.1]], [[-.1, -.8]]])
+    print(classifyShape(testContour))
 
 if __name__ == '__main__':
     main()
