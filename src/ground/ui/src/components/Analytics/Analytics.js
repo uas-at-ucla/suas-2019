@@ -46,6 +46,7 @@ class Analytics extends Component {
   }
 
   loadInteropMission() {
+    let data;
     //TODO load JSON data from a file
     this.props.dispatch({ type: 'INTEROP_DATA', payload: data });
   }
