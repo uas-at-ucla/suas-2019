@@ -1,6 +1,7 @@
 import dotProp from 'dot-prop-immutable';
 import { createSelector, createStructuredSelector } from 'reselect';
 import { createObjectSelector } from 'reselect-map';
+import { arrayMove } from 'react-sortable-hoc';
 
 const initialState = {
   timelineGrammar: null,
@@ -21,6 +22,9 @@ function reducer(state=initialState, action) {
     }
     case 'DELETE_COMMAND': {
       return dotProp.delete(state, `commands.${action.payload}`);
+    }
+    case 'REORDER_COMMAND': {
+      return dotProp.set(state, `commands`, arrayMove(state.commands, action.payload.oldIndex, action.payload.newIndex));
     }
     case 'CHANGE_COMMAND_TYPE': {
       return dotProp.set(state, `commands.${action.payload.index}`, action.payload.newCommand);

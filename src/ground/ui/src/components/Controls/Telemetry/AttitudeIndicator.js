@@ -74,7 +74,11 @@ class Navball extends Component {
 
     render() {
         return(
-            <div className="AttitudeIndicator" id="navball" ref={(mount) => {this.mount = mount}}>
+            <div className="AttitudeIndicator">
+                <div className="navball-background">
+                </div>
+                <div className="navball" id="navball" ref={(mount) => {this.mount = mount}}>
+                </div>
             </div>
         );
     }

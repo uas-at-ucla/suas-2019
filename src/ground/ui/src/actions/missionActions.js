@@ -20,12 +20,12 @@ export default {
       payload: index
     }
   },
-  moveCommand: (fromIndex, toIndex) => {
+  reorderCommand: (oldIndex, newIndex) => {
     return {
-      type: 'MOVE_COMMAND',
+      type: 'REORDER_COMMAND',
       payload: {
-        fromIndex: fromIndex,
-        toIndex: toIndex
+        oldIndex: oldIndex,
+        newIndex: newIndex
       }
     }
   },

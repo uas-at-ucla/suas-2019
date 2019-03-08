@@ -87,8 +87,8 @@ class Telemetry extends Component {
 
     return (
       <span className="Telemetry">
-        <AttitudeIndicator data={this.telmet} />
         <Readout data={this.readoutData()} />
+        <AttitudeIndicator data={this.telmet} />
         <Altimeter/>
       </span>
     );
