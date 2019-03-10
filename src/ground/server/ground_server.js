@@ -28,15 +28,17 @@ loadProtobufUtils((theProtobufUtils) => {
 var interopClient = null;
 var missionAndObstacles = null;
 connectToInterop("134.209.2.203", 8000, "testuser", "testpass", // try our test server
-  function onError() {
-    if (fs.existsSync("/.dockerenv")) { // If inside Docker container
-      connectToInterop("192.168.2.30", 80, "testuser", "testpass");
-    } else {
-      connectToInterop("localhost", 8000, "testuser", "testpass");
+  (err) => {
+    if (err) {
+      if (fs.existsSync("/.dockerenv")) { // If inside Docker container
+        connectToInterop("192.168.2.30", 80, "testuser", "testpass");
+      } else {
+        connectToInterop("localhost", 8000, "testuser", "testpass");
+      }
     }
   });
 
-function connectToInterop(ip, port, username, password, onError) {
+function connectToInterop(ip, port, username, password, callback) {
   interopClient = null;
   loadInteropClient(ip, port, username, password)
     .then(theInteropClient => {
@@ -50,9 +52,10 @@ function connectToInterop(ip, port, username, password, onError) {
           ui_io.emit('INTEROP_DATA', missionAndObstacles);
         })
       );
+      if (callback) callback();
     }).catch(error => {
       console.log(error);
-      if (onError) onError();
+      if (callback) callback(error);
     });
 }
 
