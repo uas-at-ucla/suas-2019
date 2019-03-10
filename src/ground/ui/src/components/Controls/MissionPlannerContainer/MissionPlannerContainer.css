@@ -1,18 +1,19 @@
-.MissionPlannerDiv {
+.MissionPlannerContainer {
   background: rgba(0, 0, 0, 0.6);
+  /* flex-grow: 1; */
   margin-top: 10px;
   padding: 10px;
   width: 300px;
 }
 
-.MissionPlannerDiv > .missionPlannerHeader {
+.MissionPlannerContainer > .missionPlannerHeader {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
   margin-bottom: 10px;
 }
 
-.MissionPlannerDiv > .missionPlannerHeader > h1 {
+.MissionPlannerContainer > .missionPlannerHeader > h1 {
   font-size: 25px;
 }
 

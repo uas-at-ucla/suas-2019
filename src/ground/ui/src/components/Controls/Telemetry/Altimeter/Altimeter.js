@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import './Altimeter.css';
 
-class Altimeter extends React.Component {
+class Altimeter extends Component {
   constructor(props) {
     super(props)
     

@@ -21,7 +21,11 @@ function createWindow () {
   });
 
   // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600});
+  mainWindow = new BrowserWindow({
+    width: 800,
+    height: 600,
+    icon: path.join(__dirname, 'icon.png')
+  });
 
   // and load the url of the app.
   const isDev = require('electron-is-dev');
