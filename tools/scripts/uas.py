@@ -492,6 +492,9 @@ def run_controls_simulate(args):
     tmux_cmd(DOCKER_EXEC_SCRIPT + "rostopic echo /mavros/global_position/global")
     tmux_move_pane("right")
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/io/gpio_writer:gpio_writer")
+    tmux_split("vertical", 2)
+    tmux_move_pane("down")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_communicator:ground_communicator")
 
     tmux_new_window("GROUND")
     tmux_cmd("./uas ground run")
@@ -557,7 +560,7 @@ def run_ground(arg1, args):
 
     # Run ground.py and pass command line arguments
     run_cmd_exit_failure(GROUND_DOCKER_EXEC_SCRIPT + \
-           "ssh -o StrictHostKeyChecking=no git@github.com || python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args))
+           "'ssh -o StrictHostKeyChecking=no git@github.com || python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args) + "'")
 
     kill_ground()
 

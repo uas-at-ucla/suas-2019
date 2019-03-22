@@ -54,7 +54,9 @@ class InteropClient {
         // console.log(interopTelemetry);
         this.postTelemetry(interopTelemetry).then(
           msg => { if (constants.verbose) console.log(msg) }
-        );
+        ).catch(error => {
+          console.log(error);
+        });
         this.telemetryCount = 0;
       }
       this.telemetryCount++;
@@ -82,5 +84,6 @@ module.exports = (ip, port, username, password) => {
   .catch(error => {
     console.log("Failed to login to interop!");
     console.log(error);
+    throw error;
   });
 }
