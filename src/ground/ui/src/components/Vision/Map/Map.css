@@ -1,8 +1,9 @@
 .Map {
+    position: absolute;
     top: 0;
     width: 100vw;
     height: 100vh;
-    z-index: -10;
+    z-index: -1;
 }
 .turnOnHM{
   padding: .5em 1em;
@@ -17,7 +18,7 @@
   align-items: center;
   position: fixed;
   z-index: 10;
-  top: 50px;
+  top: 400px;
   left:10px;
   width: 300px;
   height: 300px;
@@ -41,15 +42,18 @@
     box-shadow: 1px 1px 1px 1px lightblue;
 }
 
+/*
 #map {
   height: 100%;
 }
-/* Optional: Makes the sample page fill the window. */
+*/
+/* Optional: Makes the sample page fill the window.
 html, body {
   height: 100%;
   margin: 0;
   padding: 0;
 }
+*/
 #floating-panel {
   position: relative;
   top: 50px;

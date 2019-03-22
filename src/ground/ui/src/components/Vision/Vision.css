@@ -1,0 +1,10 @@
+.Vision .map-overlay {
+  padding: 10px;
+  position: fixed;
+  height: 93%;
+  width: 100%;
+  top: 60px;
+  pointer-events: none;
+  color: #FFF;
+  z-index: 10;
+}
