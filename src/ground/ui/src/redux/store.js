@@ -1,18 +1,26 @@
-import { createStore, applyMiddleware } from 'redux';
-import { combineReducersAndSelectors } from './utils/reduxUtils';
+import { combineReducers, applyMiddleware, createStore } from 'redux';
+import { createStructuredSelector } from 'reselect';
 import { createLogger } from 'redux-logger';
 
-import communicator from './communicator';
-import loadTimelineGrammar from './protobuf/timelineGrammarUtil';
+import communicator from 'communicator';
+import loadTimelineGrammar from 'protobuf/timelineGrammarUtil';
 
 import telemetryReducer from './reducers/telemetryReducer';
 import missionReducer from './reducers/missionReducer';
-import settingsReducer from "./reducers/settingsReducer";
+import settingsReducer from './reducers/settingsReducer';
 
-export const { reducer, selector } = combineReducersAndSelectors({
+import telemetrySelector from './selectors/telemetrySelector';
+import missionSelector from './selectors/missionSelector';
+
+const reducer = combineReducers({
   telemetry: telemetryReducer,
-  missionPlan: missionReducer,
+  mission: missionReducer,
   settings: settingsReducer
+});
+
+export const selector = createStructuredSelector({
+  telemetry: telemetrySelector,
+  mission: missionSelector
 });
 
 const logger = createLogger({

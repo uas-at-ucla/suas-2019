@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import droneActions from "../../actions/droneActions";
+import droneActions from "redux/actions/droneActions";
 
 const mapStateToProps = state => { 
   return {
-    missionCommands: state.missionPlan.commands
+    missionCommands: state.mission.commands
   }; 
 };
 

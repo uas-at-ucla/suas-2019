@@ -1,5 +1,5 @@
 import shortid from 'shortid';
-import { createMessage } from '../protobuf/timelineGrammarUtil';
+import { createMessage } from 'protobuf/timelineGrammarUtil';
 
 export default {
   addCommand: (type, options, protoInfo) => {
@@ -20,12 +20,12 @@ export default {
       payload: index
     }
   },
-  moveCommand: (fromIndex, toIndex) => {
+  reorderCommand: (oldIndex, newIndex) => {
     return {
-      type: 'MOVE_COMMAND',
+      type: 'REORDER_COMMAND',
       payload: {
-        fromIndex: fromIndex,
-        toIndex: toIndex
+        oldIndex: oldIndex,
+        newIndex: newIndex
       }
     }
   },

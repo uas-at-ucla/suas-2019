@@ -4,7 +4,6 @@
 
 .Controls .Map {
   position: absolute;
-  top: 0;
   width: 100vw;
   height: 100vh;
   z-index: -1;
@@ -13,7 +12,7 @@
 .Controls .map-overlay {
   padding: 10px;
   position: absolute;
-  height: 93%;
+  height: 100%;
   width: 100%;
   bottom:0; 
   pointer-events: none;
@@ -30,9 +29,9 @@
 }
 
 .Controls .left-side {
+  position: absolute;
   height: 100%;
   width: 100%;
-  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -43,10 +42,7 @@
   flex-direction: column;
   align-items: flex-start;
   flex-grow: 1;
-  flex-shrink: 10000;
-  overflow: hidden;
   padding-bottom: 10px;
-  position: relative;
 }
 
 .Controls .bottom-left {
@@ -54,13 +50,12 @@
 }
 
 .Controls .right-side {
+  position: absolute;
   height: 100%;
   width: 100%;
-  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  position: relative;
 }
 
 

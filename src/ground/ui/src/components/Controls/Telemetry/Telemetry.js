@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import './Telemetry.css';
-import AttitudeIndicator from './AttitudeIndicator';
+import AttitudeIndicator from './AttitudeIndicator/AttitudeIndicator';
 import Altimeter from './Altimeter/Altimeter';
 import Readout from './Readout';
 
@@ -87,8 +87,8 @@ class Telemetry extends Component {
 
     return (
       <span className="Telemetry">
-        <AttitudeIndicator data={this.telmet} />
         <Readout data={this.readoutData()} />
+        <AttitudeIndicator data={this.telmet} />
         <Altimeter/>
       </span>
     );
