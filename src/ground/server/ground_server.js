@@ -19,23 +19,22 @@ const ui_io = io.of('/ui');
 const drone_io = io.of('/drone');
 const fake_drone_io = io.of('/fake-drone');
 
-// Temporarily commented
-// // For decoding and encoding drone messages
-// var protobufUtils = null;
-// loadProtobufUtils((theProtobufUtils) => {
-//   protobufUtils = theProtobufUtils;
-// });
+// For decoding and encoding drone messages
+var protobufUtils = null;
+loadProtobufUtils((theProtobufUtils) => {
+  protobufUtils = theProtobufUtils;
+});
 
 var interopClient = null;
 var missionAndObstacles = null;
 connectToInterop("134.209.2.203", 8000, "testuser", "testpass", // try our test server
-/*onError*/() => {
-  if (fs.existsSync("/.dockerenv")) { // If inside Docker container
-    connectToInterop("192.168.2.30", 80, "testuser", "testpass");
-  } else {
-    connectToInterop("localhost", 8000, "testuser", "testpass");
-  }
-});
+  function onError() {
+    if (fs.existsSync("/.dockerenv")) { // If inside Docker container
+      connectToInterop("192.168.2.30", 80, "testuser", "testpass");
+    } else {
+      connectToInterop("localhost", 8000, "testuser", "testpass");
+    }
+  });
 
 function connectToInterop(ip, port, username, password, onError) {
   interopClient = null;
@@ -53,7 +52,7 @@ function connectToInterop(ip, port, username, password, onError) {
       );
     }).catch(error => {
       console.log(error);
-      onError();
+      if (onError) onError();
     });
 }
 
@@ -65,13 +64,14 @@ drone_io.on('connect', (socket) => {
   socket.on('TELEMETRY', (data) => {
     if (protobufUtils) {
       data.telemetry = protobufUtils.decodeTelemetry(data.telemetry);
-      if (interopClient) {
-        interopClient.newTelemetry(data.telemetry);
-      }
+      // if (interopClient) {
+      //   interopClient.newTelemetry(data.telemetry);
+      // }
       // When telemetry is received from the drone, send it to clients on the UI namespace
       if (telemetryCount >= uiSendInterval) {
+        console.log(JSON.stringify(data)); // temporary log
         if (constants.verbose) console.log(JSON.stringify(data, null, 2));
-        ui_io.emit('TELEMETRY', data);
+        // ui_io.emit('TELEMETRY', data);
         telemetryCount = 0;
       }
     }
