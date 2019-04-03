@@ -4,13 +4,13 @@ import { connect } from 'react-redux';
 import { Container, Row, Col, Input, InputGroup, InputGroupAddon } from 'reactstrap';
 import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 
-import missionActions from '../../../actions/missionActions';
-import { selector } from '../../../store';
+import missionActions from 'redux/actions/missionActions';
+import { selector } from 'redux/store';
 
 const mapStateToProps = state => { 
   return { 
-    missionPlan: state.missionPlan,
-    protoInfo: selector(state).missionPlan.protoInfo
+    mission: state.mission,
+    protoInfo: selector(state).mission.protoInfo
   };
 };
 
@@ -28,7 +28,7 @@ class MissionPlanner extends Component {
   CommandList = SortableContainer(() => {
     return (
       <Container fluid>
-        {this.props.missionPlan.commands.map((command, index) => 
+        {this.props.mission.commands.map((command, index) => 
           <SortableCommand
             className={this.props.className}
             key={command.id}
@@ -61,7 +61,7 @@ class MissionPlanner extends Component {
     changeCommandType: (event) => {
       let index = event.target.dataset.index;
       let newType = event.target.value;
-      let oldCommand = this.props.missionPlan.commands[index];
+      let oldCommand = this.props.mission.commands[index];
       this.props.changeCommandType(index, oldCommand, newType, this.props.protoInfo);
     },
   

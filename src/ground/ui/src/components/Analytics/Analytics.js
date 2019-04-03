@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import './Analytics.css';
-import downloadToBrowser from '../../utils/downloadToBrowser';
+import downloadToBrowser from 'utils/downloadToBrowser';
 
 const mapStateToProps = state => {
   return {

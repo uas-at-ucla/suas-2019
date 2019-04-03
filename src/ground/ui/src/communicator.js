@@ -7,6 +7,7 @@ const socketHost = isWebServer ? window.location.hostname : serverIP;
 const socketPort = 8081;
 const socket = socketIOClient("http://"+socketHost+':'+socketPort+'/ui', { transports: ['websocket'] });
 
+// Make redux middleware
 export default (store) => {
   console.log("Initializing communicator");
 

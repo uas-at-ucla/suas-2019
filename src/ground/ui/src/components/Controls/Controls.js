@@ -5,7 +5,7 @@ import Map from './Map';
 import Telemetry from './Telemetry/Telemetry';
 import DroneActions from './DroneActions';
 import MissionPlannerContainer from './MissionPlannerContainer/MissionPlannerContainer';
-import Cosmetics from '../Utils/Cosmetics/Cosmetics';
+import Cosmetics from 'components/Utils/Cosmetics/Cosmetics';
 
 class Controls extends Component {
   render() {

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as THREE from 'three';
 
+import './AttitudeIndicator.css';
 import NavballImg from './navball.png';
 
 
@@ -24,7 +25,7 @@ class Navball extends Component {
         this.camera.lookAt(this.scene.position);
 
 
-        this.renderer = new THREE.WebGLRenderer({antialias:true});
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         this.renderer.setSize(WIDTH, HEIGHT);
         document.getElementById("navball").appendChild(this.renderer.domElement);
 

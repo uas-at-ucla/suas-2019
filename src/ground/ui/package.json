@@ -25,6 +25,7 @@
     "redux-logger": "^3.0.6",
     "reselect": "^4.0.0",
     "reselect-map": "^1.0.4",
+    "sanitize.css": "^8.0.0",
     "shortid": "^2.2.14",
     "socket.io-client": "^2.1.1",
     "three": "^0.98.0"

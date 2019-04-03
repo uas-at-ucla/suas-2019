@@ -11,9 +11,10 @@ import {
   Row
 } from "reactstrap";
 import { Marker } from "react-google-maps";
-import GoogleMap from "../Utils/GoogleMap/GoogleMap";
+
 import "./Settings.css";
-import settingsActions from "../../actions/settingsActions";
+import GoogleMap from "components/Utils/GoogleMap/GoogleMap";
+import settingsActions from "redux/actions/settingsActions";
 
 const mapStateToProps = state => {
   return {

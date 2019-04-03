@@ -2,7 +2,7 @@ import React from 'react';
 import { withScriptjs, withGoogleMap, GoogleMap } from 'react-google-maps';
 
 import './GoogleMap.css';
-import downloadToBrowser from '../../../utils/downloadToBrowser';
+import downloadToBrowser from 'utils/downloadToBrowser';
 
 // UNCOMMENT TO USE MAPS OFFLINE
 // import 'google_maps_js_api';

@@ -1,5 +1,5 @@
 import shortid from 'shortid';
-import { createMessage } from '../protobuf/timelineGrammarUtil';
+import { createMessage } from 'protobuf/timelineGrammarUtil';
 
 export default {
   addCommand: (type, options, protoInfo) => {
