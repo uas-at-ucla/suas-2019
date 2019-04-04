@@ -16,10 +16,9 @@
 
 #include "lib/alarm/alarm.h"
 #include "lib/mission_manager/mission_commands.pb.h"
-#include "lib/phased_loop/phased_loop.h"
 #include "lib/physics_structs/physics_structs.h"
-#include "lib/proto_comms/proto_comms.h"
 #include "src/controls/ground_server/timeline/executor/executor.h"
+#include "src/controls/loops/ros_to_proto/ros_to_proto.h"
 #include "src/controls/loops/state_machine/state_machine.h"
 #include "src/controls/messages.pb.h"
 
@@ -80,6 +79,7 @@ class FlightLoop {
   ::std::chrono::time_point<std::chrono::system_clock> start_;
 
   ::lib::alarm::Alarm alarm_;
+  ros_to_proto::RosToProto ros_to_proto_;
 
   double last_loop_;
   bool did_alarm_;
@@ -87,8 +87,6 @@ class FlightLoop {
 
   double last_bomb_drop_;
   double last_dslr_;
-
-  ::ros::NodeHandle ros_node_handle_;
 };
 
 } // namespace loops

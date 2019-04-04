@@ -39,7 +39,7 @@ cc_library(
     '//src/controls/ground_server/timeline/executor:executor',
     '//src/controls/loops/state_machine:state_machine',
     '//src/controls:messages_cpp',
-    '//src/controls/ros_to_proto:ros_to_proto',
+    '//src/controls/loops/ros_to_proto:ros_to_proto',
     '//lib/proto_comms:proto_comms',
     '//lib/physics_structs:physics_structs',
     '//lib/phased_loop:phased_loop',

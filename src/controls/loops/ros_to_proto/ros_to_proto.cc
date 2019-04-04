@@ -2,6 +2,7 @@
 
 namespace src {
 namespace controls {
+namespace loops {
 namespace ros_to_proto {
 
 RosToProto::RosToProto() :
@@ -31,11 +32,37 @@ RosToProto::RosToProto() :
                                    &RosToProto::BatteryStateReceived, this)),
     state_subscriber_(
         ros_node_handle_.subscribe(kRosStateTopic, kRosMessageQueueSize,
-                                   &RosToProto::StateReceived, this)) {}
+                                   &RosToProto::StateReceived, this)),
+    arming_service_(
+        ros_node_handle_.serviceClient<mavros_msgs::CommandBool>(kRosArmingService)) {}
+
+Sensors RosToProto::GetSensors() {
+  Sensors sensors_copy;
+
+  // Grab lock to prevent ROS from modifying the shared Sensors object while a
+  // copy is performed.
+  {
+    ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
+    sensors_copy.CopyFrom(sensors_);
+  }
+
+  return sensors_copy;
+}
+
+void RosToProto::SendOutput(Output output) {
+  mavros_msgs::CommandBool arming_cmd;
+  arming_cmd.request.value = true;
+  arming_service_.call(arming_cmd);
+  ::std::cout << "ARM!\n";
+
+  if(output.send_offboard()) {
+  }
+}
 
 void RosToProto::GlobalPositionReceived(
     const ::sensor_msgs::NavSatFix global_position) {
 
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_latitude(global_position.latitude);
   sensors_.set_longitude(global_position.longitude);
   sensors_.set_altitude(global_position.altitude);
@@ -43,16 +70,24 @@ void RosToProto::GlobalPositionReceived(
 
 void RosToProto::RelativeAltitudeReceived(
     const ::std_msgs::Float64 relative_altitude) {
+
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_relative_altitude(relative_altitude.data);
+  sensors_mutex_.unlock();
 }
 
 void RosToProto::CompassHeadingReceived(
     const ::std_msgs::Float64 compass_heading) {
+
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_heading(compass_heading.data);
+  sensors_mutex_.unlock();
 }
 
 void RosToProto::VelocityReceived(
     const ::geometry_msgs::TwistStamped velocity) {
+
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_velocity_x(velocity.twist.linear.x);
   sensors_.set_velocity_y(velocity.twist.linear.y);
   sensors_.set_velocity_z(velocity.twist.linear.z);
@@ -64,6 +99,8 @@ void RosToProto::VfrHudReceived(const ::mavros_msgs::VFR_HUD vfr_hud) {
 
 void RosToProto::DiagnosticsReceived(
     ::diagnostic_msgs::DiagnosticArray diagnostic_array) {
+
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_gps_satellite_count(
       ::std::stoi(diagnostic_array.status[1].values[0].value));
   sensors_.set_gps_eph(::std::stod(diagnostic_array.status[1].values[2].value));
@@ -71,6 +108,7 @@ void RosToProto::DiagnosticsReceived(
 }
 
 void RosToProto::ImuDataReceived(::sensor_msgs::Imu imu_data) {
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_accelerometer_x(imu_data.linear_acceleration.x);
   sensors_.set_accelerometer_y(imu_data.linear_acceleration.y);
   sensors_.set_accelerometer_z(imu_data.linear_acceleration.z);
@@ -82,15 +120,19 @@ void RosToProto::ImuDataReceived(::sensor_msgs::Imu imu_data) {
 
 void RosToProto::BatteryStateReceived(
     ::sensor_msgs::BatteryState battery_state) {
+
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_battery_voltage(battery_state.voltage);
   sensors_.set_battery_current(battery_state.current);
 }
 
 void RosToProto::StateReceived(::mavros_msgs::State state) {
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_armed(state.armed);
   sensors_.set_autopilot_state(state.mode);
 }
 
 } // namespace ros_to_proto
+} // namespace loops
 } // namespace controls
 } // namespace src

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <string>
+#include <mutex>
 
 #include <ros/console.h>
 #include <ros/ros.h>
@@ -11,6 +12,7 @@
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/VFR_HUD.h>
+#include <mavros_msgs/CommandBool.h>
 #include <sensor_msgs/BatteryState.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
@@ -20,6 +22,7 @@
 
 namespace src {
 namespace controls {
+namespace loops {
 namespace ros_to_proto {
 namespace {
 static const int kRosMessageQueueSize = 1;
@@ -36,12 +39,17 @@ static const ::std::string kRosDiagnosticsTopic = "/diagnostics";
 static const ::std::string kRosImuDataTopic = "/mavros/imu/data";
 static const ::std::string kRosBatteryStateTopic = "/mavros/battery";
 static const ::std::string kRosStateTopic = "/mavros/state";
+
+static const ::std::string kRosArmingService = "/mavros/cmd/arming";
 } // namespace
 
 // RosToProto base class
 class RosToProto {
  public:
   RosToProto();
+
+  Sensors GetSensors();
+  void SendOutput(Output output);
 
  private:
   void GlobalPositionReceived(const ::sensor_msgs::NavSatFix global_position);
@@ -55,6 +63,7 @@ class RosToProto {
   void StateReceived(::mavros_msgs::State state);
 
   Sensors sensors_;
+  ::std::mutex sensors_mutex_;
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber global_position_subscriber_;
@@ -66,8 +75,11 @@ class RosToProto {
   ::ros::Subscriber imu_subscriber_;
   ::ros::Subscriber battery_state_subscriber_;
   ::ros::Subscriber state_subscriber_;
+
+  ::ros::ServiceClient arming_service_;
 };
 
 } // namespace ros_to_proto
+} // namespace loops
 } // namespace controls
 } // namespace src

@@ -15,34 +15,31 @@ FlightLoop::FlightLoop() :
     last_dslr_(0) {}
 
 void FlightLoop::Run() {
-  // Don't allow two instances of the loop to run simultaneously on different
-  // threads.
-  if (running_) {
-    //  LOG_LINE("Loop already running.");
-    return;
-  }
   running_ = true;
 
-  while (running_) {
-    ::std::cout << "IT " << ::lib::phased_loop::GetCurrentTime() << "\n";
-    // Run loop at a set frequency.
-    phased_loop_.sleep();
+  while (running_ && ::ros::ok()) {
+    ::ros::spinOnce();
 
     // TODO: Fetch latest messages.
-    ::src::controls::Sensors
-        sensors_message; // = sensors_uas_message.sensors();
+    ::src::controls::Sensors sensors = ros_to_proto_.GetSensors();
 
     // Set the current time in inputted sensors message.
     double current_time = ::lib::phased_loop::GetCurrentTime();
-    sensors_message.set_time(current_time);
+    sensors.set_time(current_time);
 
-    ::src::controls::Goal goal_message; //= goal_uas_message.goal();
+    ::src::controls::Goal goal; //= goal_uas_message.goal();
 
     // Run control loop iteration.
-    ::src::controls::Output output_message =
-        RunIteration(sensors_message, goal_message);
+    ::src::controls::Output output =
+        RunIteration(sensors, goal);
+
+    ros_to_proto_.SendOutput(output);
 
     // TODO: Send out output message.
+    ros_to_proto_.SendOutput(output);
+
+    // Run loop at a set frequency.
+    phased_loop_.sleep();
   }
 }
 

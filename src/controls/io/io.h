@@ -19,13 +19,12 @@
 
 #include "lib/alarm/alarm.h"
 #include "lib/phased_loop/phased_loop.h"
-#include "src/controls/io/gpio_writer/led_strip/led_strip.h"
+#include "src/controls/io/led_strip/led_strip.h"
 #include "src/controls/messages.pb.h"
 
 namespace src {
 namespace controls {
 namespace io {
-namespace gpio_writer {
 namespace {
 static const int kAlarmGPIOPin = 0;
 static const int kGimbalGPIOPin = 18;
@@ -49,9 +48,9 @@ static const ::std::string kRosStateTopic = "/mavros/state";
 static const ::std::string kRosImuTopic = "/mavros/imu/data";
 } // namespace
 
-class GpioWriter {
+class IO {
  public:
-  GpioWriter();
+  IO();
 
  private:
   void WriterThread();
@@ -86,7 +85,6 @@ class GpioWriter {
 #endif
 };
 
-} // namespace gpio_writer
 } // namespace io
 } // namespace controls
 } // namespace src
