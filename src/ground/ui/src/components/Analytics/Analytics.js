@@ -6,11 +6,17 @@ import downloadToBrowser from 'utils/downloadToBrowser';
 
 const mapStateToProps = state => {
   return {
-    telemetry: state.telemetry
+    telemetry: state.telemetry.data,
+    playback: state.telemetry.playback,
   };
 };
 
-const mapDispatchToProps = {}; //TODO Make action for recording telemetry
+const mapDispatchToProps = {
+  togglePlayback: function() {
+    return {type: 'TOGGLE_PLAYBACK'}
+  }
+}; //TODO Make action for recording telemetry, and action for starting playback
+
 class Analytics extends Component {
   render() {
     return (

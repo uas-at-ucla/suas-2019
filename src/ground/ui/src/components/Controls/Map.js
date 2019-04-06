@@ -13,7 +13,7 @@ const mapStateToProps = state => {
     commandPoints: derivedData.mission.commandPoints,
     protoInfo: derivedData.mission.protoInfo,
     interopData: state.mission.interopData,
-    telemetry: state.telemetry,
+    telemetry: state.telemetry.data,
     droneMarker: derivedData.telemetry.droneMarker 
   };
 };

@@ -3,7 +3,7 @@ import { createSelector, createStructuredSelector } from 'reselect';
 const selectors = {};
 
 selectors.droneMarker = createSelector(
-  [state => state.telemetry],
+  [state => state.telemetry.data],
   (telemetry) => {
     if (telemetry && telemetry.telemetry.sensors) {
       return {
