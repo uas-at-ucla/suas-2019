@@ -11,12 +11,10 @@ export default {
       type: 'TRANSMIT',
       payload: {
         msg: 'CONNECT_TO_INTEROP',
-        data: {
-          ip: ip, 
-          username: username, 
-          password: password
-        }
+        ip: ip,
+        username: username,
+        password: password
       }
-    }
+   };
   }
 };

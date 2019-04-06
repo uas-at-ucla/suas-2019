@@ -9,7 +9,10 @@ const mapStateToProps = state => {
     telemetry: state.telemetry.data,
     playback: state.telemetry.playback,
   };
-};
+}
+
+var telemetryData = [];
+var recording = false;
 
 const mapDispatchToProps = {
   togglePlayback: function() {
@@ -19,11 +22,15 @@ const mapDispatchToProps = {
 
 class Analytics extends Component {
   render() {
+    if (recording){
+      telemetryData.push(this.props.telemetry)
+    }
     return (
       <div className="Analytics">
         Telemetry: {JSON.stringify(this.props.telemetry)}
+        
         <div>
-          <button>
+          <button onClick={this.toggleRecord}>
             Record!!! / Stop Recording (and save to file)!!
           </button>
           <button>
@@ -58,7 +65,14 @@ class Analytics extends Component {
   }
 
   downloadTelemetry() {
-    downloadToBrowser("telemetry.json", "file text content");
+    downloadToBrowser("telemetry.json", JSON.stringify(telemetryData,null,2));
+  }
+
+  toggleRecord = () => {
+    recording = !(recording);
+    if (!recording){
+      this.downloadTelemetry();
+    }
   }
 }
 

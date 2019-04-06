@@ -20,6 +20,7 @@ const mapStateToProps = state => {
 
 const mapDispatchToProps = missionActions;
 
+
 class Map extends Component {
   state = {
     isOpen: {}
