@@ -30,6 +30,11 @@ class Settings extends Component {
   };
 
   connectToInterop = event => {
+    this.props.connectToInterop(
+      this.props.settings.interopIp,
+      this.props.settings.username,
+      this.props.settings.password
+    );
     alert("Connected to: " + this.props.settings.connected_ip);
   };
 

@@ -125,6 +125,11 @@ ui_io.on('connect', (socket) => {
       drone_io.emit('RUN_MISSION', encodedGroundProgram);
     }
   });
+  
+  socket.on('CONNECT_TO_INTEROP', (commands) => {
+    
+    console.log('CONNECT TO INTEROP');
+  })
 });
 
 
