@@ -1,6 +1,10 @@
 import React, { Component } from 'react';
+<<<<<<< HEAD
 
 import { Marker, InfoWindow, Circle, Polygon } from 'react-google-maps';
+=======
+import { Marker, InfoWindow, Circle, Polygon, Polyline } from 'react-google-maps';
+>>>>>>> fac23022842b760d4c2fc857494ac44f3dd4ec80
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
@@ -41,19 +45,27 @@ class Map extends Component {
     }
   };
   render() {
-    if (this.props.interopData) {    
-      var lineCoordinates =[];
-      const boundaryCoordinates = this.props.interopData.mission.fly_zones[0].boundary_pts.map((coord, index) => {
-        lineCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
-        return lineCoordinates[index];
-      })
+    if (this.props.interopData){
+    var boxCenter =  this.props.interopData.mission.fly_zones[0].boundary_pts[0];
+    var boxCoordinates =[{lat: boxCenter.latitude+.1, lng: boxCenter.longitude+.1}, 
+      {lat: boxCenter.latitude+.1, lng: boxCenter.longitude-.1},
+      {lat: boxCenter.latitude-.1, lng: boxCenter.longitude-.1},
+      {lat: boxCenter.latitude-.1, lng: boxCenter.longitude+.1}];
+    var lineCoordinates =[];
+    const boundaryCoordinates = this.props.interopData.mission.fly_zones[0].boundary_pts.map((coord, index) => {
+      lineCoordinates[this.props.interopData.mission.fly_zones[0].boundary_pts.length - index-1] = {lat: coord.latitude, lng: coord.longitude };
+      return lineCoordinates;
+    })
+
       var searchCoordinates = [];
         var searchGridPoints = this.props.interopData.mission.search_grid_points.map((coord, index) => {
           searchCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
           return searchCoordinates[index];
       })
     }
-
+    const commandPointPolyCoords = this.props.commandPoints.map((commandPoint, index) => {
+      return commandPoint.marker.position;
+    })
 
     return (
       <div className="Map">
@@ -78,12 +90,16 @@ class Map extends Component {
             title="airDropPosition"
             position={{lat: this.props.interopData.mission.air_drop_pos.latitude, lng: this.props.interopData.mission.air_drop_pos.longitude}}
             onClick = {()=>this.onToggleOpen("air_drop_pos")}
-            icon = {{url: "https://image.shutterstock.com/image-vector/funny-bomb-vector-illustration-260nw-137186951.jpg",
+            icon = {{url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/WA_80_cm_archery_target.svg/180px-WA_80_cm_archery_target.svg.png",
             Size: {width: 40, height:40} ,
-            scaledSize: {width: 20, height: 20} }}
+            scaledSize: {width: 25, height: 25} }}
             >          
             {this.state.isOpen["air_drop_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("air_drop_pos")}>
-           <div className="map-infobox">Air Drop Position</div>
+           <div className="map-infobox">Air Drop Position 
+           <button onClick = {() =>this.addWaypointCommand(this.props.interopData.mission.air_drop_pos.latitude, this.props.interopData.mission.air_drop_pos.longitude)}>
+              add to mission
+            </button>
+           </div>
             </InfoWindow>}
             </Marker>
           
@@ -96,13 +112,24 @@ class Map extends Component {
             scaledSize: {width: 20, height: 20} }}
             >        
             {this.state.isOpen["home_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("home_pos")}>
-            <div className="map-infobox">Home Position</div>
+            <div className="map-infobox">Home Position
+            <button onClick = {() =>this.addWaypointCommand(this.props.interopData.mission.home_pos.latitude, this.props.interopData.mission.home_pos.longitude)}>
+              add
+            </button>
+            </div>
           </InfoWindow> }          
             </Marker>
           
 
             <Polygon
-                paths = {[lineCoordinates, lineCoordinates]} strokeOpacity= {0.8} strokeWeight= {2}
+                paths = {[boxCoordinates, lineCoordinates]} strokeOpacity= {0.8} strokeWeight= {2} 
+                options={{
+                  strokeColor: '#FF0000',
+                  fillColor: '#FF0000',
+                  strokeOpacity: 0.8,
+                  strokeWeight: 1,
+                  fillOpacity: 0.5
+              }}
             > <InfoWindow> <div className="map=infobox"> Boundaries</div> = </InfoWindow></Polygon>  
            <Polygon
                 paths = {[searchGridPoints, searchGridPoints]} strokeOpacity= {0.5} strokeWeight= {2}
@@ -131,14 +158,17 @@ class Map extends Component {
                     </div>
                    
                     <Button onClick={this.deleteCommand} data-index={index}>
-                      🚮
+                      <div><i className="fa fa-trash"></i></div>
                     </Button>
                   </div>
                 </InfoWindow>}
               </Marker>
+
             : null
           )}
-
+                <Polyline
+                 path = {commandPointPolyCoords} strokeOpacity= {1} strokeWeight= {5} 
+                />
         </GoogleMap>
       </div>
     );
