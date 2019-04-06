@@ -27,20 +27,20 @@ loadProtobufUtils((theProtobufUtils) => {
 
 var interopClient = null;
 var missionAndObstacles = null;
-connectToInterop("134.209.2.203", 8000, "testuser", "testpass", // try our test server
+connectToInterop("134.209.2.203:8000", "testuser", "testpass", // try our test server
   (err) => {
     if (err) {
       if (fs.existsSync("/.dockerenv")) { // If inside Docker container
-        connectToInterop("192.168.2.30", 80, "testuser", "testpass");
+        connectToInterop("192.168.2.30:80", "testuser", "testpass");
       } else {
-        connectToInterop("localhost", 8000, "testuser", "testpass");
+        connectToInterop("localhost:8000", "testuser", "testpass");
       }
     }
   });
 
-function connectToInterop(ip, port, username, password, callback) {
+function connectToInterop(ip, username, password, callback) {
   interopClient = null;
-  loadInteropClient(ip, port, username, password)
+  loadInteropClient(ip, username, password)
     .then(theInteropClient => {
       interopClient = theInteropClient;
       interopClient.getMissions().then(missions =>
@@ -126,8 +126,15 @@ ui_io.on('connect', (socket) => {
     }
   });
   
-  socket.on('CONNECT_TO_INTEROP', (commands) => {
-    
+  socket.on('CONNECT_TO_INTEROP', (cred) => {
+    connectToInterop(cred.ip, cred.username, cred.password, (error)=>{
+      if(error){
+        ui_io.emit("INTEROP_CONNECTION_ERROR");
+      }
+      else{
+        ui_io.emit("INTEROP_CONNECTION_SUCCESS", cred.ip);
+      }
+    });
     console.log('CONNECT TO INTEROP');
   })
 });

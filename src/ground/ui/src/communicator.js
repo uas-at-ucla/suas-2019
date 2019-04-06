@@ -18,6 +18,13 @@ export default (store) => {
   socket.on('INTEROP_DATA', (data) => {
     store.dispatch({ type: 'INTEROP_DATA', payload: data });
   });
+  socket.on('INTEROP_CONNECTION_ERROR', ()=>{
+    store.dispatch({ type: 'INTEROP_CONNECTION_ERROR'});
+  });
+
+  socket.on('INTEROP_CONNECTION_SUCCESS', (ip)=>{
+    store.dispatch({ type: 'INTEROP_CONNECTION_SUCCESS', payload: ip});
+  });
 
   return (next) => (action) => {
     if (action.type === 'TRANSMIT') {
