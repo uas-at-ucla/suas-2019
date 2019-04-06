@@ -1,10 +1,5 @@
 import React, { Component } from 'react';
-<<<<<<< HEAD
-
-import { Marker, InfoWindow, Circle, Polygon } from 'react-google-maps';
-=======
 import { Marker, InfoWindow, Circle, Polygon, Polyline } from 'react-google-maps';
->>>>>>> fac23022842b760d4c2fc857494ac44f3dd4ec80
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
