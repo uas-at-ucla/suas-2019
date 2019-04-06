@@ -22,6 +22,6 @@ cc_test(
   ],
   deps = [
     ":proto_comms",
-    "@gtest//:googletest_main",
+    "@gtest//:gtest_main",
   ],
 )

@@ -2,7 +2,7 @@
 
 PACKAGES="docker python2.7 tmux git"
 OPTIONAL_PACKAGES="node"
-MACOS_PACKAGES="brew docker-machine docker-machine-nfs virtualbox"
+MACOS_PACKAGES="brew docker-machine docker-machine-nfs virtualbox md5sum"
 INSTALL_REQUIRED="false"
 NEED_TO_INSTALL=""
 ACTION_REQUIRED=""
@@ -15,7 +15,12 @@ function check_if_installed {
 }
 
 function install_package {
-  check_if_installed "$1"
+  if [ ! -z $2 ]
+  then
+    check_if_installed "$2"
+  else
+    check_if_installed "$1"
+  fi
   if [ $? -ne 0 ]
   then
     if [ "$PLATFORM" == "Darwin" ]
@@ -150,9 +155,14 @@ then
   fi
 fi
 
+if [ "$PLATFORM" == "Darwin" ]
+then
+  install_package "md5sha1sum" "md5sum"
+fi
+
 install_package "tmux"
 install_package "git"
-install_package "nodejs"
+install_package "nodejs" "node"
 
 if [ "$ACTION_REQUIRED" != "" ]
 then

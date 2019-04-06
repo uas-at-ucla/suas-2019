@@ -4,8 +4,9 @@ namespace lib {
 namespace mission_message_queue {
 
 // Sender //////////////////////////////////////////////////////////////////////
-MissionMessageQueueSender::MissionMessageQueueSender()
-    : context_(1), socket_(context_, ZMQ_PAIR) {
+MissionMessageQueueSender::MissionMessageQueueSender() :
+    context_(1),
+    socket_(context_, ZMQ_PAIR) {
   socket_.connect("ipc:///tmp/mission_command_stream.ipc");
 }
 
@@ -43,10 +44,10 @@ void MissionMessageQueueSender::SendData(
 }
 
 // Receiver ////////////////////////////////////////////////////////////////////
-MissionMessageQueueReceiver::MissionMessageQueueReceiver()
-    : context_(1),
-      socket_(context_, ZMQ_PAIR),
-      thread_(&MissionMessageQueueReceiver::ReceiveThread, this) {}
+MissionMessageQueueReceiver::MissionMessageQueueReceiver() :
+    context_(1),
+    socket_(context_, ZMQ_PAIR),
+    thread_(&MissionMessageQueueReceiver::ReceiveThread, this) {}
 
 MissionMessageQueueReceiver::~MissionMessageQueueReceiver() {
   Quit();
@@ -106,5 +107,5 @@ void MissionMessageQueueReceiver::RunPreprocessor(Position3D position) {
   mission_manager_.Preprocess(position);
 }
 
-} // mission_message_queue
+} // namespace mission_message_queue
 } // namespace lib

@@ -21,19 +21,28 @@ namespace proto_comms {
 
 template <typename T> class ProtoSender {
  public:
-  ProtoSender(const char *bind_address) : socket_(context_, ZMQ_PUB) {
+  ProtoSender(const char *bind_address) :
+      bind_address_(bind_address),
+      connected_(false),
+      socket_(context_, ZMQ_PUB) {
 
     static_assert(::std::is_base_of<::google::protobuf::Message, T>::value,
                   "Template must be derived from a protobuf");
+  }
 
-    if (access(bind_address + 6, F_OK) != -1) {
-      socket_.connect(bind_address);
+  void Connect() {
+    connected_ = true;
+
+    if (access(bind_address_ + 6, F_OK) != -1) {
+      socket_.connect(bind_address_);
     } else {
-      socket_.bind(bind_address);
+      socket_.bind(bind_address_);
     }
   }
 
   void Send(T proto_message) {
+    assert(connected_);
+
     ::std::string proto_string;
     proto_message.SerializeToString(&proto_string);
 
@@ -44,39 +53,45 @@ template <typename T> class ProtoSender {
   }
 
  private:
+  const char *bind_address_;
+  bool connected_;
   ::zmq::context_t context_;
   ::zmq::socket_t socket_;
 };
 
 template <class T> class ProtoReceiver {
  public:
-  ProtoReceiver(const char *bind_address, size_t max_size)
-      : socket_(context_, ZMQ_SUB),                   //
-        thread_(&ProtoReceiver::ReceiveThread, this), //
-        max_size_(max_size) {
+  ProtoReceiver(const char *bind_address, size_t max_size) :
+      bind_address_(bind_address),
+      connected_(false),
+      socket_(context_, ZMQ_SUB),
+      max_size_(max_size) {}
 
-    socket_.connect(bind_address);
+  ~ProtoReceiver() {
+    if (connected_) {
+      Quit();
+      socket_.close();
+      context_.~context_t();
+      thread_.join();
+    }
+  }
 
-    ::std::ifstream ipc_file(bind_address);
+  void Connect() {
+    socket_.connect(bind_address_);
+    thread_ = ::std::thread(&ProtoReceiver::ReceiveThread, this);
+
+    ::std::ifstream ipc_file(bind_address_);
     socket_.setsockopt(ZMQ_SUBSCRIBE, "", 0);
 
     int linger = 0;
     socket_.setsockopt(ZMQ_LINGER, &linger, sizeof(linger));
-  }
 
-  ~ProtoReceiver() {
-    Quit();
-    socket_.close();
-    context_.~context_t();
-    thread_.join();
+    connected_ = true;
   }
 
   void Quit() { run_ = false; }
-
   bool HasMessages() { return received_messages_.size() > 0; }
-
   T GetLatest() { return received_messages_.back(); }
-
   ::std::queue<T> GetQueue() { return received_messages_; }
 
  private:
@@ -101,6 +116,9 @@ template <class T> class ProtoReceiver {
       }
     }
   }
+
+  const char *bind_address_;
+  bool connected_;
 
   ::std::atomic<bool> run_{true};
 

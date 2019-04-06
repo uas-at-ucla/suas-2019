@@ -1,8 +1,17 @@
 FROM python:3.6-slim
 
 # install dependencies
-RUN apt-get update
-RUN apt-get install -y libglib2.0-0 libsm6 libxrender1 libxext6 libtk8.6 git cython
+RUN apt-get update     -qq                                                  && \
+    apt-get install -y -qq                                                     \
+    aria2                                                                      \
+    git                                                                        \
+    libglib2.0-0                                                               \
+    libsm6                                                                     \
+    libxrender1                                                                \
+    libxext6                                                                   \
+    libtk8.6                                                                   \
+    build-essential                                                            \
+    cython
 
 COPY ./src/vision/build/vision_requirements.txt /vision_requirements.txt
 RUN pip install -r /vision_requirements.txt
@@ -10,7 +19,7 @@ RUN pip install -r /vision_requirements.txt
 # build and install darkflow
 RUN pip install Cython
 RUN git clone https://github.com/thtrieu/darkflow
-RUN pip install /darkflow
+RUN pip install ./darkflow
 
 # copy needed files
 COPY ./src/vision /suas/src/vision

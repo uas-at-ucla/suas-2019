@@ -31,10 +31,16 @@ then
 fi
 
 # Create network for docker container to use.
-docker network create -d bridge uas_bridge > /dev/null || true
+./tools/scripts/docker/create_network.sh > /dev/null 2>&1 || true
 
 # Enable access to xhost from the container
 xhost +
+
+if [ ! -d "tools/scripts/px4_simulator" ]
+then
+  git clone "https://github.com/uas-at-ucla/Firmware.git" \
+    "tools/cache/px4_simulator"
+fi
 
 # Start docker container and let it run forever.
 docker run \

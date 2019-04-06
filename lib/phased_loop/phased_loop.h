@@ -6,14 +6,14 @@
 namespace lib {
 namespace phased_loop {
 
+double GetCurrentTime();
+
 class PhasedLoop {
  public:
   PhasedLoop(double frequency);
   void SleepUntilNext();
 
  private:
-  double GetCurrentTime();
-
   double frequency_;
   double next_iteration_;
 };

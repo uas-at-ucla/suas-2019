@@ -7,7 +7,7 @@ cc_test(
   ],
   deps = [
     ':motion_profile',
-    '@gtest//:googletest_main',
+    '@gtest//:gtest_main',
   ],
 )
 

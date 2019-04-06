@@ -21,10 +21,10 @@
 #include "udp.h"
 
 namespace mavconn {
-using boost::system::error_code;
+using boost::asio::buffer;
 using boost::asio::io_service;
 using boost::asio::ip::udp;
-using boost::asio::buffer;
+using boost::system::error_code;
 
 #define PFX "mavconn: udp"
 #define PFXd PFX "%zu: "
@@ -62,15 +62,15 @@ static bool resolve_address_udp(io_service &io, size_t chan, std::string host,
 
 MAVConnUDP::MAVConnUDP(uint8_t system_id, uint8_t component_id,
                        std::string bind_host, unsigned short bind_port,
-                       std::string remote_host, unsigned short remote_port)
-    : MAVConnInterface(system_id, component_id),
-      remote_exists(false),
-      tx_in_progress(false),
-      tx_q{},
-      rx_buf{},
-      io_service(),
-      io_work(new io_service::work(io_service)),
-      socket(io_service) {
+                       std::string remote_host, unsigned short remote_port) :
+    MAVConnInterface(system_id, component_id),
+    remote_exists(false),
+    tx_in_progress(false),
+    tx_q{},
+    rx_buf{},
+    io_service(),
+    io_work(new io_service::work(io_service)),
+    socket(io_service) {
   using udps = boost::asio::ip::udp::socket;
 
   if (!resolve_address_udp(io_service, conn_id, bind_host, bind_port, bind_ep))

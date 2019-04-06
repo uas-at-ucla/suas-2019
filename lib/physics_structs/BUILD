@@ -18,7 +18,7 @@ cc_test(
   ],
   deps = [
     ':physics_structs',
-    '@gtest//:googletest_main',
+    '@gtest//:gtest_main',
   ],
 )
 

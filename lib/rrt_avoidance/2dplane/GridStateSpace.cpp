@@ -1,7 +1,7 @@
 #include <math.h>
 #include <stdexcept>
 #include "lib/rrt_avoidance/2dplane/GridStateSpace.hpp"
-#include "lib/rrt_avoidance/util.hpp"
+#include "lib/rrt_avoidance/utils/util.hpp"
 
 using namespace Eigen;
 using namespace std;

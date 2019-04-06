@@ -4,8 +4,145 @@
 
 .Controls .Map {
   position: absolute;
-  top: 0;
   width: 100vw;
   height: 100vh;
   z-index: -1;
+}
+
+.Controls .map-overlay {
+  padding: 10px;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  pointer-events: none;
+}
+
+.Controls .map-overlay>div {
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.Controls .map-overlay>div div {
+  pointer-events: all;
+}
+
+.Controls .left-side {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.Controls .top-left {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  flex-grow: 1;
+  padding-bottom: 10px;
+}
+
+.Controls .bottom-left {
+  display: flex;
+}
+
+.Controls .right-side {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+
+.buttonArray > button
+{
+  border-width: 2px;
+  border-color: #000000;
+  border-radius: 5px;
+  border-style: solid;
+
+  margin: 10px 5px;
+  padding: auto auto;
+
+  background-color: rgba(0 , 0 , 0 , .6);
+
+  transition: .3s;
+}
+
+.buttonArray > button:hover
+{
+  cursor: pointer;
+}
+
+
+#runMissionButton
+{
+  color: #56a54f;
+  border-color: #56a54f;
+}
+
+#runMissionButton:hover
+{
+  color: #4e8c48;
+  border-color: #4e8c48;
+}
+
+
+#takeoffButton 
+{
+  color: #e9d902;
+  border-color: #e9d902;
+}
+
+#takeoffButton:hover
+{
+  color: #ccbe00;
+  border-color: #ccbe00;
+}
+
+
+#landButton
+{
+  color: #0ea5d3;
+  border-color: #0ea5d3;
+}
+
+#landButton:hover
+{
+  color: #1788aa;
+  border-color: #1788aa;
+}
+
+
+#failsafeButton
+{
+  color: #f4a107;
+  border-color: #f4a107;
+}
+
+#failsafeButton:hover
+{
+  color: #ba8016;
+  border-color: #ba8016;
+}
+
+
+#throttleCutButton
+{
+  color: #ff0000;
+  border-color: #ff0000;
+}
+
+#throttleCutButton:hover
+{
+  color: #c61515;
+  border-color: #c61515;
+}
+
+.map-infobox {
+  color: black;
 }

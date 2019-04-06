@@ -22,7 +22,7 @@ TARGET_TYPES = [
 
 
 class TargetGenerator(abc.ABC):
-    def __init__(self, font_path, font_ratio=0.35, font_face=0):
+    def __init__(self, font_path, font_ratio=0.5, font_face=0):
         """Generate targets.
 
         Arguments:

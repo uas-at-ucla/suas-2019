@@ -103,11 +103,11 @@ if __name__ == '__main__':
     upload_to_drone('lib/scripts/raspi/serial_comms_sender.sh',
                     "/home/pi/drone_code_deploy/scripts/serial_comms/.")
 
-    upload_bin_to_drone('src/control/loops/flight_loop',
+    upload_bin_to_drone('src/controls/loops/flight_loop',
                         "/home/pi/drone_code_deploy/executables/.")
-    upload_bin_to_drone('src/control/io/io',
+    upload_bin_to_drone('src/controls/io/io',
                         "/home/pi/drone_code_deploy/executables/.")
-    upload_bin_to_drone('src/control/ground_communicator/ground_communicator',
+    upload_bin_to_drone('src/controls/ground_communicator/ground_communicator',
                         "/home/pi/drone_code_deploy/executables/.")
     upload_bin_to_drone('lib/logger/log_writer',
                         "/home/pi/drone_code_deploy/executables/.")

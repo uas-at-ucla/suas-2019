@@ -20,13 +20,15 @@ def build():
     print("done building")
 
 def run_all(args):
-    subprocess.call(["npm", "start"], cwd="server")
+    # run start-web (w/o Electron) if web option specified. Otherwise, run start (w/ Electron).
+    subprocess.call(["npm", "run", "start"+args.web], cwd="server")
 
 def run_server(args):
     subprocess.call(["node", "ground_server.js"], cwd="server")
 
 def run_ui(args):
-    subprocess.call(["npm", "start"], cwd="ui")
+    # run start-web (w/o Electron) if web option specified. Otherwise, run start (w/ Electron).
+    subprocess.call(["npm", "run", "start"+args.web], cwd="ui")
 
 def deploy_win(args):
     subprocess.call(["npm", "run", "package-win"], cwd="ui")
@@ -45,6 +47,7 @@ if __name__ == '__main__':
 
     run_parser = subparsers.add_parser('run')
     run_parser.set_defaults(func=run_all)
+    run_parser.add_argument('--web', action='store_const', const="-web", default="")
     run_subparsers = run_parser.add_subparsers()
     
     run_subparsers.add_parser('all')

@@ -35,16 +35,16 @@ PID::~PID() { delete pimpl; }
  * Implementation
  */
 PIDImpl::PIDImpl(double dt, double max, double min, double Kp, double Kd,
-                 double Ki, double imax)
-    : _dt(dt),
-      _max(max),
-      _min(min),
-      _Kp(Kp),
-      _Kd(Kd),
-      _Ki(Ki),
-      _imax(imax),
-      _pre_error(0),
-      _integral(0) {}
+                 double Ki, double imax) :
+    _dt(dt),
+    _max(max),
+    _min(min),
+    _Kp(Kp),
+    _Kd(Kd),
+    _Ki(Ki),
+    _imax(imax),
+    _pre_error(0),
+    _integral(0) {}
 
 double PIDImpl::calculate(double setpoint, double pv) {
 
