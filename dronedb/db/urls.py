@@ -1,9 +1,13 @@
-from django.conf.urls import url
-from rest_framework import routers
-from project.appname.views import StudentViewSet, UniversityViewSet
+from django.conf.urls import url, include
+from rest_framework import format_suffix_patterns
+import .views
 
-router = routers.DefaultRouter()
-router.register(r'students', StudentViewSet)
-router.register(r'universities', UniversityViewSet)
 
-urlpatterns = router.urls
+urlpatterns={
+    url(r'^data/$', Data.as_view(), name="data")
+    url(r'^shape/$', Shape.as_view(), name="shape")
+    url(r'^char/$', Character.as_view(), name="char")
+    url(r'^orientation/$', Orientation.as_view(), name="orient")
+    url(r'^color/$', Color.as_view(), name="color")
+
+}
