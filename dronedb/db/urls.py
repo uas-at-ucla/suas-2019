@@ -1,32 +1,13 @@
-from .models import Data,Shape,Character,Orientation,Color
-from rest_framework import serializers
+from django.conf.urls import url, include
+from rest_framework import format_suffix_patterns
+import .views
 
 
-class DataSerializer(serializers.HyperlinkedModelSerializer):
-    image = serializers.ImageField(max_length=None, use_url=True,
-                                   )
-    class Meta:
-        model = Data
-        fields = '__all__'
+urlpatterns={
+    url(r'^data/$', Data.as_view(), name="data")
+    url(r'^shape/$', Shape.as_view(), name="shape")
+    url(r'^char/$', Character.as_view(), name="char")
+    url(r'^orientation/$', Orientation.as_view(), name="orient")
+    url(r'^color/$', Color.as_view(), name="color")
 
-
-class ShapeSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Shape
-        fields = '__all__'
-
-class CharacterSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Character
-        fields = '__all__'
-
-class OrientationSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Orientation
-        fields = '__all__'
-
-class ColorSerializer(serializers.HyperlinkedModelSerializer):
-    class Meta:
-        model = Color
-        fields = '__all__'
-
+}
