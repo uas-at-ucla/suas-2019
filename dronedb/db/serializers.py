@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from .models import Data,Shape,Character,Orientation,Color
 from rest_framework import serializers
 
@@ -29,6 +28,7 @@ class OrientationSerializer(serializers.HyperlinkedModelSerializer):
 class ColorSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Color
+<<<<<<< HEAD
 =======
 from .models import Data,Shape,Character,Orientation,Color
 from rest_framework import serializers
@@ -60,5 +60,3 @@ class OrientationSerializer(serializers.HyperlinkedModelSerializer):
 class ColorSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Color
->>>>>>> starter db code
-        fields = '__all__'

@@ -29,3 +29,4 @@ class ColorSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Color
         fields = '__all__'
+
