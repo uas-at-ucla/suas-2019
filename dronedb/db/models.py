@@ -13,7 +13,6 @@ class Data(models.Model):
     PipeStage = models.TextField()
     img = models.BinaryField()
 class Shape(models.Model):
-
     id = models.IntegerField(blank = False, unique = True);
     shape = models.IntegerField()
 
@@ -28,4 +27,11 @@ class Orientation(models.Model):
 class Color(models.Model):
 
     id = models.IntegerField(blank = False, unique = True);
+    shape = models.IntegerField()
+
+class Character(models.Model):
+    char = models.IntegerField()
+class Orientation(models.Model):
+    orientation = models.IntegerField()
+class Color(models.Model):
     color = models.IntegerField()
