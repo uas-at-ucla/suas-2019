@@ -35,7 +35,7 @@ class Settings extends Component {
       this.props.settings.username,
       this.props.settings.password
     );
-    alert("Connected to: " + this.props.settings.connected_ip);
+    // alert("Connected to: " + this.props.settings.connectedIp);
   };
 
   handleClickedMap = event => {
@@ -46,7 +46,7 @@ class Settings extends Component {
     return (
       <Container className="Settings">
         <h1>Settings</h1>
-        <h2>Connected To: {this.props.settings.ip}</h2>
+        <h2>Connected To: {this.props.settings.connectedIp}</h2>
         <Row>
           <Col>
             <InputGroup>

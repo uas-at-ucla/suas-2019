@@ -54,6 +54,8 @@ function connectToInterop(ip, port, username, password, callback) {
       );
       if (callback) callback();
     }).catch(error => {
+      missionAndObstacles = null;
+      ui_io.emit('INTEROP_DATA', missionAndObstacles);
       console.log(error);
       if (callback) callback(error);
     });
