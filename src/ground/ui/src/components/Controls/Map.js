@@ -153,7 +153,7 @@ class Map extends Component {
                     </div>
                    
                     <Button onClick={this.deleteCommand} data-index={index}>
-                      <div><i className="fa fa-trash"></i></div>
+                      <i className="fa fa-trash" style={{pointerEvents: "none"}}></i>
                     </Button>
                   </div>
                 </InfoWindow>}

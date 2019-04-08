@@ -1,5 +1,6 @@
 .Settings {
-  text-align: center;
+  margin-top: 80px;
+  /* text-align: center; */
 }
 
 .Settings p {
@@ -16,8 +17,9 @@
   font-size: 30px;
 }
 
-.Settings button {
+.Settings .connect-btn {
   display: inline-block;
-  width: 300px;
-  padding: 10px;
+  margin-right: 10px;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }

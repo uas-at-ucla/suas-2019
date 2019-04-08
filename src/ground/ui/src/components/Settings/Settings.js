@@ -18,7 +18,8 @@ import settingsActions from "redux/actions/settingsActions";
 
 const mapStateToProps = state => {
   return {
-    settings: state.settings
+    settings: state.settings,
+    interopData: state.mission.interopData
   };
 };
 
@@ -32,21 +33,45 @@ class Settings extends Component {
   connectToInterop = event => {
     this.props.connectToInterop(
       this.props.settings.interopIp,
-      this.props.settings.username,
-      this.props.settings.password
+      this.props.settings.interopUsername,
+      this.props.settings.interopPassword
     );
-    // alert("Connected to: " + this.props.settings.connectedIp);
+  };
+
+  connectToGndServer = event => {
+    this.props.connectToGndServer();
   };
 
   handleClickedMap = event => {
-    this.props.updateSettings({ lat: event.latLng.lat(), lng: event.latLng.lng() });
+    this.props.updateSettings({ antennaPos: {lat: event.latLng.lat(), lng: event.latLng.lng()} });
   };
 
   render() {
+    let connectedGroundServer = this.props.settings.gndServerConnected ? this.props.settings.connectedGndServerIp : "NONE";
+    let connectedInteropServer = this.props.interopData ? this.props.interopData.ip : "NONE";
     return (
       <Container className="Settings">
-        <h1>Settings</h1>
-        <h2>Connected To: {this.props.settings.connectedIp}</h2>
+        <Row>
+          <Col>
+            <InputGroup>
+              <InputGroupAddon addonType="prepend">Ground IP</InputGroupAddon>
+              <Input
+                value={this.props.settings.gndServerIp}
+                name="gndServerIp"
+                type="text"
+                placeholder="0"
+                onChange={this.handleChange}
+              />
+            </InputGroup>
+          </Col>
+          <Col>
+            <Button color="primary" className="connect-btn" onClick={this.connectToGndServer}>
+              Connect To Ground Server
+            </Button>
+            <span>Connected To: {connectedGroundServer}</span>
+          </Col>
+        </Row>
+        <br />
         <Row>
           <Col>
             <InputGroup>
@@ -54,8 +79,8 @@ class Settings extends Component {
                 Interop Username
               </InputGroupAddon>
               <Input
-                value={this.props.settings.username}
-                name="username"
+                value={this.props.settings.interopUsername}
+                name="interopUsername"
                 type="text"
                 placeholder="Enter username..."
                 onChange={this.handleChange}
@@ -68,8 +93,8 @@ class Settings extends Component {
                 Interop Password
               </InputGroupAddon>
               <Input
-                value={this.props.settings.password}
-                name="password"
+                value={this.props.settings.interopPassword}
+                name="interopPassword"
                 type="text"
                 placeholder="Enter password..."
                 onChange={this.handleChange}
@@ -94,26 +119,14 @@ class Settings extends Component {
           </Col>
           <br />
           <Col>
-            <Button color="danger" onClick={this.connectToInterop}>
+            <Button color="success" className="connect-btn" onClick={this.connectToInterop}>
               Connect To Interop
             </Button>
+            <span>Connected To: {connectedInteropServer}</span>
           </Col>
         </Row>
+        <br />
 
-        <br />
-        <Col>
-          <InputGroup>
-            <InputGroupAddon addonType="prepend">Ground IP</InputGroupAddon>
-            <Input
-              value={this.props.settings.groundIp}
-              name="groundIp"
-              type="text"
-              placeholder="0"
-              onChange={this.handleChange}
-            />
-          </InputGroup>
-        </Col>
-        <br />
         <Row>
           <Col>
             <h2>File Browser</h2>
@@ -124,7 +137,7 @@ class Settings extends Component {
           <Col>
             <h2>Antenna Tracker Location:</h2>
             <p>
-              {this.props.settings.lat}° , {this.props.settings.lng}°
+              {this.props.settings.antennaPos.lat}° , {this.props.settings.antennaPos.lng}°
             </p>
             <div style={{ height: "350px", width: "500px" }}>
               <GoogleMap
@@ -139,7 +152,7 @@ class Settings extends Component {
                 onDblClick={this.handleClickedMap}
               >
                 <Marker
-                  position={{ lat: this.props.settings.lat, lng: this.props.settings.lng }}
+                  position={this.props.settings.antennaPos}
                 />
               </GoogleMap>
             </div>

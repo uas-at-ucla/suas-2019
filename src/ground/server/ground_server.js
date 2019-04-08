@@ -26,7 +26,7 @@ loadProtobufUtils((theProtobufUtils) => {
 });
 
 var interopClient = null;
-var missionAndObstacles = null;
+var interopData = null;
 connectToInterop("134.209.2.203:8000", "testuser", "testpass", // try our test server
   (err) => {
     if (err) {
@@ -45,17 +45,18 @@ function connectToInterop(ip, username, password, callback) {
       interopClient = theInteropClient;
       interopClient.getMissions().then(missions =>
         interopClient.getObstacles().then(obstacles => {
-          missionAndObstacles = {
+          interopData = {
+            ip: ip,
             mission: missions[0],
             obstacles: obstacles
           }
-          ui_io.emit('INTEROP_DATA', missionAndObstacles);
+          ui_io.emit('INTEROP_DATA', interopData);
         })
       );
       if (callback) callback();
     }).catch(error => {
-      missionAndObstacles = null;
-      ui_io.emit('INTEROP_DATA', missionAndObstacles);
+      interopData = null;
+      ui_io.emit('INTEROP_DATA', interopData);
       console.log(error);
       if (callback) callback(error);
     });
@@ -106,13 +107,14 @@ fake_drone_io.on('connect', (socket) => {
 
 ui_io.on('connect', (socket) => {
   console.log("ui connected!");
-  if (missionAndObstacles) {
-    socket.emit('INTEROP_DATA', missionAndObstacles);
+  if (interopData) {
+    socket.emit('INTEROP_DATA', interopData);
   }
 
   socket.on('TEST', (data) => {
     console.log("TEST " + data);
   });
+
   socket.on('CHANGE_DRONE_STATE', (data) => {
     drone_io.emit('CHANGE_DRONE_STATE', data);
     console.log("THE DRONE is asked to " + data + ". Hey DRONE, are you listening?");
@@ -121,7 +123,7 @@ ui_io.on('connect', (socket) => {
   socket.on('RUN_MISSION', (commands) => {
     console.log("received mission from UI");
     if (protobufUtils) {
-      let groundProgram = protobufUtils.makeGroundProgram(commands, missionAndObstacles);
+      let groundProgram = protobufUtils.makeGroundProgram(commands, interopData);
       console.log(JSON.stringify(groundProgram, null, 2));
       let encodedGroundProgram = protobufUtils.encodeGroundProgram(groundProgram);
       drone_io.emit('RUN_MISSION', encodedGroundProgram);
@@ -129,15 +131,8 @@ ui_io.on('connect', (socket) => {
   });
   
   socket.on('CONNECT_TO_INTEROP', (cred) => {
-    connectToInterop(cred.ip, cred.username, cred.password, (error)=>{
-      if(error){
-        ui_io.emit("INTEROP_CONNECTION_ERROR");
-      }
-      else{
-        ui_io.emit("INTEROP_CONNECTION_SUCCESS", cred.ip);
-      }
-    });
     console.log('CONNECT TO INTEROP');
+    connectToInterop(cred.ip, cred.username, cred.password);
   })
 });
 
