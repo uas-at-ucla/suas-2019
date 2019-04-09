@@ -5,5 +5,5 @@ int main(int argc, char **argv) {
   ::ros::start();
 
   ::src::controls::loops::FlightLoop flight_loop;
-  flight_loop.Run();
+  ::ros::spin();
 }

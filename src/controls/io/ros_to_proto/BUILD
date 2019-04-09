@@ -9,6 +9,7 @@ cc_library(
   ],
   deps = [
     '//src/controls:messages_cpp',
+    '//lib/phased_loop:phased_loop',
     '//lib/ros:ros',
     "@mavros_msgs//:mavros_msgs",
     "@sensor_msgs//:sensor_msgs",

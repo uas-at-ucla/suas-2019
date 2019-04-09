@@ -20,7 +20,8 @@ cc_library(
   ],
   deps = [
     '//src/controls:messages_cpp',
-    '//src/controls/io/io/led_strip:led_strip',
+    '//src/controls/io/led_strip:led_strip',
+    '//src/controls/io/ros_to_proto:ros_to_proto',
     '//lib/ros:ros',
     '//lib/alarm:alarm',
     '//lib/phased_loop:phased_loop',

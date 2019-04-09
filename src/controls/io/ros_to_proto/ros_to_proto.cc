@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace io {
 namespace ros_to_proto {
 
 RosToProto::RosToProto() :
@@ -33,8 +33,29 @@ RosToProto::RosToProto() :
     state_subscriber_(
         ros_node_handle_.subscribe(kRosStateTopic, kRosMessageQueueSize,
                                    &RosToProto::StateReceived, this)),
-    arming_service_(
-        ros_node_handle_.serviceClient<mavros_msgs::CommandBool>(kRosArmingService)) {}
+    arming_service_(ros_node_handle_.serviceClient<mavros_msgs::CommandBool>(
+        kRosArmingService)) {
+
+  // Initialize all last received times for the ros topics to NaN.
+  ros_topic_last_received_times_[kRosGlobalPositionTopic] =
+      std::numeric_limits<double>::quiet_NaN();
+  ros_topic_last_received_times_[kRosRelativeAltitudeTopic] =
+      std::numeric_limits<double>::quiet_NaN();
+  ros_topic_last_received_times_[kRosCompassHeadingTopic] =
+      std::numeric_limits<double>::quiet_NaN();
+  ros_topic_last_received_times_[kRosVelocityTopic] =
+      std::numeric_limits<double>::quiet_NaN();
+  ros_topic_last_received_times_[kRosVfrHudTopic] =
+      std::numeric_limits<double>::quiet_NaN();
+  ros_topic_last_received_times_[kRosDiagnosticsTopic] =
+      std::numeric_limits<double>::quiet_NaN();
+  ros_topic_last_received_times_[kRosImuDataTopic] =
+      std::numeric_limits<double>::quiet_NaN();
+  ros_topic_last_received_times_[kRosBatteryStateTopic] =
+      std::numeric_limits<double>::quiet_NaN();
+  ros_topic_last_received_times_[kRosStateTopic] =
+      std::numeric_limits<double>::quiet_NaN();
+}
 
 Sensors RosToProto::GetSensors() {
   Sensors sensors_copy;
@@ -55,12 +76,14 @@ void RosToProto::SendOutput(Output output) {
   arming_service_.call(arming_cmd);
   ::std::cout << "ARM!\n";
 
-  if(output.send_offboard()) {
+  if (output.send_offboard()) {
   }
 }
 
 void RosToProto::GlobalPositionReceived(
     const ::sensor_msgs::NavSatFix global_position) {
+
+  GotRosMessage(kRosGlobalPositionTopic);
 
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_latitude(global_position.latitude);
@@ -71,6 +94,8 @@ void RosToProto::GlobalPositionReceived(
 void RosToProto::RelativeAltitudeReceived(
     const ::std_msgs::Float64 relative_altitude) {
 
+  GotRosMessage(kRosRelativeAltitudeTopic);
+
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_relative_altitude(relative_altitude.data);
   sensors_mutex_.unlock();
@@ -78,6 +103,8 @@ void RosToProto::RelativeAltitudeReceived(
 
 void RosToProto::CompassHeadingReceived(
     const ::std_msgs::Float64 compass_heading) {
+
+  GotRosMessage(kRosCompassHeadingTopic);
 
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_heading(compass_heading.data);
@@ -87,6 +114,8 @@ void RosToProto::CompassHeadingReceived(
 void RosToProto::VelocityReceived(
     const ::geometry_msgs::TwistStamped velocity) {
 
+  GotRosMessage(kRosVelocityTopic);
+
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_velocity_x(velocity.twist.linear.x);
   sensors_.set_velocity_y(velocity.twist.linear.y);
@@ -94,11 +123,15 @@ void RosToProto::VelocityReceived(
 }
 
 void RosToProto::VfrHudReceived(const ::mavros_msgs::VFR_HUD vfr_hud) {
+  GotRosMessage(kRosVfrHudTopic);
+
   sensors_.set_gps_ground_speed(vfr_hud.groundspeed);
 }
 
 void RosToProto::DiagnosticsReceived(
     ::diagnostic_msgs::DiagnosticArray diagnostic_array) {
+
+  GotRosMessage(kRosDiagnosticsTopic);
 
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_gps_satellite_count(
@@ -109,6 +142,9 @@ void RosToProto::DiagnosticsReceived(
 
 void RosToProto::ImuDataReceived(::sensor_msgs::Imu imu_data) {
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
+
+  GotRosMessage(kRosImuDataTopic);
+
   sensors_.set_accelerometer_x(imu_data.linear_acceleration.x);
   sensors_.set_accelerometer_y(imu_data.linear_acceleration.y);
   sensors_.set_accelerometer_z(imu_data.linear_acceleration.z);
@@ -121,18 +157,43 @@ void RosToProto::ImuDataReceived(::sensor_msgs::Imu imu_data) {
 void RosToProto::BatteryStateReceived(
     ::sensor_msgs::BatteryState battery_state) {
 
+  GotRosMessage(kRosBatteryStateTopic);
+
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_battery_voltage(battery_state.voltage);
   sensors_.set_battery_current(battery_state.current);
 }
 
+bool RosToProto::SensorsValid() {
+  double oldest_valid_packet_time =
+      ::lib::phased_loop::GetCurrentTime() - kRosReceiveTolerance;
+
+  for (::std::map<::std::string, double>::iterator it =
+           ros_topic_last_received_times_.begin();
+       it != ros_topic_last_received_times_.end(); it++) {
+    if (it->second < oldest_valid_packet_time) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 void RosToProto::StateReceived(::mavros_msgs::State state) {
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
+
+  GotRosMessage(kRosStateTopic);
+
   sensors_.set_armed(state.armed);
   sensors_.set_autopilot_state(state.mode);
 }
 
+void RosToProto::GotRosMessage(::std::string ros_topic) {
+  ros_topic_last_received_times_[ros_topic] =
+      ::lib::phased_loop::GetCurrentTime();
+}
+
 } // namespace ros_to_proto
-} // namespace loops
+} // namespace io
 } // namespace controls
 } // namespace src

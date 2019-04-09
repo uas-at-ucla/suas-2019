@@ -6,54 +6,27 @@ namespace loops {
 
 FlightLoop::FlightLoop() :
     running_(false),
-    phased_loop_(kFlightLoopFrequency),
-    alarm_(kFlightLoopFrequency),
     last_loop_(0),
     did_alarm_(false),
     did_arm_(false),
     last_bomb_drop_(0),
-    last_dslr_(0) {}
-
-void FlightLoop::Run() {
-  running_ = true;
-
-  while (running_ && ::ros::ok()) {
-    ::ros::spinOnce();
-
-    // TODO: Fetch latest messages.
-    ::src::controls::Sensors sensors = ros_to_proto_.GetSensors();
-
-    // Set the current time in inputted sensors message.
-    double current_time = ::lib::phased_loop::GetCurrentTime();
-    sensors.set_time(current_time);
-
-    ::src::controls::Goal goal; //= goal_uas_message.goal();
-
-    // Run control loop iteration.
-    ::src::controls::Output output =
-        RunIteration(sensors, goal);
-
-    ros_to_proto_.SendOutput(output);
-
-    // TODO: Send out output message.
-    ros_to_proto_.SendOutput(output);
-
-    // Run loop at a set frequency.
-    phased_loop_.sleep();
-  }
-}
-
-::src::controls::Output
-FlightLoop::RunIteration(::src::controls::Sensors sensors,
-                         ::src::controls::Goal goal) {
-
+    last_dslr_(0),
+    sensors_subscriber_(ros_node_handle_.subscribe(
+        io::kRosSensorsTopic, io::kRosMessageQueueSize,
+        &FlightLoop::RunIteration, this)) {}
+void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
+  (void)sensors;
   ::src::controls::Output output = GenerateDefaultOutput();
 
-  state_machine_.Handle(sensors, goal, output);
-  WriteActuators(sensors, goal, output);
-  DumpProtobufMessages(sensors, goal, output);
+  ::std::cout << ::std::fixed << ::std::setprecision(5)
+              << ::lib::phased_loop::GetCurrentTime() << ": "
+              << sensors.battery_voltage() << ::std::endl;
 
-  return output;
+  // state_machine_.Handle(sensors, goal, output);
+  // WriteActuators(sensors, goal, output);
+  // DumpProtobufMessages(sensors, goal, output);
+
+  // return output;
 }
 
 void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
@@ -101,44 +74,47 @@ void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
 void FlightLoop::WriteActuators(::src::controls::Sensors &sensors,
                                 ::src::controls::Goal &goal,
                                 ::src::controls::Output &output) {
-  // Handle alarm.
-  output.set_alarm(alarm_.ShouldAlarm());
+  (void)sensors;
+  (void)goal;
+  (void)output;
+  // // Handle alarm.
+  // output.set_alarm(alarm_.ShouldAlarm());
 
-  if (goal.trigger_alarm() + 0.05 > sensors.time()) {
-    if (!did_alarm_) {
-      did_alarm_ = true;
-      alarm_.AddAlert({0.30, 0.30});
-      //    LOG_LINE("Alarm was manually triggered");
-    }
-  } else {
-    did_alarm_ = false;
-  }
+  // if (goal.trigger_alarm() + 0.05 > sensors.time()) {
+  //   if (!did_alarm_) {
+  //     did_alarm_ = true;
+  //     alarm_.AddAlert({0.30, 0.30});
+  //     //    LOG_LINE("Alarm was manually triggered");
+  //   }
+  // } else {
+  //   did_alarm_ = false;
+  // }
 
-  if (sensors.armed() && !did_arm_) {
-    // Send out a chirp if the Pixhawk just got armed.
-    did_arm_ = true;
-    alarm_.AddAlert({0.03, 0.25});
-  }
+  // if (sensors.armed() && !did_arm_) {
+  //   // Send out a chirp if the Pixhawk just got armed.
+  //   did_arm_ = true;
+  //   alarm_.AddAlert({0.03, 0.25});
+  // }
 
-  if (!sensors.armed()) {
-    did_arm_ = false;
-  }
+  // if (!sensors.armed()) {
+  //   did_arm_ = false;
+  // }
 
-  // Handle bomb drop.
-  last_bomb_drop_ = ::std::max(last_bomb_drop_, goal.trigger_bomb_drop());
+  // // Handle bomb drop.
+  // last_bomb_drop_ = ::std::max(last_bomb_drop_, goal.trigger_bomb_drop());
 
-  output.set_bomb_drop(false);
-  if (last_bomb_drop_ <= sensors.time() &&
-      last_bomb_drop_ + 5.0 > sensors.time()) {
-    output.set_bomb_drop(true);
-  }
+  // output.set_bomb_drop(false);
+  // if (last_bomb_drop_ <= sensors.time() &&
+  //     last_bomb_drop_ + 5.0 > sensors.time()) {
+  //   output.set_bomb_drop(true);
+  // }
 
-  // Handle dslr.
-  output.set_dslr(false);
-  last_dslr_ = ::std::max(last_dslr_, goal.trigger_dslr());
-  if (last_dslr_ <= sensors.time() && last_dslr_ + 15.0 > sensors.time()) {
-    output.set_dslr(true);
-  }
+  // // Handle dslr.
+  // output.set_dslr(false);
+  // last_dslr_ = ::std::max(last_dslr_, goal.trigger_dslr());
+  // if (last_dslr_ <= sensors.time() && last_dslr_ + 15.0 > sensors.time()) {
+  //   output.set_dslr(true);
+  // }
 }
 
 void FlightLoop::DumpProtobufMessages(::src::controls::Sensors &sensors,

@@ -13,7 +13,6 @@
 namespace src {
 namespace controls {
 namespace io {
-namespace gpio_writer {
 namespace led_strip {
 namespace {
 static const int kNumberOfLeds = 10;
@@ -57,7 +56,6 @@ class LedStrip {
 };
 
 } // namespace led_strip
-} // namespace gpio_writer
 } // namespace io
 } // namespace controls
 } // namespace src

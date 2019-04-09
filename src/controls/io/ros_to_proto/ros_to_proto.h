@@ -1,7 +1,9 @@
 #pragma once
 
-#include <string>
+#include <limits>
+#include <map>
 #include <mutex>
+#include <string>
 
 #include <ros/console.h>
 #include <ros/ros.h>
@@ -9,22 +11,26 @@
 #include <diagnostic_msgs/DiagnosticArray.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <google/protobuf/text_format.h>
+#include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/VFR_HUD.h>
-#include <mavros_msgs/CommandBool.h>
 #include <sensor_msgs/BatteryState.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <std_msgs/Float64.h>
 
+#include "lib/phased_loop/phased_loop.h"
 #include "src/controls/messages.pb.h"
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace io {
 namespace ros_to_proto {
 namespace {
+// Tolerance in seconds to check that a ROS packet was received for all topics.
+static const double kRosReceiveTolerance = 1.5;
+
 static const int kRosMessageQueueSize = 1;
 static const ::std::string kRosGlobalPositionTopic =
     "/mavros/global_position/global";
@@ -43,13 +49,13 @@ static const ::std::string kRosStateTopic = "/mavros/state";
 static const ::std::string kRosArmingService = "/mavros/cmd/arming";
 } // namespace
 
-// RosToProto base class
 class RosToProto {
  public:
   RosToProto();
 
   Sensors GetSensors();
   void SendOutput(Output output);
+  bool SensorsValid();
 
  private:
   void GlobalPositionReceived(const ::sensor_msgs::NavSatFix global_position);
@@ -62,8 +68,12 @@ class RosToProto {
   void BatteryStateReceived(::sensor_msgs::BatteryState battery_state);
   void StateReceived(::mavros_msgs::State state);
 
+  void GotRosMessage(::std::string ros_topic);
+
   Sensors sensors_;
   ::std::mutex sensors_mutex_;
+
+  ::std::map<::std::string, double> ros_topic_last_received_times_;
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber global_position_subscriber_;
@@ -80,6 +90,6 @@ class RosToProto {
 };
 
 } // namespace ros_to_proto
-} // namespace loops
+} // namespace io
 } // namespace controls
 } // namespace src

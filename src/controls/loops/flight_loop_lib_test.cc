@@ -66,9 +66,8 @@ class FlightLoopTest : public ::testing::Test {
   }
 
   void StepLoop() {
-    output_ = flight_loop_.RunIteration(sensors_, goal_);
-    sensors_.set_time(sensors_.time() +
-                      1.0 / ::src::controls::loops::kFlightLoopFrequency);
+    flight_loop_.RunIteration(sensors_);
+    sensors_.set_time(sensors_.time() + 1.0 / 50);
   }
 
   ::src::controls::Sensors &sensors() { return sensors_; }
