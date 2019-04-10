@@ -18,6 +18,19 @@ TARGET_TYPES = [
     "Star",
     "Cross"
 ]
+# TARGET_TYPES = [ # old set missing Hexagon and Square; unclear why
+#     'Circle', 
+#     'Cross', 
+#     'Heptagon', 
+#     'Octagon', 
+#     'Pentagon', 
+#     'QuarterCircle',
+#     'Rectangle', 
+#     'SemiCircle', 
+#     'Star', 
+#     'Trapezoid', 
+#     'Triangle'
+# ] 
 # yapf: enable
 
 

@@ -41,6 +41,10 @@ LETTERS = [
     'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 
     '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'
 ]
+# LETTERS = [ # old set missing numbers
+#     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O',
+#     'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 
+# ]
 
 TRANSFORMS = ('rotate', 'perspective', 'affine')
 
@@ -73,7 +77,7 @@ def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir,
                transforms, draw_box, rescale_ratio, shape_color_name, 
                letter_color_name, target_pos_conf, white_balance, origin_pos):
     background_files = os.scandir(bg_dir)
-    field_width = math.trunc(math.log10(n))
+    field_width = math.ceil(math.log10(n))
     labels = []
     for i in range(n):
         if i % 100 == 0:
@@ -148,8 +152,9 @@ def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir,
                 r_angle, resample=Image.BICUBIC,
                 expand=1).resize((t_size, t_size), resample=Image.BOX)
         elif 'rotate' in transforms:
+            r_angle = random.randint(0, 359)
             target = target.rotate(
-                random.randint(0, 359), resample=Image.BICUBIC,
+                r_angle, resample=Image.BICUBIC,
                 expand=1).resize((t_size, t_size), resample=Image.BOX)
 
         if target_pos_conf is None:
@@ -163,19 +168,19 @@ def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir,
         target_bounds = [(target_pos[0], target_pos[1]),
                          (target_pos[0] + t_size, target_pos[1] + t_size)]
         labels.append([
-            i, # name
-            i_size[0], # width
-            i_size[1], # height
-            3, # depth
-            r_angle, # rotation
-            targets.TARGET_TYPES.index(type(generator).__name__), # shape
-            LETTERS.index(letter_choice), # letter
-            shape_color_choice[0], # shape color
-            letter_color_choice[0], # letter color
-            target_bounds[0][0], # xmin
-            target_bounds[0][1], # ymin
-            target_bounds[1][0], # xmax
-            target_bounds[1][1] # ymax
+            i, # 0, name
+            i_size[0], # 1, width
+            i_size[1], # 2, height
+            3, # 3, depth
+            r_angle, # 4, rotation
+            targets.TARGET_TYPES.index(type(generator).__name__), # 5, shape
+            LETTERS.index(letter_choice), # 6, letter
+            shape_color_choice[0], # 7, shape color
+            letter_color_choice[0], # 8, letter color
+            target_bounds[0][0], # 9, xmin
+            target_bounds[0][1], # 10, ymin
+            target_bounds[1][0], # 11, xmax
+            target_bounds[1][1] # 12, ymax
         ])
 
         # Draw a bounding box
@@ -311,11 +316,6 @@ if __name__ == '__main__':
         default=1,
         dest='rescale_ratio',
         help='rescale the source image before using it as a background')
-    parser.add_argument(
-        '--combine-labels',
-        action='store_true',
-        dest='combine_labels',
-        help='output a single csv file with labels for all generated images')
     parser.add_argument(
         '--origin-pos',
         type=int,
