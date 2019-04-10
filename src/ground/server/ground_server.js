@@ -3,11 +3,14 @@ const fs = require('fs');
 const socketIOServer = require('socket.io');
 const loadProtobufUtils = require('./protobuf_utils/protobuf_utils');
 const loadInteropClient = require('./interop_client/interop_client');
+var ping = require("net-ping");
 const constants = require('./utils/constants');
 
 const port = 8081;
+var droneIP = "127.0.0.1";
 const USE_FAKE_DRONE = true;
 const uiSendFrequency = 5; //Hz
+const pingFrequency = 1000 //ms
 const uiSendInterval = Math.floor(constants.droneTelemetryFrequency / uiSendFrequency);
 var drone_connected = false;
 
@@ -65,7 +68,6 @@ function connectToInterop(ip, username, password, callback) {
 drone_io.on('connect', (socket) => {
   drone_connected = true;
   console.log("drone connected!");
-
   telemetryCount = 0;
   socket.on('TELEMETRY', (data) => {
     if (protobufUtils) {
@@ -105,6 +107,46 @@ fake_drone_io.on('connect', (socket) => {
   });
 });
 
+//ping options
+var pingOptions = {
+  networkProtocol: ping.NetworkProtocol.IPv4,
+  packetSize: 16,
+  retries: 1,
+  sessionId: (process.pid % 65535),
+  timeout: 3000,
+  ttl: 128
+};
+
+var pingSession = ping.createSession(pingOptions);
+
+setInterval(() => pingSession.pingHost(droneIP, function (error, droneIP, sent, rcvd) {
+  var ms = rcvd - sent;
+  if (error)
+    if (error instanceof ping.RequestTimedOutError)
+      console.log(droneIP + ": Not alive");
+    else
+      console.log(droneIP + ": " + error.toString());
+  else {
+    console.log(droneIP + ": Alive (ms=" + ms + ")");
+    ui_io.emit('PING', ms);
+    return {
+      type: 'PING',
+      payload: {
+        droneIP: droneIP,
+        lagTime: ms
+      }
+    };
+  }
+}),pingFrequency);
+
+pingSession.on("close", function () {
+  console.log("PING SOCKET CLOSED");
+});
+
+pingSession.on("error", function (error) {
+  console.log(error.toString());
+});
+
 ui_io.on('connect', (socket) => {
   console.log("ui connected!");
   if (interopData) {
@@ -129,7 +171,7 @@ ui_io.on('connect', (socket) => {
       drone_io.emit('RUN_MISSION', encodedGroundProgram);
     }
   });
-  
+
   socket.on('CONNECT_TO_INTEROP', (cred) => {
     console.log('CONNECT TO INTEROP');
     connectToInterop(cred.ip, cred.username, cred.password);

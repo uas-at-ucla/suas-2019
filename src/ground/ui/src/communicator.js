@@ -25,6 +25,10 @@ class Communicator {
     this.socket.on('INTEROP_DATA', (data) => {
       this.store.dispatch({ type: 'INTEROP_DATA', payload: data });
     });
+
+    this.socket.on('PING', (data) => {
+      this.store.dispatch({ type: 'PING', payload: data });
+    });
   }
 
   reduxMiddleware(next) {

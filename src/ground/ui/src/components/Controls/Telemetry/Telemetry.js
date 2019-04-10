@@ -9,7 +9,8 @@ import Readout from './Readout';
 
 const mapStateToProps = state => {
   return {
-    telemetry: state.telemetry.data
+    telemetry: state.telemetry.data,
+    ping: state.telemetry.ping
   };
 };
 

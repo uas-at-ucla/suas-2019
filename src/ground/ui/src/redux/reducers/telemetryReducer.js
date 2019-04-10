@@ -2,14 +2,18 @@
 
 const initialState = {
   data: null,
-  playback: false
+  playback: false,
+  ping: null
 };
 
 export default function reducer(state=initialState, action) {
   switch (action.type) {
+    case 'PING': {
+      return {...state, ping: action.payload};
+    }
     case 'TELEMETRY': {
       if (!state.playback) {
-        return {data: action.payload, playback: state.playback};
+        return {...state, data: action.payload, playback: state.playback};
       } else {
         return state;
       }
