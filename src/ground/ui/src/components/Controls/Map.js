@@ -58,6 +58,7 @@ class Map extends Component {
           searchCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
           return searchCoordinates[index];
       })
+      
     }
     const commandPointPolyCoords = this.props.commandPoints.map((commandPoint, index) => {
       return commandPoint.marker.position;
@@ -126,7 +127,7 @@ class Map extends Component {
                   strokeWeight: 1,
                   fillOpacity: 0.5
               }}
-            > <InfoWindow> <div className="map=infobox"> Boundaries</div> = </InfoWindow></Polygon>  
+            > <InfoWindow> <div className="map-infobox"> Boundaries</div> </InfoWindow></Polygon>  
            <Polygon
                 paths = {[searchGridPoints, searchGridPoints]} strokeOpacity= {0.5} strokeWeight= {2}
             />  
@@ -134,9 +135,29 @@ class Map extends Component {
 
           {
             this.props.interopData.obstacles.stationary_obstacles.map((obstacle, index) => {
-            return <Circle radius={obstacle.cylinder_radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}
-             />;
+            return <Circle 
+            options={{
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.5,
+            }} 
+            radius={obstacle.cylinder_radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}
+            onClick={()=> this.onToggleOpen(index)}
+             >
+            {this.state.isOpen[index] && <InfoWindow defaultPosition={{lat: obstacle.latitude, lng: obstacle.longitude}} onCloseClick = {() =>this.onToggleOpen(index)}>
+                <div className="map-infobox"> Obstacle </div>
+              </InfoWindow>}
+            </Circle>
+             ;
             })
+          }
+
+          {
+            this.props.interopData.mission.mission_waypoints.map((coord, index) => {
+              return <Marker position={{lat: coord.latitude, lng: coord.longitude }} />
+          })
           }
           </span> : null }
 
