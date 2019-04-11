@@ -31,7 +31,7 @@ RUN apt-get update -qq                                                      && \
     build-essential                                                            \
     ca-certificates-java                                                       \
     check                                                                      \
-    clang-3.9                                                                  \
+    clang-6.0                                                                  \
     clang-format-7                                                             \
     cmake                                                                      \
     g++                                                                        \
@@ -40,6 +40,7 @@ RUN apt-get update -qq                                                      && \
     gphoto2                                                                    \
     gphotofs                                                                   \
     htop                                                                       \
+    libclang-6.0-dev                                                           \
     libc++-dev                                                                 \
     libc++abi-dev                                                              \
     lib32z1-dev                                                                \
@@ -101,16 +102,7 @@ WORKDIR /home/uas
 
 # Install python requirements. #################################################
 RUN pip2.7 install --user future
-RUN git clone https://github.com/intel/mavlink-router.git
-WORKDIR /home/uas/mavlink-router
-RUN git submodule update --init --recursive
-RUN ./autogen.sh && ./configure CFLAGS='-g -O2' \
-    --sysconfdir=/etc \
-    --localstatedir=/var \
-    --libdir=/usr/lib64 \
-    --prefix=/usr
-RUN make
-RUN sudo make install
+RUN pip3.7 install --user future
 
 RUN pip2.7 install --user                                                      \
   future==0.16.0                                                               \
@@ -135,6 +127,17 @@ RUN pip2.7 install --user                                                      \
   protobuf==3.5.2.post1                                                        \
   pyzmq==17.0.0                                                                \
   zmq==0.0.0
+
+RUN git clone https://github.com/intel/mavlink-router.git
+WORKDIR /home/uas/mavlink-router
+RUN git submodule update --init --recursive
+RUN ./autogen.sh && ./configure CFLAGS='-g -O2' \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --libdir=/usr/lib64 \
+    --prefix=/usr
+RUN make
+RUN sudo make install
 
 RUN rm -rf /home/uas/mavlink-router
 

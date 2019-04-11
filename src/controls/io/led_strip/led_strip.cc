@@ -3,7 +3,6 @@
 namespace src {
 namespace controls {
 namespace io {
-namespace gpio_writer {
 namespace led_strip {
 
 LedStrip::LedStrip() : battery_percentage_(0.0), armed_(false), alarm_(false) {
@@ -163,7 +162,6 @@ void LedStrip::SetLed(int led, unsigned char r, unsigned char g,
 }
 
 } // namespace led_strip
-} // namespace gpio_writer
 } // namespace io
 } // namespace controls
 } // namespace src

@@ -12,6 +12,8 @@ void ArmingState::Handle(::src::controls::Sensors &sensors,
                          ::src::controls::Output &output) {
   (void)goal;
 
+  // TODO(comran): Check that throttle is at zero before arming.
+
   // Check if we have GPS.
   if (sensors.last_gps() < sensors.time() - 0.5) {
     //  LOG_LINE("can't arm; no GPS "
