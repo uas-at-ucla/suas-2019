@@ -40,6 +40,7 @@ RUN apt-get update -qq                                                      && \
     gphoto2                                                                    \
     gphotofs                                                                   \
     htop                                                                       \
+    libclang-6.0-dev                                                           \
     libc++-dev                                                                 \
     libc++abi-dev                                                              \
     lib32z1-dev                                                                \
