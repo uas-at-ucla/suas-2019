@@ -130,14 +130,22 @@ void RosToProto::VfrHudReceived(const ::mavros_msgs::VFR_HUD vfr_hud) {
 
 void RosToProto::DiagnosticsReceived(
     ::diagnostic_msgs::DiagnosticArray diagnostic_array) {
+  (void)diagnostic_array;
 
   GotRosMessage(kRosDiagnosticsTopic);
 
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
-  sensors_.set_gps_satellite_count(
-      ::std::stoi(diagnostic_array.status[1].values[0].value));
-  sensors_.set_gps_eph(::std::stod(diagnostic_array.status[1].values[2].value));
-  sensors_.set_gps_epv(::std::stod(diagnostic_array.status[1].values[3].value));
+  // TODO(comran): Find a way to safely parse the diagnostics array. This would
+  // sometimes segfault when tested on the drone due to the values not existing
+  // in the array.
+
+  // sensors_.set_gps_satellite_count(
+  //     ::std::stoi(diagnostic_array.status[1].values[0].value));
+  // sensors_.set_gps_eph(::std::stod(diagnostic_array.status[1].values[2].value));
+  // sensors_.set_gps_epv(::std::stod(diagnostic_array.status[1].values[3].value));
+  sensors_.set_gps_satellite_count(0);
+  sensors_.set_gps_eph(0);
+  sensors_.set_gps_epv(0);
 }
 
 void RosToProto::ImuDataReceived(::sensor_msgs::Imu imu_data) {

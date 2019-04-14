@@ -36,9 +36,6 @@ static const int kAlarmOverrideRcSignalThreshold = 1800;
 static const int kWriterPhasedLoopFrequency = 250;
 static const double kAlarmOverrideTimeGap = 1.0 / 10;
 
-static const int kLedWriterFramesPerSecond = 30;
-static const double kLedWriterPeriod = 1.0 / kLedWriterFramesPerSecond;
-
 static const int kSensorsPublisherRate = 50;
 static const double kSensorsPublisherPeriod = 1.0 / kSensorsPublisherRate;
 
@@ -72,8 +69,6 @@ class IO {
   ::lib::alarm::Alarm alarm_;
 
   led_strip::LedStrip led_strip_;
-
-  double next_led_write_;
 
   ros_to_proto::RosToProto ros_to_proto_;
   double next_sensors_write_;

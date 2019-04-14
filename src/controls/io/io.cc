@@ -6,7 +6,6 @@ namespace io {
 
 IO::IO() :
     alarm_(kWriterPhasedLoopFrequency),
-    next_led_write_(::lib::phased_loop::GetCurrentTime()),
     next_sensors_write_(::lib::phased_loop::GetCurrentTime()),
     should_override_alarm_(false),
     last_alarm_override_(::lib::phased_loop::GetCurrentTime()),
@@ -54,12 +53,8 @@ void IO::WriterThread() {
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
 #endif
 
-    // Write output to LED strip at a slower rate than the write loop.
-    if (::lib::phased_loop::GetCurrentTime() > next_led_write_) {
-      led_strip_.Render();
-
-      next_led_write_ = ::lib::phased_loop::GetCurrentTime() + kLedWriterPeriod;
-    }
+    // Write output to LED strip.
+    led_strip_.Render();
 
     // Write out sensors protobuf at a slower rate than the write loop.
     if (::lib::phased_loop::GetCurrentTime() > next_sensors_write_ &&
