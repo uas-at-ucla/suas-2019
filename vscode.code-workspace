@@ -1,7 +1,8 @@
 {
   "folders": [
     {
-      "path": "."
+      "name": "drone_code",
+      "path": ".",
     }
   ],
   "settings": {
@@ -25,11 +26,31 @@
     "git.countBadge": "all",
     "git.checkoutType": "all",
 
+    "search.exclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/node_modules/*/**": true,
+      "**/src/ground/*/**": true,
+      "**/src/vision/*/**": true,
+      "**/tools/*/**": true,
+      "**/external/*/**": true,
+    },
+
+    "files.exclude": {
+      "**/.vscode": true,
+      "**/tools/cache": true,
+      "**/tools/build_output": true,
+      "**/node_modules/*/**": true,
+    },
+
     "files.watcherExclude": {
       "**/.git/objects/**": true,
       "**/.git/subtree-cache/**": true,
       "**/node_modules/*/**": true,
-      "tools/cache": true
-    }
+      "**/src/ground/*/**": true,
+      "**/src/vision/*/**": true,
+      "**/tools/*/**": true,
+      "**/external/*/**": true,
+    },
   }
 }
