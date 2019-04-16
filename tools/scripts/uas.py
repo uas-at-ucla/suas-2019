@@ -659,6 +659,11 @@ def run_nuke(args):
     print_update("Successfully nuked the UAS@UCLA development environment! " \
             ">:)", msg_type="SUCCESS")
 
+def run_vscode(args):
+    run_cmd_exit_failure("code ./vscode.code-workspace")
+
+    print_update("Started vscode!", msg_type="SUCCESS")
+
 def run_lint(args):
     print_update("Starting UAS@UCLA development environment...")
     run_cmd_exit_failure(DOCKER_RUN_ENV_SCRIPT)
@@ -793,6 +798,9 @@ if __name__ == '__main__':
 
     nuke_parser = subparsers.add_parser('nuke')
     nuke_parser.set_defaults(func=run_nuke)
+
+    vscode_parser = subparsers.add_parser('vscode')
+    vscode_parser.set_defaults(func=run_vscode)
 
     help_parser = subparsers.add_parser('help')
     help_parser.set_defaults(func=run_help)

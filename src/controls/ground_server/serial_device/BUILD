@@ -4,20 +4,11 @@ cc_library(
   hdrs = [
     'serial_device.h'
   ],
+  srcs = [
+    'serial_device.cc'
+  ],
   deps = [
     '//src/controls:messages_cpp',
     "@com_google_protobuf//:protobuf",
-  ],
-)
-
-cc_test(
-  name = 'serial_device_test',
-  srcs = [
-    'serial_device_test.cc',
-  ],
-  deps = [
-    ':serial_device',
-    '//src/controls:messages_cpp',
-    '@gtest//:gtest_main',
   ],
 )
