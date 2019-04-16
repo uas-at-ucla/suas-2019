@@ -383,7 +383,7 @@ def run_controls_deploy(args=None):
 
     print_update("Deploying to raspi...")
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + CONTROLS_DEPLOY_SCRIPT \
-            + "src/controls/io/gpio_writer/gpio_writer")
+            + "src/controls/io/io io")
 
 
 def run_controls_rqt(args=None):
