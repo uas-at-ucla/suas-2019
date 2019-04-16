@@ -1,0 +1,10 @@
+.map-overlay {
+  padding: 10px;
+  position: fixed;
+  height: auto;
+  width: auto;
+  top: 60px;
+  pointer-events: all;
+  color: #FFF;
+  z-index: 10;
+}
