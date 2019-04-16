@@ -75,6 +75,13 @@ message Output {
   required bool trigger_disarm                                             = 19;
 }
 
+message UgvSensors {
+  required double time                                                     = 1;
+  required double latitude                                                 = 2;
+  required double longitude                                                = 3;
+  required double altitude                                                 = 4;
+}
+
 message UasMessage {
   optional double time                                                     = 1;
 
