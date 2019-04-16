@@ -3,10 +3,15 @@
 namespace src {
 namespace controls {
 namespace io {
-namespace gpio_writer {
 namespace led_strip {
 
-LedStrip::LedStrip() : battery_percentage_(0.0), armed_(false), alarm_(false) {
+LedStrip::LedStrip() :
+    next_led_write_(::lib::phased_loop::GetCurrentTime()),
+    startup_sequence_frame_(0),
+    battery_percentage_(0.0),
+    armed_(false),
+    alarm_(false) {
+
   led_pixels_ =
       static_cast<ws2811_led_t *>(malloc(sizeof(ws2811_led_t) * kNumberOfLeds));
 
@@ -66,6 +71,12 @@ LedStrip::~LedStrip() {
 }
 
 bool LedStrip::Render() {
+  if (::lib::phased_loop::GetCurrentTime() < next_led_write_) {
+    return true;
+  }
+
+  next_led_write_ = ::lib::phased_loop::GetCurrentTime() + kLedWriterPeriod;
+
   // Render the arming state indicator.
   {
     bool should_blink =
@@ -74,12 +85,13 @@ bool LedStrip::Render() {
                        1.0 / (2 * kDisarmedBlinkFrequency);
 
     for (int i = 0; i < 5; i++) {
+      int current_led = 9 - i;
       if (armed_) {
-        SetLed(i, 255, 0, 0);
+        SetLed(current_led, 255, 0, 0);
       } else if (should_blink) {
-        SetLed(i, 0, 255, 0);
+        SetLed(current_led, 0, 255, 0);
       } else {
-        SetLed(i, 0, 0, 0);
+        SetLed(current_led, 0, 0, 0);
       }
     }
   }
@@ -90,7 +102,7 @@ bool LedStrip::Render() {
     bool blinky = ::std::fmod(battery_percentage_, 0.2) < 0.1;
 
     for (int i = 0; i < 5; i++) {
-      int current_led = 9 - i;
+      int current_led = i;
 
       bool should_blink = i == solid && blinky &&
                           ::std::fmod(::lib::phased_loop::GetCurrentTime(),
@@ -128,6 +140,23 @@ bool LedStrip::Render() {
     }
   }
 
+  // Run startup sequence.
+  if (startup_sequence_frame_ <
+      kLedWriterFramesPerSecond * kStartupSequenceSeconds) {
+    for (int i = 0; i < kNumberOfLeds; i++) {
+      bool should_light =
+          i <= kNumberOfLeds * startup_sequence_frame_ /
+                   (kLedWriterFramesPerSecond * kStartupSequenceSeconds);
+
+      if (should_light) {
+        SetLed(i, 128, 0, 128);
+      } else {
+        SetLed(i, 0, 0, 0);
+      }
+    }
+    startup_sequence_frame_++;
+  }
+
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   ws2811_return_t ret = ws2811_render(&leds_);
 
@@ -163,7 +192,6 @@ void LedStrip::SetLed(int led, unsigned char r, unsigned char g,
 }
 
 } // namespace led_strip
-} // namespace gpio_writer
 } // namespace io
 } // namespace controls
 } // namespace src

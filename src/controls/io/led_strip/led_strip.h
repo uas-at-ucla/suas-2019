@@ -13,13 +13,16 @@
 namespace src {
 namespace controls {
 namespace io {
-namespace gpio_writer {
 namespace led_strip {
 namespace {
+static const int kLedWriterFramesPerSecond = 30;
+static const double kLedWriterPeriod = 1.0 / kLedWriterFramesPerSecond;
+
 static const int kNumberOfLeds = 10;
 static const int kLedStripGpioPin = 10;
 static const int kLedStripDma = 10;
 static const int kLedStripType = WS2811_STRIP_GBR;
+static const int kStartupSequenceSeconds = 2;
 static constexpr double kDisarmedBlinkFrequency = 0.5;
 static constexpr double kBatteryBlinkFrequency = 1.5;
 static constexpr double kImuTimeout = 1.0 / 10;
@@ -50,6 +53,9 @@ class LedStrip {
   ws2811_channel_t channel_1_;
   ws2811_t leds_;
 
+  double next_led_write_;
+
+  int startup_sequence_frame_;
   float battery_percentage_;
   bool armed_;
   double last_imu_;
@@ -57,7 +63,6 @@ class LedStrip {
 };
 
 } // namespace led_strip
-} // namespace gpio_writer
 } // namespace io
 } // namespace controls
 } // namespace src
