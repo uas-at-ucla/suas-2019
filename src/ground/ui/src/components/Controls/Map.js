@@ -93,7 +93,8 @@ class Map extends Component {
             onClick = {()=>this.onToggleOpen("air_drop_pos")}
             icon = {{url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/WA_80_cm_archery_target.svg/180px-WA_80_cm_archery_target.svg.png",
             Size: {width: 40, height:40} ,
-            scaledSize: {width: 25, height: 25} }}
+            scaledSize: {width: 25, height: 25},
+            anchor: window.google ? new window.google.maps.Point(12.5, 12.5) : null }}
             >          
             {this.state.isOpen["air_drop_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("air_drop_pos")}>
            <div className="map-infobox">Air Drop Position 
@@ -110,7 +111,8 @@ class Map extends Component {
             onClick = {()=>this.onToggleOpen("home_pos")}
             icon = {{url: "http://www.clker.com/cliparts/F/t/X/o/S/p/simple-blue-house-md.png",
             Size: {width: "40", height:40} ,
-            scaledSize: {width: 20, height: 20} }}
+            scaledSize: {width: 20, height: 20},
+            anchor: window.google ? new window.google.maps.Point(10, 10) : null }}
             >        
             {this.state.isOpen["home_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("home_pos")}>
             <div className="map-infobox">Home Position
