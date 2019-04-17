@@ -159,13 +159,13 @@ class Map extends Component {
                 <div className="map-infobox"> Obstacle </div>
               </InfoWindow>}
             </Circle>
-            <InfoBox
+            <InfoWindow
               defaultPosition={{ lat: obstacle.latitude, lng:obstacle.longitude}}
             >
             <div> 
               "YEEET"
             </div>
-            </InfoBox>
+            </InfoWindow>
              </div>
              ;
             })
