@@ -1,12 +1,11 @@
 import React, { Component } from 'react';
-import { Marker, InfoWindow, Circle, Polygon, Polyline } from 'react-google-maps';
+import { Marker, InfoWindow, Circle, Polygon, Polyline, InfoBox } from 'react-google-maps';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
 import GoogleMap from '../Utils/GoogleMap/GoogleMap';
-import missionActions from '../../actions/missionActions';
-import { selector } from '../../store';
-import { Circle, Polygon, Polyline, InfoBox } from "react-google-maps";
+import missionActions from 'redux/actions/missionActions';
+import { selector } from 'redux/store';
 
 
 const mapStateToProps = state => {
@@ -156,21 +155,27 @@ class Map extends Component {
             onClick={()=> this.onToggleOpen(index)}
              >
             {this.state.isOpen[index] && <InfoWindow defaultPosition={{lat: obstacle.latitude, lng: obstacle.longitude}} onCloseClick = {() =>this.onToggleOpen(index)}>
-                <div className="map-infobox"> Obstacle </div>
+                <div className="map-infobox"> Obstacle  </div>
               </InfoWindow>}
             </Circle>
-            <InfoBox
-              defaultPosition={{ lat: obstacle.latitude, lng:obstacle.longitude}}
-            >
-            <div> 
-              "YEEET"
-            </div>
-            </InfoBox>
+            
              </div>
              ;
             })
           }
 
+          {     
+            this.props.interopData.obstacles.stationary_obstacles.map((obstacle, index) => {
+            return this.state.isOpen[index] && <InfoWindow defaultPosition={{lat: obstacle.latitude, lng: obstacle.longitude}} onCloseClick = {() =>this.onToggleOpen(index)}>
+            <div className="map-infobox"> 
+            Obstacle {"("+obstacle.latitude + " " + obstacle.longitude + ")"} 
+            <br/> 
+            { "Height:" + obstacle.cylinder_height + " Radius: " + obstacle.cylinder_radius }  
+            </div>
+             </InfoWindow>
+            ;
+            })
+          }
           {
             this.props.interopData.mission.mission_waypoints.map((coord, index) => {
               return <Marker position={{lat: coord.latitude, lng: coord.longitude }} />
