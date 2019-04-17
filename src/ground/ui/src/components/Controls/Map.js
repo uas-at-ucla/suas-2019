@@ -6,7 +6,7 @@ import { connect } from 'react-redux';
 import GoogleMap from '../Utils/GoogleMap/GoogleMap';
 import missionActions from '../../actions/missionActions';
 import { selector } from '../../store';
-import { Circle, Polygon, Polyline } from "react-google-maps";
+import { Circle, Polygon, Polyline, InfoBox } from "react-google-maps";
 
 
 const mapStateToProps = state => {
@@ -100,6 +100,7 @@ class Map extends Component {
             </InfoWindow>}
             </Marker>
           
+
             <Marker  
             title="homePosition"
             position={{lat: this.props.interopData.mission.home_pos.latitude, lng: this.props.interopData.mission.home_pos.longitude}}
@@ -135,7 +136,8 @@ class Map extends Component {
 
           {
             this.props.interopData.obstacles.stationary_obstacles.map((obstacle, index) => {
-            return <Circle 
+            return <div>
+            <Circle 
             options={{
             strokeColor: '#FF0000',
             strokeOpacity: 0.8,
@@ -150,6 +152,14 @@ class Map extends Component {
                 <div className="map-infobox"> Obstacle </div>
               </InfoWindow>}
             </Circle>
+            <InfoBox
+              defaultPosition={{ lat: obstacle.latitude, lng:obstacle.longitude}}
+            >
+            <div> 
+              "YEEET"
+            </div>
+            </InfoBox>
+             </div>
              ;
             })
           }
