@@ -1,14 +1,9 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import {
-  Container,
-  Button,
-  Col,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  Input,
-  Row
+  Button, Container, Row, Col,
+  InputGroup, InputGroupAddon, InputGroupText, Input,
+  InputGroupButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem
 } from "reactstrap";
 import { Marker } from "react-google-maps";
 
@@ -26,11 +21,25 @@ const mapStateToProps = state => {
 const mapDispatchToProps = settingsActions;
 
 class Settings extends Component {
-  handleChange = event => {
+  state = { 
+    gndServerDropdown: false,
+    interopDropdown: false
+  };
+  toggleGndServerDropdown = () => this.setState({ gndServerDropdown: !this.state.gndServerDropdown });
+  toggleInteropDropdown = () => this.setState({ interopDropdown: !this.state.interopDropdown });
+
+  handleChange = (event) => {
     this.props.updateSettings({ [event.target.name]: event.target.value });
   };
 
-  connectToInterop = event => {
+  handleSelect = (event) => {
+    let name = event.target.parentElement.dataset.name;
+    if (name) {
+      this.props.updateSettings({ [name]: event.target.innerText });
+    }
+  };
+
+  connectToInterop = () => {
     this.props.connectToInterop(
       this.props.settings.interopIp,
       this.props.settings.interopUsername,
@@ -38,11 +47,11 @@ class Settings extends Component {
     );
   };
 
-  connectToGndServer = event => {
+  connectToGndServer = () => {
     this.props.connectToGndServer();
   };
 
-  handleClickedMap = event => {
+  handleClickedMap = (event) => {
     this.props.updateSettings({ antennaPos: {lat: event.latLng.lat(), lng: event.latLng.lng()} });
   };
 
@@ -54,7 +63,16 @@ class Settings extends Component {
         <Row>
           <Col>
             <InputGroup>
-              <InputGroupAddon addonType="prepend">Ground IP</InputGroupAddon>
+              <InputGroupButtonDropdown 
+                addonType="prepend" isOpen={this.state.gndServerDropdown} 
+                toggle={this.toggleGndServerDropdown}
+              >
+                <DropdownToggle caret>Ground Server IP</DropdownToggle>
+                <DropdownMenu data-name="gndServerIp" onClick={this.handleSelect}>
+                  <DropdownItem>localhost:8081</DropdownItem>
+                  <DropdownItem>192.168.2.20:8081</DropdownItem>
+                </DropdownMenu>
+              </InputGroupButtonDropdown>
               <Input
                 value={this.props.settings.gndServerIp}
                 name="gndServerIp"
@@ -102,18 +120,25 @@ class Settings extends Component {
             </InputGroup>
           </Col>
         </Row>
-        <br />
+        {/* <br /> */}
         <Row>
           <Col>
             <InputGroup>
-              <InputGroupAddon addonType="prepend">Interop IP</InputGroupAddon>
+              <InputGroupButtonDropdown 
+                addonType="prepend" isOpen={this.state.interopDropdown} 
+                toggle={this.toggleInteropDropdown}
+              >
+                <DropdownToggle caret>Interop IP</DropdownToggle>
+                <DropdownMenu data-name="interopIp" onClick={this.handleSelect}>
+                  <DropdownItem>134.209.2.203:8000</DropdownItem>
+                </DropdownMenu>
+              </InputGroupButtonDropdown>
               <Input
                 value={this.props.settings.interopIp}
                 name="interopIp"
                 type="text"
                 placeholder={this.props.settings.interopIp}
                 onChange={this.handleChange}
-                maxLength="18"
               />
             </InputGroup>
           </Col>
