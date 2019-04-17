@@ -77,8 +77,14 @@ class Map extends Component {
           onDblClick={this.mapDblClick}
 
         >
-          {this.props.droneMarker ? 
-            <Marker {...this.props.droneMarker}></Marker> 
+          {this.props.droneMarker ?
+            <Marker {...this.props.droneMarker}>
+              <Circle
+                center={this.props.droneMarker.position}
+                radius={this.props.droneMarker.eph}
+                options={{clickable: false}}
+              ></Circle>
+            </Marker>
           : null}
 
           {this.props.interopData ? <span><Marker  

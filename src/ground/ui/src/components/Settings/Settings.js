@@ -126,7 +126,10 @@ class Settings extends Component {
           </Col>
         </Row>
         <br />
-
+        <Row>
+          <Col><Button onClick={this.props.logReduxState}>Log Redux State</Button></Col>
+        </Row>
+        <br />
         <Row>
           <Col>
             <h2>File Browser</h2>

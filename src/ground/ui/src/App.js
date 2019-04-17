@@ -10,10 +10,6 @@ import Settings from './components/Settings/Settings';
 const defaultPage = "/controls" // "/vision"
 
 class App extends Component {
-  componentDidMount() {
-    document.title = 'Flight Deck';
-  }
-
   render() {
     return (
       <div>
