@@ -11,43 +11,67 @@ import {
   Row
 } from "reactstrap";
 import { Marker } from "react-google-maps";
-import GoogleMap from "../Utils/GoogleMap/GoogleMap";
-import "./Settings.css";
-import settingsActions from "../../actions/settingsActions";
 
-const mapStateToProps = redux_state => {
+import "./Settings.css";
+import GoogleMap from "components/Utils/GoogleMap/GoogleMap";
+import settingsActions from "redux/actions/settingsActions";
+
+const mapStateToProps = state => {
   return {
-    redux_settings: redux_state.settings
+    settings: state.settings,
+    interopData: state.mission.interopData
   };
 };
 
 const mapDispatchToProps = settingsActions;
 
 class Settings extends Component {
-  constructor(props) {
-    super(props);
-    this.state = this.props.redux_settings;
-  }
-
   handleChange = event => {
-    this.setState({ [event.target.name]: event.target.value });
+    this.props.updateSettings({ [event.target.name]: event.target.value });
   };
 
-  handleSubmit = event => {
-    alert("Connected to: " + this.state.ip);
-    event.preventDefault();
+  connectToInterop = event => {
+    this.props.connectToInterop(
+      this.props.settings.interopIp,
+      this.props.settings.interopUsername,
+      this.props.settings.interopPassword
+    );
+  };
+
+  connectToGndServer = event => {
+    this.props.connectToGndServer();
   };
 
   handleClickedMap = event => {
-    this.setState({ lat: event.latLng.lat(), long: event.latLng.lng() });
+    this.props.updateSettings({ antennaPos: {lat: event.latLng.lat(), lng: event.latLng.lng()} });
   };
 
   render() {
-    console.log(this.state);
+    let connectedGroundServer = this.props.settings.gndServerConnected ? this.props.settings.connectedGndServerIp : "NONE";
+    let connectedInteropServer = this.props.interopData ? this.props.interopData.ip : "NONE";
     return (
       <Container className="Settings">
-        <h1>Settings</h1>
-        <h2>Connected To: {this.state.ip}</h2>
+        <Row>
+          <Col>
+            <InputGroup>
+              <InputGroupAddon addonType="prepend">Ground IP</InputGroupAddon>
+              <Input
+                value={this.props.settings.gndServerIp}
+                name="gndServerIp"
+                type="text"
+                placeholder="0"
+                onChange={this.handleChange}
+              />
+            </InputGroup>
+          </Col>
+          <Col>
+            <Button color="primary" className="connect-btn" onClick={this.connectToGndServer}>
+              Connect To Ground Server
+            </Button>
+            <span>Connected To: {connectedGroundServer}</span>
+          </Col>
+        </Row>
+        <br />
         <Row>
           <Col>
             <InputGroup>
@@ -55,8 +79,8 @@ class Settings extends Component {
                 Interop Username
               </InputGroupAddon>
               <Input
-                value={this.state.un}
-                name="un"
+                value={this.props.settings.interopUsername}
+                name="interopUsername"
                 type="text"
                 placeholder="Enter username..."
                 onChange={this.handleChange}
@@ -69,8 +93,8 @@ class Settings extends Component {
                 Interop Password
               </InputGroupAddon>
               <Input
-                value={this.state.pw}
-                name="pw"
+                value={this.props.settings.interopPassword}
+                name="interopPassword"
                 type="text"
                 placeholder="Enter password..."
                 onChange={this.handleChange}
@@ -84,10 +108,10 @@ class Settings extends Component {
             <InputGroup>
               <InputGroupAddon addonType="prepend">Interop IP</InputGroupAddon>
               <Input
-                value={this.state.ip}
-                name="ip"
+                value={this.props.settings.interopIp}
+                name="interopIp"
                 type="text"
-                placeholder={this.state.ip}
+                placeholder={this.props.settings.interopIp}
                 onChange={this.handleChange}
                 maxLength="18"
               />
@@ -95,38 +119,28 @@ class Settings extends Component {
           </Col>
           <br />
           <Col>
-            <Button color="danger" onClick={this.handleSubmit}>
+            <Button color="success" className="connect-btn" onClick={this.connectToInterop}>
               Connect To Interop
             </Button>
+            <span>Connected To: {connectedInteropServer}</span>
           </Col>
         </Row>
-
         <br />
-        <Col>
-          <InputGroup>
-            <InputGroupAddon addonType="prepend">Ground IP</InputGroupAddon>
-            <Input
-              value={this.state.gip}
-              name="gip"
-              type="text"
-              placeholder="0"
-              onChange={this.handleChange}
-            />
-          </InputGroup>
-        </Col>
+        <Row>
+          <Col><Button onClick={this.props.logReduxState}>Log Redux State</Button></Col>
+        </Row>
         <br />
         <Row>
           <Col>
             <h2>File Browser</h2>
             <Input type="file" />
             <br />
-            <Button onClick={this.updateSettings}>Update Settings</Button>
           </Col>
           <br />
           <Col>
             <h2>Antenna Tracker Location:</h2>
             <p>
-              {this.state.lat}° , {this.state.long}°
+              {this.props.settings.antennaPos.lat}° , {this.props.settings.antennaPos.lng}°
             </p>
             <div style={{ height: "350px", width: "500px" }}>
               <GoogleMap
@@ -141,7 +155,7 @@ class Settings extends Component {
                 onDblClick={this.handleClickedMap}
               >
                 <Marker
-                  position={{ lat: this.state.lat, lng: this.state.long }}
+                  position={this.props.settings.antennaPos}
                 />
               </GoogleMap>
             </div>
@@ -150,10 +164,6 @@ class Settings extends Component {
       </Container>
     );
   }
-
-  updateSettings = () => {
-    this.props.updateSettings(this.state);
-  };
 }
 
 export default connect(

@@ -64,9 +64,9 @@ class InteropClient {
   }
 }
 
-module.exports = (ip, port, username, password) => {
+module.exports = (ip, username, password) => {
   let axiosConfig = {
-    baseURL: "http://" + ip + ":" + port + "/api/",
+    baseURL: "http://" + ip + "/api/",
     timeout: 5000
   }
 

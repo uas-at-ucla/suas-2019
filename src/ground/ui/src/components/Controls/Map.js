@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Marker, InfoWindow } from 'react-google-maps';
+import { Marker, InfoWindow, Circle, Polygon, Polyline } from 'react-google-maps';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
@@ -12,15 +12,16 @@ import { Circle, Polygon, Polyline, InfoBox } from "react-google-maps";
 const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
-    commandPoints: derivedData.missionPlan.commandPoints,
-    protoInfo: derivedData.missionPlan.protoInfo,
-    interopData: state.missionPlan.interopData,
-    telemetry: state.telemetry,
+    commandPoints: derivedData.mission.commandPoints,
+    protoInfo: derivedData.mission.protoInfo,
+    interopData: state.mission.interopData,
+    telemetry: state.telemetry.data,
     droneMarker: derivedData.telemetry.droneMarker 
   };
 };
 
 const mapDispatchToProps = missionActions;
+
 
 class Map extends Component {
   state = {
@@ -79,8 +80,14 @@ class Map extends Component {
           onDblClick={this.mapDblClick}
 
         >
-          {this.props.droneMarker ? 
-            <Marker {...this.props.droneMarker}></Marker> 
+          {this.props.droneMarker ?
+            <Marker {...this.props.droneMarker}>
+              <Circle
+                center={this.props.droneMarker.position}
+                radius={this.props.droneMarker.eph}
+                options={{clickable: false}}
+              ></Circle>
+            </Marker>
           : null}
 
           {this.props.interopData ? <span><Marker  
@@ -185,7 +192,7 @@ class Map extends Component {
                     </div>
                    
                     <Button onClick={this.deleteCommand} data-index={index}>
-                      <div><i className="fa fa-trash"></i></div>
+                      <i className="fa fa-trash" style={{pointerEvents: "none"}}></i>
                     </Button>
                   </div>
                 </InfoWindow>}
