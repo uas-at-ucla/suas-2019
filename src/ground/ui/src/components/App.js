@@ -2,10 +2,10 @@ import React, { Component } from 'react';
 import { BrowserRouter as Router, Route, Link, Redirect, Switch } from "react-router-dom";
 
 import './App.css';
-import Controls from './components/Controls/Controls';
-import Vision from './components/Vision/Vision';
-import Analytics from './components/Analytics/Analytics';
-import Settings from './components/Settings/Settings';
+import Controls from './Controls/Controls';
+import Vision from './Vision/Vision';
+import Analytics from './Analytics/Analytics';
+import Settings from './Settings/Settings';
 
 const defaultPage = "/controls" // "/vision"
 
