@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import './Controls.css';
 import Map from './Map';
@@ -15,7 +16,7 @@ class Controls extends Component {
           <div>
             <span className="left-side">
               <span className="top-left">
-                <Cosmetics/>
+                <Cosmetics onClick={this.centerOnDrone}/>
                 <MissionPlannerContainer/>
               </span>
               <span className="bottom-left">
@@ -31,6 +32,10 @@ class Controls extends Component {
       </div>
     );
   }
+
+  centerOnDrone = () => {
+    this.props.dispatch({type: 'CENTER_ON_DRONE'});
+  }
 }
 
-export default Controls;
+export default connect()(Controls);

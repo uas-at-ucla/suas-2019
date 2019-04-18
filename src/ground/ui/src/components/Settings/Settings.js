@@ -27,17 +27,24 @@ class Settings extends Component {
   };
   toggleGndServerDropdown = () => this.setState({ gndServerDropdown: !this.state.gndServerDropdown });
   toggleInteropDropdown = () => this.setState({ interopDropdown: !this.state.interopDropdown });
+  toggleCompLocDropdown = () => this.setState({ compLocDropdown: !this.state.compLocDropdown });
 
   handleChange = (event) => {
     this.props.updateSettings({ [event.target.name]: event.target.value });
   };
 
   handleSelect = (event) => {
+    console.log(event.target)
     let name = event.target.parentElement.dataset.name;
     if (name) {
       this.props.updateSettings({ [name]: event.target.innerText });
     }
   };
+
+  changeCompLocation = (event) => {
+    this.handleSelect(event);
+    this.props.changeCompLocation(event.target.innerText);
+  }
 
   connectToInterop = () => {
     this.props.connectToInterop(
@@ -152,7 +159,9 @@ class Settings extends Component {
         </Row>
         <br />
         <Row>
-          <Col><Button onClick={this.props.logReduxState}>Log Redux State</Button></Col>
+          <Col>
+            <Button onClick={this.props.logReduxState}>Log Redux State</Button>
+          </Col>
         </Row>
         <br />
         <Row>
@@ -170,7 +179,15 @@ class Settings extends Component {
             <div style={{ height: "350px", width: "500px" }}>
               <GoogleMap
                 defaultZoom={17}
-                defaultCenter={{ lat: 34.0689, lng: -118.4452 }}
+                center={
+                  /*if*/ this.props.interopData ? 
+                    {
+                      lat: this.props.interopData.mission.home_pos.latitude,
+                      lng: this.props.interopData.mission.home_pos.longitude
+                    } 
+                  /*else*/: 
+                    {lat: 34.0689, lng: -118.4452}
+                }
                 defaultMapTypeId="satellite"
                 defaultOptions={{
                   disableDefaultUI: true,

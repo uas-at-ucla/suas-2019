@@ -13,7 +13,7 @@ const mapStateToProps = state => {
     commandPoints: derivedData.mission.commandPoints,
     protoInfo: derivedData.mission.protoInfo,
     interopData: state.mission.interopData,
-    telemetry: state.telemetry.data,
+    telemetry: state.telemetry,
     droneMarker: derivedData.telemetry.droneMarker 
   };
 };
@@ -67,13 +67,13 @@ class Map extends Component {
       <div className="Map">
         <GoogleMap
           defaultZoom={16}
-          defaultCenter={{ lat: 38.147483, lng: -76.427778 }}
           defaultMapTypeId="satellite"
           defaultOptions={{
             disableDefaultUI: true,
             disableDoubleClickZoom: true,
             scaleControl: true
           }}
+          center={this.props.telemetry.mapCenter}
           onClick ={this.onMapClick}
           onDblClick={this.mapDblClick}
 

@@ -6,7 +6,7 @@ import UasLogo from './UasLogo';
 class Cosmetics extends React.Component {
     render() {
         return(
-            <UasLogo/>
+            <UasLogo onClick={this.props.onClick}/>
         );
     }
 }
