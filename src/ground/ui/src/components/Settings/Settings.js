@@ -9,7 +9,6 @@ import { Marker } from "react-google-maps";
 
 import "./Settings.css";
 import GoogleMap from "components/Utils/GoogleMap/GoogleMap";
-import UasLogo from "components/Utils/UasLogo/UasLogo";
 import settingsActions from "redux/actions/settingsActions";
 
 const mapStateToProps = state => {
@@ -68,7 +67,6 @@ class Settings extends Component {
     let connectedInteropServer = this.props.interopData ? this.props.interopData.ip : "NONE";
     return (
       <Container className="Settings">
-        <Row><Col className="logo"><UasLogo/></Col></Row>
         <Row>
           <Col>
             <InputGroup>
@@ -95,7 +93,7 @@ class Settings extends Component {
             <Button color="primary" className="connect-btn" onClick={this.connectToGndServer}>
               Connect To Ground Server
             </Button>
-            <span>Connected to <b>{connectedGroundServer}</b></span>
+            <span>Connected To: {connectedGroundServer}</span>
           </Col>
         </Row>
         <br />
@@ -156,7 +154,7 @@ class Settings extends Component {
             <Button color="success" className="connect-btn" onClick={this.connectToInterop}>
               Connect To Interop
             </Button>
-            <span>Connected to <b>{connectedInteropServer}</b></span>
+            <span>Connected To: {connectedInteropServer}</span>
           </Col>
         </Row>
         <br />
@@ -190,7 +188,7 @@ class Settings extends Component {
                   /*else*/: 
                     {lat: 34.0689, lng: -118.4452}
                 }
-                defaultMapTypeId="customTiles"
+                defaultMapTypeId="satellite"
                 defaultOptions={{
                   disableDefaultUI: true,
                   disableDoubleClickZoom: true,

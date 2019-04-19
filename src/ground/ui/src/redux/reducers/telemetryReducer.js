@@ -38,9 +38,6 @@ export default function reducer(state=initialState, action) {
         return state;
       }
     }
-    case 'CENTER_ON_COMMAND': {
-      return {...state, mapCenter: action.payload.pos};
-    }
     case 'INTEROP_DATA': {
       return {
         ...state,

@@ -1,5 +1,6 @@
-.Settings .logo {
-  text-align: center;
+.Settings {
+  margin-top: 80px;
+  /* text-align: center; */
 }
 
 .Settings .row {

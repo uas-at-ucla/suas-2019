@@ -6,7 +6,7 @@ import Map from './Map';
 import Telemetry from './Telemetry/Telemetry';
 import DroneActions from './DroneActions';
 import MissionPlannerContainer from './MissionPlannerContainer/MissionPlannerContainer';
-import UasLogo from 'components/Utils/UasLogo/UasLogo';
+import Cosmetics from 'components/Utils/Cosmetics/Cosmetics';
 
 class Controls extends Component {
   render() {
@@ -16,7 +16,7 @@ class Controls extends Component {
           <div>
             <span className="left-side">
               <span className="top-left">
-                <div onClick={this.centerOnDrone} className="logo"><UasLogo/></div>
+                <Cosmetics onClick={this.centerOnDrone}/>
                 <MissionPlannerContainer/>
               </span>
               <span className="bottom-left">

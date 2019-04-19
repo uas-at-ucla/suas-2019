@@ -30,7 +30,6 @@
 
 .Controls .left-side {
   position: absolute;
-  padding-top: 50px;
   height: 100%;
   width: 100%;
   display: flex;
@@ -59,19 +58,6 @@
   align-items: flex-end;
 }
 
-.Controls .logo  {
-  background-color: rgba(0 , 0 , 0 , .6);
-  display: inline-block;
-}
-
-.map-infobox {
-  color: black;
-}
-
-.buttonArray
-{
-  margin-top: 10px;
-}
 
 .buttonArray > button
 {
@@ -80,16 +66,12 @@
   border-radius: 5px;
   border-style: solid;
 
+  margin: 10px 5px;
   padding: auto auto;
 
   background-color: rgba(0 , 0 , 0 , .6);
 
   transition: .3s;
-}
-
-.buttonArray > button+button
-{
-  margin-left: 10px;
 }
 
 .buttonArray > button:hover
@@ -160,4 +142,8 @@
 {
   color: #c61515;
   border-color: #c61515;
+}
+
+.map-infobox {
+  color: black;
 }

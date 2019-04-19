@@ -10,7 +10,6 @@ import { selector } from 'redux/store';
 const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
-    mission: state.mission,
     commandPoints: derivedData.mission.commandPoints,
     protoInfo: derivedData.mission.protoInfo,
     interopData: state.mission.interopData,
@@ -68,7 +67,7 @@ class Map extends Component {
       <div className="Map">
         <GoogleMap
           defaultZoom={16}
-          defaultMapTypeId="customTiles"
+          defaultMapTypeId="satellite"
           defaultOptions={{
             disableDefaultUI: true,
             disableDoubleClickZoom: true,
@@ -187,10 +186,7 @@ class Map extends Component {
 
           {this.props.commandPoints.map((commandPoint, index) => 
             commandPoint ?
-              <Marker
-                {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.onToggleOpen(commandPoint.id)}
-                animation={(this.props.mission.commandAnimate[commandPoint.id] && window.google) ? window.google.maps.Animation.BOUNCE : null}
-              >
+              <Marker {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.onToggleOpen(commandPoint.id)}>
                 {this.state.isOpen[commandPoint.id] && <InfoWindow {...commandPoint.infobox} onCloseClick = {() =>this.onToggleOpen(commandPoint.id)}>
                   <div className="map-infobox">
                     <div>
@@ -212,16 +208,6 @@ class Map extends Component {
           )}
                 <Polyline
                  path = {commandPointPolyCoords} strokeOpacity= {1} strokeWeight= {5} 
-                 options = {{
-                  icons: window.google ? [{
-                    icon: {
-                      path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                      strokeColor: '#000000'
-                    },
-                    offset: '100%',
-                    repeat: '200px'
-                  }] : null
-                }}
                 />
         </GoogleMap>
       </div>

@@ -14,8 +14,8 @@ class MissionPlannerContainer extends Component {
       <div className="MissionPlannerContainer">
 
         <div className="missionPlannerHeader"> 
-          <span><b>Mission Planner</b></span>
-          <i onClick={this.expand} className="fa fa-expand"></i>
+          <h1>Mission Planner</h1>
+          <Button onClick={this.expand}>Expand</Button>
         </div>
         <div className="SmallMissionPlanner">
           <MissionPlanner className="SmallMissionPlanner"/>

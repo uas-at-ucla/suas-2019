@@ -16,7 +16,9 @@ const mapDispatchToProps = droneActions;
 class DroneActions extends Component {
   render() {
     return (
-      <span className="DroneActions">        
+      <div className="DroneActions">
+        <span>Change Drone State</span>
+        
         <div className="buttonArray">
           <button id="runMissionButton" onClick={this.runMission}>Run Mission</button>
           <button id="takeoffButton" onClick={this.props.droneTakeoff}>Takeoff</button>
@@ -24,7 +26,7 @@ class DroneActions extends Component {
           <button id="failsafeButton" onClick={this.props.droneFailsafe}>Failsafe Landing</button>
           <button id="throttleCutButton" onClick={this.props.droneThrottleCut}>Throttle Cut</button>
         </div>
-      </span>
+      </div>
     );
   }
 

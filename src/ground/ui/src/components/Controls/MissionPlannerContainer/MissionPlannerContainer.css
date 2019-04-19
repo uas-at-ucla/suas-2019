@@ -13,15 +13,8 @@
   margin-bottom: 10px;
 }
 
-.MissionPlannerContainer > .missionPlannerHeader > span {
-  font-size: 20px;
-  line-height: 25px;
-}
-
-.MissionPlannerContainer > .missionPlannerHeader > i {
+.MissionPlannerContainer > .missionPlannerHeader > h1 {
   font-size: 25px;
-  line-height: 25px;
-  cursor: pointer;
 }
 
 .MissionPlannerModal.modal-dialog {
