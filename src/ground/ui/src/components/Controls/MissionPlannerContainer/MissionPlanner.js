@@ -20,7 +20,7 @@ class MissionPlanner extends Component {
   render() {
     return (
       <div className="MissionPlanner">
-        <this.CommandList onSortEnd={this.reorderCommand}/>
+        <this.CommandList onSortEnd={this.reorderCommand} distance={2}/>
       </div>
     );
   }
@@ -58,6 +58,12 @@ class MissionPlanner extends Component {
   };
 
   commandChangers = {
+    centerMapOnCommand: (index) => {
+      let command = this.props.mission.commands[index];
+      this.props.centerMapOnCommand(command, this.props.protoInfo);
+      setTimeout(() => this.props.commandStopAnimation(command), 1000);
+    },
+
     changeCommandType: (event) => {
       let index = event.target.dataset.index;
       let newType = event.target.value;
@@ -91,11 +97,15 @@ export default connect(mapStateToProps, mapDispatchToProps)(MissionPlanner);
 const SortableCommand = SortableElement(props => <CommandRow {...props}/>);
 // PureComponent improves performance b/c it only re-renders when props change
 class CommandRow extends PureComponent {
+  centerMapOnCommand = () => {
+    this.props.centerMapOnCommand(this.props.myIndex);
+  }
+
   render() {
     let command = this.props.command;
     let index = this.props.myIndex;
     return (
-      <Row className={`MissionPlanner ${this.props.className}`}>
+      <Row className={`MissionPlanner ${this.props.className}`} onClick={this.centerMapOnCommand}>
         <Col xs="auto" className="command-column command-index">{index+1}</Col>
         <Col xs="auto" className="command-column command-type">
           <span className="value">
@@ -107,7 +117,7 @@ class CommandRow extends PureComponent {
           >
             {this.props.protoInfo.commandTypes.map(commandType =>
               <option value={commandType} key={commandType}>
-              {this.props.protoInfo.commandAbbr[commandType]}
+                {this.props.protoInfo.commandAbbr[commandType]}
               </option>
             )}
           </Input>

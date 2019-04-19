@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Component } from 'react';
 import { withScriptjs, withGoogleMap, GoogleMap } from 'react-google-maps';
 
 import './GoogleMap.css';
@@ -34,32 +34,41 @@ function getCustomTilesMapType() {
   });
 }
 
-function setMapType(mapComponent) {
-  if (mapComponent) {
-    google = window.google;
-    let customTilesMapType = getCustomTilesMapType();
-    let map = mapComponent.context.__SECRET_MAP_DO_NOT_USE_OR_YOU_WILL_BE_FIRED; // lol don't worry
-    map.mapTypes.set('customTiles', customTilesMapType);
-    map.setMapTypeId('customTiles');
+class GoogleMapWrapperComponent extends Component {
+  setMapType = (mapComponent) => {
+    if (mapComponent) {
+      google = window.google;
+      let customTilesMapType = getCustomTilesMapType();
+      let map = mapComponent.context.__SECRET_MAP_DO_NOT_USE_OR_YOU_WILL_BE_FIRED; // lol don't worry
+      map.mapTypes.set('customTiles', customTilesMapType);
+      // map.setMapTypeId('customTiles');
 
-    // UNCOMMENT TO TEST:
-    // downloadTileListOnClick(map);
+      // pan smoothly when map center changes
+      this.componentDidUpdate = (prevProps) => {
+        if (prevProps.center !== this.props.center) {
+          mapComponent.panTo(this.props.center);
+        }
+      }
+  
+      // UNCOMMENT TO TEST:
+      // downloadTileListOnClick(map);
+    }
+  }
+  
+  GoogleMapComponent = withScriptjs(withGoogleMap((props) => (
+    <GoogleMap {...props} ref={this.setMapType} />
+  )));
+
+  render() {
+    return <this.GoogleMapComponent
+      loadingElement={<div style={{ height: `100%` }} />}
+      containerElement={<div style={{ height: `100%` }} />}
+      mapElement={<div style={{ height: `100%` }} />}
+      googleMapURL="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,visualization&key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c"
+      {...this.props}
+    />
   }
 }
-
-const GoogleMapComponent = withScriptjs(withGoogleMap((props) => (
-  <GoogleMap {...props} ref={setMapType} />
-)));
-
-const GoogleMapWrapperComponent = (props) => (
-  <GoogleMapComponent
-    loadingElement={<div style={{ height: `100%` }} />}
-    containerElement={<div style={{ height: `100%` }} />}
-    mapElement={<div style={{ height: `100%` }} />}
-    googleMapURL="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,visualization&key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c"
-    {...props}
-  />
-);
 
 export default GoogleMapWrapperComponent;
 
