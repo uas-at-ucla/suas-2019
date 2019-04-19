@@ -136,7 +136,7 @@ class Map extends Component {
             anchor: window.google ? new window.google.maps.Point(10, 10) : null }}
             >        
             {this.state.isOpen["emergent_last_known_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("emergent_last_known_pos")}>
-            <div className="map-infobox">Emergency Position
+            <div className="map-infobox">Emergenct Object
             <button onClick = {() =>this.addWaypointCommand(this.props.interopData.mission.emergent_last_known_pos.latitude, this.props.interopData.mission.emergent_last_known_pos.longitude)}>
               add
             </button>
