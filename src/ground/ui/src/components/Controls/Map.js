@@ -125,6 +125,42 @@ class Map extends Component {
             </div>
           </InfoWindow> }          
             </Marker>
+
+            <Marker  
+            title="emergent_last_known_pos"
+            position={{lat: this.props.interopData.mission.emergent_last_known_pos.latitude, lng: this.props.interopData.mission.emergent_last_known_pos.longitude}}
+            onClick = {()=>this.onToggleOpen("emergent_last_known_pos")}
+            icon = {{url: "http://www.clker.com/cliparts/F/t/X/o/S/p/simple-blue-house-md.png",
+            Size: {width: "40", height:40} ,
+            scaledSize: {width: 20, height: 20},
+            anchor: window.google ? new window.google.maps.Point(10, 10) : null }}
+            >        
+            {this.state.isOpen["emergent_last_known_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("emergent_last_known_pos")}>
+            <div className="map-infobox">Emergency Position
+            <button onClick = {() =>this.addWaypointCommand(this.props.interopData.mission.emergent_last_known_pos.latitude, this.props.interopData.mission.emergent_last_known_pos.longitude)}>
+              add
+            </button>
+            </div>
+            </InfoWindow> }          
+            </Marker>
+
+            <Marker  
+            title="off_axis_odlc_pos"
+            position={{lat: this.props.interopData.mission.off_axis_odlc_pos.latitude, lng: this.props.interopData.mission.off_axis_odlc_pos.longitude}}
+            onClick = {()=>this.onToggleOpen("off_axis_odlc_pos")}
+            icon = {{url: "http://www.clker.com/cliparts/F/t/X/o/S/p/simple-blue-house-md.png",
+            Size: {width: "40", height:40} ,
+            scaledSize: {width: 20, height: 20},
+            anchor: window.google ? new window.google.maps.Point(10, 10) : null }}
+            >        
+            {this.state.isOpen["off_axis_odlc_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("off_axis_odlc_pos")}>
+            <div className="map-infobox">Off Axis Position
+            <button onClick = {() =>this.addWaypointCommand(this.props.interopData.mission.off_axis_odlc_pos.latitude, this.props.interopData.mission.off_axis_odlc_pos.longitude)}>
+              add
+            </button>
+            </div>
+            </InfoWindow> }          
+            </Marker>
           
 
             <Polygon
