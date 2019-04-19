@@ -3,18 +3,18 @@ import { Marker, InfoWindow, Circle, Polygon, Polyline, InfoBox } from 'react-go
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
-import GoogleMap from '../Utils/GoogleMap/GoogleMap';
+import GoogleMap from 'components/Utils/GoogleMap/GoogleMap';
 import missionActions from 'redux/actions/missionActions';
 import { selector } from 'redux/store';
-
 
 const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
+    mission: state.mission,
     commandPoints: derivedData.mission.commandPoints,
     protoInfo: derivedData.mission.protoInfo,
     interopData: state.mission.interopData,
-    telemetry: state.telemetry.data,
+    telemetry: state.telemetry,
     droneMarker: derivedData.telemetry.droneMarker 
   };
 };
@@ -68,13 +68,13 @@ class Map extends Component {
       <div className="Map">
         <GoogleMap
           defaultZoom={16}
-          defaultCenter={{ lat: 38.147483, lng: -76.427778 }}
-          defaultMapTypeId="satellite"
+          defaultMapTypeId="customTiles"
           defaultOptions={{
             disableDefaultUI: true,
             disableDoubleClickZoom: true,
             scaleControl: true
           }}
+          center={this.props.telemetry.mapCenter}
           onClick ={this.onMapClick}
           onDblClick={this.mapDblClick}
 
@@ -95,7 +95,8 @@ class Map extends Component {
             onClick = {()=>this.onToggleOpen("air_drop_pos")}
             icon = {{url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/WA_80_cm_archery_target.svg/180px-WA_80_cm_archery_target.svg.png",
             Size: {width: 40, height:40} ,
-            scaledSize: {width: 25, height: 25} }}
+            scaledSize: {width: 25, height: 25},
+            anchor: window.google ? new window.google.maps.Point(12.5, 12.5) : null }}
             >          
             {this.state.isOpen["air_drop_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("air_drop_pos")}>
            <div className="map-infobox">Air Drop Position 
@@ -113,7 +114,8 @@ class Map extends Component {
             onClick = {()=>this.onToggleOpen("home_pos")}
             icon = {{url: "http://www.clker.com/cliparts/F/t/X/o/S/p/simple-blue-house-md.png",
             Size: {width: "40", height:40} ,
-            scaledSize: {width: 20, height: 20} }}
+            scaledSize: {width: 20, height: 20},
+            anchor: window.google ? new window.google.maps.Point(10, 10) : null }}
             >        
             {this.state.isOpen["home_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("home_pos")}>
             <div className="map-infobox">Home Position
@@ -185,7 +187,10 @@ class Map extends Component {
 
           {this.props.commandPoints.map((commandPoint, index) => 
             commandPoint ?
-              <Marker {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.onToggleOpen(commandPoint.id)}>
+              <Marker
+                {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.onToggleOpen(commandPoint.id)}
+                animation={(this.props.mission.commandAnimate[commandPoint.id] && window.google) ? window.google.maps.Animation.BOUNCE : null}
+              >
                 {this.state.isOpen[commandPoint.id] && <InfoWindow {...commandPoint.infobox} onCloseClick = {() =>this.onToggleOpen(commandPoint.id)}>
                   <div className="map-infobox">
                     <div>
@@ -207,6 +212,16 @@ class Map extends Component {
           )}
                 <Polyline
                  path = {commandPointPolyCoords} strokeOpacity= {1} strokeWeight= {5} 
+                 options = {{
+                  icons: window.google ? [{
+                    icon: {
+                      path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                      strokeColor: '#000000'
+                    },
+                    offset: '100%',
+                    repeat: '200px'
+                  }] : null
+                }}
                 />
         </GoogleMap>
       </div>
