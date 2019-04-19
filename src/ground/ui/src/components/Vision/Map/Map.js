@@ -254,7 +254,7 @@ class Map extends Component {
           <GoogleMap
             defaultZoom={16}
             defaultCenter={{lat: 37.782551, lng: - 122.445368}}
-            defaultMapTypeId="satellite"
+            defaultMapTypeId="customTiles"
             defaultOptions={{
               disableDefaultUI: true,
               disableDoubleClickZoom: true,

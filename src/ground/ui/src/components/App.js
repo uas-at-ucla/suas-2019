@@ -18,16 +18,16 @@ class App extends Component {
             <nav className="viewNav">
               <ul>
                 <li>
-                  <Link to="/controls"> Controls </Link>
+                  <Link to="/controls"><i className="fa fa-paper-plane"></i></Link>
                 </li>
                 <li>
-                  <Link to="/vision"> Vision </Link>
+                  <Link to="/vision"><i className="fa fa-camera"></i></Link>
                 </li>
                 <li>
-                  <Link to="/analytics"> Analytics </Link>
+                  <Link to="/analytics"><i className="fa fa-bar-chart"></i></Link>
                 </li>
                 <li>
-                  <Link to="/settings"> Settings </Link>
+                  <Link to="/settings"><i className="fa fa-cog"></i></Link>
                 </li>
               </ul>
             </nav>
