@@ -33,6 +33,7 @@ IO::IO() :
   // Alarm IO setup.
   wiringPiSetup();
   pinMode(kAlarmGPIOPin, OUTPUT);
+  ::std::cout << "CREATE: " << softPwmCreate(2, 0, 100) << ::std::endl;
 #endif
 
   // Chirp when the io program starts.
@@ -51,6 +52,23 @@ void IO::WriterThread() {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
+    // static int i = 0;
+    // static bool up = true;
+    // if(up) {
+    //   i++;
+    //   if(i > 999) {
+    //     up = false;
+    //   }
+    // } else {
+    //   i--;
+    //   if(i < 1) {
+    //     up = true;
+    //   }
+    // }
+    // softPwmWrite(2, i / 10);
+    // if(i % 10 == 0) {
+    //   ::std::cout << "sending " << i << ::std::endl;
+    // }
 #endif
 
     // Write output to LED strip.

@@ -362,11 +362,8 @@ def run_controls_build(args=None, show_complete=True, raspi=True):
 
     run_controls_docker_start(None, show_complete=False)
 
-    print_update("Building src directory...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/...")
-
-    print_update("\n\nBuilding lib directory...")
-    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//lib/...")
+    print_update("Building src/lib directory for AMD64...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/... //lib/...")
 
     if raspi:
         print_update("\n\nBuilding src for raspi...")
