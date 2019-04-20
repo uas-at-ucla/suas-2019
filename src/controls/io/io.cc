@@ -32,8 +32,11 @@ IO::IO() :
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.
   wiringPiSetup();
+  pigpio_ = pigpio_start(0, 0);
+
   pinMode(kAlarmGPIOPin, OUTPUT);
-  ::std::cout << "CREATE: " << softPwmCreate(2, 0, 100) << ::std::endl;
+  softPwmCreate(kDeploymentGPIOPin, 0, 100);
+  set_mode(pigpio_, kGimbalGPIOPin, PI_OUTPUT);
 #endif
 
   // Chirp when the io program starts.
@@ -51,24 +54,29 @@ void IO::WriterThread() {
     led_strip_.set_alarm(should_override_alarm);
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
+    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, 1600);
+#endif
+
+#ifdef UAS_AT_UCLA_DEPLOYMENT
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
-    // static int i = 0;
-    // static bool up = true;
-    // if(up) {
-    //   i++;
-    //   if(i > 999) {
-    //     up = false;
-    //   }
-    // } else {
-    //   i--;
-    //   if(i < 1) {
-    //     up = true;
-    //   }
-    // }
-    // softPwmWrite(2, i / 10);
+    static int i = 1300;
+    static bool up = true;
+    if(up) {
+      i++;
+      if(i > 1700) {
+        up = false;
+      }
+    } else {
+      i--;
+      if(i < 1300) {
+        up = true;
+      }
+    }
+    // softPwmWrite(kDeploymentGPIOPin, i / 10);
     // if(i % 10 == 0) {
     //   ::std::cout << "sending " << i << ::std::endl;
     // }
+    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, i);
 #endif
 
     // Write output to LED strip.

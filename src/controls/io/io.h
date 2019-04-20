@@ -29,7 +29,8 @@ namespace controls {
 namespace io {
 namespace {
 static const int kAlarmGPIOPin = 0;
-static const int kGimbalGPIOPin = 18;
+static const int kDeploymentGPIOPin = 2;
+static const int kGimbalGPIOPin = 23;
 
 static const int kAlarmOverrideRcChannel = 7;
 static const int kAlarmOverrideRcSignalThreshold = 1800;
