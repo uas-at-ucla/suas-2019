@@ -83,8 +83,8 @@ class Telemetry extends Component {
 
     this.update(telmet);
 
-    console.log(telmet);
-    console.log(this.readoutData());
+    // console.log(telmet);
+    // console.log(this.readoutData());
 
     return (
       <span className="Telemetry">
