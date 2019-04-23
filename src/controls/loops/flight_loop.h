@@ -9,17 +9,16 @@
 #include <string>
 #include <thread>
 
-#include "ros/ros.h"
 #include "zmq.hpp"
 #include <boost/algorithm/string.hpp>
 #include <google/protobuf/text_format.h>
+#include <ros/ros.h>
 
 #include "lib/alarm/alarm.h"
 #include "lib/mission_manager/mission_commands.pb.h"
-#include "lib/phased_loop/phased_loop.h"
 #include "lib/physics_structs/physics_structs.h"
-#include "lib/proto_comms/proto_comms.h"
 #include "src/controls/ground_server/timeline/executor/executor.h"
+#include "src/controls/io/io.h"
 #include "src/controls/loops/state_machine/state_machine.h"
 #include "src/controls/messages.pb.h"
 
@@ -37,8 +36,6 @@ namespace controls {
 namespace loops {
 
 namespace {
-static const int kFlightLoopFrequency = 1e2;
-static const int kMaxMessageInQueues = 5;
 static constexpr double kDefaultGimbalAngle = 0.15;
 } // namespace
 
@@ -47,8 +44,7 @@ class FlightLoop {
   FlightLoop();
 
   void Run();
-  ::src::controls::Output RunIteration(::src::controls::Sensors sensors,
-                                       ::src::controls::Goal goal);
+  void RunIteration(::src::controls::Sensors sensors);
 
  private:
   void DumpProtobufMessages(::src::controls::Sensors &sensors,
@@ -75,11 +71,8 @@ class FlightLoop {
   state_machine::StateMachine state_machine_;
 
   ::std::atomic<bool> running_;
-  ::ros::Rate phased_loop_;
 
   ::std::chrono::time_point<std::chrono::system_clock> start_;
-
-  ::lib::alarm::Alarm alarm_;
 
   double last_loop_;
   bool did_alarm_;
@@ -88,10 +81,8 @@ class FlightLoop {
   double last_bomb_drop_;
   double last_dslr_;
 
-  ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
-      sensors_receiver_;
-  ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage> goal_receiver_;
-  ::lib::proto_comms::ProtoSender<::src::controls::UasMessage> output_sender_;
+  ::ros::NodeHandle ros_node_handle_;
+  ::ros::Subscriber sensors_subscriber_;
 };
 
 } // namespace loops

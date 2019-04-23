@@ -1,26 +1,27 @@
 cc_binary(
-  name = 'gpio_writer',
+  name = 'io',
   visibility = ['//visibility:public'],
   srcs = [
-    'gpio_writer_main.cc'
+    'io_main.cc'
   ],
   deps = [
-    ":gpio_writer_lib"
+    ":io_lib"
   ],
 )
 
 cc_library(
-  name = 'gpio_writer_lib',
+  name = 'io_lib',
   visibility = ['//visibility:public'],
   srcs = [
-    'gpio_writer.cc'
+    'io.cc'
   ],
   hdrs = [
-    'gpio_writer.h'
+    'io.h'
   ],
   deps = [
     '//src/controls:messages_cpp',
-    '//src/controls/io/gpio_writer/led_strip:led_strip',
+    '//src/controls/io/led_strip:led_strip',
+    '//src/controls/io/ros_to_proto:ros_to_proto',
     '//lib/ros:ros',
     '//lib/alarm:alarm',
     '//lib/phased_loop:phased_loop',

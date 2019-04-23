@@ -7,7 +7,7 @@ const path = require('path');
 // be closed automatically when the JavaScript object is garbage collected.
 let mainWindow;
 
-function createWindow () {
+function createWindow() {
   // Fix asset loading as per https://stackoverflow.com/a/43423171
   protocol.interceptFileProtocol('file', (request, callback) => {
     let url = request.url.substr(7);   /* all urls start with 'file://' */
@@ -17,7 +17,7 @@ function createWindow () {
       callback(url);
     }
   }, (err) => {
-    if (err) console.error('Failed to register protocol');
+    if (err) console.error('Failed to register file protocol');
   });
 
   // Create the browser window.
@@ -35,12 +35,12 @@ function createWindow () {
   // mainWindow.webContents.openDevTools()
 
   // Emitted when the window is closed.
-  mainWindow.on('closed', function () {
+  mainWindow.on('closed', () => {
     // Dereference the window object, usually you would store windows
     // in an array if your app supports multi windows, this is the time
     // when you should delete the corresponding element.
     mainWindow = null;
-  })
+  });
 
   // Allow viewing devtools in packaged app:
   if (!isDev) {
@@ -63,19 +63,7 @@ app.on('ready', createWindow);
 
 // Quit when all windows are closed.
 app.on('window-all-closed', function () {
-  // On OS X it is common for applications and their menu bar
-  // to stay active until the user quits explicitly with Cmd + Q
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-});
-
-app.on('activate', function () {
-  // On OS X it's common to re-create a window in the app when the
-  // dock icon is clicked and there are no other windows open.
-  if (mainWindow === null) {
-    createWindow()
-  }
+  app.quit();
 });
 
 // In this file you can include the rest of your app's specific main process

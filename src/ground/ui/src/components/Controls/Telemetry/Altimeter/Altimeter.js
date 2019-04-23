@@ -19,12 +19,12 @@ class Altimeter extends Component {
   
   render() {
     return (
-      <div className="Altimeter">        
+      <div className="Altimeter">      
         <div className="progress-bar">
           <div className={`filler ${this.state.percentage > 90 ? "warning" : "default"}`} style={{ height: `${this.state.percentage}%` }} />
         </div>
 
-        <div style={{ marginTop: '20px' }}>  
+        {/* <div style={{ marginTop: '20px' }}>  
           <button 
             onClick={this.nextStep}
            >
@@ -35,10 +35,10 @@ class Altimeter extends Component {
         <div style={{ marginTop: '20px' }}>
           <button1 
             onClick={() => this.setState({ percentage: 0 })}>
-           
+           s
            Reset
-          </button1>  
-        </div>   
+          </button1>   */}
+        {/* </div>    */}
       </div>
     )
   }  

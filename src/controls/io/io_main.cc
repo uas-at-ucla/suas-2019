@@ -1,7 +1,7 @@
-#include "gpio_writer.h"
+#include "io.h"
 
 int main(int argc, char **argv) {
-  ::ros::init(argc, argv, "uasatucla_gpio_writer");
+  ::ros::init(argc, argv, "uasatucla_io");
   ::ros::start();
 
 #ifndef UAS_AT_UCLA_DEPLOYMENT
@@ -11,6 +11,6 @@ int main(int argc, char **argv) {
   }
 #endif
 
-  ::src::controls::io::gpio_writer::GpioWriter gpio_writer;
+  ::src::controls::io::IO io;
   ::ros::spin();
 }
