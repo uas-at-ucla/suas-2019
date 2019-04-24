@@ -9,7 +9,7 @@ import Readout from './Readout';
 
 const mapStateToProps = state => {
   return {
-    telemetry: state.telemetry.data,
+    telemetry: state.telemetry,
     ping: state.telemetry.ping
   };
 };
@@ -18,7 +18,7 @@ class Telemetry extends Component {
   constructor(props) {
     super(props);
 
-    this.update(JSON.parse(JSON.stringify(this.props.telemetry)));
+    this.update(JSON.parse(JSON.stringify(this.props.telemetry.data)));
   }
 
 
@@ -79,12 +79,12 @@ class Telemetry extends Component {
 
 
   render() {
-    let telmet = JSON.parse(JSON.stringify(this.props.telemetry));
+    let telmet = JSON.parse(JSON.stringify(this.props.telemetry.data));
 
     this.update(telmet);
 
-    console.log(telmet);
-    console.log(this.readoutData());
+    // console.log(telmet);
+    // console.log(this.readoutData());
 
     return (
       <span className="Telemetry">

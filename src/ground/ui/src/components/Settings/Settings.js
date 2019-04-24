@@ -1,19 +1,15 @@
 import React, { Component } from "react";
 import { connect } from "react-redux";
 import {
-  Container,
-  Button,
-  Col,
-  InputGroup,
-  InputGroupAddon,
-  InputGroupText,
-  Input,
-  Row
+  Button, Container, Row, Col,
+  InputGroup, InputGroupAddon, InputGroupText, Input,
+  InputGroupButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem
 } from "reactstrap";
 import { Marker } from "react-google-maps";
 
 import "./Settings.css";
 import GoogleMap from "components/Utils/GoogleMap/GoogleMap";
+import UasLogo from "components/Utils/UasLogo/UasLogo";
 import settingsActions from "redux/actions/settingsActions";
 
 const mapStateToProps = state => {
@@ -26,11 +22,32 @@ const mapStateToProps = state => {
 const mapDispatchToProps = settingsActions;
 
 class Settings extends Component {
-  handleChange = event => {
+  state = { 
+    gndServerDropdown: false,
+    interopDropdown: false
+  };
+  toggleGndServerDropdown = () => this.setState({ gndServerDropdown: !this.state.gndServerDropdown });
+  toggleInteropDropdown = () => this.setState({ interopDropdown: !this.state.interopDropdown });
+  toggleCompLocDropdown = () => this.setState({ compLocDropdown: !this.state.compLocDropdown });
+
+  handleChange = (event) => {
     this.props.updateSettings({ [event.target.name]: event.target.value });
   };
 
-  connectToInterop = event => {
+  handleSelect = (event) => {
+    console.log(event.target)
+    let name = event.target.parentElement.dataset.name;
+    if (name) {
+      this.props.updateSettings({ [name]: event.target.innerText });
+    }
+  };
+
+  changeCompLocation = (event) => {
+    this.handleSelect(event);
+    this.props.changeCompLocation(event.target.innerText);
+  }
+
+  connectToInterop = () => {
     this.props.connectToInterop(
       this.props.settings.interopIp,
       this.props.settings.interopUsername,
@@ -38,11 +55,11 @@ class Settings extends Component {
     );
   };
 
-  connectToGndServer = event => {
+  connectToGndServer = () => {
     this.props.connectToGndServer();
   };
 
-  handleClickedMap = event => {
+  handleClickedMap = (event) => {
     this.props.updateSettings({ antennaPos: {lat: event.latLng.lat(), lng: event.latLng.lng()} });
   };
 
@@ -51,10 +68,20 @@ class Settings extends Component {
     let connectedInteropServer = this.props.interopData ? this.props.interopData.ip : "NONE";
     return (
       <Container className="Settings">
+        <Row><Col className="logo"><UasLogo/></Col></Row>
         <Row>
           <Col>
             <InputGroup>
-              <InputGroupAddon addonType="prepend">Ground IP</InputGroupAddon>
+              <InputGroupButtonDropdown 
+                addonType="prepend" isOpen={this.state.gndServerDropdown} 
+                toggle={this.toggleGndServerDropdown}
+              >
+                <DropdownToggle caret>Ground Server IP</DropdownToggle>
+                <DropdownMenu data-name="gndServerIp" onClick={this.handleSelect}>
+                  <DropdownItem>localhost:8081</DropdownItem>
+                  <DropdownItem>192.168.2.20:8081</DropdownItem>
+                </DropdownMenu>
+              </InputGroupButtonDropdown>
               <Input
                 value={this.props.settings.gndServerIp}
                 name="gndServerIp"
@@ -68,7 +95,7 @@ class Settings extends Component {
             <Button color="primary" className="connect-btn" onClick={this.connectToGndServer}>
               Connect To Ground Server
             </Button>
-            <span>Connected To: {connectedGroundServer}</span>
+            <span>Connected to <b>{connectedGroundServer}</b></span>
           </Col>
         </Row>
         <br />
@@ -102,18 +129,25 @@ class Settings extends Component {
             </InputGroup>
           </Col>
         </Row>
-        <br />
+        {/* <br /> */}
         <Row>
           <Col>
             <InputGroup>
-              <InputGroupAddon addonType="prepend">Interop IP</InputGroupAddon>
+              <InputGroupButtonDropdown 
+                addonType="prepend" isOpen={this.state.interopDropdown} 
+                toggle={this.toggleInteropDropdown}
+              >
+                <DropdownToggle caret>Interop IP</DropdownToggle>
+                <DropdownMenu data-name="interopIp" onClick={this.handleSelect}>
+                  <DropdownItem>134.209.2.203:8000</DropdownItem>
+                </DropdownMenu>
+              </InputGroupButtonDropdown>
               <Input
                 value={this.props.settings.interopIp}
                 name="interopIp"
                 type="text"
                 placeholder={this.props.settings.interopIp}
                 onChange={this.handleChange}
-                maxLength="18"
               />
             </InputGroup>
           </Col>
@@ -122,12 +156,14 @@ class Settings extends Component {
             <Button color="success" className="connect-btn" onClick={this.connectToInterop}>
               Connect To Interop
             </Button>
-            <span>Connected To: {connectedInteropServer}</span>
+            <span>Connected to <b>{connectedInteropServer}</b></span>
           </Col>
         </Row>
         <br />
         <Row>
-          <Col><Button onClick={this.props.logReduxState}>Log Redux State</Button></Col>
+          <Col>
+            <Button onClick={this.props.logReduxState}>Log Redux State</Button>
+          </Col>
         </Row>
         <br />
         <Row>
@@ -145,8 +181,16 @@ class Settings extends Component {
             <div style={{ height: "350px", width: "500px" }}>
               <GoogleMap
                 defaultZoom={17}
-                defaultCenter={{ lat: 34.0689, lng: -118.4452 }}
-                defaultMapTypeId="satellite"
+                center={
+                  /*if*/ this.props.interopData ? 
+                    {
+                      lat: this.props.interopData.mission.home_pos.latitude,
+                      lng: this.props.interopData.mission.home_pos.longitude
+                    } 
+                  /*else*/: 
+                    {lat: 34.0689, lng: -118.4452}
+                }
+                defaultMapTypeId="customTiles"
                 defaultOptions={{
                   disableDefaultUI: true,
                   disableDoubleClickZoom: true,
