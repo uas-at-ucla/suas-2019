@@ -29,10 +29,13 @@ class Analytics extends Component {
     this.fileInput = React.createRef();
   }
 
-  render() {
-    if (recording){
+  componentDidUpdate(prevProps) {
+    if (recording && prevProps.telemetry !== this.props.telemetry) {
       telemetryData.push(this.props.telemetry)
     }
+  }
+
+  render() {
     return (
       <div className="Analytics">
 
