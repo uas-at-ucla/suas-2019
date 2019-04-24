@@ -10,7 +10,7 @@
     margin: 6px;
     background: radial-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 1));
     border-width: 0px;
-    border-radius: calc(50% - 6px);
+    border-radius: 50%;
     height: calc(100% - 12px);
     width: calc(100% - 12px);
 }

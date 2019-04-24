@@ -6,18 +6,31 @@ import downloadToBrowser from 'utils/downloadToBrowser';
 
 const mapStateToProps = state => {
   return {
-    telemetry: state.telemetry
+    telemetry: state.telemetry.data,
+    playback: state.telemetry.playback,
   };
-};
+}
 
-const mapDispatchToProps = {}; //TODO Make action for recording telemetry
+var telemetryData = [];
+var recording = false;
+
+const mapDispatchToProps = {
+  togglePlayback: function() {
+    return {type: 'TOGGLE_PLAYBACK'}
+  }
+}; //TODO Make action for recording telemetry, and action for starting playback
+
 class Analytics extends Component {
   render() {
+    if (recording){
+      telemetryData.push(this.props.telemetry)
+    }
     return (
       <div className="Analytics">
         Telemetry: {JSON.stringify(this.props.telemetry)}
+        
         <div>
-          <button>
+          <button onClick={this.toggleRecord}>
             Record!!! / Stop Recording (and save to file)!!
           </button>
           <button>
@@ -52,7 +65,14 @@ class Analytics extends Component {
   }
 
   downloadTelemetry() {
-    downloadToBrowser("telemetry.json", "file text content");
+    downloadToBrowser("telemetry.json", JSON.stringify(telemetryData,null,2));
+  }
+
+  toggleRecord = () => {
+    recording = !(recording);
+    if (!recording){
+      this.downloadTelemetry();
+    }
   }
 }
 

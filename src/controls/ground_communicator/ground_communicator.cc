@@ -40,7 +40,10 @@ void GroundCommunicator::ConnectToGround() {
 
 void GroundCommunicator::StateReceived(const ::mavros_msgs::State state) {
   sensors_ = ::src::controls::Sensors();
-  sensors_.set_mode(state.mode);
+
+  // TODO(comran): Fix this.
+  (void)state;
+  // sensors_.set_mode(state.mode);
 }
 
 void GroundCommunicator::Run() {
