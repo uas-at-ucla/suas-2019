@@ -2,27 +2,11 @@ import cv2 as cv
 import numpy as np
 from scipy import signal
 
+from constants import *
 from classify_target import *
 from debug_output import *
 
 import sys
-
-# Histogram bin size (must divide 180)
-BIN_SIZE = 4
-
-# Valid contour area range (as percentage of image size)
-AREA_MIN = 0.00005
-AREA_MAX = 0.05
-
-# Maximum number of points used to describe contour
-DETAIL_MAX = 500
-
-def range_lower(hue):
-	# Create overlap of one bin size and keep threshold centered on hue
-	return (hue - BIN_SIZE, 0, 32)
-
-def range_upper(hue):
-	return (hue + BIN_SIZE, 255, 255)
 
 # Range threshold that handles cylindrical coordinates
 def inRange_wrapHue(img, lower, upper):
@@ -72,19 +56,22 @@ for pos in peaks:
 	# Find biggest contour by pixel area
 	contours, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
 	target = max(contours, key=cv.contourArea)
-	area = cv.contourArea(target)
+
+	area_px = cv.contourArea(target)
+	area_gnd = area_px * px_to_gnd(ALTITUDE) ** 2
 
 	# Human-readable logging
 	summary = {
 		'hue': hue,
 		'contours': len(contours),
-		'area_ratio': area / size,
+		'area_px': area_px,
+		'area_gnd': area_gnd,
 		'bounding_box': cv.boundingRect(target),
 		'contour_detail': len(target)
 	}
 
-	# Filter by contour area to image size ratio, and by contour complexity
-	if not AREA_MIN < area / size < AREA_MAX or len(contours) > DETAIL_MAX:
+	# Filter by contour area, and by contour complexity
+	if not GND_AREA_MIN < area_gnd < GND_AREA_MAX or len(contours) > DETAIL_MAX:
 		print("Rejecting", summary)
 		continue
 
