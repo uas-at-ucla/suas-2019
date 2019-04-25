@@ -28,6 +28,6 @@ class GroundCommunicator {
   ::ros::Publisher ground_controls_publisher_;
 };
 
-} // namespace ground_server
+} // namespace ground_communicator
 } // namespace controls
 } // namespace src

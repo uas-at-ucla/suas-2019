@@ -5,13 +5,16 @@
 #include <cstring>
 
 #include <algorithm>
+#include <atomic>
 #include <cctype>
 #include <chrono>
 #include <deque>
 #include <functional>
 #include <iostream>
+#include <iomanip>
 #include <locale>
 #include <mutex>
+#include <sstream>
 #include <thread>
 #include <vector>
 
@@ -21,6 +24,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include <boost/crc.hpp>
 #include <google/protobuf/message.h>
 
 // Based off code from https://gist.github.com/zguangyu/c93f28c952e8acc710c1
@@ -28,13 +32,15 @@
 
 // TODO(comran): Error checking.
 
-namespace src {
-namespace controls {
-namespace ground_communicator {
+namespace lib {
+namespace serial_device {
 namespace {
-const int kSerialPortReadBuffer = 100;
-const char kNewLineCharacter = '\n';
-const int kSerialReadSleepPeriod = 50; // milliseconds
+static const int kSerialPortReadBuffer = 100;
+static const int kSerialReadSleepPeriod = 50; // milliseconds
+
+static const ::std::string kMessagePreamble = "UAS@UCLA";
+static const char kMessageSplit = '_';
+static const char kCarriageReturn = '\r';
 } // namespace
 
 static inline ::std::string &ltrim(::std::string &s) {
@@ -55,14 +61,14 @@ static inline ::std::string &rtrim(::std::string &s) {
 
 static inline std::string &trim(::std::string &s) { return ltrim(rtrim(s)); }
 
-class SerialDevice {
+template <typename T> class SerialDevice {
  public:
   SerialDevice(::std::string portname, int speed, int parity) :
       messages_(0),
       read_thread_(&SerialDevice::ReadThread, this) {
 
     // Make sure that the template class is based off a protobuf.
-    static_assert(::std::is_base_of<::google::protobuf::Message, ::src::controls::UasMessage>::value,
+    static_assert(::std::is_base_of<::google::protobuf::Message, T>::value,
                   "Template must be derived from a protobuf");
 
     // Open serial device for reading.
@@ -107,8 +113,14 @@ class SerialDevice {
     }
   }
 
+  void Quit() {
+    run_ = false;
+    close(fd_);
+    read_thread_.join();
+  }
+
   void ReadThread() {
-    while (true) {
+    while (run_) {
       // Continuously poll the serial device to check for new data.
       ReadPort();
       ::std::this_thread::sleep_for(
@@ -128,7 +140,12 @@ class SerialDevice {
     // Read in data from serial device.
     int n = read(fd_, &v[0], kSerialPortReadBuffer);
 
+    if(n < 0) {
+      return;
+    }
+
     // Resize read vector to contain all data in the buffer.
+    ::std::cout << n << ::std::endl;
     v.resize(n);
 
     // Move all characters to fifo queue for later processing. Also, count how
@@ -137,38 +154,24 @@ class SerialDevice {
       ::std::lock_guard<::std::mutex> lock(fifo_mutex_);
 
       for (auto i : v) {
+        ::std::cout << i << ::std::endl;
         fifo_.push_back(i);
 
-        if (i == kNewLineCharacter) {
+        if (i == kCarriageReturn) {
           messages_++;
         }
       }
     }
   }
 
-  void WritePort(::std::vector<char> &v) {
-    // Check whether the serial device file descriptor was created successfully.
-    if (fd_ < 0) {
-      return;
-    }
-
-    // Attempt to write the data.
-    int n = write(fd_, &v[0], v.size());
-
-    // Report any writing errors that may have occurred.
-    if (n < 0) {
-      ::std::cerr << "Write error" << ::std::endl;
-    }
-  }
-
-  ::src::controls::UasMessage GetMessage() {
+  T GetMessage() {
     // If there are no messages, don't process any.
     if (messages_ <= 0) {
       return "";
     }
 
     ::std::deque<char>::iterator iter = fifo_.begin();
-    while (*iter != kNewLineCharacter) {
+    while (*iter != kCarriageReturn) {
       iter++;
     }
 
@@ -187,14 +190,70 @@ class SerialDevice {
     return s;
   }
 
+  void WritePort(::std::string data) {
+    // Generate a message line using a custom encoding scheme.
+    ::std::string encoded_message = GenerateEncodedMessage(data);
+
+    // Put string data into a vector.
+    ::std::vector<char> v(data.begin(), data.end());
+
+    // Check whether the serial device file descriptor was created successfully.
+    if (fd_ < 0) {
+      return;
+    }
+
+    // Attempt to write the data to the serial device.
+    int n = write(fd_, &v[0], v.size());
+
+    // Report any writing errors that may have occurred.
+    if (n < 0) {
+      ::std::cerr << "Write error" << ::std::endl;
+    }
+  }
+
+  void WritePort(T proto_message) {
+    // Serialize the given protobuf to a string for sending over serial.
+    ::std::string proto_string;
+    proto_message.SerializeToString(&proto_string);
+
+    // Write string output;
+    WritePort(proto_string);
+  }
+
  private:
+  unsigned CalculateCrc(::std::string data) {
+    ::boost::crc_32_type crc;
+    crc.process_bytes(data.c_str(), data.length());
+
+    return crc.checksum();
+  }
+
+  ::std::string GenerateEncodedMessage(::std::string data) {
+    // Remove all carriage returns from data. This character is reserved for
+    // indicating a new line was received over the serial connection.
+    data.erase(::std::remove(data.begin(), data.end(), kCarriageReturn), data.end());
+
+    // Calculate CRC for the string data.
+    unsigned crc = CalculateCrc(data);
+
+    ::std::stringstream write_data_stream;
+    write_data_stream << kMessagePreamble;
+    write_data_stream << kMessageSplit;
+    write_data_stream << ::std::hex << ::std::setfill('0') << ::std::setw(8) << crc;
+    write_data_stream << kMessageSplit;
+    write_data_stream << data;
+
+    return write_data_stream.str();
+  }
+
   int fd_;
   int messages_;
   ::std::mutex fifo_mutex_;
   ::std::deque<char> fifo_;
   ::std::thread read_thread_;
+
+  ::std::atomic<bool> run_{true};
 };
 
-} // namespace ground_server
-} // namespace controls
-} // namespace src
+} // namespace serial_device
+} // namespace lib

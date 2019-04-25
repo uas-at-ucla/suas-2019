@@ -17,6 +17,6 @@ void GroundCommunicator::DroneSensorsReceived(
   (void)drone_sensors;
 }
 
-} // namespace ground_server
+} // namespace ground_communicator
 } // namespace controls
 } // namespace src

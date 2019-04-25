@@ -100,13 +100,15 @@ bool LedStrip::Render() {
     }
   }
 
-  for(int i = kNumberOfArmDisarmLeds;i < kNumberOfLeds - kNumberOfBatteryLevelLeds + 1;i++) {
+  for (int i = kNumberOfArmDisarmLeds;
+       i < kNumberOfLeds - kNumberOfBatteryLevelLeds + 1; i++) {
     SetLed(i, 10, 10, 10);
   }
 
   // Render the battery level indicator.
   {
-    int solid = ::std::ceil((battery_percentage_ - 0.1) * kNumberOfBatteryLevelLeds);
+    int solid =
+        ::std::ceil((battery_percentage_ - 0.1) * kNumberOfBatteryLevelLeds);
     bool blinky = ::std::fmod(battery_percentage_, 0.2) < 0.1;
 
     for (int i = 0; i < kNumberOfBatteryLevelLeds; i++) {

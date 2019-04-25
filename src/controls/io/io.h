@@ -9,8 +9,8 @@
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
 #include <pigpiod_if2.h>
-#include <wiringPi.h>
 #include <softPwm.h>
+#include <wiringPi.h>
 #endif
 
 #include <mavros_msgs/RCIn.h>

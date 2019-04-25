@@ -8,7 +8,7 @@ cc_library(
     'serial_device.cc'
   ],
   deps = [
-    '//src/controls:messages_cpp',
     "@com_google_protobuf//:protobuf",
+    "@boost//:crc",
   ],
 )

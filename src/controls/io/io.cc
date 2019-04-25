@@ -77,14 +77,14 @@ void IO::WriterThread() {
     // Set gimbal angle
     static int i = 15000;
     static bool flip = false;
-    if(flip) {
+    if (flip) {
       i--;
-      if(i < 11000) {
+      if (i < 11000) {
         flip = false;
       }
     } else {
       i++;
-      if(i > 19000) {
+      if (i > 19000) {
         flip = true;
       }
     }
