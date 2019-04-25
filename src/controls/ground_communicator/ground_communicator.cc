@@ -46,7 +46,8 @@ void GroundCommunicator::StateReceived(const ::mavros_msgs::State state) {
   (void)state;
 }
 
-void GroundCommunicator::SensorsReceived(const ::src::controls::Sensors sensors) {
+void GroundCommunicator::SensorsReceived(
+    const ::src::controls::Sensors sensors) {
   sensors_ = sensors;
 }
 
@@ -86,7 +87,7 @@ void GroundCommunicator::RunIteration() {
 
   // Fetch the latest data from queues with messages.
   if (sensors_.IsInitialized()) { // IsInitialized checks that all required
-                                  // fields are present             
+                                  // fields are present
     send_sensors = true;
 
     ::std::string sensors_serialized;
