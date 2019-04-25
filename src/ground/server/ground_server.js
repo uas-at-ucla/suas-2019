@@ -3,7 +3,16 @@ const fs = require('fs');
 const socketIOServer = require('socket.io');
 const loadProtobufUtils = require('./protobuf_utils/protobuf_utils');
 const loadInteropClient = require('./interop_client/interop_client');
-var ping = require("net-ping");
+var ping;
+try {
+  ping = require("net-ping"); //might fail since it needs to be compiled specifically on each platform
+} catch(e) {
+  console.log(e);
+  console.log("Can't load net-ping. Uninstall and reinstall for your platform with the following:");
+  console.log("    cd src/ground/server");
+  console.log("    npm uninstall net-ping");
+  console.log("    npm install net-ping\n");
+}
 const constants = require('./utils/constants');
 
 const port = 8081;
@@ -107,45 +116,52 @@ fake_drone_io.on('connect', (socket) => {
   });
 });
 
-//ping options
-var pingOptions = {
-  networkProtocol: ping.NetworkProtocol.IPv4,
-  packetSize: 16,
-  retries: 1,
-  sessionId: (process.pid % 65535),
-  timeout: 3000,
-  ttl: 128
-};
+if (ping) {
+  //ping options
+  var pingOptions = {
+    networkProtocol: ping.NetworkProtocol.IPv4,
+    packetSize: 16,
+    retries: 1,
+    sessionId: (process.pid % 65535),
+    timeout: 3000,
+    ttl: 128
+  };
 
-var pingSession = ping.createSession(pingOptions);
+  try { // might fail without sudo (TODO: fix in Docker)
+    var pingSession = ping.createSession(pingOptions);
 
-setInterval(() => pingSession.pingHost(droneIP, function (error, droneIP, sent, rcvd) {
-  var ms = rcvd - sent;
-  if (error)
-    if (error instanceof ping.RequestTimedOutError)
-      console.log(droneIP + ": Not alive");
-    else
-      console.log(droneIP + ": " + error.toString());
-  else {
-    console.log(droneIP + ": Alive (ms=" + ms + ")");
-    ui_io.emit('PING', ms);
-    return {
-      type: 'PING',
-      payload: {
-        droneIP: droneIP,
-        lagTime: ms
+    setInterval(() => pingSession.pingHost(droneIP, function (error, droneIP, sent, rcvd) {
+      var ms = rcvd - sent;
+      if (error)
+        if (error instanceof ping.RequestTimedOutError)
+          console.log(droneIP + ": Not alive");
+        else
+          console.log(droneIP + ": " + error.toString());
+      else {
+        console.log(droneIP + ": Alive (ms=" + ms + ")");
+        ui_io.emit('PING', ms);
+        return {
+          type: 'PING',
+          payload: {
+            droneIP: droneIP,
+            lagTime: ms
+          }
+        };
       }
-    };
-  }
-}),pingFrequency);
+    }),pingFrequency);
 
-pingSession.on("close", function () {
-  console.log("PING SOCKET CLOSED");
-});
+    pingSession.on("close", function () {
+      console.log("PING SOCKET CLOSED");
+    });
 
-pingSession.on("error", function (error) {
-  console.log(error.toString());
-});
+    pingSession.on("error", function (error) {
+      console.log(error.toString());
+    });
+  } catch(e) {
+    console.log(e);
+    console.log("Can't start ping session. You may need to run with sudo.");
+  } 
+}
 
 ui_io.on('connect', (socket) => {
   console.log("ui connected!");

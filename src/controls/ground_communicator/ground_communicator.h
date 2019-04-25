@@ -31,7 +31,7 @@ namespace ground_communicator {
 namespace {
 static const int kRosMessageQueueSize = 1;
 static const ::std::string kRosStateTopic = "/mavros/state";
-// static const ::std::string kRosSensorsTopic = "/mavros/senors"; //TODO
+static const ::std::string kRosSensorsTopic = "/uasatucla/proto/sensors";
 } // namespace
 
 void on_connect();
@@ -68,10 +68,11 @@ class GroundCommunicator {
 
  private:
   void StateReceived(const ::mavros_msgs::State state);
-  // void SensorsReceived(const ::mavros_msgs::Sensors sensors); //TODO
+  void SensorsReceived(const ::src::controls::Sensors sensors);
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber state_subscriber_;
+  ::ros::Subscriber sensors_subscriber_;
   ::src::controls::Sensors sensors_;
 
   // void SetState(::std::string new_state);

@@ -10,9 +10,9 @@ import Map from './Map/Map';
 import Tagging from './Tagging/Tagging';
 import Pipeline from './Pipeline/Pipeline';
 
-const electron = window.require('electron');
-const fs = electron.remote.require('fs');
-console.log("Test filesystem API", fs.readdirSync("./")); // list all files in directory
+const electron = window.require ? window.require('electron') : null;
+const fs = electron ? electron.remote.require('fs') : null;
+console.log("Test filesystem API", electron ? fs.readdirSync("./") : "Electron not available"); // list all files in directory
 
 const mapStateToProps = state => {return {vision: state.vision};};
 const mapDispatchToProps = state => {};

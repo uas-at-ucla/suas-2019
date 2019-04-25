@@ -16,6 +16,9 @@ GroundCommunicator::GroundCommunicator() :
     state_subscriber_(
         ros_node_handle_.subscribe(kRosStateTopic, kRosMessageQueueSize,
                                    &GroundCommunicator::StateReceived, this)),
+    sensors_subscriber_(
+        ros_node_handle_.subscribe(kRosSensorsTopic, kRosMessageQueueSize,
+                                   &GroundCommunicator::SensorsReceived, this)),
     phased_loop_(1e2),
     running_(false) {
 
@@ -39,11 +42,12 @@ void GroundCommunicator::ConnectToGround() {
 }
 
 void GroundCommunicator::StateReceived(const ::mavros_msgs::State state) {
-  sensors_ = ::src::controls::Sensors();
-
   // TODO(comran): Fix this.
   (void)state;
-  // sensors_.set_mode(state.mode);
+}
+
+void GroundCommunicator::SensorsReceived(const ::src::controls::Sensors sensors) {
+  sensors_ = sensors;
 }
 
 void GroundCommunicator::Run() {
@@ -82,7 +86,7 @@ void GroundCommunicator::RunIteration() {
 
   // Fetch the latest data from queues with messages.
   if (sensors_.IsInitialized()) { // IsInitialized checks that all required
-                                  // fields are present
+                                  // fields are present             
     send_sensors = true;
 
     ::std::string sensors_serialized;
@@ -90,6 +94,8 @@ void GroundCommunicator::RunIteration() {
 
     telemetry->get_map()["sensors"] = ::sio::string_message::create(
         ::lib::base64_tools::Encode(sensors_serialized)); // TODO
+
+    ::std::cout << "sensors: " << sensors_.DebugString() << "\n";
 
     // if (current_time - last_serial_telemetry_sent_ > 0.3) {
     //   // Time to send another serial telemetry message.
