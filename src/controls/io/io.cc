@@ -54,29 +54,41 @@ void IO::WriterThread() {
     led_strip_.set_alarm(should_override_alarm);
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, 1600);
-#endif
-
-#ifdef UAS_AT_UCLA_DEPLOYMENT
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
-    static int i = 1300;
-    static bool up = true;
-    if(up) {
-      i++;
-      if(i > 1700) {
-        up = false;
-      }
-    } else {
-      i--;
-      if(i < 1300) {
-        up = true;
-      }
-    }
+    // static int i = 1300;
+    // static bool up = true;
+    // if(up) {
+    //   i++;
+    //   if(i > 1700) {
+    //     up = false;
+    //   }
+    // } else {
+    //   i--;
+    //   if(i < 1300) {
+    //     up = true;
+    //   }
+    // }
     // softPwmWrite(kDeploymentGPIOPin, i / 10);
     // if(i % 10 == 0) {
     //   ::std::cout << "sending " << i << ::std::endl;
     // }
-    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, i);
+    // set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, kGimbalMiddlePpmSignal);
+
+    // Set gimbal angle
+    static int i = 15000;
+    static bool flip = false;
+    if(flip) {
+      i--;
+      if(i < 11000) {
+        flip = false;
+      }
+    } else {
+      i++;
+      if(i > 19000) {
+        flip = true;
+      }
+    }
+    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, i / 10);
 #endif
 
     // Write output to LED strip.
