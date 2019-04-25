@@ -3,30 +3,30 @@ syntax = "proto2";
 package src.controls;
 
 message Sensors {
-  required double time                                                     = 1;
-  required double latitude                                                 = 2;
-  required double longitude                                                = 3;
-  required float altitude                                                  = 4;
-  required float relative_altitude                                         = 5;
-  required float heading                                                   = 6;
-  required float velocity_x                                                = 7;
-  required float velocity_y                                                = 8;
-  required float velocity_z                                                = 9;
-  required float gps_ground_speed                                          = 10;
-  required int32 gps_satellite_count                                       = 11;
-  required int32 gps_eph                                                   = 12;
-  required int32 gps_epv                                                   = 13;
-  required float accelerometer_x                                           = 14;
-  required float accelerometer_y                                           = 15;
-  required float accelerometer_z                                           = 16;
-  required float gyro_x                                                    = 17;
-  required float gyro_y                                                    = 18;
-  required float gyro_z                                                    = 19;
-  required float battery_voltage                                           = 20;
-  required float battery_current                                           = 21;
-  required bool armed                                                      = 22;
-  required string autopilot_state                                          = 23;
-  required double last_gps                                                 = 24;
+  optional double time                                                     = 1;
+  optional double latitude                                                 = 2;
+  optional double longitude                                                = 3;
+  optional float altitude                                                  = 4;
+  optional float relative_altitude                                         = 5;
+  optional float heading                                                   = 6;
+  optional float velocity_x                                                = 7;
+  optional float velocity_y                                                = 8;
+  optional float velocity_z                                                = 9;
+  optional float gps_ground_speed                                          = 10;
+  optional int32 gps_satellite_count                                       = 11;
+  optional int32 gps_eph                                                   = 12;
+  optional int32 gps_epv                                                   = 13;
+  optional float accelerometer_x                                           = 14;
+  optional float accelerometer_y                                           = 15;
+  optional float accelerometer_z                                           = 16;
+  optional float gyro_x                                                    = 17;
+  optional float gyro_y                                                    = 18;
+  optional float gyro_z                                                    = 19;
+  optional float battery_voltage                                           = 20;
+  optional float battery_current                                           = 21;
+  optional bool armed                                                      = 22;
+  optional string autopilot_state                                          = 23;
+  optional double last_gps                                                 = 24;
 }
 
 message Goal {
