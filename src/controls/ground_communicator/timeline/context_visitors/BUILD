@@ -13,13 +13,4 @@ cc_library(
   ],
 )
 
-cc_binary(
-  name = 'context_visitor_test',
-  srcs = [
-    'context_visitor_test.cc',
-  ],
-  deps = [
-    ':context_visitor',
-    '@gtest//:gtest_main',
-  ],
-)
+

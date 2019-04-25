@@ -116,7 +116,7 @@ template <typename T> class SerialDevice {
   void Quit() {
     run_ = false;
     close(fd_);
-    read_thread_.join();
+    // read_thread_.join();
   }
 
   void ReadThread() {
@@ -194,8 +194,10 @@ template <typename T> class SerialDevice {
     // Generate a message line using a custom encoding scheme.
     ::std::string encoded_message = GenerateEncodedMessage(data);
 
+    ::std::cout << "writing " << encoded_message << ::std::endl;
+
     // Put string data into a vector.
-    ::std::vector<char> v(data.begin(), data.end());
+    ::std::vector<char> v(encoded_message.begin(), encoded_message.end());
 
     // Check whether the serial device file descriptor was created successfully.
     if (fd_ < 0) {

@@ -12,13 +12,3 @@ cc_library(
   ],
 )
 
-cc_binary(
-  name = 'simulator_test',
-  srcs = [
-    'simulator_test.cc',
-  ],
-  deps = [
-    ':simulator',
-    '@gtest//:gtest_main',
-  ],
-)

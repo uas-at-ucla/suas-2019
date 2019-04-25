@@ -20,7 +20,9 @@ cc_library(
   ],
   deps = [
     '//src/controls:messages_cpp',
+    '//src/controls/io:io_lib',
     '//lib/ros:ros',
+    '//lib/serial_device:serial_device',
     "@socketio_client_cpp//:socketio_client_cpp",
   ],
 )

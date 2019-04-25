@@ -20,11 +20,3 @@ cc_library(
   ],
 )
 
-cc_test(
-  name = "executor_test",
-  srcs = ["executor_test.cc"],
-  deps = [
-    ":executor",
-    "@gtest//:gtest_main"
-  ],
-)

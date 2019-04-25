@@ -10,5 +10,6 @@ cc_library(
   deps = [
     "@com_google_protobuf//:protobuf",
     "@boost//:crc",
+    "@boost//:detail",
   ],
 )
