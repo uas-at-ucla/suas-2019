@@ -19,6 +19,9 @@ var usingLoaded = false;
 const mapDispatchToProps = {
   togglePlayback: function() {
     return {type: 'TOGGLE_PLAYBACK'}
+  },
+  playback: function(telemetry) {
+    return {type: 'PLAYBACK', payload: telemetry}
   }
 }; //TODO Make action for recording telemetry, and action for starting playback
 
@@ -36,7 +39,7 @@ class Analytics extends Component {
     return (
       <div className="Analytics">
 
-        Telemetry: {this.stringifyTelemetry}
+        Telemetry: {JSON.stringify(this.props.telemetry)}
         
         <div>
           <button onClick={this.toggleRecord}>
@@ -49,9 +52,9 @@ class Analytics extends Component {
         </div>
 
         <div>
-          <button onClick={this.handleSubmit}>
+          {/* <button onClick={this.handleSubmit}>
             Load Telemetry File / Unload File
-          </button>
+          </button> */}
           
           <button onClick={this.runLoaded}>
             Run Loaded Telemetry / Pause Telemetry
@@ -102,11 +105,20 @@ class Analytics extends Component {
   }
 
   runLoaded = () => {
-    var loaded = JSON.stringify(this.fileInput.current.files[0]);
+    var reader = new FileReader()
+    reader.onload = (e) => {
+      //return e.target.result
+      loadedTelemetry = JSON.parse(e.target.result)
+      usingLoaded = true
+      console.log(loadedTelemetry)
+      var i = 0
+      setInterval(() => {
+        this.props.playback(loadedTelemetry[i])
+        i = i + 1
+      })
+    }
+    reader.readAsText(this.fileInput.current.files[0]);
 
-    loadedTelemetry = JSON.parse(loaded);
-
-    usingLoaded = true
   }
 
   stringifyTelemetry = string => {
