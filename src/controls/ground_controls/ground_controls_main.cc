@@ -14,17 +14,21 @@ int main(int argc, char **argv) {
   // ground_controls.Run();
 
   // Serial device test
-  ::lib::serial_device::SerialDevice<::src::controls::Sensors> rfd900("/dev/ttyUSB0", B57600, 0);
+  ::lib::serial_device::SerialDevice<::src::controls::UasMessage> rfd900("/dev/ttyUSB0", B57600, 0);
   
-  ::ros::Rate loop(1);
-  for(int i = 0;i < 1000;i++) {
+  ::ros::Rate loop(50);
+
+  ::src::controls::UasMessage current_message;
+
+  while(true) {
     if(!::ros::ok()) {
       break;
     }
 
-    rfd900.WritePort("hello world");
-    rfd900.WritePort("hello");
-    rfd900.WritePort("hello ");
+    if(rfd900.GetProtoMessage(current_message) && current_message.has_sensors()) {
+      ::std::cout << "Battery Voltage: " << current_message.sensors().battery_voltage() << " Latitude: " << current_message.sensors().latitude() << " Longitude: " << current_message.sensors().longitude() << " Altitude: " << current_message.sensors().altitude() << ::std::endl;
+    }
+
     ::ros::spinOnce();
     loop.sleep();
   }

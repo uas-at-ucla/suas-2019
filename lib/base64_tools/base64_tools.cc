@@ -9,7 +9,7 @@ bool IsBase64(unsigned char c) {
   return (isalnum(c) || (c == '+') || (c == '/'));
 }
 
-::std::string Decode(std::string const &encoded_string) {
+::std::string Decode(::std::string const &encoded_string) {
   int in_len = encoded_string.size();
   int i = 0;
   int j = 0;
@@ -58,7 +58,10 @@ bool IsBase64(unsigned char c) {
 
 // Taken from here:
 // https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
-::std::string Encode(const unsigned char *src, size_t len) {
+::std::string Encode(::std::string const &input) {
+  const unsigned char *src = reinterpret_cast<unsigned const char *>(input.c_str());
+  size_t len = input.length();
+
   unsigned char *out, *pos;
   const unsigned char *end, *in;
 
@@ -97,11 +100,6 @@ bool IsBase64(unsigned char c) {
   }
 
   return outStr;
-}
-
-::std::string Encode(::std::string str) {
-  return Encode(reinterpret_cast<unsigned const char *>(str.c_str()),
-                str.size());
 }
 
 } // namespace base64_tools

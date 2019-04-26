@@ -16,10 +16,14 @@ void GroundCommunicator::SensorsReceived(
 
   static int count = 0;
   if(count == 0) {
-    rfd900_.WritePort("test");
+    ::src::controls::UasMessage uas_message;
+    ::src::controls::Sensors *sensors_allocated = new ::src::controls::Sensors(sensors);
+
+    uas_message.set_allocated_sensors(sensors_allocated);
+    rfd900_.WritePort(uas_message);
   }
 
-  count = (count + 1) % 5;
+  count = (count + 1) % 2;
 }
 
 } // namespace ground_communicator

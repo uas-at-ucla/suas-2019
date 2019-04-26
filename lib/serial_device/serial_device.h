@@ -14,6 +14,7 @@
 #include <iomanip>
 #include <locale>
 #include <mutex>
+#include <queue>
 #include <sstream>
 #include <thread>
 #include <vector>
@@ -27,6 +28,8 @@
 #include <boost/crc.hpp>
 #include <google/protobuf/message.h>
 
+#include "lib/base64_tools/base64_tools.h"
+
 // Based off code from https://gist.github.com/zguangyu/c93f28c952e8acc710c1
 // Modified for use in transferring protobuf messages over serial devices.
 
@@ -37,9 +40,9 @@ namespace serial_device {
 namespace {
 static const int kSerialPortReadBuffer = 100;
 static const int kSerialReadSleepPeriod = 50; // milliseconds
+static const int kCrcLength = 8;
 
-static const ::std::string kMessagePreamble = "UAS@UCLA";
-static const char kMessageSplit = '_';
+static const ::std::string kMessagePreamble = "UAS@UCLA_";
 static const char kCarriageReturn = '\r';
 } // namespace
 
@@ -145,56 +148,26 @@ template <typename T> class SerialDevice {
     }
 
     // Resize read vector to contain all data in the buffer.
-    ::std::cout << n << ::std::endl;
     v.resize(n);
 
     // Move all characters to fifo queue for later processing. Also, count how
     // many messages we have received.
-    {
-      ::std::lock_guard<::std::mutex> lock(fifo_mutex_);
 
-      for (auto i : v) {
-        ::std::cout << i << ::std::endl;
-        fifo_.push_back(i);
-
-        if (i == kCarriageReturn) {
-          messages_++;
-        }
+    for (char i : v) {
+      if (i == '\n') {
+        RetrieveDecodedMessage(buffer_);
+        buffer_ = "";
+      } else {
+        buffer_ += i;
       }
     }
-  }
-
-  T GetMessage() {
-    // If there are no messages, don't process any.
-    if (messages_ <= 0) {
-      return "";
-    }
-
-    ::std::deque<char>::iterator iter = fifo_.begin();
-    while (*iter != kCarriageReturn) {
-      iter++;
-    }
-
-    ::std::string s(fifo_.begin(), iter);
-
-    iter++;
-
-    {
-      ::std::lock_guard<::std::mutex> lock(fifo_mutex_);
-      fifo_.erase(fifo_.begin(), iter);
-      messages_--;
-    }
-
-    ::std::cout << '"' << trim(s) << '"' << ::std::endl;
-
-    return s;
   }
 
   void WritePort(::std::string data) {
     // Generate a message line using a custom encoding scheme.
     ::std::string encoded_message = GenerateEncodedMessage(data);
 
-    ::std::cout << "writing " << encoded_message << ::std::endl;
+    // ::std::cout << "writing " << encoded_message << ::std::endl;
 
     // Put string data into a vector.
     ::std::vector<char> v(encoded_message.begin(), encoded_message.end());
@@ -218,8 +191,25 @@ template <typename T> class SerialDevice {
     ::std::string proto_string;
     proto_message.SerializeToString(&proto_string);
 
+    // Encode the protobuf message in base64 to eliminate any weird symbols.
+    proto_string = ::lib::base64_tools::Encode(proto_string);
+
     // Write string output;
     WritePort(proto_string);
+  }
+
+  bool GetProtoMessage(T &proto_dest) {
+    {
+      ::std::lock_guard<::std::mutex> lock(proto_queue_mutex_);
+      if(proto_queue_.empty()) {
+        return false;
+      }
+
+      proto_dest.CopyFrom(proto_queue_.front());
+      proto_queue_.pop();
+    }
+
+    return true;
   }
 
  private:
@@ -240,19 +230,47 @@ template <typename T> class SerialDevice {
 
     ::std::stringstream write_data_stream;
     write_data_stream << kMessagePreamble;
-    write_data_stream << kMessageSplit;
     write_data_stream << ::std::hex << ::std::setfill('0') << ::std::setw(8) << crc;
-    write_data_stream << kMessageSplit;
     write_data_stream << data;
+    write_data_stream << kCarriageReturn;
 
     return write_data_stream.str();
   }
 
+  void RetrieveDecodedMessage(::std::string buffer) {
+    size_t message_start = buffer.find(kMessagePreamble);
+
+    // Check if message not found.
+    if(message_start == ::std::string::npos) {
+      return;
+    }
+
+    // Check if 8 character CRC exists.
+    if(message_start + kMessagePreamble.length() >= buffer.length()) {
+      return;
+    }
+
+    ::std::string crc = buffer.substr(kMessagePreamble.length(), kCrcLength);
+
+    // Extract data and decode from base64.
+    ::std::string data = buffer.substr(kMessagePreamble.length() + kCrcLength, buffer.length() - kMessagePreamble.length() - kCrcLength);
+    data = ::lib::base64_tools::Decode(data);
+
+    T proto_message;
+    if(proto_message.ParseFromString(data)) {
+      ::std::lock_guard<::std::mutex> lock(proto_queue_mutex_);
+      proto_queue_.push(proto_message);
+    }
+
+    // ::std::cout << "CRC: " << crc << " DATA: " << data << ::std::endl;
+  }
+
   int fd_;
   int messages_;
-  ::std::mutex fifo_mutex_;
-  ::std::deque<char> fifo_;
+  ::std::string buffer_;
   ::std::thread read_thread_;
+  ::std::queue<T> proto_queue_;
+  ::std::mutex proto_queue_mutex_;
 
   ::std::atomic<bool> run_{true};
 };
