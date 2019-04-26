@@ -59,7 +59,8 @@ bool IsBase64(unsigned char c) {
 // Taken from here:
 // https://stackoverflow.com/questions/342409/how-do-i-base64-encode-decode-in-c
 ::std::string Encode(::std::string const &input) {
-  const unsigned char *src = reinterpret_cast<unsigned const char *>(input.c_str());
+  const unsigned char *src =
+      reinterpret_cast<unsigned const char *>(input.c_str());
   size_t len = input.length();
 
   unsigned char *out, *pos;

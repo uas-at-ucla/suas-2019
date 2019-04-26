@@ -47,58 +47,19 @@ class GroundControls {
   void OnFail();
 
   void ConnectToGround();
-
-  // enum GoalState {
-  //   INIT,
-  //   STANDBY,
-  //   RUN_MISSION,
-  //   FAILSAFE,
-  //   THROTTLE_CUT,
-  //   TAKEOFF,
-  //   HOLD,
-  //   OFFBOARD,
-  //   RTL,
-  //   LAND,
-  //   ARM,
-  //   DISARM,
-  //   ALARM,
-  //   BOMB_DROP,
-  //   DSLR
-  // };
+  ~GroundControls();
 
  private:
   void StateReceived(const ::mavros_msgs::State state);
-  // void SensorsReceived(const ::mavros_msgs::Sensors sensors); //TODO
 
-  ::ros::NodeHandle ros_node_handle_;
-  ::ros::Subscriber state_subscriber_;
-  ::src::controls::Sensors sensors_;
+  ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage> udp_connection_;
+  ::lib::serial_device::SerialDevice<::src::controls::UasMessage> rfd900_connection_;
 
-  // void SetState(::std::string new_state);
-  // void SetGoal(GoalState new_state);
-
-  // ::lib::mission_message_queue::MissionMessageQueueSender
-  //     mission_message_queue_sender_;
-
-  // GoalState state_;
+  ::ros::Rate loop(50);
   ::sio::client client_;
 
-  // ::src::controls::Goal goal_;
-
   ::lib::phased_loop::PhasedLoop phased_loop_;
-
   ::std::atomic<bool> running_;
-
-  // double last_serial_telemetry_sent_;
-  // ::lib::serial_comms::SerialCommsBridge serial_comms_bridge_;
-
-  // ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
-  //     sensors_receiver_;
-  // ::lib::proto_comms::ProtoReceiver<::src::controls::Goal> goal_receiver_;
-  // ::lib::proto_comms::ProtoReceiver<::src::controls::Output>
-  // output_receiver_;
-
-  // ::lib::proto_comms::ProtoSender<::src::controls::Goal> goal_sender_;
 };
 
 } // namespace ground_controls

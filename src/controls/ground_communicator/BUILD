@@ -23,6 +23,7 @@ cc_library(
     '//src/controls/io:io_lib',
     '//lib/ros:ros',
     '//lib/serial_device:serial_device',
+    '//lib/proto_comms:proto_comms',
     "@socketio_client_cpp//:socketio_client_cpp",
   ],
 )

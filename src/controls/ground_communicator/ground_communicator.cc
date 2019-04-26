@@ -5,25 +5,30 @@ namespace controls {
 namespace ground_communicator {
 
 GroundCommunicator::GroundCommunicator() :
-  sensors_subscriber_(ros_node_handle_.subscribe(
-          io::kRosSensorsTopic, io::kRosMessageQueueSize,
-          &GroundCommunicator::SensorsReceived, this)),
-  rfd900_("/dev/ttyUSB0", B57600, 0) {}
+    sensors_subscriber_(ros_node_handle_.subscribe(
+        io::kRosSensorsTopic, io::kRosMessageQueueSize,
+        &GroundCommunicator::SensorsReceived, this)),
+    proto_sender_("udp://:*5555"),
+    rfd900_("/dev/ttyUSB0", B57600, 0) {}
 
 void GroundCommunicator::SensorsReceived(
     const ::src::controls::Sensors sensors) {
-  (void) sensors;
+
+  ::src::controls::UasMessage uas_message;
+  ::src::controls::Sensors *sensors_allocated =
+      new ::src::controls::Sensors(sensors);
+
+  uas_message.set_allocated_sensors(sensors_allocated);
 
   static int count = 0;
-  if(count == 0) {
-    ::src::controls::UasMessage uas_message;
-    ::src::controls::Sensors *sensors_allocated = new ::src::controls::Sensors(sensors);
-
-    uas_message.set_allocated_sensors(sensors_allocated);
+  if (count == 0) {
     rfd900_.WritePort(uas_message);
   }
 
   count = (count + 1) % 2;
+
+  // Send the message
+  proto_sender_.Send(uas_message);
 }
 
 } // namespace ground_communicator

@@ -10,8 +10,8 @@
 #include <chrono>
 #include <deque>
 #include <functional>
-#include <iostream>
 #include <iomanip>
+#include <iostream>
 #include <locale>
 #include <mutex>
 #include <queue>
@@ -143,7 +143,7 @@ template <typename T> class SerialDevice {
     // Read in data from serial device.
     int n = read(fd_, &v[0], kSerialPortReadBuffer);
 
-    if(n < 0) {
+    if (n < 0) {
       return;
     }
 
@@ -198,17 +198,23 @@ template <typename T> class SerialDevice {
     WritePort(proto_string);
   }
 
-  bool GetProtoMessage(T &proto_dest) {
-    {
-      ::std::lock_guard<::std::mutex> lock(proto_queue_mutex_);
-      if(proto_queue_.empty()) {
-        return false;
-      }
-
-      proto_dest.CopyFrom(proto_queue_.front());
-      proto_queue_.pop();
+  bool GetLatestProto(T &proto_dest) {
+    ::std::lock_guard<::std::mutex> lock(proto_queue_mutex_);
+    
+    // Check whether there is a proto available to fetch. If not, return false
+    // to indicate that proto_dest was not changed.
+    if (proto_queue_.empty()) {
+      return false;
     }
 
+    // Copy the top value off the queue.
+    proto_dest.CopyFrom(proto_queue_.front());
+
+    // Empty the proto queue.
+    while(!proto_queue_.empty()) {
+      proto_queue_.pop();
+    }
+    
     return true;
   }
 
@@ -223,14 +229,16 @@ template <typename T> class SerialDevice {
   ::std::string GenerateEncodedMessage(::std::string data) {
     // Remove all carriage returns from data. This character is reserved for
     // indicating a new line was received over the serial connection.
-    data.erase(::std::remove(data.begin(), data.end(), kCarriageReturn), data.end());
+    data.erase(::std::remove(data.begin(), data.end(), kCarriageReturn),
+               data.end());
 
     // Calculate CRC for the string data.
     unsigned crc = CalculateCrc(data);
 
     ::std::stringstream write_data_stream;
     write_data_stream << kMessagePreamble;
-    write_data_stream << ::std::hex << ::std::setfill('0') << ::std::setw(8) << crc;
+    write_data_stream << ::std::hex << ::std::setfill('0') << ::std::setw(8)
+                      << crc;
     write_data_stream << data;
     write_data_stream << kCarriageReturn;
 
@@ -241,28 +249,33 @@ template <typename T> class SerialDevice {
     size_t message_start = buffer.find(kMessagePreamble);
 
     // Check if message not found.
-    if(message_start == ::std::string::npos) {
+    if (message_start == ::std::string::npos) {
       return;
     }
 
     // Check if 8 character CRC exists.
-    if(message_start + kMessagePreamble.length() >= buffer.length()) {
+    if (buffer.length() <
+        message_start + kMessagePreamble.length() + kCrcLength) {
       return;
     }
 
     ::std::string crc = buffer.substr(kMessagePreamble.length(), kCrcLength);
 
     // Extract data and decode from base64.
-    ::std::string data = buffer.substr(kMessagePreamble.length() + kCrcLength, buffer.length() - kMessagePreamble.length() - kCrcLength);
+    ::std::string data =
+        buffer.substr(kMessagePreamble.length() + kCrcLength,
+                      buffer.length() - kMessagePreamble.length() - kCrcLength);
     data = ::lib::base64_tools::Decode(data);
 
     T proto_message;
-    if(proto_message.ParseFromString(data)) {
+    if (proto_message.ParseFromString(data)) {
       ::std::lock_guard<::std::mutex> lock(proto_queue_mutex_);
+      while(!proto_queue_.empty()) {
+        proto_queue_.pop();
+      }
+  
       proto_queue_.push(proto_message);
     }
-
-    // ::std::cout << "CRC: " << crc << " DATA: " << data << ::std::endl;
   }
 
   int fd_;
