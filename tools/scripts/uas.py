@@ -488,7 +488,7 @@ def run_controls_simulate(args):
     tmux_split("horizontal", 2)
     tmux_cmd(DOCKER_EXEC_SCRIPT + "rostopic echo /mavros/global_position/global")
     tmux_move_pane("right")
-    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/io/gpio_writer:gpio_writer")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + io_command)
     tmux_split("vertical", 2)
     tmux_move_pane("down")
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_communicator:ground_communicator")
@@ -499,7 +499,7 @@ def run_controls_simulate(args):
     tmux_select_window(2)
 
     print_update("\n\nSimulation running! \n" \
-            "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
+            "Run \"tmux a -t uas_env\" in another bash window to see everything working. Use `Ctrl-B n` to cycle between windows.", \
             msg_type="SUCCESS")
 
     while True:

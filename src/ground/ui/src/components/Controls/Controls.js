@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 
 import './Controls.css';
 import Map from './Map';
 import Telemetry from './Telemetry/Telemetry';
 import DroneActions from './DroneActions';
 import MissionPlannerContainer from './MissionPlannerContainer/MissionPlannerContainer';
-import Cosmetics from '../Utils/Cosmetics/Cosmetics';
+import UasLogo from 'components/Utils/UasLogo/UasLogo';
 
 class Controls extends Component {
   render() {
@@ -15,7 +16,7 @@ class Controls extends Component {
           <div>
             <span className="left-side">
               <span className="top-left">
-                <Cosmetics/>
+                <div onClick={this.centerOnDrone} className="logo"><UasLogo/></div>
                 <MissionPlannerContainer/>
               </span>
               <span className="bottom-left">
@@ -31,6 +32,10 @@ class Controls extends Component {
       </div>
     );
   }
+
+  centerOnDrone = () => {
+    this.props.dispatch({type: 'CENTER_ON_DRONE'});
+  }
 }
 
-export default Controls;
+export default connect()(Controls);

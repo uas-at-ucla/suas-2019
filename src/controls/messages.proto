@@ -27,8 +27,6 @@ message Sensors {
   optional bool armed                                                      = 22;
   optional string autopilot_state                                          = 23;
   optional double last_gps                                                 = 24;
-
-  // required string mode                                                     = 25;
 }
 
 message Goal {

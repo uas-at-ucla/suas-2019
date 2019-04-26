@@ -1,11 +1,11 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import droneActions from "../../actions/droneActions";
+import droneActions from "redux/actions/droneActions";
 
 const mapStateToProps = state => { 
   return {
-    missionCommands: state.missionPlan.commands
+    missionCommands: state.mission.commands
   }; 
 };
 
@@ -16,9 +16,7 @@ const mapDispatchToProps = droneActions;
 class DroneActions extends Component {
   render() {
     return (
-      <div className="DroneActions">
-        <span>Change Drone State</span>
-        
+      <span className="DroneActions">        
         <div className="buttonArray">
           <button id="runMissionButton" onClick={this.runMission}>Run Mission</button>
           <button id="takeoffButton" onClick={this.props.droneTakeoff}>Takeoff</button>
@@ -26,7 +24,7 @@ class DroneActions extends Component {
           <button id="failsafeButton" onClick={this.props.droneFailsafe}>Failsafe Landing</button>
           <button id="throttleCutButton" onClick={this.props.droneThrottleCut}>Throttle Cut</button>
         </div>
-      </div>
+      </span>
     );
   }
 

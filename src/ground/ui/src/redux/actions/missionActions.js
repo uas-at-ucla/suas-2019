@@ -1,7 +1,28 @@
 import shortid from 'shortid';
-import { createMessage } from '../protobuf/timelineGrammarUtil';
+import { createMessage } from 'protobuf/timelineGrammarUtil';
 
 export default {
+  centerMapOnCommand: (cmd, protoInfo) => {
+    for (let locationField of protoInfo.locationFields) {
+      let location = cmd[cmd.type][locationField];
+      return {
+        type: 'CENTER_ON_COMMAND',
+        payload: {
+          id: cmd.id,
+          pos: {
+            lat: location.latitude,
+            lng: location.longitude
+          }
+        }
+      }
+    }
+  },
+  commandStopAnimation: (cmd) => {
+    return {
+      type: 'COMMAND_STOP_ANIMATION',
+      payload: { id: cmd.id }
+    }
+  },
   addCommand: (type, options, protoInfo) => {
     return {
       type: 'ADD_COMMAND',
@@ -20,12 +41,12 @@ export default {
       payload: index
     }
   },
-  moveCommand: (fromIndex, toIndex) => {
+  reorderCommand: (oldIndex, newIndex) => {
     return {
-      type: 'MOVE_COMMAND',
+      type: 'REORDER_COMMAND',
       payload: {
-        fromIndex: fromIndex,
-        toIndex: toIndex
+        oldIndex: oldIndex,
+        newIndex: newIndex
       }
     }
   },

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as THREE from 'three';
 
+import './AttitudeIndicator.css';
 import NavballImg from './navball.png';
 
 
@@ -24,7 +25,7 @@ class Navball extends Component {
         this.camera.lookAt(this.scene.position);
 
 
-        this.renderer = new THREE.WebGLRenderer({antialias:true});
+        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         this.renderer.setSize(WIDTH, HEIGHT);
         document.getElementById("navball").appendChild(this.renderer.domElement);
 
@@ -74,7 +75,11 @@ class Navball extends Component {
 
     render() {
         return(
-            <div className="AttitudeIndicator" id="navball" ref={(mount) => {this.mount = mount}}>
+            <div className="AttitudeIndicator">
+                <div className="navball-background">
+                </div>
+                <div className="navball" id="navball" ref={(mount) => {this.mount = mount}}>
+                </div>
             </div>
         );
     }
