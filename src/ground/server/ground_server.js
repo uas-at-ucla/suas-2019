@@ -28,7 +28,7 @@ const io = socketIOServer(port);
 
 // create namespaces
 const ui_io = io.of('/ui');
-const drone_io = io.of('/drone');
+const controls_io = io.of('/ground-controls');
 const fake_drone_io = io.of('/fake-drone');
 
 // For decoding and encoding drone messages
@@ -74,21 +74,24 @@ function connectToInterop(ip, username, password, callback) {
     });
 }
 
-drone_io.on('connect', (socket) => {
+controls_io.on('connect', (socket) => {
   drone_connected = true;
   console.log("drone connected!");
   telemetryCount = 0;
-  socket.on('TELEMETRY', (data) => {
+  socket.on('SENSORS', (sensors) => {
     if (protobufUtils) {
-      data.telemetry = protobufUtils.decodeTelemetry(data.telemetry);
-      // if (interopClient) {
-      //   interopClient.newTelemetry(data.telemetry);
-      // }
+      //TODO receive and cache other data to send along with sensors
+      data = {}
+      data.telemetry = {}
+      data.telemetry.sensors = protobufUtils.decodeSensors(sensors);
+      if (interopClient) {
+        interopClient.newTelemetry(data.telemetry);
+      }
       // When telemetry is received from the drone, send it to clients on the UI namespace
       if (telemetryCount >= uiSendInterval) {
-        console.log(JSON.stringify(data)); // temporary log
+        console.log(JSON.stringify(data, null, 2));
         if (constants.verbose) console.log(JSON.stringify(data, null, 2));
-        // ui_io.emit('TELEMETRY', data);
+        ui_io.emit('TELEMETRY', data);
         telemetryCount = 0;
       }
     }
@@ -174,7 +177,7 @@ ui_io.on('connect', (socket) => {
   });
 
   socket.on('CHANGE_DRONE_STATE', (data) => {
-    drone_io.emit('CHANGE_DRONE_STATE', data);
+    controls_io.emit('CHANGE_DRONE_STATE', data);
     console.log("THE DRONE is asked to " + data + ". Hey DRONE, are you listening?");
   });
 
@@ -184,7 +187,7 @@ ui_io.on('connect', (socket) => {
       let groundProgram = protobufUtils.makeGroundProgram(commands, interopData);
       console.log(JSON.stringify(groundProgram, null, 2));
       let encodedGroundProgram = protobufUtils.encodeGroundProgram(groundProgram);
-      drone_io.emit('RUN_MISSION', encodedGroundProgram);
+      controls_io.emit('RUN_MISSION', encodedGroundProgram);
     }
   });
 

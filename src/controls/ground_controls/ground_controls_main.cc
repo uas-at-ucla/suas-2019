@@ -15,7 +15,7 @@ int main(int argc, char **argv) {
   ::lib::serial_device::SerialDevice<::src::controls::UasMessage> rfd900(
       "/dev/ttyUSB0", B57600, 0);
 
-  ::ros::Rate loop(30);
+  // ::ros::Rate loop(30);
 
   /*
   ::src::controls::UasMessage current_message;
@@ -43,18 +43,24 @@ int main(int argc, char **argv) {
   */
 
   ::src::controls::ground_controls::GroundControls ground_controls;
+  ::std::thread rfd900_thread(
+      &::src::controls::ground_controls::GroundControls::ReadRFD900,
+      &ground_controls);
+  ::ros::spin();
+  ground_controls.running_ = false;
+  rfd900_thread.join();
 
-  while (true) {
-    if (!::ros::ok()) {
-      break;
-    }
+  // while (true) {
+  //   if (!::ros::ok()) {
+  //     break;
+  //   }
 
-    // Run ground controls iteration
-    ground_controls.RunIteration();
+  //   // Run ground controls iteration
+  //   ground_controls.RunIteration();
 
-    ::ros::spinOnce();
-    loop.sleep();
-  }
+  //   ::ros::spinOnce();
+  //   loop.sleep();
+  // }
 
   return 0;
 }

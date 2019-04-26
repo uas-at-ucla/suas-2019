@@ -4,11 +4,10 @@
   "description": "",
   "main": "ground_server.js",
   "scripts": {
-    "start": "concurrently --kill-others \"npm:server\" \"npm:ui\"",
-    "start-web": "concurrently --kill-others \"npm:server\" \"npm:ui-web\"",
+    "start": "npm run server",
     "server": "nodemon ground_server.js",
-    "ui": "cd ../ui && npm start",
-    "ui-web": "cd ../ui && npm run start-web",
+    "all": "concurrently --kill-others \"npm:server\" \"npm:ui\"",
+    "all-web": "concurrently --kill-others \"npm:server\" \"npm:ui-web\"",
     "test": "node test.js"
   },
   "author": "",

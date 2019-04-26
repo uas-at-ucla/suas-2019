@@ -1,4 +1,4 @@
 module.exports = {
-  droneTelemetryFrequency: 100, //Hz
+  droneTelemetryFrequency: 50, //Hz
   verbose: false
 }

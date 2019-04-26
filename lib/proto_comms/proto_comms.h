@@ -4,11 +4,11 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <mutex>
 #include <queue>
 #include <stdio.h>
 #include <stdlib.h>
 #include <thread>
-#include <mutex>
 #include <type_traits>
 #include <unistd.h>
 
@@ -92,7 +92,7 @@ template <class T> class ProtoReceiver {
 
   void Quit() { run_ = false; }
   bool HasMessages() { return received_messages_.size() > 0; }
-  bool GetLatestProto(T &proto_msg) { 
+  bool GetLatestProto(T &proto_msg) {
     ::std::lock_guard<::std::mutex> lock(proto_queue_mutex_);
 
     // Check for empty queue
