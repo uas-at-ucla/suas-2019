@@ -72,23 +72,26 @@ void IO::WriterThread() {
     // if(i % 10 == 0) {
     //   ::std::cout << "sending " << i << ::std::endl;
     // }
-    // set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, kGimbalMiddlePpmSignal);
+    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, kGimbalMiddlePpmSignal);
 
-    // Set gimbal angle
-    static int i = 15000;
-    static bool flip = false;
-    if (flip) {
-      i--;
-      if (i < 11000) {
-        flip = false;
-      }
-    } else {
-      i++;
-      if (i > 19000) {
-        flip = true;
-      }
-    }
-    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, i / 10);
+    // // Set gimbal angle
+    // static int i = 15000;
+    // static bool flip = false;
+    // if (flip) {
+    //   i--;
+    //   if (i < 11000) {
+    //     flip = false;
+    //   }
+    // } else {
+    //   i++;
+    //   if (i > 19000) {
+    //     flip = true;
+    //   }
+    // }
+    // set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, i / 10);
+#else
+    // Silence unused variable errors for AMD64 platforms.
+    (void) should_alarm;
 #endif
 
     // Write output to LED strip.
@@ -104,11 +107,11 @@ void IO::WriterThread() {
     }
 
     // Log the current GPIO outputs.
-    ROS_DEBUG_STREAM("Writer thread iteration: "
-                     << ::std::endl
-                     << "alarm[" << should_alarm << "]" << ::std::endl
-                     << "led_strip[" << led_strip_.GetStrip() << ::std::endl
-                     << "]");
+    // ROS_DEBUG_STREAM("Writer thread iteration: "
+    //                  << ::std::endl
+    //                  << "alarm[" << should_alarm << "]" << ::std::endl
+    //                  << "led_strip[" << led_strip_.GetStrip() << ::std::endl
+    //                  << "]");
 
     // Wait until next iteration of loop.
     writer_phased_loop_.sleep();
