@@ -36,7 +36,7 @@ cc_library(
     'flight_loop.h',
   ],
   deps = [
-    '//src/controls/ground_server/timeline/executor:executor',
+    '//src/controls/ground_controls/timeline/executor:executor',
     '//src/controls/loops/state_machine:state_machine',
     '//src/controls:messages_cpp',
     '//src/controls/io:io_lib',
