@@ -19,5 +19,8 @@ cc_library(
     'ground_server.h'
   ],
   deps = [
+    '//src/controls:messages_cpp',
+    '//lib/ros:ros',
+    "@socketio_client_cpp//:socketio_client_cpp",
   ],
 )

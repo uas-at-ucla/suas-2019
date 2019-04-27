@@ -1,23 +1,13 @@
-.Settings {
+.Settings .logo {
   text-align: center;
 }
 
-.Settings p {
-  margin-top: auto;
-  font-size: 20px;
+.Settings .row {
+  margin-bottom: 10px;
 }
 
-.Settings h1 {
-  text-align: center;
-  font-size: 40px;
-}
-
-.Settings h2 {
-  font-size: 30px;
-}
-
-.Settings button {
-  display: inline-block;
-  width: 300px;
-  padding: 10px;
+.Settings .connect-btn {
+  margin-right: 10px;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }

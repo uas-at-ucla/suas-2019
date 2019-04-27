@@ -2,14 +2,15 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import './Telemetry.css';
-import AttitudeIndicator from './AttitudeIndicator';
+import AttitudeIndicator from './AttitudeIndicator/AttitudeIndicator';
 import Altimeter from './Altimeter/Altimeter';
 import Readout from './Readout';
 
 
 const mapStateToProps = state => {
   return {
-    telemetry: state.telemetry
+    telemetry: state.telemetry,
+    ping: state.telemetry.ping
   };
 };
 
@@ -17,7 +18,7 @@ class Telemetry extends Component {
   constructor(props) {
     super(props);
 
-    this.update(JSON.parse(JSON.stringify(this.props.telemetry)));
+    this.update(JSON.parse(JSON.stringify(this.props.telemetry.data)));
   }
 
 
@@ -78,17 +79,17 @@ class Telemetry extends Component {
 
 
   render() {
-    let telmet = JSON.parse(JSON.stringify(this.props.telemetry));
+    let telmet = JSON.parse(JSON.stringify(this.props.telemetry.data));
 
     this.update(telmet);
 
-    console.log(telmet);
-    console.log(this.readoutData());
+    // console.log(telmet);
+    // console.log(this.readoutData());
 
     return (
       <span className="Telemetry">
-        <AttitudeIndicator data={this.telmet} />
         <Readout data={this.readoutData()} />
+        <AttitudeIndicator data={this.telmet} />
         <Altimeter/>
       </span>
     );

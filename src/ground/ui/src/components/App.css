@@ -1,0 +1,36 @@
+.viewNav {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  height: 40px;
+  z-index: 1;
+}
+
+.viewNav > ul {
+  list-style-type: none;
+  height: 100%;
+  padding-left: 0;
+  margin-bottom: 0px;
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, .6);
+}
+
+.viewNav > ul > li {
+  display: inline-block;
+  height: 100%;
+}
+
+.viewNav > ul > li > a {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding-left: 18px;
+  padding-right: 18px;
+  color: #f7f7f7;
+  text-decoration: none;
+  transition: .5s;
+}
+
+.viewNav > ul > li > a:hover {
+  background-color: #000000;
+}
