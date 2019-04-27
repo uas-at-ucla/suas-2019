@@ -1,8 +1,6 @@
 // use require() to load libraries from node_modules
 const fs = require('fs');
 const socketIOServer = require('socket.io');
-const loadProtobufUtils = require('./protobuf_utils/protobuf_utils');
-const loadInteropClient = require('./interop_client/interop_client');
 var ping;
 try {
   ping = require("net-ping"); //might fail since it needs to be compiled specifically on each platform
@@ -13,14 +11,16 @@ try {
   console.log("    npm uninstall net-ping");
   console.log("    npm install net-ping\n");
 }
-const constants = require('./utils/constants');
+
+const loadProtobufUtils = require('./src/protobuf_utils');
+const loadInteropClient = require('./src/interop_client');
+const config = require('./src/config');
 
 const port = 8081;
 var droneIP = "127.0.0.1";
 const USE_FAKE_DRONE = true;
 const uiSendFrequency = 5; //Hz
-const pingFrequency = 1000 //ms
-const uiSendInterval = Math.floor(constants.droneTelemetryFrequency / uiSendFrequency);
+const pingInterval = 1000 //ms
 var drone_connected = false;
 
 // create server
@@ -78,24 +78,32 @@ controls_io.on('connect', (socket) => {
   drone_connected = true;
   console.log("drone connected!");
   telemetryCount = 0;
-  socket.on('SENSORS', (sensors) => {
+  function onSensors(sensors, frequency) {
+    let uiSendInterval = Math.floor(frequency / uiSendFrequency);
     if (protobufUtils) {
       //TODO receive and cache other data to send along with sensors
       data = {}
       data.telemetry = {}
       data.telemetry.sensors = protobufUtils.decodeSensors(sensors);
       if (interopClient) {
-        interopClient.newTelemetry(data.telemetry);
+        interopClient.newTelemetry(data.telemetry, frequency);
       }
       // When telemetry is received from the drone, send it to clients on the UI namespace
       if (telemetryCount >= uiSendInterval) {
-        console.log(JSON.stringify(data, null, 2));
-        if (constants.verbose) console.log(JSON.stringify(data, null, 2));
+        if (config.verbose) console.log(JSON.stringify(data, null, 2));
         ui_io.emit('TELEMETRY', data);
         telemetryCount = 0;
       }
     }
     telemetryCount++;
+  }
+
+  socket.on('SENSORS', (sensors) => {
+    onSensors(sensors, config.droneSensorsFrequency);
+  });
+
+  socket.on('SENSORS_RFD900', (sensors) => {
+    onSensors(sensors, config.droneSensorsFreqRFD900);
   });
 });
 
@@ -103,14 +111,15 @@ controls_io.on('connect', (socket) => {
 fakeTelemetryCount = 0;
 fake_drone_io.on('connect', (socket) => {
   console.log("fake drone connected!");
+  let uiSendInterval = Math.floor(config.droneSensorsFrequency / uiSendFrequency);
   socket.on('TELEMETRY', (data) => {
     if (!drone_connected) { // only do stuff if the real drone is not connected
       if (interopClient) {
-        interopClient.newTelemetry(data.telemetry);
+        interopClient.newTelemetry(data.telemetry, config.droneSensorsFrequency);
       }
       // When telemetry is received from the drone, send it to clients on the UI namespace
       if (fakeTelemetryCount >= uiSendInterval) {
-        if (constants.verbose) console.log(JSON.stringify(data, null, 2));
+        if (config.verbose) console.log(JSON.stringify(data, null, 2));
         ui_io.emit('TELEMETRY', data);
         fakeTelemetryCount = 0;
       }
@@ -151,7 +160,7 @@ if (ping) {
           }
         };
       }
-    }),pingFrequency);
+    }), pingInterval);
 
     pingSession.on("close", function () {
       console.log("PING SOCKET CLOSED");
@@ -199,5 +208,5 @@ ui_io.on('connect', (socket) => {
 
 
 if (USE_FAKE_DRONE) {
-  require('./fake_drone/fake_drone');
+  require('./src/fake_drone/fake_drone');
 }

@@ -8,6 +8,8 @@
     "server": "nodemon ground_server.js",
     "all": "concurrently --kill-others \"npm:server\" \"npm:ui\"",
     "all-web": "concurrently --kill-others \"npm:server\" \"npm:ui-web\"",
+    "ui": "cd ../ui && npm start",
+    "ui-web": "cd ../ui && npm run start-web",
     "test": "node test.js"
   },
   "author": "",

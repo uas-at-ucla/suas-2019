@@ -25,7 +25,7 @@ void GroundCommunicator::SensorsReceived(
     rfd900_.WritePort(uas_message);
   }
 
-  count = (count + 1) % 2;
+  count = (count + 1) % 2; // 50/2 = 25 Hz
 
   // Send the message
   proto_sender_.Send(uas_message);

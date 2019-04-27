@@ -44,8 +44,12 @@ class GroundControls {
 
   ~GroundControls();
 
+  ::std::atomic<bool> running_;
+
  private:
   void SensorsReceived(const ::src::controls::Sensors sensors);
+  void SendSensorsToServer(const ::src::controls::Sensors &sensors,
+                           bool rfd900);
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber sensors_subscriber_;
@@ -59,7 +63,6 @@ class GroundControls {
   ::sio::client client_;
 
   ::lib::phased_loop::PhasedLoop phased_loop_;
-  ::std::atomic<bool> running_;
 };
 
 } // namespace ground_controls

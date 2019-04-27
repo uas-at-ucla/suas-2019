@@ -6,7 +6,6 @@
   });
 */
 
-const path = require("path");
 const protobuf = require("protobufjs");
 // Fix import statement in .proto file:
 protobuf.Root.prototype.resolvePath = (origin, target) => {

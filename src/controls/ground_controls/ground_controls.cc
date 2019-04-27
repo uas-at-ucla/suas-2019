@@ -33,7 +33,8 @@ GroundControls::GroundControls() :
 #endif
 }
 
-void GroundControls::SensorsReceived(const ::src::controls::Sensors sensors) {
+void GroundControls::SendSensorsToServer(
+    const ::src::controls::Sensors &sensors, bool rfd900) {
   if (sensors.IsInitialized()) { // IsInitialized checks that all required
                                  // fields are present
     ::std::string sensors_serialized;
@@ -43,11 +44,15 @@ void GroundControls::SensorsReceived(const ::src::controls::Sensors sensors) {
 
     if (client_.opened()) {
       client_.socket("ground-controls")
-          ->emit("SENSORS",
+          ->emit(rfd900 ? "SENSORS_RFD900" : "SENSORS",
                  ::sio::string_message::create(
                      ::lib::base64_tools::Encode(sensors_serialized)));
     }
   }
+}
+
+void GroundControls::SensorsReceived(const ::src::controls::Sensors sensors) {
+  SendSensorsToServer(sensors, false);
 }
 
 void GroundControls::ReadRFD900() {
@@ -67,6 +72,9 @@ void GroundControls::ReadRFD900() {
     } else if (!rfd900_res && udp_connection_res) {
       ::std::cout << "Got udp connection and not rfd900" << ::std::endl;
     } else if (rfd900_res && !udp_connection_res) {
+      if (!::ros::master::check()) { // if ros is not available
+        SendSensorsToServer(uas_message1.sensors(), true);
+      }
       ::std::cout << "Got rfd900 and not udp connection" << ::std::endl;
     } else {
       // TODO: check which one was received earliest

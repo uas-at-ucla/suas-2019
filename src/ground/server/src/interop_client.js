@@ -2,10 +2,9 @@
 
 const axios = require('axios');
 const qs = require('qs');
-const constants = require('../utils/constants');
+const config = require('./config');
 
 const interopSendFrequency = 2; //Hz
-const sendInterval = Math.floor(constants.droneTelemetryFrequency / interopSendFrequency);
 
 class InteropClient {
   // axiosInstance;
@@ -42,7 +41,8 @@ class InteropClient {
     return this.axiosInstance.post("/odlcs/"+odlcId+"/image", image).then(res => res.data);
   }
 
-  newTelemetry(droneTelemetry) {
+  newTelemetry(droneTelemetry, frequency) {
+    let sendInterval = Math.floor(frequency / interopSendFrequency);
     if (droneTelemetry.sensors) {
       if (this.telemetryCount == sendInterval) {
         let interopTelemetry = {
@@ -53,7 +53,7 @@ class InteropClient {
         }
         // console.log(interopTelemetry);
         this.postTelemetry(interopTelemetry).then(
-          msg => { if (constants.verbose) console.log(msg) }
+          msg => { if (config.verbose) console.log(msg) }
         ).catch(error => {
           console.log(error);
         });

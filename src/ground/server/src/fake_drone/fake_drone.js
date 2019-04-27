@@ -1,5 +1,5 @@
 const socketIOClient = require('socket.io-client');
-const constants = require('../utils/constants');
+const constants = require('../config');
 
 const port = 8081;
 
