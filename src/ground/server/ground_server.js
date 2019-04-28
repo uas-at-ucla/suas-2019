@@ -77,7 +77,7 @@ function connectToInterop(ip, username, password, callback) {
 controls_io.on('connect', (socket) => {
   drone_connected = true;
   console.log("drone connected!");
-  telemetryCount = 0;
+  let telemetryCount = 0;
   function onSensors(sensors, frequency) {
     let uiSendInterval = Math.floor(frequency / uiSendFrequency);
     if (protobufUtils) {
@@ -108,7 +108,7 @@ controls_io.on('connect', (socket) => {
 });
 
 // FAKE DRONE
-fakeTelemetryCount = 0;
+let fakeTelemetryCount = 0;
 fake_drone_io.on('connect', (socket) => {
   console.log("fake drone connected!");
   let uiSendInterval = Math.floor(config.droneSensorsFrequency / uiSendFrequency);

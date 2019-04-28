@@ -1,56 +1,4 @@
 {
-  "Position2D": {
-    "fields": {
-      "latitude": {
-        "rule": "required",
-        "type": "double",
-        "id": 1
-      },
-      "longitude": {
-        "rule": "required",
-        "type": "double",
-        "id": 2
-      }
-    }
-  },
-  "Position3D": {
-    "fields": {
-      "latitude": {
-        "rule": "required",
-        "type": "double",
-        "id": 1
-      },
-      "longitude": {
-        "rule": "required",
-        "type": "double",
-        "id": 2
-      },
-      "altitude": {
-        "rule": "required",
-        "type": "double",
-        "id": 3
-      }
-    }
-  },
-  "StaticObstacle": {
-    "fields": {
-      "location": {
-        "rule": "required",
-        "type": "Position2D",
-        "id": 1
-      },
-      "cylinderRadius": {
-        "rule": "required",
-        "type": "double",
-        "id": 2
-      },
-      "cylinderHeight": {
-        "rule": "required",
-        "type": "double",
-        "id": 3
-      }
-    }
-  },
   "GroundProgram": {
     "fields": {
       "commands": {
@@ -114,15 +62,6 @@
       }
     }
   },
-  "WaypointCommand": {
-    "fields": {
-      "goal": {
-        "rule": "required",
-        "type": "Position3D",
-        "id": 1
-      }
-    }
-  },
   "UgvDropCommand": {
     "fields": {
       "groundTarget": {
@@ -137,57 +76,12 @@
       }
     }
   },
-  "SurveyCommand": {
-    "fields": {
-      "surveyPolygon": {
-        "rule": "repeated",
-        "type": "Position2D",
-        "id": 1,
-        "options": {
-          "packed": false
-        }
-      },
-      "altitude": {
-        "rule": "required",
-        "type": "double",
-        "id": 2
-      }
-    }
-  },
-  "OffAxisCommand": {
-    "fields": {
-      "photographerLocation": {
-        "rule": "required",
-        "type": "Position3D",
-        "id": 1
-      },
-      "subjectLocation": {
-        "rule": "required",
-        "type": "Position2D",
-        "id": 2
-      }
-    }
-  },
   "WaitCommand": {
     "fields": {
       "time": {
         "rule": "required",
         "type": "double",
         "id": 1
-      }
-    }
-  },
-  "GotoCommand": {
-    "fields": {
-      "goal": {
-        "rule": "required",
-        "type": "Position3D",
-        "id": 1
-      },
-      "comeToStop": {
-        "rule": "required",
-        "type": "bool",
-        "id": 2
       }
     }
   },
@@ -248,18 +142,6 @@
       }
     }
   },
-  "NothingCommand": {
-    "fields": {}
-  },
-  "SleepCommand": {
-    "fields": {
-      "time": {
-        "rule": "required",
-        "type": "double",
-        "id": 1
-      }
-    }
-  },
   "TranslateCommand": {
     "fields": {
       "goal": {
@@ -279,5 +161,278 @@
   },
   "TriggerAlarmCommand": {
     "fields": {}
+  },
+  "Position2D": {
+    "fields": {
+      "latitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 1
+      },
+      "longitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "Position3D": {
+    "fields": {
+      "latitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 1
+      },
+      "longitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      },
+      "altitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 3
+      }
+    }
+  },
+  "WaypointCommand": {
+    "fields": {
+      "goal": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      }
+    }
+  },
+  "BombDropCommand": {
+    "fields": {
+      "dropZone": {
+        "rule": "required",
+        "type": "Position2D",
+        "id": 1
+      }
+    }
+  },
+  "SurveyCommand": {
+    "fields": {
+      "surveyPolygon": {
+        "rule": "repeated",
+        "type": "Position2D",
+        "id": 1,
+        "options": {
+          "packed": false
+        }
+      },
+      "altitude": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "OffAxisCommand": {
+    "fields": {
+      "photographerLocation": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      },
+      "subjectLocation": {
+        "rule": "required",
+        "type": "Position2D",
+        "id": 2
+      }
+    }
+  },
+  "NothingCommand": {
+    "fields": {}
+  },
+  "SleepCommand": {
+    "fields": {
+      "time": {
+        "rule": "required",
+        "type": "double",
+        "id": 1
+      }
+    }
+  },
+  "GotoCommand": {
+    "fields": {
+      "goal": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      },
+      "comeToStop": {
+        "rule": "required",
+        "type": "bool",
+        "id": 2
+      }
+    }
+  },
+  "GotoRawCommand": {
+    "fields": {
+      "goal": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      },
+      "comeToStop": {
+        "rule": "required",
+        "type": "bool",
+        "id": 2
+      }
+    }
+  },
+  "Command": {
+    "oneofs": {
+      "command": {
+        "oneof": [
+          "WaypointCommand",
+          "BombDropCommand",
+          "SurveyCommand",
+          "OffAxisCommand",
+          "NothingCommand",
+          "SleepCommand",
+          "GotoCommand",
+          "GotoRawCommand",
+          "TriggerBombDropCommand",
+          "TriggerAlarmCommand"
+        ]
+      }
+    },
+    "fields": {
+      "subMission": {
+        "type": "Mission",
+        "id": 1
+      },
+      "WaypointCommand": {
+        "type": "WaypointCommand",
+        "id": 2
+      },
+      "BombDropCommand": {
+        "type": "BombDropCommand",
+        "id": 3
+      },
+      "SurveyCommand": {
+        "type": "SurveyCommand",
+        "id": 4
+      },
+      "OffAxisCommand": {
+        "type": "OffAxisCommand",
+        "id": 5
+      },
+      "NothingCommand": {
+        "type": "NothingCommand",
+        "id": 6
+      },
+      "SleepCommand": {
+        "type": "SleepCommand",
+        "id": 7
+      },
+      "GotoCommand": {
+        "type": "GotoCommand",
+        "id": 8
+      },
+      "GotoRawCommand": {
+        "type": "GotoRawCommand",
+        "id": 9
+      },
+      "TriggerBombDropCommand": {
+        "type": "TriggerBombDropCommand",
+        "id": 10
+      },
+      "TriggerAlarmCommand": {
+        "type": "TriggerAlarmCommand",
+        "id": 11
+      }
+    }
+  },
+  "Mission": {
+    "fields": {
+      "commands": {
+        "rule": "repeated",
+        "type": "Command",
+        "id": 1,
+        "options": {
+          "packed": false
+        }
+      },
+      "currentCommand": {
+        "type": "int32",
+        "id": 2,
+        "options": {
+          "default": 0
+        }
+      }
+    }
+  },
+  "StaticObstacle": {
+    "fields": {
+      "location": {
+        "rule": "required",
+        "type": "Position2D",
+        "id": 1
+      },
+      "cylinderRadius": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "MovingObstacle": {
+    "fields": {
+      "point": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      },
+      "sphereRadius": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "Obstacles": {
+    "fields": {
+      "staticObstacles": {
+        "rule": "repeated",
+        "type": "StaticObstacle",
+        "id": 1,
+        "options": {
+          "packed": false
+        }
+      },
+      "movingObstacles": {
+        "rule": "repeated",
+        "type": "MovingObstacle",
+        "id": 2,
+        "options": {
+          "packed": false
+        }
+      }
+    }
+  },
+  "GroundData": {
+    "oneofs": {
+      "data": {
+        "oneof": [
+          "mission",
+          "obstacles"
+        ]
+      }
+    },
+    "fields": {
+      "mission": {
+        "type": "Mission",
+        "id": 1
+      },
+      "obstacles": {
+        "type": "Obstacles",
+        "id": 2
+      }
+    }
   }
 }

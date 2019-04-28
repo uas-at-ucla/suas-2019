@@ -6,7 +6,7 @@ import Map from './Map';
 import Telemetry from './Telemetry/Telemetry';
 import DroneActions from './DroneActions';
 import MissionPlannerContainer from './MissionPlannerContainer/MissionPlannerContainer';
-import UasLogo from 'components/Utils/UasLogo/UasLogo';
+import UasLogo from 'components/utils/UasLogo/UasLogo';
 
 class Controls extends Component {
   render() {

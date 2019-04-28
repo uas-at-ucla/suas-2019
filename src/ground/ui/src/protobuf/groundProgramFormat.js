@@ -1,3 +1,4 @@
+// THIS IS SLIGHTLY OUTDATED
 // This is a visual aid, not to be used as actual code
 // It shows how protobuf objects we are using are represented in JavaScript.
 
