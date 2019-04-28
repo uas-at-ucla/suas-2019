@@ -60,7 +60,7 @@ class Map extends Component {
       })
       
     }
-    const commandPointPolyCoords = this.props.commandPoints.map((commandPoint, index) => {
+    const commandPointPolyCoords = this.props.commandPoints.filter((p) => p).map((commandPoint, index) => {
       return commandPoint.marker.position;
     })
 

@@ -59,9 +59,11 @@ class MissionPlanner extends Component {
 
   commandChangers = {
     centerMapOnCommand: (index) => {
-      let command = this.props.mission.commands[index];
-      this.props.centerMapOnCommand(command, this.props.protoInfo);
-      setTimeout(() => this.props.commandStopAnimation(command), 1000);
+      if (this.props.className === "SmallMissionPlanner") {
+        let command = this.props.mission.commands[index];
+        this.props.centerMapOnCommand(command, this.props.protoInfo);
+        setTimeout(() => this.props.commandStopAnimation(command), 1000);
+      }
     },
 
     changeCommandType: (event) => {
