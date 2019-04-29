@@ -559,7 +559,7 @@ def run_ground(arg1, args):
 
     # Run ground.py and pass command line arguments
     run_cmd_exit_failure(GROUND_DOCKER_EXEC_SCRIPT + \
-           "'ssh -o StrictHostKeyChecking=no git@github.com; python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args) + "'")
+           "'ssh -o StrictHostKeyChecking=no git@github.com; sudo python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args) + "'")
 
     kill_ground()
 
