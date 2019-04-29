@@ -17,8 +17,8 @@ const loadInteropClient = require('./src/interop_client');
 const config = require('./src/config');
 
 const port = 8081;
-var droneIP = "127.0.0.1";
-const USE_FAKE_DRONE = true;
+var droneIP = null;
+const USE_FAKE_DRONE = false;
 const uiSendFrequency = 5; //Hz
 const pingInterval = 1000 //ms
 var drone_connected = false;
@@ -39,20 +39,21 @@ loadProtobufUtils((theProtobufUtils) => {
 
 var interopClient = null;
 var interopData = null;
-connectToInterop("134.209.2.203:8000", "testuser", "testpass", // try our test server
-  (err) => {
-    if (err) {
+if (config.testing) {
+  // try our test server
+  connectToInterop("134.209.2.203:8000", "testuser", "testpass")
+    .catch(error => {
       if (fs.existsSync("/.dockerenv")) { // If inside Docker container
         connectToInterop("192.168.2.30:80", "testuser", "testpass");
       } else {
         connectToInterop("localhost:8000", "testuser", "testpass");
       }
-    }
-  });
+    });
+}
 
-function connectToInterop(ip, username, password, callback) {
+function connectToInterop(ip, username, password) {
   interopClient = null;
-  loadInteropClient(ip, username, password)
+  return loadInteropClient(ip, username, password)
     .then(theInteropClient => {
       interopClient = theInteropClient;
       interopClient.getMissions().then(missions =>
@@ -65,33 +66,34 @@ function connectToInterop(ip, username, password, callback) {
           ui_io.emit('INTEROP_DATA', interopData);
         })
       );
-      if (callback) callback();
     }).catch(error => {
       interopData = null;
       ui_io.emit('INTEROP_DATA', interopData);
-      console.log(error);
-      if (callback) callback(error);
+      throw error;
     });
 }
 
+const uiSendInterval = {
+  [config.droneSensorsFrequency]: Math.floor(config.droneSensorsFrequency / uiSendFrequency),
+  [config.droneSensorsFreqRFD900]: Math.floor(config.droneSensorsFreqRFD900 / uiSendFrequency)
+}
 controls_io.on('connect', (socket) => {
   drone_connected = true;
-  console.log("drone connected!");
+  droneIP = socket.handshake.address.replace('::ffff:', '');
+  console.log("drone connected from " + droneIP);
   let telemetryCount = 0;
   function onSensors(sensors, frequency) {
-    let uiSendInterval = Math.floor(frequency / uiSendFrequency);
     if (protobufUtils) {
       //TODO receive and cache other data to send along with sensors
-      data = {}
-      data.telemetry = {}
-      data.telemetry.sensors = protobufUtils.decodeSensors(sensors);
+      telemetry = {}
+      telemetry.sensors = protobufUtils.decodeSensors(sensors);
       if (interopClient) {
-        interopClient.newTelemetry(data.telemetry, frequency);
+        interopClient.newTelemetry(telemetry, frequency);
       }
       // When telemetry is received from the drone, send it to clients on the UI namespace
-      if (telemetryCount >= uiSendInterval) {
-        if (config.verbose) console.log(JSON.stringify(data, null, 2));
-        ui_io.emit('TELEMETRY', data);
+      if (telemetryCount >= uiSendInterval[frequency]) {
+        if (config.verbose) console.log(JSON.stringify(telemetry, null, 2));
+        ui_io.emit('TELEMETRY', telemetry);
         telemetryCount = 0;
       }
     }
@@ -111,16 +113,15 @@ controls_io.on('connect', (socket) => {
 let fakeTelemetryCount = 0;
 fake_drone_io.on('connect', (socket) => {
   console.log("fake drone connected!");
-  let uiSendInterval = Math.floor(config.droneSensorsFrequency / uiSendFrequency);
-  socket.on('TELEMETRY', (data) => {
+  socket.on('TELEMETRY', (telemetry) => {
     if (!drone_connected) { // only do stuff if the real drone is not connected
       if (interopClient) {
-        interopClient.newTelemetry(data.telemetry, config.droneSensorsFrequency);
+        interopClient.newTelemetry(telemetry, config.droneSensorsFrequency);
       }
       // When telemetry is received from the drone, send it to clients on the UI namespace
-      if (fakeTelemetryCount >= uiSendInterval) {
-        if (config.verbose) console.log(JSON.stringify(data, null, 2));
-        ui_io.emit('TELEMETRY', data);
+      if (fakeTelemetryCount >= uiSendInterval[config.droneSensorsFrequency]) {
+        if (config.verbose) console.log(JSON.stringify(telemetry, null, 2));
+        ui_io.emit('TELEMETRY', telemetry);
         fakeTelemetryCount = 0;
       }
       fakeTelemetryCount++;
@@ -139,26 +140,20 @@ if (ping) {
     ttl: 128
   };
 
-  try { // might fail without sudo (TODO: fix in Docker)
+  try { // might fail without sudo
     var pingSession = ping.createSession(pingOptions);
 
-    setInterval(() => pingSession.pingHost(droneIP, function (error, droneIP, sent, rcvd) {
+    setInterval(() => droneIP && pingSession.pingHost(droneIP, function (error, droneIP, sent, rcvd) {
       var ms = rcvd - sent;
-      if (error)
+      if (error) {
+        ui_io.emit('PING', null);
         if (error instanceof ping.RequestTimedOutError)
           console.log(droneIP + ": Not alive");
         else
           console.log(droneIP + ": " + error.toString());
-      else {
-        console.log(droneIP + ": Alive (ms=" + ms + ")");
+      } else {
+        if (config.verbose) console.log(droneIP + ": Alive (ms=" + ms + ")");
         ui_io.emit('PING', ms);
-        return {
-          type: 'PING',
-          payload: {
-            droneIP: droneIP,
-            lagTime: ms
-          }
-        };
       }
     }), pingInterval);
 
@@ -171,8 +166,8 @@ if (ping) {
     });
   } catch(e) {
     console.log(e);
-    console.log("Can't start ping session. You may need to run with sudo.");
-  } 
+    console.log("Can't start ping session. You may need to run with sudo\n.");
+  }
 }
 
 ui_io.on('connect', (socket) => {
@@ -185,9 +180,9 @@ ui_io.on('connect', (socket) => {
     console.log("TEST " + data);
   });
 
-  socket.on('CHANGE_DRONE_STATE', (data) => {
-    controls_io.emit('CHANGE_DRONE_STATE', data);
-    console.log("THE DRONE is asked to " + data + ". Hey DRONE, are you listening?");
+  socket.on('CHANGE_DRONE_STATE', (state) => {
+    controls_io.emit('CHANGE_DRONE_STATE', state);
+    console.log("THE DRONE is asked to " + state + ". Hey DRONE, are you listening?");
   });
 
   socket.on('RUN_MISSION', (commands) => {

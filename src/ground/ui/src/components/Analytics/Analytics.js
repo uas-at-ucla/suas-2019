@@ -6,7 +6,7 @@ import downloadToBrowser from 'utils/downloadToBrowser';
 
 const mapStateToProps = state => {
   return {
-    telemetry: state.telemetry.data,
+    telemetry: state.telemetry.droneTelemetry,
     playback: state.telemetry.playback,
   };
 }

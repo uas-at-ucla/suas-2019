@@ -5,7 +5,7 @@ const port = 8081;
 
 const socket = socketIOClient('http://localhost:'+port+'/fake-drone', { transports: ['websocket'] });
 
-const telemetry = require('./test_telemetry.json').list;
+const telemetry = require('./test_telemetry.json');
 
 const sleepTime = 1000 / config.droneSensorsFrequency;
 let i = 0;

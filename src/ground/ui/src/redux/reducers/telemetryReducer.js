@@ -1,20 +1,20 @@
 // import dotProp from 'dot-prop-immutable';
 
 const initialState = {
-  data: null,
+  droneTelemetry: null,
   playback: false,
-  ping: null,
+  pingDelay: null,
   mapCenter: { lat: 38.147483, lng: -76.427778 }
 };
 
 export default function reducer(state=initialState, action) {
   switch (action.type) {
     case 'PING': {
-      return {...state, ping: action.payload};
+      return {...state, pingDelay: action.payload};
     }
     case 'TELEMETRY': {
       if (!state.playback) {
-        return {...state, data: action.payload};
+        return {...state, droneTelemetry: action.payload};
       } else {
         return state;
       }
@@ -23,15 +23,15 @@ export default function reducer(state=initialState, action) {
       return {...state, playback: !state.playback};
     }
     case 'PLAYBACK': {
-      return {...state, data: action.payload};
+      return {...state, droneTelemetry: action.payload};
     }
     case 'CENTER_ON_DRONE': {
-      if (state.data) {
+      if (state.droneTelemetry) {
         return {
           ...state,
           mapCenter: {
-            lat: state.data.telemetry.sensors.latitude,
-            lng: state.data.telemetry.sensors.longitude
+            lat: state.droneTelemetry.sensors.latitude,
+            lng: state.droneTelemetry.sensors.longitude
           }
         };
       } else {
