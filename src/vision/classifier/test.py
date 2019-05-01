@@ -4,8 +4,8 @@ import vision_classifier as vc
 import image_classification as ic
 
 IMG_SIZE = 224
-N_TRAIN = 10
-N_TEST = 2
+N_TRAIN = 1000
+N_TEST = 200
 
 print(os.getcwd())
 
@@ -18,8 +18,8 @@ def get_train_and_test(feature, n_train, n_test):
     return x_train, y_train, x_test, y_test
 
 #letter_seg('../targets/output/train/00.jpg')
-img = vc.shape_img('../targets/output/train/000.jpg')
-print(img.shape)
+#img = vc.shape_img('../targets/output/train/000.jpg')
+#print(img.shape)
 
 shape_model = ic.shape_model()
 letter_model = ic.letter_model()
@@ -47,9 +47,6 @@ letter_model = ic.train(letter_model, x_train, y_train, x_test, y_test,
                        model_name='letter_model')
 letter_model.evaluate(x=x_test, y=y_test)
 
-
-# TODO: save model
-
 # shape_model = vc.load_model('../models/shape/shape_model.h5')
 # letter_model = vc.load_model('../models/letter/letter_model.hdf5')
 
@@ -71,5 +68,4 @@ letter_model.evaluate(x=x_test, y=y_test)
 # # print('true: ', chr(yl_old[i].argmax() + 65))
 # print('true: ', LETTERS[predict(model, img).argmax()])
 
-# TODO: automate, set up to do some training
 
