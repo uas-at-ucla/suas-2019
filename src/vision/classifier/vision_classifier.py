@@ -6,7 +6,7 @@ import keras.models
 sys.path.insert(0, 'segmentation')
 import segmentation.letter_seg as ls
 
-IMG_SIZE = 224
+IMG_SIZE = 100
 
 SHAPE_INDEX = [
     "Circle",

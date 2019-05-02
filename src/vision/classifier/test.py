@@ -3,9 +3,9 @@ import segmentation.letter_seg as ls
 import vision_classifier as vc 
 import image_classification as ic
 
-IMG_SIZE = 224
-N_TRAIN = 1000
-N_TEST = 200
+IMG_SIZE = 100
+N_TRAIN = 10
+N_TEST = 2
 
 print(os.getcwd())
 
@@ -79,5 +79,6 @@ def eval_models(i):
     print('true: ', vc.LETTERS[y_let[i].argmax()])
 
 if __name__=='__main__':
-    eval_models(1)
+    train_models()
+    #eval_models(1)
 

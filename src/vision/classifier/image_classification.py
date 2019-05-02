@@ -12,7 +12,7 @@ import vision_classifier as vc
 
 N_LETTERS = 36 # include numbers
 N_SHAPES = 13
-IMG_SIZE = 224
+IMG_SIZE = 100
 
 def letter_model():
     K.set_image_data_format( 'channels_last' )
@@ -55,12 +55,12 @@ def shape_model():
     model.add(Conv2D(512, kernel_size=(3,3), padding='same', activation='relu', name="conv4_3"))
     model.add(MaxPooling2D((2,2), strides=(2,2)))
 
-    model.add(Conv2D(512, kernel_size=(3,3), padding='same', activation='relu', name="conv5_1"))
-    model.add(Conv2D(512, kernel_size=(3,3), padding='same', activation='relu', name="conv5_2"))
-    model.add(Conv2D(512, kernel_size=(3,3), padding='same', activation='relu', name="conv5_3"))
-    model.add(MaxPooling2D((2,2), strides=(2,2)))
+    # model.add(Conv2D(512, kernel_size=(3,3), padding='same', activation='relu', name="conv5_1"))
+    # model.add(Conv2D(512, kernel_size=(3,3), padding='same', activation='relu', name="conv5_2"))
+    # model.add(Conv2D(512, kernel_size=(3,3), padding='same', activation='relu', name="conv5_3"))
+    # model.add(MaxPooling2D((2,2), strides=(2,2)))
     
-    model.add(Conv2D(4096, kernel_size=(7,7), activation='relu', name='fc6'))
+    model.add(Conv2D(4096, kernel_size=(IMG_SIZE/16,IMG_SIZE/16), activation='relu', name='fc6'))
     model.add(Conv2D(4096, kernel_size=(1,1), activation='relu', name='fc7'))
     model.add(Conv2D(N_SHAPES, kernel_size=(1,1),  name='fc8'))
     model.add(Flatten())
