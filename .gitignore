@@ -37,3 +37,4 @@ core
 /tools/cache/
 /external/downloaded
 /output
+src/vision/targets/source_grass_tiles

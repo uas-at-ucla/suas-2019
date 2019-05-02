@@ -59,8 +59,9 @@ def shape_model():
     # model.add(Conv2D(512, kernel_size=(3,3), padding='same', activation='relu', name="conv5_2"))
     # model.add(Conv2D(512, kernel_size=(3,3), padding='same', activation='relu', name="conv5_3"))
     # model.add(MaxPooling2D((2,2), strides=(2,2)))
-    
-    model.add(Conv2D(4096, kernel_size=(IMG_SIZE/16,IMG_SIZE/16), activation='relu', name='fc6'))
+
+    width = IMG_SIZE//16
+    model.add(Conv2D(4096, kernel_size=(width, width), activation='relu', name='fc6'))
     model.add(Conv2D(4096, kernel_size=(1,1), activation='relu', name='fc7'))
     model.add(Conv2D(N_SHAPES, kernel_size=(1,1),  name='fc8'))
     model.add(Flatten())

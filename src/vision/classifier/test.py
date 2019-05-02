@@ -9,8 +9,8 @@ N_TEST = 2
 
 print(os.getcwd())
 
-train_dir = '../targets/output/train/'
-test_dir = '../targets/output/test/'
+train_dir = '../targets/output/train2/'
+test_dir = '../targets/output/test2/'
 
 def get_train_and_test(feature, n_train, n_test):
     (x_train, y_train) = ic.process_data(train_dir, n_train, feature)
