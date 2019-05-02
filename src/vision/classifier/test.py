@@ -48,7 +48,7 @@ def train_models():
                             model_name='letter_model')
     letter_model.evaluate(x=x_test, y=y_test)
 
-def eval_models():
+def eval_models(i):
     # shape_model = vc.load_model('../models/shape/shape_model.h5')
     # letter_model = vc.load_model('../models/letter/letter_model.hdf5')
     shape_model = vc.load_model('shape_model.hdf5')
@@ -63,21 +63,21 @@ def eval_models():
     x_let, y_let = ic.process_data(data_dir, 1000, 'letter')
     print(x_shape.shape, y_shape.shape, x_let.shape, y_let.shape)
 
-    shape_model.evaluate(x=x_shape, y=y_shape)
-    letter_model.evaluate(x=x_let, y=y_let)
+    print(shape_model.metrics_names)
+    print(shape_model.evaluate(x=x_shape, y=y_shape))
+    print(letter_model.metrics_names)
+    print(letter_model.evaluate(x=x_let, y=y_let))
 
-def test_image(i):
     # path = '../targets/output/old/%03d.jpg'%i
     path = '../targets/output/test/%04d.jpg'%i
-    print(predict(shape_model, vc.shape_img(path)))
+    print(vc.predict(shape_model, vc.shape_img(path)))
     print('predicted: ', vc.predict_shape(shape_model, vc.shape_img(path)))
-    print('true: ', vc.SHAPE_INDEX[ys_old[i].argmax()])
-    print(predict(letter_model, vc.letter_img(path)))
+    print('true: ', vc.SHAPE_INDEX[y_shape[i].argmax()])
+    print(vc.predict(letter_model, vc.letter_img(path)))
     print('predicted: ', vc.predict_letter(letter_model, vc.letter_img(path)))
     # print('true: ', chr(yl_old[i].argmax() + 65))
-    print('true: ', LETTERS[predict(model, img).argmax()])
+    print('true: ', vc.LETTERS[y_let[i].argmax()])
 
 if __name__=='__main__':
-    eval_models()
-    test_image(1)
+    eval_models(1)
 
