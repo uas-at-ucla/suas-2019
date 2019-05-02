@@ -111,9 +111,9 @@ void GroundControls::OnConnect() {
         // ground_data.set_allocated_mission(mission);
 
         // mission_message_queue_sender_.SendData(ground_data);
-        ::src::controls::ground_server::timeline::GroundProgram
+        ::src::controls::ground_controls::timeline::GroundProgram
             *ground_program =
-                new ::src::controls::ground_server::timeline::GroundProgram();
+                new ::src::controls::ground_controls::timeline::GroundProgram();
 
         ::std::string serialized_protobuf_mission = data->get_string();
 
@@ -122,7 +122,7 @@ void GroundControls::OnConnect() {
 
         ground_program->ParseFromString(serialized_protobuf_mission);
 
-        ::src::controls::ground_server::timeline::DroneProgram drone_program;
+        ::src::controls::ground_controls::timeline::DroneProgram drone_program;
         bool success =
             ground2drone_visitor_.Process(ground_program, drone_program);
         if (success) {

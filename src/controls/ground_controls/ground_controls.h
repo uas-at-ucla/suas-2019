@@ -24,8 +24,8 @@
 #include "src/controls/io/io.h"
 #include "src/controls/messages.pb.h"
 
-#include "src/controls/ground_server/timeline/ground2drone_visitor/ground2drone_visitor.h"
-#include "src/controls/ground_server/timeline/timeline_grammar.pb.h"
+#include "src/controls/ground_controls/timeline/ground2drone_visitor/ground2drone_visitor.h"
+#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 
 namespace src {
 namespace controls {
@@ -67,7 +67,7 @@ class GroundControls {
 
   ::lib::phased_loop::PhasedLoop phased_loop_;
 
-  ::src::controls::ground_server::timeline::ground2drone_visitor::
+  ::src::controls::ground_controls::timeline::ground2drone_visitor::
       Ground2DroneVisitor ground2drone_visitor_;
 };
 

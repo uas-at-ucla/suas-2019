@@ -31,7 +31,7 @@ cc_library(
     '//lib/ros:ros',
     "@socketio_client_cpp//:socketio_client_cpp",
 
-    '//src/controls/ground_server/timeline/ground2drone_visitor:ground2drone_visitor',
-    '//src/controls/ground_server/timeline:timeline_grammar_cc',
+    '//src/controls/ground_controls/timeline/ground2drone_visitor:ground2drone_visitor',
+    '//src/controls/ground_controls/timeline:timeline_grammar_cc',
   ],
 )
