@@ -22,6 +22,8 @@ cc_library(
     '//src/controls/loops:flight_loop_lib',
     '//src/controls:messages_cpp',
     '//src/controls/io:io_lib',
+    '//src/controls/ground_controls/timeline/ground2drone_visitor:ground2drone_visitor',
+    '//src/controls/ground_controls/timeline:timeline_grammar_cc',
     '//lib/mission_message_queue:mission_message_queue',
     '//lib/serial_comms:serial_comms_bridge',
     '//lib/serial_device:serial_device',
@@ -30,8 +32,5 @@ cc_library(
     '//lib/base64_tools:base64_tools',
     '//lib/ros:ros',
     "@socketio_client_cpp//:socketio_client_cpp",
-
-    '//src/controls/ground_controls/timeline/ground2drone_visitor:ground2drone_visitor',
-    '//src/controls/ground_controls/timeline:timeline_grammar_cc',
   ],
 )
