@@ -12,6 +12,7 @@ void on_fail() { socketio_ground_controls->OnFail(); }
 
 GroundControls::GroundControls() :
     running_(false),
+    ros_node_handle_(),
     sensors_subscriber_(ros_node_handle_.subscribe(
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
         &GroundControls::SensorsReceived, this)),
@@ -88,16 +89,51 @@ void GroundControls::ReadRFD900() {
 void GroundControls::OnConnect() {
   client_.socket("drone")->on(
       "compile_ground_program",
-      ::sio::socket::event_listener_aux(
-          [&](::std::string const &name, ::sio::message::ptr const &data,
-              bool isAck, ::sio::message::list &ack_resp) {
-            (void)name;
-            (void)isAck;
-            (void)ack_resp;
-            (void)data;
+      ::sio::socket::event_listener_aux([&](::std::string const &name,
+                                            ::sio::message::ptr const &data,
+                                            bool isAck,
+                                            ::sio::message::list &ack_resp) {
+        (void)name;
+        (void)isAck;
+        (void)ack_resp;
+        (void)data;
 
-            // TODO: Compile ground program into drone program.
-          }));
+        // TODO: Compile ground program into drone program.
+        // ::lib::mission_manager::GroundData ground_data;
+        // ::lib::mission_manager::Mission *mission =
+        //     new ::lib::mission_manager::Mission();
+        // ::std::string serialized_protobuf_mission = data->get_string();
+
+        // serialized_protobuf_mission =
+        //     ::lib::base64_tools::Decode(serialized_protobuf_mission);
+
+        // mission->ParseFromString(serialized_protobuf_mission);
+        // ground_data.set_allocated_mission(mission);
+
+        // mission_message_queue_sender_.SendData(ground_data);
+        ::src::controls::ground_server::timeline::GroundProgram
+            *ground_program =
+                new ::src::controls::ground_server::timeline::GroundProgram();
+
+        ::std::string serialized_protobuf_mission = data->get_string();
+
+        serialized_protobuf_mission =
+            ::lib::base64_tools::Decode(serialized_protobuf_mission);
+
+        ground_program->ParseFromString(serialized_protobuf_mission);
+
+        ::src::controls::ground_server::timeline::DroneProgram drone_program;
+        bool success =
+            ground2drone_visitor_.Process(ground_program, drone_program);
+        if (success) {
+          ::std::string serialized_drone_program;
+          drone_program.SerializeToString(&serialized_drone_program);
+          client_.socket("drone")->emit("compiled_drone_program",
+                                        serialized_drone_program);
+        } else {
+          ::std::cout << "drone program compilation failure" << ::std::endl;
+        }
+      }));
 }
 
 void GroundControls::OnFail() { ::std::cout << "socketio failed! :(\n"; }

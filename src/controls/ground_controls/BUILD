@@ -30,5 +30,8 @@ cc_library(
     '//lib/base64_tools:base64_tools',
     '//lib/ros:ros',
     "@socketio_client_cpp//:socketio_client_cpp",
+
+    '//src/controls/ground_server/timeline/ground2drone_visitor:ground2drone_visitor',
+    '//src/controls/ground_server/timeline:timeline_grammar_cc',
   ],
 )

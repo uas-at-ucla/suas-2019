@@ -15,23 +15,23 @@ namespace ground2drone_visitor {
 class Ground2DroneVisitor {
  public:
   Ground2DroneVisitor();
-  DroneProgram Process(GroundProgram *input_program);
+  bool Process(GroundProgram *input_program, DroneProgram& drone_program);
 
  private:
   void ConcatenateDroneProgramCommands(DroneProgram &base_program,
                                        DroneProgram new_program);
 
   // Drone language visitors.
-  DroneProgram Visit(GroundProgram *n);
-  DroneProgram Visit(GroundCommand *n);
-  DroneProgram Visit(WaypointCommand *n);
-  DroneProgram Visit(UgvDropCommand *n);
-  DroneProgram Visit(SurveyCommand *n);
-  DroneProgram Visit(OffAxisCommand *n);
-  DroneProgram Visit(WaitCommand *n);
+  bool Visit(GroundProgram *n, DroneProgram& drone_program);
+  bool Visit(GroundCommand *n, DroneProgram& drone_program);
+  bool Visit(WaypointCommand *n, DroneProgram& drone_program);
+  bool Visit(UgvDropCommand *n, DroneProgram& drone_program);
+  bool Visit(SurveyCommand *n, DroneProgram& drone_program);
+  bool Visit(OffAxisCommand *n, DroneProgram& drone_program);
+  bool Visit(WaitCommand *n, DroneProgram& drone_program);
 
   // Intermediate language visitors.
-  DroneProgram Visit(GotoCommand *n);
+  bool Visit(GotoCommand *n, DroneProgram& drone_program);
 };
 
 } // namespace ground2drone_visitor
