@@ -26,6 +26,7 @@ cc_library(
     '//lib/phased_loop:phased_loop',
     '//lib/proto_comms:proto_comms',
     '//lib/base64_tools:base64_tools',
+    '//lib/serial_device:serial_device',
     '//lib/ros:ros',
     "@mavros_msgs//:mavros_msgs",
     "@sensor_msgs//:sensor_msgs",

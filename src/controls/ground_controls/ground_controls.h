@@ -21,6 +21,7 @@
 #include "lib/base64_tools/base64_tools.h"
 #include "lib/phased_loop/phased_loop.h"
 #include "lib/proto_comms/proto_comms.h"
+#include "lib/serial_device/serial_device.h"
 #include "lib/serial_comms/serial_comms_bridge.h"
 #include "src/controls/loops/flight_loop.h"
 #include "src/controls/messages.pb.h"
@@ -55,7 +56,6 @@ class GroundControls {
   ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage> udp_connection_;
   ::lib::serial_device::SerialDevice<::src::controls::UasMessage> rfd900_connection_;
 
-  ::ros::Rate loop(50);
   ::sio::client client_;
 
   ::lib::phased_loop::PhasedLoop phased_loop_;

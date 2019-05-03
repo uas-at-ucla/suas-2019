@@ -13,8 +13,9 @@ void on_fail() { socketio_ground_controls->OnFail(); }
 void connect() { socketio_ground_controls->ConnectToGround(); }
 
 GroundControls::GroundControls() :
-    phased_loop_(1e2),
     udp_connection_("udp://:*5555", 1),
+    rfd900_connection_("udp://:*5555", 57600, 0),
+    phased_loop_(1e2),
     running_(false) {
 
   socketio_ground_controls = this;
@@ -37,8 +38,6 @@ void GroundControls::ConnectToGround() {
 }
 
 void GroundControls::StateReceived(const ::mavros_msgs::State state) {
-  sensors_ = ::src::controls::Sensors();
-
   // TODO(comran): Fix this.
   (void)state;
   // sensors_.set_mode(state.mode);
@@ -74,7 +73,6 @@ void GroundControls::RunIteration() {
     // TODO: check which one was received earliest
     ::std::cout << "Got both rfd900 and udp connection" << ::std::endl;
   }
-
 }
 
 void GroundControls::OnConnect() {
