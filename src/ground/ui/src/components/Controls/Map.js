@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Marker, InfoWindow, Circle, Polygon, Polyline, InfoBox } from 'react-google-maps';
+import { Marker, InfoWindow, Circle, Polygon, Polyline } from 'react-google-maps';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
