@@ -3,7 +3,7 @@ import { Marker, InfoWindow, Circle, Polygon, Polyline, InfoBox } from 'react-go
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
-import GoogleMap from 'components/Utils/GoogleMap/GoogleMap';
+import GoogleMap from 'components/utils/GoogleMap/GoogleMap';
 import missionActions from 'redux/actions/missionActions';
 import { selector } from 'redux/store';
 
@@ -67,7 +67,7 @@ class Map extends Component {
       searchCenterLng =  searchCenterLng/searchNum;
       searchCenterLat =  searchCenterLat/searchNum;
     }
-    const commandPointPolyCoords = this.props.commandPoints.map((commandPoint, index) => {
+    const commandPointPolyCoords = this.props.commandPoints.filter((p) => p).map((commandPoint, index) => {
       return commandPoint.marker.position;
     })
 

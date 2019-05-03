@@ -71,6 +71,10 @@ LedStrip::~LedStrip() {
 }
 
 bool LedStrip::Render() {
+  // 11 arm leds
+  // 10 gps leds
+  // 10 battery leds
+
   if (::lib::phased_loop::GetCurrentTime() < next_led_write_) {
     return true;
   }
@@ -84,8 +88,8 @@ bool LedStrip::Render() {
                                1.0 / kDisarmedBlinkFrequency) <
                        1.0 / (2 * kDisarmedBlinkFrequency);
 
-    for (int i = 0; i < 5; i++) {
-      int current_led = 9 - i;
+    for (int i = 0; i < kNumberOfArmDisarmLeds; i++) {
+      int current_led = i;
       if (armed_) {
         SetLed(current_led, 255, 0, 0);
       } else if (should_blink) {
@@ -96,13 +100,19 @@ bool LedStrip::Render() {
     }
   }
 
+  for (int i = kNumberOfArmDisarmLeds;
+       i < kNumberOfLeds - kNumberOfBatteryLevelLeds + 1; i++) {
+    SetLed(i, 10, 10, 10);
+  }
+
   // Render the battery level indicator.
   {
-    int solid = ::std::ceil((battery_percentage_ - 0.1) / 0.2);
+    int solid =
+        ::std::ceil((battery_percentage_ - 0.1) * kNumberOfBatteryLevelLeds);
     bool blinky = ::std::fmod(battery_percentage_, 0.2) < 0.1;
 
-    for (int i = 0; i < 5; i++) {
-      int current_led = i;
+    for (int i = 0; i < kNumberOfBatteryLevelLeds; i++) {
+      int current_led = kNumberOfLeds - i;
 
       bool should_blink = i == solid && blinky &&
                           ::std::fmod(::lib::phased_loop::GetCurrentTime(),
@@ -149,7 +159,7 @@ bool LedStrip::Render() {
                    (kLedWriterFramesPerSecond * kStartupSequenceSeconds);
 
       if (should_light) {
-        SetLed(i, 128, 0, 128);
+        SetLed(i, 255, 255, 255);
       } else {
         SetLed(i, 0, 0, 0);
       }

@@ -6,40 +6,35 @@ import AttitudeIndicator from './AttitudeIndicator/AttitudeIndicator';
 import Altimeter from './Altimeter/Altimeter';
 import Readout from './Readout';
 
-
 const mapStateToProps = state => {
   return {
     telemetry: state.telemetry,
-    ping: state.telemetry.ping
   };
 };
 
 class Telemetry extends Component {
-  constructor(props) {
-    super(props);
-
-    this.update(JSON.parse(JSON.stringify(this.props.telemetry.data)));
-  }
-
-
-  update(rawTelmet) {
+  update() {
+    let rawTelmet = this.props.telemetry.droneTelemetry;
+    let pingDelay = this.props.telemetry.pingDelay;
     if (rawTelmet != null) {
       this.telmet = {
-        navX: rawTelmet["telemetry"]["sensors"]["gyroX"],
-        navY: rawTelmet["telemetry"]["sensors"]["gyroY"],
-        navZ: rawTelmet["telemetry"]["sensors"]["gyroZ"],
+        pingDelay: pingDelay,
+        navX: rawTelmet["sensors"]["gyroX"],
+        navY: rawTelmet["sensors"]["gyroY"],
+        navZ: rawTelmet["sensors"]["gyroZ"],
         speed: 0,
-        lat: rawTelmet["telemetry"]["sensors"]["latitude"],
-        long: rawTelmet["telemetry"]["sensors"]["longitude"],
+        lat: rawTelmet["sensors"]["latitude"],
+        long: rawTelmet["sensors"]["longitude"],
         heading: 0,
-        alt: rawTelmet["telemetry"]["sensors"]["relativeAltitude"],
-        satCount: rawTelmet["telemetry"]["sensors"]["gpsSatelliteCount"],
+        alt: rawTelmet["sensors"]["relativeAltitude"],
+        satCount: rawTelmet["sensors"]["gpsSatelliteCount"],
         gpsHdop: 0,
         gpsVdop: 0,
       }
     }
     else {
       this.telmet = {
+        pingDelay: null,
         navX: 0,
         navY: 0,
         navZ: 0,
@@ -55,9 +50,12 @@ class Telemetry extends Component {
     }
   }
 
-
   readoutData() {
     return [
+      {
+        key: "Ping",
+        values: [this.telmet.pingDelay, " ms"]
+      },
       {
         key: "Speed",
         values: [this.telmet.speed.toFixed(3) , " mph"]
@@ -77,11 +75,8 @@ class Telemetry extends Component {
     ];
   }
 
-
   render() {
-    let telmet = JSON.parse(JSON.stringify(this.props.telemetry.data));
-
-    this.update(telmet);
+    this.update();
 
     // console.log(telmet);
     // console.log(this.readoutData());

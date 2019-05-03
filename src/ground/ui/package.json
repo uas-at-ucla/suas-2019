@@ -2,7 +2,7 @@
   "name": "FlightDeck",
   "version": "0.1.0",
   "private": true,
-  "main": "main.js",
+  "main": "electron.js",
   "homepage": "./",
   "dependencies": {
     "electron-is-dev": "^1.0.1"

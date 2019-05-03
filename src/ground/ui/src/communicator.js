@@ -18,16 +18,16 @@ class Communicator {
       this.store.dispatch({ type: 'GND_SERVER_DISCONNECTED' });
     });
 
-    this.socket.on('TELEMETRY', (data) => {
-      this.store.dispatch({ type: 'TELEMETRY', payload: data });
+    this.socket.on('TELEMETRY', (telemetry) => {
+      this.store.dispatch({ type: 'TELEMETRY', payload: telemetry });
     });
 
-    this.socket.on('INTEROP_DATA', (data) => {
-      this.store.dispatch({ type: 'INTEROP_DATA', payload: data });
+    this.socket.on('INTEROP_DATA', (interopData) => {
+      this.store.dispatch({ type: 'INTEROP_DATA', payload: interopData });
     });
 
-    this.socket.on('PING', (data) => {
-      this.store.dispatch({ type: 'PING', payload: data });
+    this.socket.on('PING', (delay) => {
+      this.store.dispatch({ type: 'PING', payload: delay });
     });
   }
 

@@ -6,13 +6,15 @@ import downloadToBrowser from 'utils/downloadToBrowser';
 
 const mapStateToProps = state => {
   return {
-    telemetry: state.telemetry.data,
+    telemetry: state.telemetry.droneTelemetry,
     playback: state.telemetry.playback,
   };
 }
 
+var loadedTelemetry;
 var telemetryData = [];
 var recording = false;
+var usingLoaded = false;
 
 const mapDispatchToProps = {
   togglePlayback: function() {
@@ -21,22 +23,40 @@ const mapDispatchToProps = {
 }; //TODO Make action for recording telemetry, and action for starting playback
 
 class Analytics extends Component {
-  render() {
-    if (recording){
+  constructor(props) {
+    super(props);
+    this.handleSubmit = this.handleSubmit.bind(this);
+    this.fileInput = React.createRef();
+  }
+
+  componentDidUpdate(prevProps) {
+    if (recording && prevProps.telemetry !== this.props.telemetry) {
       telemetryData.push(this.props.telemetry)
     }
+  }
+
+  render() {
     return (
       <div className="Analytics">
-        Telemetry: {JSON.stringify(this.props.telemetry)}
+
+        Telemetry: {this.stringifyTelemetry}
         
         <div>
           <button onClick={this.toggleRecord}>
             Record!!! / Stop Recording (and save to file)!!
           </button>
-          <button>
+        </div>
+
+        <div>
+        <input type="file" ref={this.fileInput} />
+        </div>
+
+        <div>
+          <button onClick={this.handleSubmit}>
             Load Telemetry File / Unload File
           </button>
-          <button>
+          
+          <button onClick={this.runLoaded}>
             Run Loaded Telemetry / Pause Telemetry
           </button>
         </div>
@@ -74,6 +94,32 @@ class Analytics extends Component {
       this.downloadTelemetry();
     }
   }
+
+  handleSubmit(event) {
+    event.preventDefault();
+    alert(
+      `Selected file - ${
+        this.fileInput.current.files[0].name
+      }`
+    );
+  }
+
+  runLoaded = () => {
+    var loaded = JSON.stringify(this.fileInput.current.files[0]);
+
+    loadedTelemetry = JSON.parse(loaded);
+
+    usingLoaded = true
+  }
+
+  stringifyTelemetry = string => {
+    if (!(this.usingLoaded)) {
+      return JSON.stringify(this.props.telemetry)
+    }else{
+      return JSON.stringify(this.loadedTelemetry)
+    }
+  }
+
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(Analytics);

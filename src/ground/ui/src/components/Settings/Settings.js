@@ -8,8 +8,8 @@ import {
 import { Marker } from "react-google-maps";
 
 import "./Settings.css";
-import GoogleMap from "components/Utils/GoogleMap/GoogleMap";
-import UasLogo from "components/Utils/UasLogo/UasLogo";
+import GoogleMap from "components/utils/GoogleMap/GoogleMap";
+import UasLogo from "components/utils/UasLogo/UasLogo";
 import settingsActions from "redux/actions/settingsActions";
 
 const mapStateToProps = state => {

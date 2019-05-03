@@ -14,8 +14,7 @@ const ::std::string kBase64Chars = //
 } // namespace
 
 ::std::string Decode(::std::string const &encoded_string);
-::std::string Encode(const unsigned char *src, size_t len);
-::std::string Encode(::std::string str);
+::std::string Encode(::std::string const &str);
 bool IsBase64(unsigned char c);
 
 } // namespace base64_tools

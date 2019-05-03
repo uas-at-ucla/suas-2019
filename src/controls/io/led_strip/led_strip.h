@@ -18,7 +18,9 @@ namespace {
 static const int kLedWriterFramesPerSecond = 30;
 static const double kLedWriterPeriod = 1.0 / kLedWriterFramesPerSecond;
 
-static const int kNumberOfLeds = 10;
+static const int kNumberOfLeds = 31;
+static const int kNumberOfBatteryLevelLeds = 11;
+static const int kNumberOfArmDisarmLeds = 11;
 static const int kLedStripGpioPin = 10;
 static const int kLedStripDma = 10;
 static const int kLedStripType = WS2811_STRIP_GBR;

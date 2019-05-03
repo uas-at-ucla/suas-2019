@@ -27,8 +27,6 @@ message Sensors {
   optional bool armed                                                      = 22;
   optional string autopilot_state                                          = 23;
   optional double last_gps                                                 = 24;
-
-  // required string mode                                                     = 25;
 }
 
 message Goal {
@@ -73,6 +71,13 @@ message Output {
   required bool trigger_land                                               = 17;
   required bool trigger_arm                                                = 18;
   required bool trigger_disarm                                             = 19;
+}
+
+message UgvSensors {
+  required double time                                                     = 1;
+  required double latitude                                                 = 2;
+  required double longitude                                                = 3;
+  required double altitude                                                 = 4;
 }
 
 message UasMessage {

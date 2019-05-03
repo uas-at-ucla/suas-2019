@@ -1,34 +1,32 @@
 # IMPORTANT: run `pigpiod` from the command line before running this script
 import pigpio
 from time import sleep
+import signal
+
+SPR = 800  # Steps per Revolution (360 / 0.45)
 
 DIR = 2    # Direction GPIO Pin
-STEP = 15  # Step GPIO Pin
+STEP = 18  # Step GPIO Pin
+# PWM 0: GPIO 12 or 18
+# PWM 1: GPIO 13 or 19
+
 CW = 1     # Clockwise Rotation
 CCW = 0    # Counterclockwise Rotation
-SPR = 800   # Steps per Revolution (360 / 0.45)
+DUTY_CYCLE = 500000 # 50%
 
 pi = pigpio.pi()
+
+def signal_handler(sig, frame):
+    pi.hardware_PWM(STEP, 0, 0)
+signal.signal(signal.SIGINT, signal_handler)
 
 pi.set_mode(DIR, pigpio.OUTPUT)
 pi.set_mode(STEP, pigpio.OUTPUT)
 pi.write(DIR, CW)
 
-step_count = SPR/4 # quarter turn
-delay = .01
+Hz = SPR/10 # 1/10 of a revolution per second
+pi.hardware_PWM(STEP, Hz, DUTY_CYCLE)
 
-for x in range(step_count):
-    pi.write(STEP, 1)
-    sleep(delay)
-    pi.write(STEP, 0)
-    sleep(delay)
+sleep(100000000000)
 
-# sleep(.5)
-# GPIO.output(DIR, CCW)
-# for x in range(step_count):
-#     GPIO.output(STEP, GPIO.HIGH)
-#     sleep(delay)
-#     GPIO.output(STEP, GPIO.LOW)
-#     sleep(delay)
-
-# GPIO.cleanup()
+signal_handler(None, None)

@@ -4,6 +4,7 @@
 #include <fstream>
 #include <functional>
 #include <iostream>
+#include <mutex>
 #include <queue>
 #include <stdio.h>
 #include <stdlib.h>
@@ -41,7 +42,7 @@ template <typename T> class ProtoSender {
   }
 
   void Send(T proto_message) {
-    assert(connected_);
+    // assert(connected_);
 
     ::std::string proto_string;
     proto_message.SerializeToString(&proto_string);
@@ -91,7 +92,25 @@ template <class T> class ProtoReceiver {
 
   void Quit() { run_ = false; }
   bool HasMessages() { return received_messages_.size() > 0; }
-  T GetLatest() { return received_messages_.back(); }
+  bool GetLatestProto(T &proto_msg) {
+    ::std::lock_guard<::std::mutex> lock(proto_queue_mutex_);
+
+    // Check for empty queue
+    if (received_messages_.empty()) {
+      return false;
+    }
+
+    // Set param to front of queue
+    proto_msg.CopyFrom(received_messages_.front());
+
+    // Empty queue
+    while (!received_messages_.empty()) {
+      received_messages_.pop();
+    }
+
+    return true;
+  }
+
   ::std::queue<T> GetQueue() { return received_messages_; }
 
  private:
@@ -129,6 +148,8 @@ template <class T> class ProtoReceiver {
 
   size_t max_size_;
   ::std::queue<T> received_messages_;
+
+  ::std::mutex proto_queue_mutex_;
 };
 
 } // namespace proto_comms
