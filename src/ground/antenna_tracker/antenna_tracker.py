@@ -8,7 +8,7 @@ import time
 import signal
 import math
 
-import stepper_utils
+from stepper_utils import StepperUtils
 
 # GPIO Pins
 SERVO = 23
@@ -28,6 +28,8 @@ def servo_pulsewidth(fraction): # 0 = retracted, 1 = extended
 pi = None
 if pigpio:
     pi = pigpio.pi()
+
+stepper_utils = StepperUtils(pigpio, pi, STEPPER_SPR, STEPPER_STEP, STEPPER_DIR)
 
 if pigpio:
     pi.set_mode(SERVO, pigpio.OUTPUT)
@@ -52,6 +54,10 @@ antenna_lat = None
 antenna_lng = None
 position_configured = False
 def on_configure_pos(antenna_pos):
+    global FEET_PER_DEGREE_LNG
+    global antenna_lat
+    global antenna_lng
+    global position_configured
     antenna_lat = antenna_pos['lat']
     antenna_lng = antenna_pos['lng']
     FEET_PER_DEGREE_LNG = FEET_PER_DEGREE_LAT * math.cos(math.radians(antenna_lat))
@@ -59,8 +65,10 @@ def on_configure_pos(antenna_pos):
         pi.write(STEPPER_SLEEP, 1) # wake up
     position_configured = True
 
+MAX_REVOLUTIONS = 2 # Don't tangle the wires!
 stepper_pos = 0 # East (must be calibrated on startup)
 def track(drone_pos):
+    global stepper_pos
     if not position_configured:
         return
 
@@ -72,21 +80,27 @@ def track(drone_pos):
     y_dist = (drone_lat - antenna_lat) * FEET_PER_DEGREE_LAT
     if (not pigpio) or (not pi.wave_tx_busy()):
         new_stepper_pos = (math.degrees(math.atan2(y_dist, x_dist)) * STEPPER_SPR) // 360
-        print("stepper: {}", new_stepper_pos)
-        while (new_stepper_pos - stepper_pos > SPR/2):
-            new_stepper_pos -= SPR
-        while (new_stepper_pos - stepper_pos < -SPR/2):
-            new_stepper_pos += SPR
+        while (new_stepper_pos - stepper_pos > STEPPER_SPR/2):
+            new_stepper_pos -= STEPPER_SPR
+        while (new_stepper_pos - stepper_pos < -STEPPER_SPR/2):
+            new_stepper_pos += STEPPER_SPR
+        while (new_stepper_pos > STEPPER_SPR * MAX_REVOLUTIONS):
+            new_stepper_pos -= STEPPER_SPR
+        while (new_stepper_pos < -STEPPER_SPR * MAX_REVOLUTIONS):
+            new_stepper_pos += STEPPER_SPR
+        print("stepper:", new_stepper_pos)
         if pigpio:
-            stepper_utils.move_stepper(pi, STEPPER_SPR, new_stepper_pos - stepper_pos, STEPPER_STEP, STEPPER_DIR)
+            stepper_utils.move_stepper(new_stepper_pos - stepper_pos)
         stepper_pos = new_stepper_pos
     
     ground_dist = math.sqrt(x_dist**2 + y_dist**2)
-    pitch = math.degrees(atan2(drone_alt, ground_dist))
+    pitch = math.degrees(math.atan2(drone_alt, ground_dist))
     servo_extension = 0 # 0 to 1
     servo_extension = pitch/90 # temporary. TODO actual calculation
-    print("servo: {}", servo_extension)
+    print("servo:", servo_extension)
     if pigpio:
         pi.set_servo_pulsewidth(SERVO, servo_pulsewidth(servo_extension))
 
-on_shutdown(None, None)
+if __name__ == "__main__":
+    import socketIO_client_nexus
+    on_shutdown(None, None)
