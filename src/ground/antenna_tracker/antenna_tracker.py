@@ -1,43 +1,92 @@
+# IMPORTANT: run `pigpiod` from the command line before running this script
+pigpio = None
+try:
+    import pigpio
+except:
+    print("Dry run")
+import time
+import signal
 import math
-gs_lat = float(input("Latitude: "))
-gs_lon = float(input("Longitude: "))
 
-# getting telemetry from drone/ground station
-dr_lat = 0 #TODO
-dr_lon = 0 #TODO
+import stepper_utils
 
-#Yaw
-yaw_angle = 0.00 # using telemetry and lat/long to get angles
-R = 6371.00 * 10 ** 6
-phi1 = math.radians(gs_lat)
-phi2 = math.radians(dr_lat) # height comes in as h, drone co-ordinates as dr_lat/dr_lon
-delta_phi = math.radians(dr_lat - gs_lat)
-delta_lambda = math.radians(dr_lon - gs_lon)
+# GPIO Pins
+SERVO = 23
+STEPPER_DIR = 2
+STEPPER_STEP = 18
+STEPPER_SLEEP = 14
+# PWM 0: GPIO 12 or 18
+# PWM 1: GPIO 13 or 19
 
-a = math.sin(delta_phi / 2) * math.sin(delta_phi / 2) + math.cos(phi1) * math.cos(phi2) * math.sin(delta_lambda / 2) * math.sin(delta_lambda / 2)
+STEPPER_SPR = 800  # Steps per Revolution (360 / 0.45)
 
-c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
+SERVO_OFF = 0
 
-dist_dr_gs = R * c
+def servo_pulsewidth(fraction): # 0 = retracted, 1 = extended
+    return 1000 + 1000*fraction
 
-yaw_angle = yaw_angle + math.atan(h/dist_dr_gs)
+pi = None
+if pigpio:
+    pi = pigpio.pi()
 
-# controlling the servo (calculations of how far it needs to go)
+if pigpio:
+    pi.set_mode(SERVO, pigpio.OUTPUT)
+    pi.set_mode(STEPPER_DIR, pigpio.OUTPUT)
+    pi.set_mode(STEPPER_STEP, pigpio.OUTPUT)
+    pi.set_mode(STEPPER_SLEEP, pigpio.OUTPUT)
 
-# intialize servo_ext and int_yaw
-# k =  dist. bw hinge and connecting pt / sin(angle bw servo and base)
-# servo_ext = servo_ext + (sin (yaw_angle) - sin (int_yaw))/k
+def on_shutdown(sig, frame):
+    if pigpio:
+        pi.wave_tx_stop()
+        pi.wave_clear()
+        pi.write(STEPPER_SLEEP, 0)
+        pi.set_servo_pulsewidth(SERVO, SERVO_OFF)
+        pi.stop()
+signal.signal(signal.SIGINT, on_shutdown)
 
-#Pitch
-x_gs = R * math.cos(math.radians(gs_lat)) * math.cos(math.radians(gs_lon))
-y_gs = R * math.cos(math.radians(gs_lat)) * math.sin(math.radians(gs_lon))
 
-x_dr = R * math.cos(math.radians(dr_lat)) * math.cos(math.radians(dr_lon))
-y_dr = R * math.cos(math.radians(dr_lat)) * math.sin(math.radians(dr_lon))
+FEET_PER_METER = 3.28084
+FEET_PER_DEGREE_LAT = FEET_PER_METER * 10**7 / 90 # The French originally defined the meter so that 10^7 meters would be the distance along the Paris meridian from the equator to the north pole.
+FEET_PER_DEGREE_LNG = None
+antenna_lat = None
+antenna_lng = None
+position_configured = False
+def on_configure_pos(antenna_pos):
+    antenna_lat = antenna_pos['lat']
+    antenna_lng = antenna_pos['lng']
+    FEET_PER_DEGREE_LNG = FEET_PER_DEGREE_LAT * math.cos(math.radians(antenna_lat))
+    if pigpio:
+        pi.write(STEPPER_SLEEP, 1) # wake up
+    position_configured = True
 
-#int_pitch = 0.00
-pitch_angle = 0.00
-change_pos = (y_dr - y_gs) / (x_dr - x_gs)
-pitch_angle = pitch_angle - int_pitch + atan(change_pos)
+stepper_pos = 0 # East (must be calibrated on startup)
+def track(drone_pos):
+    if not position_configured:
+        return
 
-# output into motors to change to those angles
+    drone_lat = drone_pos['lat']
+    drone_lng = drone_pos['lng']
+    drone_alt = drone_pos['alt'] * FEET_PER_METER
+
+    x_dist = (drone_lng - antenna_lng) * FEET_PER_DEGREE_LNG
+    y_dist = (drone_lat - antenna_lat) * FEET_PER_DEGREE_LAT
+    if (not pigpio) or (not pi.wave_tx_busy()):
+        new_stepper_pos = (math.degrees(math.atan2(y_dist, x_dist)) * STEPPER_SPR) // 360
+        print("stepper: {}", new_stepper_pos)
+        while (new_stepper_pos - stepper_pos > SPR/2):
+            new_stepper_pos -= SPR
+        while (new_stepper_pos - stepper_pos < -SPR/2):
+            new_stepper_pos += SPR
+        if pigpio:
+            stepper_utils.move_stepper(pi, STEPPER_SPR, new_stepper_pos - stepper_pos, STEPPER_STEP, STEPPER_DIR)
+        stepper_pos = new_stepper_pos
+    
+    ground_dist = math.sqrt(x_dist**2 + y_dist**2)
+    pitch = math.degrees(atan2(drone_alt, ground_dist))
+    servo_extension = 0 # 0 to 1
+    servo_extension = pitch/90 # temporary. TODO actual calculation
+    print("servo: {}", servo_extension)
+    if pigpio:
+        pi.set_servo_pulsewidth(SERVO, servo_pulsewidth(servo_extension))
+
+on_shutdown(None, None)
