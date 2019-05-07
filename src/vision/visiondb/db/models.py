@@ -32,9 +32,7 @@ class Color(models.Model):
 class Character(models.Model):
     id = models.IntegerField(blank = False, unique = True, primary_key = True);
     char = models.IntegerField()
-class Orientation(models.Model):
-    id = models.IntegerField(blank = False, unique = True, primary_key = True);
-    orientation = models.IntegerField()
+
 class Color(models.Model):
     id = models.IntegerField(blank = False, unique = True, primary_key = True);
     color = models.IntegerField()

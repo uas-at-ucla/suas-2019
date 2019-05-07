@@ -1,12 +1,12 @@
 from django.shortcuts import render
 
-from rest_framework import generics
+from rest_framework import viewsets
 from .serializers import DataSerializer, ShapeSerializer, CharacterSerializer, OrientationSerializer, ColorSerializer
 from .models import Data, Shape, Character, Orientation, Color
 
 # Create your views here.
 
-class CreateData(generics.ListCreateAPIView):
+class CreateData(viewsets.ModelViewSet):
     queryset =  Data.objects.all()
     serializer_class = DataSerializer
 
@@ -14,7 +14,7 @@ class CreateData(generics.ListCreateAPIView):
         serializer.save()
 
 
-class CreateShape(generics.ListCreateAPIView):
+class CreateShape(viewsets.ModelViewSet):
     queryset =  Shape.objects.all()
     serializer_class = ShapeSerializer
 
@@ -22,7 +22,7 @@ class CreateShape(generics.ListCreateAPIView):
         serializer.save()
 
 
-class CreateColor(generics.ListCreateAPIView):
+class CreateColor(viewsets.ModelViewSet):
     queryset =  Color.objects.all()
     serializer_class = ColorSerializer
 
@@ -30,7 +30,7 @@ class CreateColor(generics.ListCreateAPIView):
         serializer.save()
 
 
-class CreateCharacter(generics.ListCreateAPIView):
+class CreateCharacter(viewsets.ModelViewSet):
     queryset =  Character.objects.all()
     serializer_class = CharacterSerializer
 
@@ -38,10 +38,9 @@ class CreateCharacter(generics.ListCreateAPIView):
         serializer.save()
 
 
-class CreateOrientation(generics.ListCreateAPIView):
+class CreateOrientation(viewsets.ModelViewSet):
     queryset =  Orientation.objects.all()
     serializer_class = OrientationSerializer
 
     def perform_create(self, serializer):
         serializer.save()
-

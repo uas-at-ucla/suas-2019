@@ -1,15 +1,14 @@
 from django.conf.urls import url, include
 from rest_framework.urlpatterns import format_suffix_patterns
+from rest_framework import routers
 from .views import CreateData, CreateShape, CreateColor, CreateCharacter, CreateOrientation
 
 
-urlpatterns={
-    url(r'^data/$', CreateData.as_view(), name="data"),
-    url(r'^shape/$', CreateShape.as_view(), name="shape"),
-    url(r'^char/$', CreateCharacter.as_view(), name="char"),
-    url(r'^orientation/$', CreateOrientation.as_view(), name="orient"),
-    url(r'^color/$', CreateColor.as_view(), name="color"),
+router = routers.DefaultRouter(trailing_slash = False)
+router.register('data', CreateData)
+router.register('shape', CreateShape)
+router.register('color', CreateColor)
+router.register('character', CreateCharacter)
+router.register('orientation', CreateOrientation)
 
-}
-
-urlpatterns = format_suffix_patterns(urlpatterns)
+urlpatterns = router.urls
