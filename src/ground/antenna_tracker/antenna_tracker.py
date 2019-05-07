@@ -44,6 +44,7 @@ def on_shutdown(sig, frame):
         pi.write(STEPPER_SLEEP, 0)
         pi.set_servo_pulsewidth(SERVO, SERVO_OFF)
         pi.stop()
+    exit()
 signal.signal(signal.SIGINT, on_shutdown)
 
 
@@ -53,7 +54,7 @@ FEET_PER_DEGREE_LNG = None
 antenna_lat = None
 antenna_lng = None
 position_configured = False
-def on_configure_pos(antenna_pos):
+def configure_pos(antenna_pos):
     global FEET_PER_DEGREE_LNG
     global antenna_lat
     global antenna_lng
@@ -72,9 +73,9 @@ def track(drone_pos):
     if not position_configured:
         return
 
-    drone_lat = drone_pos['lat']
-    drone_lng = drone_pos['lng']
-    drone_alt = drone_pos['alt'] * FEET_PER_METER
+    drone_lat = drone_pos['latitude']
+    drone_lng = drone_pos['longitude']
+    drone_alt = drone_pos['relative_altitude'] * FEET_PER_METER
 
     x_dist = (drone_lng - antenna_lng) * FEET_PER_DEGREE_LNG
     y_dist = (drone_lat - antenna_lat) * FEET_PER_DEGREE_LAT
@@ -97,10 +98,45 @@ def track(drone_pos):
     pitch = math.degrees(math.atan2(drone_alt, ground_dist))
     servo_extension = 0 # 0 to 1
     servo_extension = pitch/90 # temporary. TODO actual calculation
-    print("servo:", servo_extension)
+    print("pitch:", pitch, "   servo:", servo_extension)
     if pigpio:
         pi.set_servo_pulsewidth(SERVO, servo_pulsewidth(servo_extension))
 
+
 if __name__ == "__main__":
-    import socketIO_client_nexus
+    import socketio
+    import os
+
+    server_ip = 'localhost'
+    if os.uname().machine.startswith("arm"): # if on raspberry pi
+        server_ip = '192.168.2.20' # static ip of ground station
+
+    sio = socketio.Client() 
+
+    @sio.on('connect', namespace='/tracky')
+    def on_connect():
+        print("connected to ground server")
+
+    @sio.on('disconnect', namespace='/tracky')
+    def on_disconnect():
+        print("disconnected from ground server!") 
+
+    @sio.on('CONFIGURE_POS', namespace='/tracky')
+    def on_configure_pos(antenna_pos):
+        configure_pos(antenna_pos)
+
+    @sio.on('DRONE_POS', namespace='/tracky')
+    def on_drone_pos(drone_pos):
+        track(drone_pos)
+
+    while True:
+        try:
+            sio.connect('http://'+server_ip+':8081', namespaces=['/tracky'])
+            break
+        except:
+            print("Can't connect to ground server. Retrying in 2 seconds...")
+            sio.sleep(2)
+
+    sio.wait()
+
     on_shutdown(None, None)

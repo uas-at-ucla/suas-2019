@@ -19,15 +19,15 @@ class Telemetry extends Component {
     if (rawTelmet != null) {
       this.telmet = {
         pingDelay: pingDelay,
-        navX: rawTelmet["sensors"]["gyroX"],
-        navY: rawTelmet["sensors"]["gyroY"],
-        navZ: rawTelmet["sensors"]["gyroZ"],
+        navX: rawTelmet["sensors"]["gyro_x"],
+        navY: rawTelmet["sensors"]["gyro_y"],
+        navZ: rawTelmet["sensors"]["gyro_z"],
         speed: 0,
         lat: rawTelmet["sensors"]["latitude"],
         long: rawTelmet["sensors"]["longitude"],
         heading: 0,
-        alt: rawTelmet["sensors"]["relativeAltitude"],
-        satCount: rawTelmet["sensors"]["gpsSatelliteCount"],
+        alt: rawTelmet["sensors"]["relative_altitude"],
+        satCount: rawTelmet["sensors"]["gps_satellite_count"],
         gpsHdop: 0,
         gpsVdop: 0,
       }

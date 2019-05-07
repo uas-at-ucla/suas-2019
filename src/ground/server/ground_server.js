@@ -29,6 +29,7 @@ const io = socketIOServer(port);
 // create namespaces
 const ui_io = io.of('/ui');
 const controls_io = io.of('/ground-controls');
+const tracky_io = io.of('/tracky');
 const fake_drone_io = io.of('/fake-drone');
 
 // For decoding and encoding drone messages
@@ -94,6 +95,7 @@ controls_io.on('connect', (socket) => {
       if (telemetryCount >= uiSendInterval[frequency]) {
         if (config.verbose) console.log(JSON.stringify(telemetry, null, 2));
         ui_io.emit('TELEMETRY', telemetry);
+        tracky_io.emit('DRONE_POS', telemetry.sensors);
         telemetryCount = 0;
       }
     }
@@ -122,6 +124,7 @@ fake_drone_io.on('connect', (socket) => {
       if (fakeTelemetryCount >= uiSendInterval[config.droneSensorsFrequency]) {
         if (config.verbose) console.log(JSON.stringify(telemetry, null, 2));
         ui_io.emit('TELEMETRY', telemetry);
+        tracky_io.emit('DRONE_POS', telemetry.sensors);
         fakeTelemetryCount = 0;
       }
       fakeTelemetryCount++;
@@ -198,7 +201,12 @@ ui_io.on('connect', (socket) => {
   socket.on('CONNECT_TO_INTEROP', (cred) => {
     console.log('CONNECT TO INTEROP');
     connectToInterop(cred.ip, cred.username, cred.password);
-  })
+  });
+
+  socket.on('CONFIGURE_TRACKY_POS', (pos) => {
+    console.log("Sending Tracky its estimated position");
+    tracky_io.emit('CONFIGURE_POS', pos);
+  });
 });
 
 

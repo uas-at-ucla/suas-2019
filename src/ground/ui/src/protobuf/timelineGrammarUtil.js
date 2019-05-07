@@ -7,7 +7,7 @@ if (electronRequire) protobuf.Root.prototype.resolvePath = (origin, target) => {
 
 //TODO copy .proto files to app when packaging with Electron and use those files when not electron-is-dev
 
-var root = null;
+var root = new protobuf.Root();
 var packageNames = [];
 
 export default function loadTimelineGrammar(dispatch) {
@@ -17,14 +17,13 @@ export default function loadTimelineGrammar(dispatch) {
 
   let prevCwd = window.process.cwd();
   window.process.chdir("../../../");
-  protobuf.load("src/controls/ground_controls/timeline/timeline_grammar.proto", function(err, protoRoot) {
+  
+  root.load("src/controls/ground_controls/timeline/timeline_grammar.proto", {keepCase: true}, function(err) {
     window.process.chdir(prevCwd);
     if (err) {
       throw Error(err);
     }
     
-    root = protoRoot;
-
     // Combine message definitions from the file and imported files
     let timelineGrammar = {}
     for (let file of root.files) {

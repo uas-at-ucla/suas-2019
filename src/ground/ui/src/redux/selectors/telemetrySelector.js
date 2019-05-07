@@ -22,7 +22,7 @@ selectors.droneMarker = createSelector(
           rotation: droneTelemetry.sensors.heading,
           anchor: window.google ? new window.google.maps.Point(0, 2.5) : null
         },
-        eph: droneTelemetry.sensors.gpsEph
+        eph: droneTelemetry.sensors.gps_eph
         // TODO make it an icon, rotate with drone heading, and show location uncertainty as a semi-transparent circle (HDOP)
       }
     } else {
