@@ -55,3 +55,34 @@ class StepperUtils:
         total_steps += leftover_steps
         assert total_steps == steps
         self.pi.wave_chain(wave_chain)
+
+if __name__ == "__main__": # testing
+    import pigpio
+    import signal
+
+    SERVO = 23
+    STEPPER_DIR = 2
+    STEPPER_STEP = 18
+    STEPPER_SLEEP = 14
+    STEPPER_SPR = 800  # Steps per Revolution (360 / 0.45)
+
+    pi = pigpio.pi()
+
+    pi.set_mode(STEPPER_DIR, pigpio.OUTPUT)
+    pi.set_mode(STEPPER_STEP, pigpio.OUTPUT)
+    pi.set_mode(STEPPER_SLEEP, pigpio.OUTPUT)
+
+    def on_shutdown(sig, frame):
+        pi.wave_tx_stop()
+        pi.wave_clear()
+        pi.write(STEPPER_SLEEP, 0)
+        pi.stop()
+    signal.signal(signal.SIGINT, on_shutdown)
+
+    pi.write(STEPPER_SLEEP, 1) # wake up
+
+    stepper_utils = StepperUtils(pigpio, pi, STEPPER_SPR, STEPPER_STEP, STEPPER_DIR)
+
+    stepper_utils.move_stepper(STEPPER_SPR)
+
+    on_shutdown(None, None):
