@@ -19,6 +19,7 @@ class Telemetry extends Component {
     if (rawTelmet != null) {
       this.telmet = {
         pingDelay: pingDelay,
+        autopilotState: rawTelmet["sensors"]["autopilot_state"],
         navX: rawTelmet["sensors"]["gyro_x"],
         navY: rawTelmet["sensors"]["gyro_y"],
         navZ: rawTelmet["sensors"]["gyro_z"],
@@ -35,6 +36,7 @@ class Telemetry extends Component {
     else {
       this.telmet = {
         pingDelay: null,
+        autopilotState: null,
         navX: 0,
         navY: 0,
         navZ: 0,
@@ -54,7 +56,11 @@ class Telemetry extends Component {
     return [
       {
         key: "Ping",
-        values: [this.telmet.pingDelay, " ms"]
+        values: this.telmet.pingDelay != null ? [this.telmet.pingDelay, " ms"] : ["Not Connected"]
+      },
+      {
+        key: "State",
+        values: [this.telmet.autopilotState]
       },
       {
         key: "Speed",
