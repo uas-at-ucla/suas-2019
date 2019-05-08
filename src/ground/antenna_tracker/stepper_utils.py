@@ -59,6 +59,7 @@ class StepperUtils:
 if __name__ == "__main__": # testing
     import pigpio
     import signal
+    import time
 
     SERVO = 23
     STEPPER_DIR = 2
@@ -85,4 +86,7 @@ if __name__ == "__main__": # testing
 
     stepper_utils.move_stepper(STEPPER_SPR)
 
-    on_shutdown(None, None):
+    while (pi.wave_tx_busy()):
+        time.sleep(0.1)
+
+    on_shutdown(None, None)
