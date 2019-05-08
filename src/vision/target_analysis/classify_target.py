@@ -78,6 +78,7 @@ def classifyColor(hue):
 # uses pyplot to display and show the given contour and the believed shape it matches
 
 def classifyShape(contour):
+    print('Classifying shape')
     contour = [tuple(point) for point in contour.reshape(-1, 2)]
     shapes = []
 
@@ -93,6 +94,7 @@ def classifyShape(contour):
 
     best, b_shape = mPoly.difference(shapes[0].poly).area, shapes[0]
     for shape in shapes:
+        print('Testing shape: ' + shape.name)
         for i in range(1, int(360/shape.delSym) + 1):
             diff = mPoly.difference(shapely.affinity.rotate(shape.poly, i)).area
             if diff < best:
