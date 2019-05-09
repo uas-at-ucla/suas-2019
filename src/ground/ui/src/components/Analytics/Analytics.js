@@ -11,10 +11,12 @@ const mapStateToProps = state => {
   };
 }
 
+
 var loadedTelemetry;
 var telemetryData = [];
 var recording = false;
 var usingLoaded = false;
+var isPaused = false;
 
 const mapDispatchToProps = {
   togglePlayback: function() {
@@ -24,6 +26,7 @@ const mapDispatchToProps = {
     return {type: 'PLAYBACK', payload: telemetry}
   }
 }; //TODO Make action for recording telemetry, and action for starting playback
+
 
 class Analytics extends Component {
   constructor(props) {
@@ -36,40 +39,44 @@ class Analytics extends Component {
     if (recording){
       telemetryData.push(this.props.telemetry)
     }
-    return (
-      <div className="Analytics">
-
-        Telemetry: {JSON.stringify(this.props.telemetry)}
-        
-        <div>
-          <button onClick={this.toggleRecord}>
-            Record!!! / Stop Recording (and save to file)!!
-          </button>
+    return (  
+      <span className="Analytics">
+        <div id="telemetry">
+        Telemetry: {JSON.stringify(this.props.telemetry)} 
         </div>
 
-        <div>
-        <input type="file" ref={this.fileInput} />
+        <div id="buttons">
+          <div>
+            <button onClick={this.toggleRecord}>
+              Record!!! / Stop Recording (and save to file)!!
+            </button>
+          </div>
+
+          <div>
+          <input type="file" ref={this.fileInput} />
+          </div>
+
+          <div>
+            {/* <button onClick={this.handleSubmit}>
+              Load Telemetry File / Unload File
+            </button> */}
+            
+            <button onClick={this.runLoaded}>
+              Run Loaded Telemetry / Pause Loaded Telemetry
+            </button>
+          </div>
+
+          <div>
+            <button>
+              Save Current Interop Mission
+            </button>
+            <button>
+              Load Interop Mission / Unload File
+            </button>
+          </div>
         </div>
 
-        <div>
-          {/* <button onClick={this.handleSubmit}>
-            Load Telemetry File / Unload File
-          </button> */}
-          
-          <button onClick={this.runLoaded}>
-            Run Loaded Telemetry / Pause Telemetry
-          </button>
-        </div>
-
-        <div>
-          <button>
-            Save Current Interop Mission
-          </button>
-          <button>
-            Load Interop Mission / Unload File
-          </button>
-        </div>
-      </div>
+        </span>
     );
   }
 
@@ -105,20 +112,34 @@ class Analytics extends Component {
   }
 
   runLoaded = () => {
-    var reader = new FileReader()
-    reader.onload = (e) => {
-      //return e.target.result
-      loadedTelemetry = JSON.parse(e.target.result)
-      usingLoaded = true
-      console.log(loadedTelemetry)
-      var i = 0
-      setInterval(() => {
-        this.props.playback(loadedTelemetry[i])
-        i = i + 1
-      })
+    if (!usingLoaded){
+      this.props.togglePlayback();
+      var reader = new FileReader()
+      reader.onload = (e) => {
+        //return e.target.result
+        loadedTelemetry = JSON.parse(e.target.result)
+        usingLoaded = true
+        console.log(loadedTelemetry)
+        var i = 0
+        var intervalID = setInterval(() => {
+          if(isPaused){
+            
+          }else{
+            this.props.playback(loadedTelemetry[i])
+            i = i + 1
+            if (i > loadedTelemetry.length) {
+              usingLoaded = false
+              clearInterval(intervalID)
+              this.props.togglePlayback()
+            }
+          }
+        }, 250)
+        
+        }
+        reader.readAsText(this.fileInput.current.files[0]);
+    }else{
+      isPaused = !isPaused
     }
-    reader.readAsText(this.fileInput.current.files[0]);
-
   }
 
   stringifyTelemetry = string => {
