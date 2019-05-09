@@ -51,6 +51,7 @@ class Analytics extends Component {
               Record!!! / Stop Recording (and save to file)!!
             </button>
           </div>
+          <div>Telemetry States Recorded: {telemetryData.length}</div>
 
           <div>
           <input type="file" ref={this.fileInput} />
@@ -99,6 +100,11 @@ class Analytics extends Component {
     recording = !(recording);
     if (!recording){
       this.downloadTelemetry();
+      var i
+      var l = telemetryData.length
+      for (i = 0; i < l; i++){
+        telemetryData.pop()
+      }
     }
   }
 
