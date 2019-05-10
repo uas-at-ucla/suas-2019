@@ -312,6 +312,11 @@ if __name__ == '__main__':
         dest='rescale_ratio',
         help='rescale the source image before using it as a background')
     parser.add_argument(
+        '--combine-labels',
+        action='store_true',
+        dest='combine_labels',
+        help='output a single csv file with labels for all generated images')
+    parser.add_argument(
         '--origin-pos',
         type=int,
         nargs=2,
