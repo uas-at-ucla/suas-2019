@@ -39,7 +39,8 @@ class Analytics extends Component {
     if (recording && prevProps.telemetry !== this.props.telemetry) {
       telemetryData.push(this.props.telemetry)
     }
-
+  }
+  render () {
     return (  
       <span className="Analytics">
         <div id="telemetry">
