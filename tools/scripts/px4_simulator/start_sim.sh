@@ -1,8 +1,8 @@
 #!/bin/bash
 
-set -e
-
 source tools/scripts/docker/start_machine_mac.sh
+
+set -e
 
 docker build -t uas-at-ucla_px4-simulator tools/dockerfiles/px4_simulator
 
@@ -33,6 +33,7 @@ docker run \
   -v $ROOT_PATH/tools/cache/px4_simulator:/home/uas/px4_simulator \
   -p 8085:8085/udp \
   -p 8095:8095/udp \
+  -p 5760:5760 \
   --net uas_bridge \
   uas-at-ucla_px4-simulator \
   bash -c "

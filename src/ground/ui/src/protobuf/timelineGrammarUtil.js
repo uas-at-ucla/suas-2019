@@ -1,21 +1,51 @@
-import protobuf from 'protobufjs';
+const electronRequire = window.require;
+const protobuf = electronRequire ? electronRequire('protobufjs') : null;
+// Fix import statement in .proto file:
+if (electronRequire) protobuf.Root.prototype.resolvePath = (origin, target) => {
+  return target;
+}
 
-import protoFile from './timeline_grammar.proto';
+//TODO copy .proto files to app when packaging with Electron and use those files when not electron-is-dev
 
-const packageName = 'src.controls.ground_server.timeline.';
-var root = null;
+var root = new protobuf.Root();
+var packageNames = [];
 
 export default function loadTimelineGrammar(dispatch) {
-  protobuf.load(protoFile, function(err, protoRoot) {
-    root = protoRoot;
-    let timelineGrammar = root.toJSON().nested;
-    // Unpack the nested object, which contains an inner object for each word in the package name.
-    let nested;
-    while ((nested = timelineGrammar[Object.keys(timelineGrammar)[0]].nested)) {
-      timelineGrammar = nested;
+  if (!electronRequire) {
+    return;
+  }
+
+  let prevCwd = window.process.cwd();
+  window.process.chdir("../../../");
+  
+  root.load("src/controls/ground_controls/timeline/timeline_grammar.proto", {keepCase: true}, function(err) {
+    window.process.chdir(prevCwd);
+    if (err) {
+      throw Error(err);
     }
+    
+    // Combine message definitions from the file and imported files
+    let timelineGrammar = {}
+    for (let file of root.files) {
+      let packagePath = file.split('/');
+      packagePath.pop();
+      let protoMessages = root.toJSON().nested;
+      for (let name of packagePath) {
+        protoMessages = protoMessages[name].nested;
+      }
+      timelineGrammar = {...timelineGrammar, ...protoMessages};
+      packageNames.push(packagePath.join('.')+'.');
+    }
+    
+    // Eliminate package references to imports
+    let timelineGrammarString = JSON.stringify(timelineGrammar);
+    for (let packageName of packageNames) {
+      timelineGrammarString = timelineGrammarString.replace(new RegExp(packageName, 'g'), '');
+    }
+    timelineGrammar = JSON.parse(timelineGrammarString);
+
     console.log(timelineGrammar);
-    // console.log(JSON.stringify(timelineGrammar, null, 2));
+    // console.log(JSON.stringify(timelineGrammar, null, 2)); // use this to update timeline_grammar.proto.json
 
     // Send to Redux store
     dispatch({
@@ -26,10 +56,23 @@ export default function loadTimelineGrammar(dispatch) {
 }
 
 export function createMessage(type, payload) {
-  let messageType = root.lookupType(packageName + type);
-  var errMsg = messageType.verify(payload);
-  if (errMsg)
-    throw Error(errMsg);
+  if (!electronRequire) {
+    return null;
+  }
 
-  return messageType.create(payload);
+  for (let packageName of packageNames) {
+    let messageType;
+    try {
+      messageType = root.lookupType(packageName + type);
+    } catch {
+      continue;
+    }
+    var errMsg = messageType.verify(payload);
+    if (errMsg)
+      throw Error(errMsg);
+  
+    return messageType.create(payload);
+  }
+
+  throw Error("Type " + type + " not supported!");
 }

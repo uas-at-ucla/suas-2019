@@ -24,6 +24,16 @@ export default {
     return { type: 'CONNECT_TO_GND_SERVER' };
   },
 
+  configureTrackyPos: function(pos) {
+    return { 
+      type: 'TRANSMIT', 
+      payload: {
+        msg: 'CONFIGURE_TRACKY_POS',
+        data: pos
+      }
+    };
+  },
+
   logReduxState: function() {
     return { type: 'LOG_REDUX_STATE' };
   }

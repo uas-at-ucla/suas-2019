@@ -26,9 +26,9 @@ selectors.protoInfo = createSelector(
       commandAbbr: commandAbbr,
       fieldUnits: {
         altitude: "ft",
-        dropHeight: "ft"
+        drop_height: "ft"
       },
-      locationFields: ["goal", "groundTarget", "photographerLocation"]
+      locationFields: ["goal", "ground_target", "photographer_location"]
     };
   }
 );

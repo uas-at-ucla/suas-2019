@@ -9,6 +9,7 @@
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
 #include <pigpiod_if2.h>
+#include <softPwm.h>
 #include <wiringPi.h>
 #endif
 
@@ -28,7 +29,10 @@ namespace controls {
 namespace io {
 namespace {
 static const int kAlarmGPIOPin = 0;
-static const int kGimbalGPIOPin = 18;
+static const int kDeploymentGPIOPin = 2;
+static const int kGimbalGPIOPin = 23;
+
+static const int kGimbalMiddlePpmSignal = 1500;
 
 static const int kAlarmOverrideRcChannel = 7;
 static const int kAlarmOverrideRcSignalThreshold = 1800;

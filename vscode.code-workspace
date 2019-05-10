@@ -1,0 +1,56 @@
+{
+  "folders": [
+    {
+      "name": "drone_code",
+      "path": ".",
+    }
+  ],
+  "settings": {
+    // All available settings for VS Code are available here:
+    // https://gist.github.com/xgqfrms-GitHub/baa25e374f4282f52b3ab5fcb7b930ca
+
+    "editor.rulers": [80],
+    "editor.insertSpaces": true,
+    "editor.tabSize": 2,
+    "editor.roundedSelection": false,
+    "editor.wordWrap": "off",
+    "editor.autoClosingBrackets": "always",
+    "editor.formatOnPaste": false,
+    "editor.dragAndDrop": false,
+    "editor.cursorBlinking": "blink",
+    "editor.renderWhitespace": "all", 
+
+    "workbench.editor.showTabs": true,
+
+    "git.enabled": true,
+    "git.countBadge": "all",
+    "git.checkoutType": "all",
+
+    "search.exclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/node_modules/*/**": true,
+      "**/src/ground/*/**": true,
+      "**/src/vision/*/**": true,
+      "**/tools/*/**": true,
+      "**/external/*/**": true,
+    },
+
+    "files.exclude": {
+      "**/.vscode": true,
+      "**/tools/cache": true,
+      "**/tools/build_output": true,
+      "**/node_modules/*/**": true,
+    },
+
+    "files.watcherExclude": {
+      "**/.git/objects/**": true,
+      "**/.git/subtree-cache/**": true,
+      "**/node_modules/*/**": true,
+      "**/src/ground/*/**": true,
+      "**/src/vision/*/**": true,
+      "**/tools/*/**": true,
+      "**/external/*/**": true,
+    },
+  }
+}

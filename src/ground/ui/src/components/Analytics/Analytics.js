@@ -6,7 +6,7 @@ import downloadToBrowser from 'utils/downloadToBrowser';
 
 const mapStateToProps = state => {
   return {
-    telemetry: state.telemetry.data,
+    telemetry: state.telemetry.droneTelemetry,
     playback: state.telemetry.playback,
   };
 }
@@ -35,10 +35,11 @@ class Analytics extends Component {
     this.fileInput = React.createRef();
   }
 
-  render() {
-    if (recording){
+  componentDidUpdate(prevProps) {
+    if (recording && prevProps.telemetry !== this.props.telemetry) {
       telemetryData.push(this.props.telemetry)
     }
+
     return (  
       <span className="Analytics">
         <div id="telemetry">

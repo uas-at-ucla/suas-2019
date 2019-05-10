@@ -3,13 +3,13 @@ import { createSelector, createStructuredSelector } from 'reselect';
 const selectors = {};
 
 selectors.droneMarker = createSelector(
-  [state => state.telemetry.data],
-  (telemetry) => {
-    if (telemetry && telemetry.telemetry.sensors) {
+  [state => state.telemetry.droneTelemetry],
+  (droneTelemetry) => {
+    if (droneTelemetry && droneTelemetry.sensors) {
       return {
         position: {
-          lat: telemetry.telemetry.sensors.latitude,
-          lng: telemetry.telemetry.sensors.longitude
+          lat: droneTelemetry.sensors.latitude,
+          lng: droneTelemetry.sensors.longitude
         },
         icon: {
           path: window.google ? window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW : null,
@@ -19,10 +19,10 @@ selectors.droneMarker = createSelector(
           fillColor: '#0000FF',
           fillOpacity: 0.5,
           scale: 7,
-          rotation: telemetry.telemetry.sensors.heading,
+          rotation: droneTelemetry.sensors.heading,
           anchor: window.google ? new window.google.maps.Point(0, 2.5) : null
         },
-        eph: telemetry.telemetry.sensors.gpsEph
+        eph: droneTelemetry.sensors.gps_eph
         // TODO make it an icon, rotate with drone heading, and show location uncertainty as a semi-transparent circle (HDOP)
       }
     } else {
