@@ -4,8 +4,8 @@ import vision_classifier as vc
 import image_classification as ic
 
 IMG_SIZE = 100
-N_TRAIN = 10
-N_TEST = 2
+N_TRAIN = 20000
+N_TEST = 1000
 
 print(os.getcwd())
 
@@ -55,12 +55,11 @@ def eval_models(i):
     letter_model = vc.load_model('letter_model.hdf5')
 
     # old_dir = '../targets/output/old'
-    data_dir = '../targets/output/test'
     # xs_old, ys_old = ic.process_data(old_dir, 1000, 'shape', True)
     # xl_old, yl_old = ic.process_data(old_dir, 1000, 'letter', True)
     # print(xs_old.shape, ys_old.shape, xl_old.shape, yl_old.shape)
-    x_shape, y_shape = ic.process_data(data_dir, 1000, 'shape')
-    x_let, y_let = ic.process_data(data_dir, 1000, 'letter')
+    x_shape, y_shape = ic.process_data(test_dir, 1000, 'shape')
+    x_let, y_let = ic.process_data(test_dir, 1000, 'letter')
     print(x_shape.shape, y_shape.shape, x_let.shape, y_let.shape)
 
     print(shape_model.metrics_names)
@@ -69,7 +68,7 @@ def eval_models(i):
     print(letter_model.evaluate(x=x_let, y=y_let))
 
     # path = '../targets/output/old/%03d.jpg'%i
-    path = '../targets/output/test/%04d.jpg'%i
+    path = '../targets/output/test2/%05d.jpg'%i
     print(vc.predict(shape_model, vc.shape_img(path)))
     print('predicted: ', vc.predict_shape(shape_model, vc.shape_img(path)))
     print('true: ', vc.SHAPE_INDEX[y_shape[i].argmax()])
@@ -79,6 +78,6 @@ def eval_models(i):
     print('true: ', vc.LETTERS[y_let[i].argmax()])
 
 if __name__=='__main__':
-    train_models()
-    #eval_models(1)
+    #train_models()
+    eval_models(1)
 

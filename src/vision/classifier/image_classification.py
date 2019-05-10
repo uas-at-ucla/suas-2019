@@ -97,13 +97,13 @@ def process_data(data_dir, n_images, feature="", old=False):
     labels = np.loadtxt(path, delimiter=',')
     y_train = labels[0:n_images, label_col[feature]]
     for i in range(n_images):
-        path = os.path.join(data_dir, '%04d.jpg'%i)
+        path = os.path.join(data_dir, '%05d.jpg'%i)
         x_train[i] = img_func[feature](path)[0,:]
     y_train = to_categorical(y_train, label_size[feature])
     return x_train, y_train
 
 def train(model, x_train, y_train, x_test, y_test, nEpochs=10, nBatch=32, model_name="model"):
-    sgd = SGD(lr=0.0001)
+    sgd = SGD(lr=0.00001)
     model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
     os.makedirs('models', exist_ok=True)
     checkpoint = ModelCheckpoint('models/' + model_name + '{epoch:02d}.hdf5')
