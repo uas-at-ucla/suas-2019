@@ -28,6 +28,13 @@ class MissionPlanner extends Component {
   CommandList = SortableContainer(() => {
     return (
       <Container fluid>
+        {this.props.mission.interopData ? 
+          <div>
+            Mission Altitude Range:&nbsp;
+            {this.props.mission.interopData.mission.fly_zones[0].altitude_msl_min} -&nbsp;
+            {this.props.mission.interopData.mission.fly_zones[0].altitude_msl_max} ft
+          </div> 
+        : null}
         {this.props.mission.commands.map((command, index) => 
           <SortableCommand
             className={this.props.className}
