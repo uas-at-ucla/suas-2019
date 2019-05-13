@@ -66,6 +66,11 @@ class MissionPlanner extends Component {
       }
     },
 
+    deleteCommand: (event) => {
+      let index = event.target.dataset.index;
+      this.props.deleteCommand(index);
+    },
+
     changeCommandType: (event) => {
       let index = event.target.dataset.index;
       let newType = event.target.value;
@@ -108,8 +113,13 @@ class CommandRow extends PureComponent {
     let index = this.props.myIndex;
     return (
       <Row className={`MissionPlanner ${this.props.className}`} onClick={this.centerMapOnCommand}>
-        <Col xs="auto" className="command-column command-index">{index+1}</Col>
-        <Col xs="auto" className="command-column command-type">
+        <Col xs="auto" className="command-column input command-header">
+          <Button className="delete-btn" color="danger" size="sm" data-index={index} onClick={this.props.deleteCommand}>
+            <i className="fa fa-minus"></i>
+          </Button>
+        </Col>
+        <Col xs="auto" className="command-column command-index command-header">{index+1}</Col>
+        <Col xs="auto" className="command-column command-type command-header">
           <span className="value">
             {this.props.protoInfo.commandAbbr[command.type]}
           </span>
