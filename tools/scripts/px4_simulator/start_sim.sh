@@ -45,4 +45,4 @@ docker run \
   su - uas bash -c \"
   cd px4_simulator
   HOST_IP=\\\$(/sbin/ip route|awk '/default/ { print \\\$3 }')
-  make posix_sitl_default jmavsim\""
+  make px4_sitl_default jmavsim\""
