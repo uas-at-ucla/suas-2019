@@ -4,7 +4,7 @@ import { withScriptjs, withGoogleMap, GoogleMap } from 'react-google-maps';
 import './GoogleMap.css';
 import downloadToBrowser from 'utils/downloadToBrowser';
 
-// UNCOMMENT TO USE MAPS OFFLINE
+// UNCOMMENT TO USE MAPS OFFLINE (1/2)
 // import 'google_maps_js_api';
 var google;
 
@@ -14,7 +14,7 @@ function getCustomTilesMapType() {
       if (coord.y >= 0) {
         let url = null;
         try {
-          // UNCOMMENT TO USE MAPS OFFLINE
+          // UNCOMMENT TO USE MAPS OFFLINE (2/2)
           // url = require(`google_maps_js_api/map_images/${zoom}/mag-${zoom}_x-${coord.x}_y-${coord.y}.jpg`);
           if (!url) {
             throw new Error();
