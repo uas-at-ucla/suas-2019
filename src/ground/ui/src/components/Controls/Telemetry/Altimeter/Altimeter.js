@@ -32,7 +32,7 @@ class Altimeter extends Component {
         <div className="progress-bars">
           <div className="progress-bar">
             <div className={`filler ${rel_altitude < min ? "too-low" : rel_altitude > max ? "too-high" : "default"}`} style={{ height: `${percentage > 0 ? percentage : 0}%` }}>
-              {rel_altitude} ft
+              {rel_altitude.toFixed(0)} ft
             </div>
           </div>
           <div className="progress-bar">

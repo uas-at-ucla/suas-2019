@@ -15,7 +15,7 @@ message Sensors {
   optional float gps_ground_speed                                          = 10; // m/s (http://docs.ros.org/api/mavros_msgs/html/msg/VFR_HUD.html)
   optional int32 gps_satellite_count                                       = 11; // (https://mavlink.io/en/messages/common.html#GPS_RAW_INT, https://github.com/mavlink/mavros/blob/a7ef4fc0ec153307cbce3c98a998956c6296b954/mavros/src/plugins/global_position.cpp#L427)
   optional float gps_eph                                                   = 12; // meters (horizontal position uncertainty) (see ros_to_proto.cc for explanation)
-  optional float gps_epv                                                   = 13; // meters (horizontal position uncertainty) (see ros_to_proto.cc for explanation)
+  optional float gps_epv                                                   = 13; // meters (vertical position uncertainty) (see ros_to_proto.cc for explanation)
   optional float accelerometer_x                                           = 14; // m/s^2 (http://docs.ros.org/api/sensor_msgs/html/msg/Imu.html)
   optional float accelerometer_y                                           = 15; // m/s^2 (link above)
   optional float accelerometer_z                                           = 16; // m/s^2 (link above)
