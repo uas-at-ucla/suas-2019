@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import {
   Button, Container, Row, Col,
-  InputGroup, InputGroupAddon, InputGroupText, Input,
+  InputGroup, InputGroupAddon, Input,
   InputGroupButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem
 } from "reactstrap";
 import { Marker } from "react-google-maps";

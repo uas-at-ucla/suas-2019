@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Marker, InfoWindow, Circle, Polygon, Polyline, InfoBox } from 'react-google-maps';
+import { Marker, InfoWindow, Circle, Polyline } from 'react-google-maps';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
@@ -7,15 +7,16 @@ import missionActions from 'redux/actions/missionActions';
 import { selector } from 'redux/store';
 import GoogleMap from 'components/utils/GoogleMap/GoogleMap';
 import InteropItems from './InteropItems';
+import DroneMarker from './DroneMarker';
 
 const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
-    mission: state.mission,
+    commandAnimate: state.mission.commandAnimate,
+    mapCenter: state.telemetry.mapCenter,
     commandPoints: derivedData.mission.commandPoints,
     protoInfo: derivedData.mission.protoInfo,
-    telemetry: state.telemetry,
-    droneMarker: derivedData.telemetry.droneMarker 
+    
   };
 };
 
@@ -27,11 +28,11 @@ class Map extends Component {
     isOpen: {}
   };
 
-  onToggleOpen = (id) => {
+  toggleOpen = (id) => {
     this.setState({
       isOpen: {...this.state.isOpen, [id]: !this.state.isOpen[id]}
     });
-  }
+  };
  
   onMapClick = () => {
     if (this.state.isOpen) {
@@ -40,6 +41,7 @@ class Map extends Component {
       })
     }
   };
+
   render() {
     const commandPointPolyCoords = this.props.commandPoints.filter((p) => p).map((commandPoint, index) => {
       return commandPoint.marker.position;
@@ -55,30 +57,20 @@ class Map extends Component {
             disableDoubleClickZoom: true,
             scaleControl: true
           }}
-          center={this.props.telemetry.mapCenter}
+          center={this.props.mapCenter}
           onClick ={this.onMapClick}
           onDblClick={this.mapDblClick}
-
         >
-          {this.props.droneMarker ?
-            <Marker {...this.props.droneMarker}>
-              <Circle
-                center={this.props.droneMarker.position}
-                radius={this.props.droneMarker.eph}
-                options={{clickable: false}}
-              ></Circle>
-            </Marker>
-          : null}
-
-          <InteropItems isOpen={this.state.isOpen} onToggleOpen={this.onToggleOpen} />
+          <DroneMarker/>
+          <InteropItems isOpen={this.state.isOpen} toggleOpen={this.toggleOpen} />
 
           {this.props.commandPoints.map((commandPoint, index) => 
             commandPoint ?
               <Marker
-                {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.onToggleOpen(commandPoint.id)}
-                animation={(this.props.mission.commandAnimate[commandPoint.id] && window.google) ? window.google.maps.Animation.BOUNCE : null}
+                {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.toggleOpen(commandPoint.id)}
+                animation={(this.props.commandAnimate[commandPoint.id] && window.google) ? window.google.maps.Animation.BOUNCE : null}
               >
-                {this.state.isOpen[commandPoint.id] && <InfoWindow {...commandPoint.infobox} onCloseClick = {() =>this.onToggleOpen(commandPoint.id)}>
+                {this.state.isOpen[commandPoint.id] && <InfoWindow {...commandPoint.infobox} onCloseClick = {() =>this.toggleOpen(commandPoint.id)}>
                   <div className="map-infobox">
                     <div>
                       {/* TODO: add title */}
