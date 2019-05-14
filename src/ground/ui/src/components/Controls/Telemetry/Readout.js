@@ -1,8 +1,5 @@
 import React from "react";
 
-import KeyValue from "./KeyValue";
-
-
 class Readout extends React.Component {
     render() {
         return (
@@ -14,3 +11,19 @@ class Readout extends React.Component {
 }
 
 export default Readout;
+
+
+const KeyValue = (props) => {
+    let valueString = "";
+
+    for(let i in props.values) {
+        valueString += props.values[i];
+    }
+
+    return (
+        <div className="KeyValue">
+            <h1> {props.keyName} </h1>
+            <h2> {valueString} </h2>
+        </div>
+    );
+}

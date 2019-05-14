@@ -15,6 +15,7 @@ cc_library(
     'src',
   ],
   copts = [
-    '-Wno-macro-redefined'
+    '-Wno-macro-redefined',
+    '-DZMQ_BUILD_DRAFT_API=1'
   ],
 )

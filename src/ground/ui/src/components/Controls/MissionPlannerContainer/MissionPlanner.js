@@ -2,14 +2,15 @@ import React, { Component, PureComponent } from 'react';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 import { Container, Row, Col, Input, InputGroup, InputGroupAddon } from 'reactstrap';
+import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 
-import missionActions from '../../../actions/missionActions';
-import { selector } from '../../../store';
+import missionActions from 'redux/actions/missionActions';
+import { selector } from 'redux/store';
 
 const mapStateToProps = state => { 
   return { 
-    missionPlan: state.missionPlan,
-    protoInfo: selector(state).missionPlan.protoInfo
+    mission: state.mission,
+    protoInfo: selector(state).mission.protoInfo
   };
 };
 
@@ -19,21 +20,29 @@ class MissionPlanner extends Component {
   render() {
     return (
       <div className="MissionPlanner">
-        <Container fluid>
-          {this.props.missionPlan.commands.map((command, index) => 
-            <CommandRow
-              key={command.id}
-              {...this.commandChangers}
-              command={command}
-              index={index}
-              protoInfo={this.props.protoInfo}
-            ></CommandRow>
-          )}
-        </Container>
-        <Button onClick={this.addCommand} className="command-btn">Add Command</Button>
+        <this.CommandList onSortEnd={this.reorderCommand} distance={2}/>
       </div>
     );
   }
+
+  CommandList = SortableContainer(() => {
+    return (
+      <Container fluid>
+        {this.props.mission.commands.map((command, index) => 
+          <SortableCommand
+            className={this.props.className}
+            key={command.id}
+            {...this.commandChangers}
+            command={command}
+            index={index}
+            myIndex={index}
+            protoInfo={this.props.protoInfo}
+          ></SortableCommand>
+        )}
+        <Button onClick={this.addCommand} className="command-btn">Add Command</Button>
+      </Container>
+    );
+  });
 
   addCommand = () => {
     let defaultWaypointCommand = { goal: {
@@ -44,11 +53,23 @@ class MissionPlanner extends Component {
     this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
   }
 
+  reorderCommand = ({oldIndex, newIndex}) => {
+    this.props.reorderCommand(oldIndex, newIndex);
+  };
+
   commandChangers = {
+    centerMapOnCommand: (index) => {
+      if (this.props.className === "SmallMissionPlanner") {
+        let command = this.props.mission.commands[index];
+        this.props.centerMapOnCommand(command, this.props.protoInfo);
+        setTimeout(() => this.props.commandStopAnimation(command), 1000);
+      }
+    },
+
     changeCommandType: (event) => {
       let index = event.target.dataset.index;
       let newType = event.target.value;
-      let oldCommand = this.props.missionPlan.commands[index];
+      let oldCommand = this.props.mission.commands[index];
       this.props.changeCommandType(index, oldCommand, newType, this.props.protoInfo);
     },
   
@@ -75,14 +96,18 @@ class MissionPlanner extends Component {
 
 export default connect(mapStateToProps, mapDispatchToProps)(MissionPlanner);
 
-
+const SortableCommand = SortableElement(props => <CommandRow {...props}/>);
 // PureComponent improves performance b/c it only re-renders when props change
 class CommandRow extends PureComponent {
+  centerMapOnCommand = () => {
+    this.props.centerMapOnCommand(this.props.myIndex);
+  }
+
   render() {
     let command = this.props.command;
-    let index = this.props.index;
+    let index = this.props.myIndex;
     return (
-      <Row>
+      <Row className={`MissionPlanner ${this.props.className}`} onClick={this.centerMapOnCommand}>
         <Col xs="auto" className="command-column command-index">{index+1}</Col>
         <Col xs="auto" className="command-column command-type">
           <span className="value">
@@ -94,7 +119,7 @@ class CommandRow extends PureComponent {
           >
             {this.props.protoInfo.commandTypes.map(commandType =>
               <option value={commandType} key={commandType}>
-              {this.props.protoInfo.commandAbbr[commandType]}
+                {this.props.protoInfo.commandAbbr[commandType]}
               </option>
             )}
           </Input>

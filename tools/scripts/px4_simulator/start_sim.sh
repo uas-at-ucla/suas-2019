@@ -1,8 +1,8 @@
 #!/bin/bash
 
-set -e
-
 source tools/scripts/docker/start_machine_mac.sh
+
+set -e
 
 docker build -t uas-at-ucla_px4-simulator tools/dockerfiles/px4_simulator
 

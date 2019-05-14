@@ -3,6 +3,9 @@
 //  Binds REP socket to tcp://*:5555
 //  Expects "Hello" from client, replies with "World"
 //
+
+#define ZMQ_BUILD_DRAFT_API 1
+
 #include <iostream>
 #include <string>
 #include <unistd.h>
@@ -17,8 +20,8 @@
 int main() {
   //  Prepare our context and socket
   zmq::context_t context(1);
-  zmq::socket_t socket(context, ZMQ_REP);
-  socket.bind("ipc:///tmp/mission_command_stream.ipc");
+  zmq::socket_t socket(context, ZMQ_DISH);
+  socket.bind("udp://127.0.0.1:6005");
 
   while (true) {
     ::spinny::controls::ground_communicator::Command cmd;

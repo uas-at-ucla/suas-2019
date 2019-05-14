@@ -5,8 +5,8 @@
 #include "sio_client.h"
 #include "sio_socket.h"
 
-#include "lib/serial_device/serial_device.h"
 #include "lib/proto_comms/proto_comms.h"
+#include "lib/serial_device/serial_device.h"
 #include "src/controls/io/io.h"
 #include "src/controls/messages.pb.h"
 

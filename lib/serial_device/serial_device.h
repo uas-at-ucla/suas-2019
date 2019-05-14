@@ -200,7 +200,7 @@ template <typename T> class SerialDevice {
 
   bool GetLatestProto(T &proto_dest) {
     ::std::lock_guard<::std::mutex> lock(proto_queue_mutex_);
-    
+
     // Check whether there is a proto available to fetch. If not, return false
     // to indicate that proto_dest was not changed.
     if (proto_queue_.empty()) {
@@ -211,10 +211,10 @@ template <typename T> class SerialDevice {
     proto_dest.CopyFrom(proto_queue_.front());
 
     // Empty the proto queue.
-    while(!proto_queue_.empty()) {
+    while (!proto_queue_.empty()) {
       proto_queue_.pop();
     }
-    
+
     return true;
   }
 
@@ -270,10 +270,10 @@ template <typename T> class SerialDevice {
     T proto_message;
     if (proto_message.ParseFromString(data)) {
       ::std::lock_guard<::std::mutex> lock(proto_queue_mutex_);
-      while(!proto_queue_.empty()) {
+      while (!proto_queue_.empty()) {
         proto_queue_.pop();
       }
-  
+
       proto_queue_.push(proto_message);
     }
   }

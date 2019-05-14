@@ -488,18 +488,21 @@ def run_controls_simulate(args):
     tmux_split("horizontal", 2)
     tmux_cmd(DOCKER_EXEC_SCRIPT + "rostopic echo /mavros/global_position/global")
     tmux_move_pane("right")
-    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/io/gpio_writer:gpio_writer")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + io_command)
     tmux_split("vertical", 2)
     tmux_move_pane("down")
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_communicator:ground_communicator")
 
     tmux_new_window("GROUND")
+    tmux_split("horizontal", 2)
+    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_controls:ground_controls")
+    tmux_move_pane("right")
     tmux_cmd("./uas ground run")
 
     tmux_select_window(2)
 
     print_update("\n\nSimulation running! \n" \
-            "Run \"tmux a -t uas_env\" in another bash window to see everything working...", \
+            "Run \"tmux a -t uas_env\" in another bash window to see everything working. Use `Ctrl-B n` to cycle between windows.", \
             msg_type="SUCCESS")
 
     while True:
@@ -550,14 +553,26 @@ def run_ground_run(args):
 def run_ground(arg1, args):
     shutdown_functions.append(kill_ground)
 
-    # Ground server and interface.
     print_update("Starting the Ground Station Docker container...")
     run_cmd_exit_failure("./tools/scripts/ground/run_env.sh")
     print_update("Running the Ground Station...")
 
     # Run ground.py and pass command line arguments
     run_cmd_exit_failure(GROUND_DOCKER_EXEC_SCRIPT + \
-           "'ssh -o StrictHostKeyChecking=no git@github.com || python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args) + "'")
+           "'ssh -o StrictHostKeyChecking=no git@github.com; sudo python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args) + "'")
+
+    kill_ground()
+
+def run_ground_docker(args):
+    shutdown_functions.append(kill_ground)
+
+    print_update("Starting the Ground Station Docker container...")
+    run_cmd_exit_failure("./tools/scripts/ground/run_env.sh")
+
+    print_update("Run \"./tools/scripts/ground/exec_interactive.sh /bin/bash\" in another shell", msg_type="SUCCESS")
+
+    # Run until ^C
+    run_cmd_exit_failure(GROUND_DOCKER_EXEC_SCRIPT + "'sleep infinity'")
 
     kill_ground()
 
@@ -759,6 +774,8 @@ if __name__ == '__main__':
 
     ground_parser = subparsers.add_parser('ground')
     ground_subparsers = ground_parser.add_subparsers()
+    ground_docker_parser = ground_subparsers.add_parser('docker')
+    ground_docker_parser.set_defaults(func=run_ground_docker)
     ground_build_parser = ground_subparsers.add_parser('build')
     ground_build_parser.set_defaults(func=run_ground_build)
     ground_build_parser.add_argument('ground_args', nargs='*')

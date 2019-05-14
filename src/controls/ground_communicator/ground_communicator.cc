@@ -8,8 +8,11 @@ GroundCommunicator::GroundCommunicator() :
     sensors_subscriber_(ros_node_handle_.subscribe(
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
         &GroundCommunicator::SensorsReceived, this)),
-    proto_sender_("udp://:*5555"),
-    rfd900_("/dev/ttyUSB0", B57600, 0) {}
+    proto_sender_("tcp://127.0.0.1:6005"),
+    rfd900_("/dev/ttyUSB0", B57600, 0) {
+
+    proto_sender_.Connect();
+}
 
 void GroundCommunicator::SensorsReceived(
     const ::src::controls::Sensors sensors) {
@@ -25,9 +28,10 @@ void GroundCommunicator::SensorsReceived(
     rfd900_.WritePort(uas_message);
   }
 
-  count = (count + 1) % 2;
+  count = (count + 1) % 2; // 50/2 = 25 Hz
 
   // Send the message
+  std::cout << "Sending";
   proto_sender_.Send(uas_message);
 }
 

@@ -8,8 +8,8 @@ cc_library(
     'drone2state_visitor.hh'
   ],
   deps = [
-    '//src/controls/ground_server/timeline/drone_state_machine:drone_state_machine',
-    '//src/controls/ground_server/timeline:timeline_grammar_cc'
+    '//src/controls/ground_controls/timeline/drone_state_machine:drone_state_machine',
+    '//src/controls/ground_controls/timeline:timeline_grammar_cc'
   ]
 )
 

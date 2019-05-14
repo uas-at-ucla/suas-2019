@@ -93,7 +93,7 @@ new_git_repository(
 
 new_git_repository(
   name = "cppzmq",
-  commit = "a96e0ded6456757ed74947cec2b5d2b875f9dab4",
+  commit = "213da0b04ae3b4d846c9abc46bab87f86bfb9cf4",
   build_file = "third_party/cppzmq.BUILD",
   remote = "https://github.com/zeromq/cppzmq.git",
 )

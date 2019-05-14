@@ -21,6 +21,7 @@ cc_library(
   deps = [
     '//src/controls/loops:flight_loop_lib',
     '//src/controls:messages_cpp',
+    '//src/controls/io:io_lib',
     '//lib/mission_message_queue:mission_message_queue',
     '//lib/serial_comms:serial_comms_bridge',
     '//lib/phased_loop:phased_loop',
@@ -28,9 +29,6 @@ cc_library(
     '//lib/base64_tools:base64_tools',
     '//lib/serial_device:serial_device',
     '//lib/ros:ros',
-    "@mavros_msgs//:mavros_msgs",
-    "@sensor_msgs//:sensor_msgs",
     "@socketio_client_cpp//:socketio_client_cpp",
-    "@cppzmq//:cppzmq",
   ],
 )
