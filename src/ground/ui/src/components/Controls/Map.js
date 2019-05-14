@@ -54,11 +54,18 @@ class Map extends Component {
     })
 
       var searchCoordinates = [];
+      var searchCenterLat = 0;
+      var searchCenterLng = 0;
+      var searchNum = 0;
         var searchGridPoints = this.props.interopData.mission.search_grid_points.map((coord, index) => {
           searchCoordinates[index] = {lat: coord.latitude, lng: coord.longitude };
+          searchCenterLat+= coord.latitude;
+          searchCenterLng+= coord.longitude;
+          searchNum+=1;
           return searchCoordinates[index];
       })
-      
+      searchCenterLng =  searchCenterLng/searchNum;
+      searchCenterLat =  searchCenterLat/searchNum;
     }
     const commandPointPolyCoords = this.props.commandPoints.filter((p) => p).map((commandPoint, index) => {
       return commandPoint.marker.position;
@@ -125,6 +132,42 @@ class Map extends Component {
             </div>
           </InfoWindow> }          
             </Marker>
+
+            <Marker  
+            title="emergent_last_known_pos"
+            position={{lat: this.props.interopData.mission.emergent_last_known_pos.latitude, lng: this.props.interopData.mission.emergent_last_known_pos.longitude}}
+            onClick = {()=>this.onToggleOpen("emergent_last_known_pos")}
+            icon = {{url: "https://allenhoole.co.uk/wp-content/uploads/2016/10/Person-Icon.png",
+            Size: {width: "40", height:40} ,
+            scaledSize: {width: 20, height: 20},
+            anchor: window.google ? new window.google.maps.Point(10, 10) : null }}
+            >        
+            {this.state.isOpen["emergent_last_known_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("emergent_last_known_pos")}>
+            <div className="map-infobox">Emergent Object
+            <button onClick = {() =>this.addWaypointCommand(this.props.interopData.mission.emergent_last_known_pos.latitude, this.props.interopData.mission.emergent_last_known_pos.longitude)}>
+              add
+            </button>
+            </div>
+            </InfoWindow> }          
+            </Marker>
+
+            <Marker  
+            title="off_axis_odlc_pos"
+            position={{lat: this.props.interopData.mission.off_axis_odlc_pos.latitude, lng: this.props.interopData.mission.off_axis_odlc_pos.longitude}}
+            onClick = {()=>this.onToggleOpen("off_axis_odlc_pos")}
+            icon = {{url: "https://iconsplace.com/wp-content/uploads/_icons/ffa500/256/png/slr-camera-icon-11-256.png",
+            Size: {width: "40", height:40} ,
+            scaledSize: {width: 20, height: 20},
+            anchor: window.google ? new window.google.maps.Point(10, 10) : null }}
+            >        
+            {this.state.isOpen["off_axis_odlc_pos"] && <InfoWindow onCloseClick = {() =>this.onToggleOpen("off_axis_odlc_pos")}>
+            <div className="map-infobox">Off Axis Position
+            <button onClick = {() =>this.addWaypointCommand(this.props.interopData.mission.off_axis_odlc_pos.latitude, this.props.interopData.mission.off_axis_odlc_pos.longitude)}>
+              add
+            </button>
+            </div>
+            </InfoWindow> }          
+            </Marker>
           
 
             <Polygon
@@ -136,10 +179,19 @@ class Map extends Component {
                   strokeWeight: 1,
                   fillOpacity: 0.5
               }}
-            > <InfoWindow> <div className="map-infobox"> Boundaries</div> </InfoWindow></Polygon>  
-           <Polygon
-                paths = {[searchGridPoints, searchGridPoints]} strokeOpacity= {0.5} strokeWeight= {2}
             />  
+           <Polygon
+                path = {searchGridPoints} strokeOpacity= {0.5} strokeWeight= {2}
+                onClick={()=> this.onToggleOpen("search")}
+
+            />
+            {this.state.isOpen["search"] && <InfoWindow defaultPosition={{lat: searchCenterLat, lng: searchCenterLng}} onCloseClick = {() =>this.onToggleOpen("search")}>
+                <div className="map-infobox"> Search Area 
+                <button onClick = {() =>this.addWaypointCommand(searchCenterLat, searchCenterLng)}>
+                add
+                </button>
+                 </div>
+              </InfoWindow>}
             
 
           {
@@ -155,12 +207,7 @@ class Map extends Component {
             }} 
             radius={obstacle.cylinder_radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}
             onClick={()=> this.onToggleOpen(index)}
-             >
-            {this.state.isOpen[index] && <InfoWindow defaultPosition={{lat: obstacle.latitude, lng: obstacle.longitude}} onCloseClick = {() =>this.onToggleOpen(index)}>
-                <div className="map-infobox"> Obstacle  </div>
-              </InfoWindow>}
-            </Circle>
-            
+            />
              </div>
              ;
             })

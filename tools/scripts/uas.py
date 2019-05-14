@@ -497,7 +497,7 @@ def run_controls_simulate(args):
     tmux_split("horizontal", 2)
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_controls:ground_controls")
     tmux_move_pane("right")
-    tmux_cmd("./uas ground run")
+    tmux_cmd("./uas ground run server")
 
     tmux_select_window(2)
 

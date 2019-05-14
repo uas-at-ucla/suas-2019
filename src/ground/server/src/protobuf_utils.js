@@ -108,10 +108,12 @@ class ProtobufUtils {
 
 module.exports = (callback) => {
   process.chdir("../../..")
-  protobuf.load("src/controls/ground_controls/timeline/timeline_grammar.proto", (err, timelineRoot) => {
+  let timelineRoot = new protobuf.Root();
+  timelineRoot.load("src/controls/ground_controls/timeline/timeline_grammar.proto", {keepCase: true}, (err) => {
     if (err) throw err;
 
-    protobuf.load("src/controls/messages.proto", (err, telemetryRoot) => {
+    let telemetryRoot = new protobuf.Root();
+    telemetryRoot.load("src/controls/messages.proto", {keepCase: true}, (err) => {
       if (err) throw err;
 
       callback(new ProtobufUtils(timelineRoot, telemetryRoot));

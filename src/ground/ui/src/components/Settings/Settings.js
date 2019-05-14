@@ -59,6 +59,10 @@ class Settings extends Component {
     this.props.connectToGndServer();
   };
 
+  configureTrackyPos = () => {
+    this.props.configureTrackyPos(this.props.settings.antennaPos);
+  }
+
   handleClickedMap = (event) => {
     this.props.updateSettings({ antennaPos: {lat: event.latLng.lat(), lng: event.latLng.lng()} });
   };
@@ -178,6 +182,7 @@ class Settings extends Component {
             <p>
               {this.props.settings.antennaPos.lat}° , {this.props.settings.antennaPos.lng}°
             </p>
+            <Button color="success" onClick={this.configureTrackyPos}>Send Position!</Button>
             <div style={{ height: "350px", width: "500px" }}>
               <GoogleMap
                 defaultZoom={17}

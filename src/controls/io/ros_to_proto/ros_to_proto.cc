@@ -9,9 +9,9 @@ RosToProto::RosToProto() :
     global_position_subscriber_(ros_node_handle_.subscribe(
         kRosGlobalPositionTopic, kRosMessageQueueSize,
         &RosToProto::GlobalPositionReceived, this)),
-    relative_altitude_subscriber_(ros_node_handle_.subscribe(
-        kRosRelativeAltitudeTopic, kRosMessageQueueSize,
-        &RosToProto::RelativeAltitudeReceived, this)),
+    altitude_subscriber_(
+        ros_node_handle_.subscribe(kRosAltitudeTopic, kRosMessageQueueSize,
+                                   &RosToProto::AltitudeReceived, this)),
     compass_heading_subscriber_(ros_node_handle_.subscribe(
         kRosCompassHeadingTopic, kRosMessageQueueSize,
         &RosToProto::CompassHeadingReceived, this)),
@@ -39,7 +39,7 @@ RosToProto::RosToProto() :
   // Initialize all last received times for the ros topics to NaN.
   ros_topic_last_received_times_[kRosGlobalPositionTopic] =
       std::numeric_limits<double>::quiet_NaN();
-  ros_topic_last_received_times_[kRosRelativeAltitudeTopic] =
+  ros_topic_last_received_times_[kRosAltitudeTopic] =
       std::numeric_limits<double>::quiet_NaN();
   ros_topic_last_received_times_[kRosCompassHeadingTopic] =
       std::numeric_limits<double>::quiet_NaN();
@@ -89,15 +89,43 @@ void RosToProto::GlobalPositionReceived(
   sensors_.set_latitude(global_position.latitude);
   sensors_.set_longitude(global_position.longitude);
   sensors_.set_altitude(global_position.altitude);
+
+  /*
+     In the position_covariance 3x3 matrix
+     (http://docs.ros.org/api/sensor_msgs/html/msg/NavSatFix.html), the square
+     roots of the diagonals should be the x, y, and z (or East, North, and Up)
+     uncertaintes, in that order. The rest of the matrix is not set. This can be
+     confirmed by the mavros source code
+     (https://github.com/mavlink/mavros/blob/a7ef4fc0ec153307cbce3c98a998956c6296b954/mavros/src/plugins/global_position.cpp#L178).
+     In our case, mavros should use h_acc and v_acc from GPS_RAW_INT
+     (https://mavlink.io/en/messages/common.html#GPS_RAW_INT), but notice how it
+     can also use raw_gps.eph - Don't be fooled! This eph is a misnomer
+     (https://github.com/mavlink/mavlink/issues/1063). This even confused a
+     mavros developer who labeled the units of eph as meters in a diagnostic
+     message!
+     (https://github.com/mavlink/mavros/blob/a7ef4fc0ec153307cbce3c98a998956c6296b954/mavros/src/plugins/global_position.cpp#L446)
+     Despite this, the calculations in the code are still correct, as
+     raw_gps.eph is HDOP scaled by 100, as set by PX4
+     (https://github.com/PX4/Firmware/blob/c95394f57f0a771ed28d1941daf6b52ee3a70b5b/src/modules/mavlink/mavlink_messages.cpp#L1395)
+     The calculation in mavros looks like it's based on this:
+     https://en.wikipedia.org/wiki/Error_analysis_for_the_Global_Positioning_System
+     At this point, I went a little further down the rabbit hole, all the way to
+     GPS module protocols. HDOP does not seem to be defined consistently. Here
+     it's unitless, as it should be:
+     https://www.sparkfun.com/datasheets/GPS/NMEA%20Reference%20Manual1.pdf But
+     here it's in meters! http://freenmea.net/docs.
+     tl;dr, think twice before using anything that says eph, epv, HDOP, or VDOP.
+  */
+  sensors_.set_gps_eph(sqrt(global_position.position_covariance[0]));
+  sensors_.set_gps_epv(sqrt(global_position.position_covariance[8]));
 }
 
-void RosToProto::RelativeAltitudeReceived(
-    const ::std_msgs::Float64 relative_altitude) {
-
-  GotRosMessage(kRosRelativeAltitudeTopic);
+void RosToProto::AltitudeReceived(const ::mavros_msgs::Altitude altitude) {
+  GotRosMessage(kRosAltitudeTopic);
 
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
-  sensors_.set_relative_altitude(relative_altitude.data);
+  sensors_.set_altitude(altitude.amsl);
+  sensors_.set_relative_altitude(altitude.relative);
   sensors_mutex_.unlock();
 }
 
@@ -135,17 +163,17 @@ void RosToProto::DiagnosticsReceived(
   GotRosMessage(kRosDiagnosticsTopic);
 
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
-  // TODO(comran): Find a way to safely parse the diagnostics array. This would
-  // sometimes segfault when tested on the drone due to the values not existing
-  // in the array.
-
-  // sensors_.set_gps_satellite_count(
-  //     ::std::stoi(diagnostic_array.status[1].values[0].value));
-  // sensors_.set_gps_eph(::std::stod(diagnostic_array.status[1].values[2].value));
-  // sensors_.set_gps_epv(::std::stod(diagnostic_array.status[1].values[3].value));
-  sensors_.set_gps_satellite_count(0);
-  sensors_.set_gps_eph(0);
-  sensors_.set_gps_epv(0);
+  for (size_t i = 0; i < diagnostic_array.status.size(); i++) {
+    ::diagnostic_msgs::DiagnosticStatus &status = diagnostic_array.status[i];
+    if (status.name == "mavros: GPS") {
+      for (size_t j = 0; j < status.values.size(); j++) {
+        ::diagnostic_msgs::KeyValue &key_value = status.values[j];
+        if (key_value.key == "Satellites visible") {
+          sensors_.set_gps_satellite_count(::std::stoi(key_value.value));
+        }
+      }
+    }
+  }
 }
 
 void RosToProto::ImuDataReceived(::sensor_msgs::Imu imu_data) {
