@@ -1,8 +1,8 @@
 #include "io.h"
 
-#include <signal.h>
 #include <ros/ros.h>
 #include <ros/xmlrpc_manager.h>
+#include <signal.h>
 #include <stdlib.h>
 
 // SIGINT code taken from here:
@@ -12,7 +12,7 @@ sig_atomic_t volatile g_request_shutdown = 0;
 static ::src::controls::io::IO *io = nullptr;
 extern "C" void signal_handler(int signum) {
   ::std::cout << "GOT SIGNAL!" << ::std::endl;
-  if(io != nullptr) {
+  if (io != nullptr) {
     io->Quit(signum);
   }
 
@@ -20,14 +20,13 @@ extern "C" void signal_handler(int signum) {
   exit(0);
 }
 
-void shutdownCallback(XmlRpc::XmlRpcValue& params, XmlRpc::XmlRpcValue& result)
-{
+void shutdownCallback(XmlRpc::XmlRpcValue &params,
+                      XmlRpc::XmlRpcValue &result) {
   int num_params = 0;
   if (params.getType() == XmlRpc::XmlRpcValue::TypeArray)
     num_params = params.size();
 
-  if (num_params > 1)
-  {
+  if (num_params > 1) {
     ::std::string reason = params[1];
     ROS_WARN("Shutdown request received. Reason: [%s]", reason.c_str());
     g_request_shutdown = 1;

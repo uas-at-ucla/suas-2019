@@ -1,9 +1,9 @@
 #pragma once
 
+#include <atomic>
 #include <functional>
 #include <string>
 #include <thread>
-#include <atomic>
 
 #include <ros/console.h>
 #include <ros/ros.h>

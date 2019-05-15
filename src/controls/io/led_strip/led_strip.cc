@@ -168,8 +168,8 @@ bool LedStrip::Render(bool force) {
     startup_sequence_frame_++;
   }
 
-  if(blank_) {
-    for(int i = 0;i < kNumberOfLeds;i++) {
+  if (blank_) {
+    for (int i = 0; i < kNumberOfLeds; i++) {
       SetLed(i, 0, 0, 0);
     }
   }

@@ -50,7 +50,8 @@ IO::IO() :
 
   // Set initial values
   set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, kPpmMiddleSignal);
-  set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin, kDeploymentServoClosed);
+  set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
+                       kDeploymentServoClosed);
   set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin, 0);
   gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, 0);
   gpio_write(pigpio_, kDeploymentHotwireGPIOPin, 0);
@@ -68,7 +69,8 @@ void IO::Quit(int sig) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, kPpmMiddleSignal);
-  set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin, kDeploymentServoClosed);
+  set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
+                       kDeploymentServoClosed);
   set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin, 0);
   gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, 0);
   gpio_write(pigpio_, kDeploymentHotwireGPIOPin, 0);
@@ -99,32 +101,36 @@ void IO::WriterThread() {
     */
     bool should_alarm = alarm_.ShouldAlarm();
 
-    if(should_override_alarm_) {
+    if (should_override_alarm_) {
       deployment_servo_setpoint_ = kDeploymentServoOpen;
     } else {
       deployment_servo_setpoint_ = kDeploymentServoClosed;
     }
 
-    (void) gimbal_setpoint_;
+    (void)gimbal_setpoint_;
 #ifdef UAS_AT_UCLA_DEPLOYMENT
     // Write out alarm.
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
 
     // Write out gimbal.
-    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, 1500 + gimbal_setpoint_ * 500);
+    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin,
+                         1500 + gimbal_setpoint_ * 500);
 
     // Write out deployment.
-    if(deployment_motor_setpoint_ >= 0) {
-      set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin, deployment_motor_setpoint_ * 100);
+    if (deployment_motor_setpoint_ >= 0) {
+      set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin,
+                        deployment_motor_setpoint_ * 100);
       gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, 0);
     } else {
-      set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin, deployment_motor_setpoint_ * -100);
+      set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin,
+                        deployment_motor_setpoint_ * -100);
       gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, 1);
     }
 
     gpio_write(pigpio_, kDeploymentHotwireGPIOPin, 0);
 
-    set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin, deployment_servo_setpoint_);
+    set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
+                         deployment_servo_setpoint_);
 #endif
 
     // Write output to LED strip.
@@ -184,8 +190,9 @@ void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   }
 
   int deployment_rc_in = rc_in.channels[kDeploymentMotorRcChannel - 1];
-  if(deployment_rc_in > 900) {
-    deployment_motor_setpoint_ = ::std::max(::std::min((deployment_rc_in - 1500) / 500.0, 1.0), -1.0);
+  if (deployment_rc_in > 900) {
+    deployment_motor_setpoint_ =
+        ::std::max(::std::min((deployment_rc_in - 1500) / 500.0, 1.0), -1.0);
     if (::std::abs(deployment_motor_setpoint_) < 0.1) {
       deployment_motor_setpoint_ = 0;
     }
@@ -195,8 +202,8 @@ void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
 
   // int gimbal_rc_in = rc_in.channels[kGimbalMotorRcChannel - 1];
   // if(gimbal_rc_in > 900) {
-  //   gimbal_setpoint_ = ::std::max(::std::min((deployment_rc_in - 1500) / 500.0, 1.0), -1.0);
-  //   if (::std::abs(gimbal_setpoint_) < 0.1) {
+  //   gimbal_setpoint_ = ::std::max(::std::min((deployment_rc_in - 1500) /
+  //   500.0, 1.0), -1.0); if (::std::abs(gimbal_setpoint_) < 0.1) {
   //     gimbal_setpoint_ = 0;
   //   }
   // } else {
