@@ -1,11 +1,11 @@
 cc_library(
-  name = 'ground2drone_visitor',
+  name = 'context_visitor',
   visibility = ['//visibility:public'],
   srcs = [
-    'ground2drone_visitor.cc'
+    'context_visitor.cc'
   ],
   hdrs = [
-    'ground2drone_visitor.h'
+    'context_visitor.h'
   ],
   deps = [
     '//src/controls/ground_controls/timeline:timeline_grammar_cc',
@@ -14,12 +14,12 @@ cc_library(
 )
 
 cc_binary(
-  name = 'ground2drone_visitor_test',
+  name = 'context_visitor_test',
   srcs = [
-    'ground2drone_visitor_test.cc',
+    'context_visitor_test.cc',
   ],
   deps = [
-    ':ground2drone_visitor',
+    ':context_visitor',
     '@gtest//:gtest_main',
   ],
 )
