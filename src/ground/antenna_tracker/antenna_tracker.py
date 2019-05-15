@@ -89,7 +89,7 @@ def track(drone_pos):
     x_dist = (drone_lng - antenna_lng) * FEET_PER_DEGREE_LNG
     y_dist = (drone_lat - antenna_lat) * FEET_PER_DEGREE_LAT
     if (not pigpio) or (not pi.wave_tx_busy()):
-        new_stepper_pos = (math.degrees(math.atan2(y_dist, x_dist)) * STEPPER_SPR) // 360
+        new_stepper_pos = int((math.degrees(math.atan2(y_dist, x_dist)) * STEPPER_SPR) / 360)
         while (new_stepper_pos - stepper_pos > STEPPER_SPR/2):
             new_stepper_pos -= STEPPER_SPR
         while (new_stepper_pos - stepper_pos < -STEPPER_SPR/2):
@@ -118,9 +118,9 @@ if __name__ == "__main__":
 
     server_ip = 'localhost'
     if os.uname().machine.startswith("arm"): # if on raspberry pi
-        server_ip = '192.168.2.20' # static ip of ground station
+        server_ip = '192.168.1.20' # static ip of ground station
 
-    sio = socketio.Client() 
+    sio = socketio.Client()
 
     @sio.on('connect', namespace='/tracky')
     def on_connect():

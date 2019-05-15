@@ -12,6 +12,8 @@ import GoogleMap from "components/utils/GoogleMap/GoogleMap";
 import UasLogo from "components/utils/UasLogo/UasLogo";
 import settingsActions from "redux/actions/settingsActions";
 
+const defaultMapCenter = {lat: 34.0689, lng: -118.4452};
+
 const mapStateToProps = state => {
   return {
     settings: state.settings,
@@ -193,7 +195,7 @@ class Settings extends Component {
                       lng: this.props.interopData.mission.home_pos.longitude
                     } 
                   /*else*/: 
-                    {lat: 34.0689, lng: -118.4452}
+                    defaultMapCenter
                 }
                 defaultMapTypeId="customTiles"
                 defaultOptions={{
