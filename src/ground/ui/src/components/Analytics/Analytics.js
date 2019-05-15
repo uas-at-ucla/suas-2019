@@ -60,7 +60,7 @@ class Analytics extends Component {
   render () {
     return (  
       <Container className="Analytics">
-        <Row><Col></Col><Col className="logo"><UasLogo/></Col></Row>
+        <Row><Col className="logo"><UasLogo/></Col></Row>
         
         <Row>
         <div id="telemetry">
