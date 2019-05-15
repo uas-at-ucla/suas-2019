@@ -20,11 +20,11 @@ def build():
     print("done building")
 
 def run_all(args):
-    # run start-web (w/o Electron) if web option specified. Otherwise, run start (w/ Electron).
-    subprocess.call(["npm", "run", "start"+args.web], cwd="server")
+    # run all-web (w/o Electron) if web option specified. Otherwise, run start (w/ Electron).
+    subprocess.call(["npm", "run", "all"+args.web], cwd="server")
 
 def run_server(args):
-    subprocess.call(["node", "ground_server.js"], cwd="server")
+    subprocess.call(["npm", "run", "start"], cwd="server")
 
 def run_ui(args):
     # run start-web (w/o Electron) if web option specified. Otherwise, run start (w/ Electron).

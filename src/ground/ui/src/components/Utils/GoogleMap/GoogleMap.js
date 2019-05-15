@@ -1,54 +1,74 @@
-import React from 'react';
-import { withGoogleMap, GoogleMap } from 'react-google-maps';
+import React, { Component } from 'react';
+import { withScriptjs, withGoogleMap, GoogleMap } from 'react-google-maps';
 
 import './GoogleMap.css';
-import downloadToBrowser from '../../../utils/downloadToBrowser';
+import downloadToBrowser from 'utils/downloadToBrowser';
 
-const google = window.google;
+// UNCOMMENT TO USE MAPS OFFLINE
+// import 'google_maps_js_api';
+var google;
 
-const customTilesMapType = new google.maps.ImageMapType({
-  getTileUrl: (coord, zoom) => {
-    if (coord.y >= 0) {
-      let url = null;
-      try {
-        url = require(`google_maps_js_api/map_images/${zoom}/mag-${zoom}_x-${coord.x}_y-${coord.y}.jpg`);
-      } catch(e) {
-        url = `https://khms0.googleapis.com/kh?v=821&hl=en-US&x=${coord.x}&y=${coord.y}&z=${zoom}`;
+function getCustomTilesMapType() {
+  return new google.maps.ImageMapType({
+    getTileUrl: (coord, zoom) => {
+      if (coord.y >= 0) {
+        let url = null;
+        try {
+          // UNCOMMENT TO USE MAPS OFFLINE
+          // url = require(`google_maps_js_api/map_images/${zoom}/mag-${zoom}_x-${coord.x}_y-${coord.y}.jpg`);
+          if (!url) {
+            throw new Error();
+          }
+        } catch(e) {
+          url = `https://khms0.googleapis.com/kh?v=821&hl=en-US&x=${coord.x}&y=${coord.y}&z=${zoom}`;
+        }
+  
+        // UNCOMMENT TO TEST:
+        // tileLoaded(coord, zoom);
+  
+        return url;
       }
-
-      // UNCOMMENT TO TEST:
-      // tileLoaded(coord, zoom);
-
-      return url;
-    }
-  },
-  tileSize: new google.maps.Size(256, 256),
-  maxZoom: 20
-});
-
-function setMapType(mapComponent) {
-  if (mapComponent) {
-    let map = mapComponent.context.__SECRET_MAP_DO_NOT_USE_OR_YOU_WILL_BE_FIRED; // lol don't worry
-    map.mapTypes.set('customTiles', customTilesMapType);
-    map.setMapTypeId('customTiles');
-
-    // UNCOMMENT TO TEST:
-    // downloadTileListOnClick(map);
-  }
+    },
+    tileSize: new google.maps.Size(256, 256),
+    maxZoom: 20
+  });
 }
 
-const GoogleMapComponent = withGoogleMap((props) => (
-  <GoogleMap {...props} ref={setMapType} />
-));
+class GoogleMapWrapperComponent extends Component {
+  setMapType = (mapComponent) => {
+    if (mapComponent) {
+      google = window.google;
+      let customTilesMapType = getCustomTilesMapType();
+      let map = mapComponent.context.__SECRET_MAP_DO_NOT_USE_OR_YOU_WILL_BE_FIRED; // lol don't worry
+      map.mapTypes.set('customTiles', customTilesMapType);
+      // map.setMapTypeId('customTiles');
 
-const GoogleMapWrapperComponent = (props) => (
-  <GoogleMapComponent
-    loadingElement={<div style={{ height: `100%` }} />}
-    containerElement={<div style={{ height: `100%` }} />}
-    mapElement={<div style={{ height: `100%` }} />}
-    {...props}
-  />
-);
+      // pan smoothly when map center changes
+      this.componentDidUpdate = (prevProps) => {
+        if (prevProps.center !== this.props.center) {
+          mapComponent.panTo(this.props.center);
+        }
+      }
+  
+      // UNCOMMENT TO TEST:
+      // downloadTileListOnClick(map);
+    }
+  }
+  
+  GoogleMapComponent = withScriptjs(withGoogleMap((props) => (
+    <GoogleMap {...props} ref={this.setMapType} />
+  )));
+
+  render() {
+    return <this.GoogleMapComponent
+      loadingElement={<div style={{ height: `100%` }} />}
+      containerElement={<div style={{ height: `100%` }} />}
+      mapElement={<div style={{ height: `100%` }} />}
+      googleMapURL="https://maps.googleapis.com/maps/api/js?v=3.exp&libraries=geometry,drawing,visualization&key=AIzaSyBI-Gz_lh3-rKXFwlpElD7pInA60U-iK0c"
+      {...this.props}
+    />
+  }
+}
 
 export default GoogleMapWrapperComponent;
 
