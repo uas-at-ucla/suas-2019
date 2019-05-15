@@ -8,9 +8,9 @@ const mapStateToProps = state => {
   return {
     telemetry: state.telemetry.droneTelemetry,
     playback: state.telemetry.playback,
+    interopData: state.mission.interopData,
   };
 }
-
 
 var loadedTelemetry;
 var telemetryData = [];
@@ -24,6 +24,9 @@ const mapDispatchToProps = {
   },
   playback: function(telemetry) {
     return {type: 'PLAYBACK', payload: telemetry}
+  },
+  loadInteropData: function(data) {
+    return {type: 'INTEROP_DATA', payload: data}
   }
 }; //TODO Make action for recording telemetry, and action for starting playback
 
@@ -54,7 +57,7 @@ class Analytics extends Component {
             </button>
           </div>
           <div>Telemetry States Recorded: {telemetryData.length}</div>
-
+          
           <div>
           <input type="file" ref={this.fileInput} />
           </div>
@@ -70,10 +73,10 @@ class Analytics extends Component {
           </div>
 
           <div>
-            <button>
+            <button onClick={this.saveInteropMission}>
               Save Current Interop Mission
             </button>
-            <button>
+            <button onClick={this.loadInteropMission}>
               Load Interop Mission / Unload File
             </button>
           </div>
@@ -83,15 +86,24 @@ class Analytics extends Component {
     );
   }
 
-  saveInteropMission() {
+  saveInteropMission = () => {
     //TODO: add the interop data to mapStateToProps (see Map.js)
     //Save it to a file using JSON.stringify and downloadToBrowser
+    //console.log(this.props.interopData)
+    downloadToBrowser("interop.json", JSON.stringify(this.props.interopData, null, 2))
   }
 
-  loadInteropMission() {
-    let data;
+  loadInteropMission = () => {
     //TODO load JSON data from a file
-    this.props.dispatch({ type: 'INTEROP_DATA', payload: data });
+    //this.props.loadInteropData({ type: 'INTEROP_DATA', payload: data });
+
+    var reader = new FileReader()
+    reader.onload = (e) => {
+      let data = JSON.parse(e.target.result)
+      console.log(data)
+      this.props.loadInteropData(data)
+    }
+    reader.readAsText(this.fileInput.current.files[0]);
   }
 
   downloadTelemetry() {
@@ -127,7 +139,7 @@ class Analytics extends Component {
         //return e.target.result
         loadedTelemetry = JSON.parse(e.target.result)
         usingLoaded = true
-        console.log(loadedTelemetry)
+        //console.log(loadedTelemetry)
         var i = 0
         var intervalID = setInterval(() => {
           if(isPaused){
