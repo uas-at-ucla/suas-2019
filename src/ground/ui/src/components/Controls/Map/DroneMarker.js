@@ -36,7 +36,7 @@ class DroneMarker extends Component {
                 fillOpacity: 0.5,
                 scale: 7,
                 rotation: this.props.telemetry.sensors.heading,
-                anchor: window.google ? new window.google.maps.Point(0, 2.5) : null
+                anchor: {x: 0, y: 2.5}
               }}
             >
             </Marker>

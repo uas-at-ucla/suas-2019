@@ -4,15 +4,7 @@ import * as THREE from 'three';
 import './AttitudeIndicator.css';
 import NavballImg from './navball.png';
 
-
 class Navball extends Component {
-    constructor(props) {
-        super(props);
-
-        // State
-    }
-
-
     componentDidMount() {
         const WIDTH = 200;
         const HEIGHT = WIDTH;
@@ -37,9 +29,7 @@ class Navball extends Component {
         var texture = new THREE.TextureLoader().load(NavballImg);
         var material = new THREE.MeshPhongMaterial({map: texture});
         this.ball = new THREE.Mesh(sphereGeom , material);
-        this.ball.position.set(0 , 0 , 0);
-        this.ball.rotation.set(this.props.data["navX"] , this.props.data["navY"] - 3.1415926 / 2 , 
-            this.props.data["navZ"]);
+        this.ball.position.set(0, -3.14/2, 0);
         this.scene.add(this.ball);
 
         this.start();
@@ -59,9 +49,9 @@ class Navball extends Component {
 
 
     animate = () => {
-       this.ball.rotation.x = this.props.data["navX"];
-       this.ball.rotation.y = this.props.data["navY"] - 3.1415926 / 2;     // Zero me!
-       this.ball.rotation.z = this.props.data["navZ"];
+       this.ball.rotation.x = this.props.data["navX"];             //pitch
+       this.ball.rotation.y = this.props.data["navY"] - 3.1415926; //yaw
+       this.ball.rotation.z = this.props.data["navZ"];             //roll
        this.renderScene()
        this.frameId = window.requestAnimationFrame(this.animate)
     }
@@ -76,10 +66,8 @@ class Navball extends Component {
     render() {
         return(
             <div className="AttitudeIndicator">
-                <div className="navball-background">
-                </div>
-                <div className="navball" id="navball" ref={(mount) => {this.mount = mount}}>
-                </div>
+                <div className="navball-background"></div>
+                <div className="navball" id="navball" ref={(mount) => {this.mount = mount}}></div>
             </div>
         );
     }

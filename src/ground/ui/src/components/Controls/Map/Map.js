@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Marker, InfoWindow, Circle, Polyline } from 'react-google-maps';
+import { Marker, InfoWindow, Polyline } from 'react-google-maps';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
 
@@ -15,8 +15,7 @@ const mapStateToProps = state => {
     commandAnimate: state.mission.commandAnimate,
     mapCenter: state.telemetry.mapCenter,
     commandPoints: derivedData.mission.commandPoints,
-    protoInfo: derivedData.mission.protoInfo,
-    
+    protoInfo: derivedData.mission.protoInfo
   };
 };
 

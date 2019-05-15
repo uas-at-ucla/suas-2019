@@ -76,7 +76,7 @@ class InteropItems extends Component {
             icon={{
               url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/WA_80_cm_archery_target.svg/180px-WA_80_cm_archery_target.svg.png",
               scaledSize: {width: 25, height: 25},
-              anchor: window.google ? new window.google.maps.Point(12.5, 12.5) : null 
+              anchor: {x: 12.5, y: 12.5}
             }}
           >
             <div>Air Drop Position</div>
@@ -91,7 +91,7 @@ class InteropItems extends Component {
             icon={{
               url: "http://www.clker.com/cliparts/F/t/X/o/S/p/simple-blue-house-md.png",
               scaledSize: {width: 20, height: 20},
-              anchor: window.google ? new window.google.maps.Point(10, 10) : null
+              anchor: {x: 10, y: 10}
             }}
           >
             <div>Home Position</div>
@@ -106,7 +106,7 @@ class InteropItems extends Component {
             icon={{
               url: "https://allenhoole.co.uk/wp-content/uploads/2016/10/Person-Icon.png",
               scaledSize: {width: 20, height: 20},
-              anchor: window.google ? new window.google.maps.Point(10, 10) : null
+              anchor: {x: 10, y: 10}
             }}
           >
             <div>Emergent Object</div>
@@ -121,7 +121,7 @@ class InteropItems extends Component {
             icon={{
               url: "https://iconsplace.com/wp-content/uploads/_icons/ffa500/256/png/slr-camera-icon-11-256.png",
               scaledSize: {width: 20, height: 20},
-              anchor: window.google ? new window.google.maps.Point(10, 10) : null
+              anchor: {x: 10, y: 10}
             }}
           >        
             <div>Off Axis Position</div>

@@ -13,6 +13,7 @@
 #include <diagnostic_msgs/DiagnosticStatus.h>
 #include <diagnostic_msgs/KeyValue.h>
 #include <geometry_msgs/TwistStamped.h>
+#include <geometry_msgs/Quaternion.h>
 #include <google/protobuf/text_format.h>
 #include <mavros_msgs/Altitude.h>
 #include <mavros_msgs/CommandBool.h>
@@ -91,6 +92,8 @@ class RosToProto {
 
   ::ros::ServiceClient arming_service_;
 };
+
+void toEulerAngle(const ::geometry_msgs::Quaternion& q, double& roll, double& pitch, double& yaw);
 
 } // namespace ros_to_proto
 } // namespace io
