@@ -62,7 +62,7 @@ class Analytics extends Component {
         
         <Row>
         <div id="telemetry">
-        Telemetry: {JSON.stringify(this.props.telemetry)} 
+        Telemetry: {JSON.stringify(this.props.telemetry, null, 2)} 
         </div>
         </Row>
 
@@ -71,8 +71,8 @@ class Analytics extends Component {
 
           <Row>
             <Col>
-            <Button color={this.state.recording ? "danger" : "success"} onClick={this.toggleRecord}>
-              Record!!! / Stop Recording (and save to file)!!
+            <Button size="lg" color={this.state.recording ? "danger" : "secondary"} onClick={this.toggleRecord}> 
+              {this.state.recording ? "Save" : "Record"}
             </Button>
             </Col>
           </Row>
@@ -108,9 +108,9 @@ class Analytics extends Component {
         
 
         <br />
-
         <Row>
           <Col>
+          <h2>File Browser</h2>
           <input type="file" ref={this.fileInput} />
           </Col>
         </Row>
@@ -136,9 +136,7 @@ class Analytics extends Component {
       console.log(data)
       this.props.loadInteropData(data)
     }
-    if (reader.readyState == FileReader.EMPTY){
-      reader.abort()
-    }else{
+    if(this.fileInput.current.files.length > 0){
       reader.readAsText(this.fileInput.current.files[0]);
     }
   }
@@ -148,8 +146,8 @@ class Analytics extends Component {
   }
 
   toggleRecord = () => {
-    this.state.recording = !(this.state.recording);
-    if (!this.state.recording){
+    
+    if (this.state.recording){
       this.downloadTelemetry();
       var i
       var l = telemetryData.length
@@ -157,6 +155,7 @@ class Analytics extends Component {
         telemetryData.pop()
       }
     }
+    this.setState({recording: !(this.state.recording)});
   }
 
   handleSubmit(event) {
@@ -192,12 +191,16 @@ class Analytics extends Component {
           }
         }, 250)
         
-        }
-        if (reader.readyState == FileReader.EMPTY){
-          reader.abort()
-        }else{
-          reader.readAsText(this.fileInput.current.files[0]);
-        }
+      }
+        //if (reader.readyState == FileReader.EMPTY){
+        //  reader.abort()
+        //}else{
+      //console.log(reader.readyState)
+      if(this.fileInput.current.files.length > 0){
+        reader.readAsText(this.fileInput.current.files[0]);
+      }
+      
+        //}
     }else{
       isPaused = !isPaused
     }
