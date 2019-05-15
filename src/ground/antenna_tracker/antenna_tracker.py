@@ -11,6 +11,7 @@ import math
 from stepper_utils import StepperUtils
 
 # GPIO Pins
+LED = 15
 SERVO = 23
 STEPPER_DIR = 2
 STEPPER_STEP = 18
@@ -32,6 +33,7 @@ if pigpio:
 stepper_utils = StepperUtils(pigpio, pi, STEPPER_SPR, STEPPER_STEP, STEPPER_DIR)
 
 if pigpio:
+    pi.set_mode(LED, pigpio.OUTPUT)
     pi.set_mode(SERVO, pigpio.OUTPUT)
     pi.set_mode(STEPPER_DIR, pigpio.OUTPUT)
     pi.set_mode(STEPPER_STEP, pigpio.OUTPUT)
@@ -43,6 +45,7 @@ def on_shutdown(sig, frame):
         pi.wave_clear()
         pi.write(STEPPER_SLEEP, 0)
         pi.set_servo_pulsewidth(SERVO, SERVO_OFF)
+        pi.write(LED, 0)
         pi.stop()
     exit()
 signal.signal(signal.SIGINT, on_shutdown)
@@ -68,10 +71,16 @@ def configure_pos(antenna_pos):
 
 MAX_REVOLUTIONS = 2 # Don't tangle the wires!
 stepper_pos = 0 # East (must be calibrated on startup)
+led_state = False
 def track(drone_pos):
     global stepper_pos
+    global led_state
     if not position_configured:
         return
+
+    if pigpio: # flash LED so we know data is received
+        pi.write(LED, led_state)
+        led_state = not led_state
 
     drone_lat = drone_pos['latitude']
     drone_lng = drone_pos['longitude']
@@ -80,7 +89,7 @@ def track(drone_pos):
     x_dist = (drone_lng - antenna_lng) * FEET_PER_DEGREE_LNG
     y_dist = (drone_lat - antenna_lat) * FEET_PER_DEGREE_LAT
     if (not pigpio) or (not pi.wave_tx_busy()):
-        new_stepper_pos = (math.degrees(math.atan2(y_dist, x_dist)) * STEPPER_SPR) // 360
+        new_stepper_pos = int((math.degrees(math.atan2(y_dist, x_dist)) * STEPPER_SPR) / 360)
         while (new_stepper_pos - stepper_pos > STEPPER_SPR/2):
             new_stepper_pos -= STEPPER_SPR
         while (new_stepper_pos - stepper_pos < -STEPPER_SPR/2):
@@ -109,17 +118,21 @@ if __name__ == "__main__":
 
     server_ip = 'localhost'
     if os.uname().machine.startswith("arm"): # if on raspberry pi
-        server_ip = '192.168.2.20' # static ip of ground station
+        server_ip = '192.168.1.20' # static ip of ground station
 
-    sio = socketio.Client() 
+    sio = socketio.Client()
 
     @sio.on('connect', namespace='/tracky')
     def on_connect():
         print("connected to ground server")
+        if pigpio:
+            pi.write(LED, 1)
 
     @sio.on('disconnect', namespace='/tracky')
     def on_disconnect():
-        print("disconnected from ground server!") 
+        print("disconnected from ground server!")
+        if pigpio:
+            pi.write(LED, 0)
 
     @sio.on('CONFIGURE_POS', namespace='/tracky')
     def on_configure_pos(antenna_pos):

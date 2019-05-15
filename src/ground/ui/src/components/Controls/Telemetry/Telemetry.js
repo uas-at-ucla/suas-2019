@@ -23,9 +23,9 @@ class Telemetry extends Component {
       this.telmet = {
         pingDelay: pingDelay,
         autopilotState: rawTelmet["sensors"]["autopilot_state"],
-        navX: rawTelmet["sensors"]["gyro_x"],
-        navY: rawTelmet["sensors"]["gyro_y"],
-        navZ: rawTelmet["sensors"]["gyro_z"],
+        navX: rawTelmet["sensors"]["pitch"],
+        navY: rawTelmet["sensors"]["yaw"], //TODO check sign
+        navZ: rawTelmet["sensors"]["roll"],
         speed: rawTelmet["sensors"]["gps_ground_speed"] * KNOTS_PER_METER_SECOND,
         lat: rawTelmet["sensors"]["latitude"],
         long: rawTelmet["sensors"]["longitude"],
@@ -41,7 +41,7 @@ class Telemetry extends Component {
         pingDelay: null,
         autopilotState: null,
         navX: 0,
-        navY: 0,
+        navY: 3.14/2,
         navZ: 0,
         speed: 0,
         lat: 0,

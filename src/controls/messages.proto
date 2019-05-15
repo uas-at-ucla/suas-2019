@@ -8,7 +8,7 @@ message Sensors {
   optional double longitude                                                = 3;  // degrees (link above)
   optional float altitude                                                  = 4;  // meters above MSL (mean sea level) (http://docs.ros.org/api/mavros_msgs/html/msg/Altitude.html)
   optional float relative_altitude                                         = 5;  // meters above home position (link above)
-  optional float heading                                                   = 6;  // degrees (http://wiki.ros.org/mavros#mavros.2BAC8-Plugins.global_position)
+  optional float heading                                                   = 6;  // degrees clockwise from north (http://wiki.ros.org/mavros#mavros.2BAC8-Plugins.global_position)
   optional float velocity_x                                                = 7;  // m/s (https://mavlink.io/en/messages/common.html#LOCAL_POSITION_NED)
   optional float velocity_y                                                = 8;  // m/s (link above)
   optional float velocity_z                                                = 9;  // m/s (link above)
@@ -22,11 +22,14 @@ message Sensors {
   optional float gyro_x                                                    = 17; // rad/sec (link above)
   optional float gyro_y                                                    = 18; // rad/sec (link above)
   optional float gyro_z                                                    = 19; // rad/sec (link above)
-  optional float battery_voltage                                           = 20; // Volts (http://docs.ros.org/api/sensor_msgs/html/msg/BatteryState.html)
-  optional float battery_current                                           = 21; // A (negative when discharging) (link above)
-  optional bool armed                                                      = 22; // (http://docs.ros.org/api/mavros_msgs/html/msg/State.html)
-  optional string autopilot_state                                          = 23; // (link above)
-  optional double last_gps                                                 = 24;
+  optional float roll                                                      = 20; // radians (see ros_to_proto.cc)
+  optional float pitch                                                     = 21; // radians (see ros_to_proto.cc)
+  optional float yaw                                                       = 22; // radians counterclockwise from east (see ros_to_proto.cc)
+  optional float battery_voltage                                           = 26; // Volts (http://docs.ros.org/api/sensor_msgs/html/msg/BatteryState.html)
+  optional float battery_current                                           = 27; // A (negative when discharging) (link above)
+  optional bool armed                                                      = 28; // (http://docs.ros.org/api/mavros_msgs/html/msg/State.html)
+  optional string autopilot_state                                          = 29; // (link above)
+  optional double last_gps                                                 = 30;
 }
 
 message Goal {

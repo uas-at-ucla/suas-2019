@@ -6,7 +6,7 @@ import Logo from "graphics/uasLogo.svg";
 class UasLogo extends React.Component {
     render() {
         return (
-            <img className="logo-img" src={Logo}/>
+            <img className="logo-img" src={Logo} alt=""/>
         );
     }
 }

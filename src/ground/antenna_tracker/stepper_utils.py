@@ -16,7 +16,7 @@ class StepperUtils:
         self.STEPPER_ACCEL_AMOUNT = (self.STEPPER_MAX_HZ - self.STEPPER_MIN_HZ) * self.STEPPER_ACCEL_INTERVAL / self.STEPPER_MIN_TO_MAX_SPEED_STEPS
 
     def repeat_step_pulse(self, Hz, pulses):
-        delay = 1000000//Hz//2
+        delay = int(1000000/Hz/2)
         self.pi.wave_add_generic([self.pigpio.pulse(0, 1<<self.STEP, delay), self.pigpio.pulse(1<<self.STEP, 0, delay)])
         return [
             255, 0, # loop start
@@ -25,6 +25,7 @@ class StepperUtils:
         ]
 
     def move_stepper(self, steps):
+        print(steps)
         total_steps = 0
         self.pi.wave_clear() # clear any existing waveforms
         if (steps > 0):
@@ -32,9 +33,10 @@ class StepperUtils:
         else:
             steps = -steps
             self.pi.write(self.DIR, CW)
-        num_intervals = steps//2//self.STEPPER_ACCEL_INTERVAL
+        num_intervals = steps // (2*self.STEPPER_ACCEL_INTERVAL)
         wave_chain = []
         Hz = self.STEPPER_MIN_HZ
+        i = -1
         for i in range(num_intervals):
             wave_chain.extend(self.repeat_step_pulse(Hz, self.STEPPER_ACCEL_INTERVAL))
             total_steps += self.STEPPER_ACCEL_INTERVAL
@@ -50,7 +52,7 @@ class StepperUtils:
             Hz -= self.STEPPER_ACCEL_AMOUNT
             wave_chain.extend(self.repeat_step_pulse(Hz, self.STEPPER_ACCEL_INTERVAL))
             total_steps += self.STEPPER_ACCEL_INTERVAL
-        leftover_steps = steps%self.STEPPER_ACCEL_INTERVAL
+        leftover_steps = steps % (2*self.STEPPER_ACCEL_INTERVAL)
         wave_chain.extend(self.repeat_step_pulse(self.STEPPER_MIN_HZ, leftover_steps))
         total_steps += leftover_steps
         assert total_steps == steps
