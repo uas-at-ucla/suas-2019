@@ -12,6 +12,7 @@ void on_fail() { socketio_ground_controls->OnFail(); }
 
 GroundControls::GroundControls() :
     running_(false),
+    ros_node_handle_(),
     sensors_subscriber_(ros_node_handle_.subscribe(
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
         &GroundControls::SensorsReceived, this)),
@@ -88,16 +89,50 @@ void GroundControls::ReadRFD900() {
 void GroundControls::OnConnect() {
   client_.socket("drone")->on(
       "compile_ground_program",
-      ::sio::socket::event_listener_aux(
-          [&](::std::string const &name, ::sio::message::ptr const &data,
-              bool isAck, ::sio::message::list &ack_resp) {
-            (void)name;
-            (void)isAck;
-            (void)ack_resp;
-            (void)data;
+      ::sio::socket::event_listener_aux([&](::std::string const &name,
+                                            ::sio::message::ptr const &data,
+                                            bool isAck,
+                                            ::sio::message::list &ack_resp) {
+        (void)name;
+        (void)isAck;
+        (void)ack_resp;
 
-            // TODO: Compile ground program into drone program.
-          }));
+        // Get the encoded serialized GroundProgram protobuf from the payload.
+        ::std::string serialized_protobuf_mission = data->get_string();
+
+        // Use base64 to decode the string data into raw bytes.
+        serialized_protobuf_mission =
+            ::lib::base64_tools::Decode(serialized_protobuf_mission);
+
+        // Deserialize the GroundProgram protobuf from the serialized data.
+        ::src::controls::ground_controls::timeline::GroundProgram
+            ground_program;
+        if (!ground_program.ParseFromString(serialized_protobuf_mission)) {
+          ::std::cout << "drone program compilation failure: failed to "
+                         "deserialize protobuf data."
+                      << ::std::endl;
+          return;
+        }
+
+        // Compile the GroundProgram into a DroneProgram.
+        ::src::controls::ground_controls::timeline::DroneProgram drone_program;
+        bool success =
+            ground2drone_visitor_.Process(&ground_program, drone_program);
+
+        if (!success) {
+          ::std::cout << "drone program compilation failure: Could not compile "
+                         "GroundProgram"
+                      << ::std::endl;
+          return;
+        }
+
+        ::std::string serialized_drone_program;
+        drone_program.SerializeToString(&serialized_drone_program);
+        serialized_drone_program =
+            ::lib::base64_tools::Encode(serialized_drone_program);
+        client_.socket("drone")->emit("compiled_drone_program",
+                                      serialized_drone_program);
+      }));
 }
 
 void GroundControls::OnFail() { ::std::cout << "socketio failed! :(\n"; }

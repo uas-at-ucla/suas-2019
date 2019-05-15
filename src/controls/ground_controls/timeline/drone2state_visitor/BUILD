@@ -13,3 +13,9 @@ cc_library(
   ]
 )
 
+cc_binary(
+  name = 'drone2state_visitor_test',
+  visibility = ['//visibility:public'],
+  srcs = [ 'drone2state_visitor_test.cc' ],
+  deps = [ ':drone2state_visitor' ]
+)

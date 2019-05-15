@@ -22,8 +22,8 @@ TEST(Ground2DroneVisitorTest, CanVisit) {
   }
 
   Ground2DroneVisitor ground_to_drone_visitor;
-  DroneProgram drone_program =
-      ground_to_drone_visitor.Process(&input_instructions);
+  DroneProgram drone_program;
+  ground_to_drone_visitor.Process(&input_instructions, drone_program);
 
   ASSERT_EQ(drone_program.commands_size(), 10);
 
