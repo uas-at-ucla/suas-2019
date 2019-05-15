@@ -23,8 +23,8 @@ const mapStateToProps = state => {
 var loadedTelemetry;
 var telemetryData = [];
 //var recording = false;
-var usingLoaded = false;
-var isPaused = false;
+//var usingLoaded = false;
+//var isPaused = false;
 
 const mapDispatchToProps = {
   togglePlayback: function() {
@@ -41,7 +41,9 @@ const mapDispatchToProps = {
 
 class Analytics extends Component {
   state = {
-    recording: false
+    recording: false,
+    usingLoaded: false,
+    isPaused: false
   }
 
   constructor(props) {
@@ -86,7 +88,7 @@ class Analytics extends Component {
           <Row>
             <Col>
             <Button onClick={this.runLoaded}>
-              Run Loaded Telemetry / Pause Loaded Telemetry
+              {!this.state.usingLoaded ?  "Run Loaded Telemetry" : this.state.isPaused ? "Resume" : "Pause"}
             </Button>
             </Col>
           </Row>
@@ -101,7 +103,7 @@ class Analytics extends Component {
             </Col>
             <Col>
             <Button onClick={this.loadInteropMission}>
-              Load Interop Mission / Unload File
+              Load Interop Mission
             </Button>
             </Col>
           </Row>
@@ -168,23 +170,23 @@ class Analytics extends Component {
   }
 
   runLoaded = () => {
-    if (!usingLoaded){
+    if (!this.state.usingLoaded){
       this.props.togglePlayback();
       var reader = new FileReader()
       reader.onload = (e) => {
         //return e.target.result
         loadedTelemetry = JSON.parse(e.target.result)
-        usingLoaded = true
+        this.state.usingLoaded = true
         //console.log(loadedTelemetry)
         var i = 0
         var intervalID = setInterval(() => {
-          if(isPaused){
+          if(this.state.isPaused){
             
           }else{
             this.props.playback(loadedTelemetry[i])
             i = i + 1
             if (i > loadedTelemetry.length) {
-              usingLoaded = false
+              this.state.usingLoaded = false
               clearInterval(intervalID)
               this.props.togglePlayback()
             }
@@ -202,12 +204,12 @@ class Analytics extends Component {
       
         //}
     }else{
-      isPaused = !isPaused
+      this.setState({isPaused: !(this.state.isPaused)});
     }
   }
 
   stringifyTelemetry = string => {
-    if (!(this.usingLoaded)) {
+    if (!(this.state.usingLoaded)) {
       return JSON.stringify(this.props.telemetry)
     }else{
       return JSON.stringify(this.loadedTelemetry)
