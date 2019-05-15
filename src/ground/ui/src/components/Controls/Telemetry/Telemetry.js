@@ -23,8 +23,8 @@ class Telemetry extends Component {
       this.telmet = {
         pingDelay: pingDelay,
         autopilotState: rawTelmet["sensors"]["autopilot_state"],
-        navX: rawTelmet["sensors"]["pitch"],
-        navY: rawTelmet["sensors"]["yaw"], //TODO check sign
+        navX: -rawTelmet["sensors"]["pitch"],
+        navY: rawTelmet["sensors"]["yaw"],
         navZ: rawTelmet["sensors"]["roll"],
         speed: rawTelmet["sensors"]["gps_ground_speed"] * KNOTS_PER_METER_SECOND,
         lat: rawTelmet["sensors"]["latitude"],
