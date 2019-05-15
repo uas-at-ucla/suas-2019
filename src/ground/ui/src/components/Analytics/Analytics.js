@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
-  Button, Container, Row, Col,
+  Button, Container, Row, Col,ButtonGroup,
   InputGroup, InputGroupAddon, InputGroupText, Input,
   InputGroupButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem
 } from "reactstrap";
@@ -87,7 +87,7 @@ class Analytics extends Component {
             </button> */}
           <Row>
             <Col>
-            <Button onClick={this.runLoaded}>
+            <Button color={!this.state.usingLoaded ?  "secondary" : this.state.isPaused ? "success" : "info"} onClick={this.runLoaded}>
               {!this.state.usingLoaded ?  "Run Loaded Telemetry" : this.state.isPaused ? "Resume" : "Pause"}
             </Button>
             </Col>
@@ -97,14 +97,15 @@ class Analytics extends Component {
 
           <Row>
             <Col>
-            <Button onClick={this.saveInteropMission}>
+            <ButtonGroup>
+            <Button color="secondary" onClick={this.saveInteropMission}>
               Save Current Interop Mission
             </Button>
-            </Col>
-            <Col>
-            <Button onClick={this.loadInteropMission}>
+            
+            <Button color="primary" onClick={this.loadInteropMission}>
               Load Interop Mission
             </Button>
+            </ButtonGroup>
             </Col>
           </Row>
         
