@@ -4,7 +4,7 @@
 //  Expects "Hello" from client, replies with "World"
 //
 
-#define ZMQ_BUILD_DRAFT_API 1
+//#define ZMQ_BUILD_DRAFT_API 1
 
 #include <iostream>
 #include <string>
@@ -31,7 +31,7 @@ int main() {
 
     ::std::string output;
     cmd.SerializeToString(&output);
-
+    
     zmq::message_t request;
 
     //  Wait for next request from client

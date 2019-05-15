@@ -7,5 +7,5 @@ cc_library(
   ]),
   deps = [
     '@libzmq//:libzmq',
-  ],
+  ]
 )
