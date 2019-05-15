@@ -1,8 +1,16 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import {
+  Button, Container, Row, Col,
+  InputGroup, InputGroupAddon, InputGroupText, Input,
+  InputGroupButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem
+} from "reactstrap";
 
 import './Analytics.css';
 import downloadToBrowser from 'utils/downloadToBrowser';
+
+import UasLogo from "components/utils/UasLogo/UasLogo";
+
 
 const mapStateToProps = state => {
   return {
@@ -14,7 +22,7 @@ const mapStateToProps = state => {
 
 var loadedTelemetry;
 var telemetryData = [];
-var recording = false;
+//var recording = false;
 var usingLoaded = false;
 var isPaused = false;
 
@@ -32,6 +40,10 @@ const mapDispatchToProps = {
 
 
 class Analytics extends Component {
+  state = {
+    recording: false
+  }
+
   constructor(props) {
     super(props);
     this.handleSubmit = this.handleSubmit.bind(this);
@@ -39,50 +51,71 @@ class Analytics extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    if (recording && prevProps.telemetry !== this.props.telemetry) {
+    if (this.state.recording && prevProps.telemetry !== this.props.telemetry) {
       telemetryData.push(this.props.telemetry)
     }
   }
   render () {
     return (  
-      <span className="Analytics">
+      <Container className="Analytics">
+        <Row><Col></Col><Col className="logo"><UasLogo/></Col></Row>
+        
+        <Row>
         <div id="telemetry">
         Telemetry: {JSON.stringify(this.props.telemetry)} 
         </div>
+        </Row>
 
-        <div id="buttons">
-          <div>
-            <button onClick={this.toggleRecord}>
+        <br />
+        <br />
+
+          <Row>
+            <Col>
+            <Button color={this.state.recording ? "danger" : "success"} onClick={this.toggleRecord}>
               Record!!! / Stop Recording (and save to file)!!
-            </button>
-          </div>
-          <div>Telemetry States Recorded: {telemetryData.length}</div>
+            </Button>
+            </Col>
+          </Row>
+          <Row><Col>Telemetry States Recorded: <b>{telemetryData.length}</b></Col></Row>
           
-          <div>
-          <input type="file" ref={this.fileInput} />
-          </div>
 
-          <div>
+          <br />
             {/* <button onClick={this.handleSubmit}>
               Load Telemetry File / Unload File
             </button> */}
-            
-            <button onClick={this.runLoaded}>
+          <Row>
+            <Col>
+            <Button onClick={this.runLoaded}>
               Run Loaded Telemetry / Pause Loaded Telemetry
-            </button>
-          </div>
+            </Button>
+            </Col>
+          </Row>
 
-          <div>
-            <button onClick={this.saveInteropMission}>
+          <br />
+
+          <Row>
+            <Col>
+            <Button onClick={this.saveInteropMission}>
               Save Current Interop Mission
-            </button>
-            <button onClick={this.loadInteropMission}>
+            </Button>
+            </Col>
+            <Col>
+            <Button onClick={this.loadInteropMission}>
               Load Interop Mission / Unload File
-            </button>
-          </div>
-        </div>
+            </Button>
+            </Col>
+          </Row>
+        
 
-        </span>
+        <br />
+
+        <Row>
+          <Col>
+          <input type="file" ref={this.fileInput} />
+          </Col>
+        </Row>
+
+        </Container>
     );
   }
 
@@ -96,14 +129,18 @@ class Analytics extends Component {
   loadInteropMission = () => {
     //TODO load JSON data from a file
     //this.props.loadInteropData({ type: 'INTEROP_DATA', payload: data });
-
+    
     var reader = new FileReader()
     reader.onload = (e) => {
       let data = JSON.parse(e.target.result)
       console.log(data)
       this.props.loadInteropData(data)
     }
-    reader.readAsText(this.fileInput.current.files[0]);
+    if (reader.readyState == FileReader.EMPTY){
+      reader.abort()
+    }else{
+      reader.readAsText(this.fileInput.current.files[0]);
+    }
   }
 
   downloadTelemetry() {
@@ -111,8 +148,8 @@ class Analytics extends Component {
   }
 
   toggleRecord = () => {
-    recording = !(recording);
-    if (!recording){
+    this.state.recording = !(this.state.recording);
+    if (!this.state.recording){
       this.downloadTelemetry();
       var i
       var l = telemetryData.length
@@ -156,7 +193,11 @@ class Analytics extends Component {
         }, 250)
         
         }
-        reader.readAsText(this.fileInput.current.files[0]);
+        if (reader.readyState == FileReader.EMPTY){
+          reader.abort()
+        }else{
+          reader.readAsText(this.fileInput.current.files[0]);
+        }
     }else{
       isPaused = !isPaused
     }
