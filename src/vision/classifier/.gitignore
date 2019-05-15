@@ -1,0 +1,5 @@
+letter_model.hdf5
+shape_model.hdf5
+
+models/
+.ipynb_checkpoints/
