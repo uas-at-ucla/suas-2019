@@ -15,7 +15,7 @@ GroundControls::GroundControls() :
     ros_node_handle_(),
     sensors_subscriber_(ros_node_handle_.subscribe(
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
-        &GroundControls::SensorsReceived, this)),
+        &GroundControls::SensorsReceived, this, ros::TransportHints().udp())),
     udp_connection_("tcp://127.0.0.1:6005", 1),
     rfd900_connection_("/dev/ttyUSB0", B57600, 0), // TODO
     phased_loop_(1e2) {
