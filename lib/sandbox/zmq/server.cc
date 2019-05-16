@@ -4,7 +4,7 @@
 //  Expects "Hello" from client, replies with "World"
 //
 
-//#define ZMQ_BUILD_DRAFT_API 1
+#define ZMQ_BUILD_DRAFT_API 1
 
 #include <iostream>
 #include <string>

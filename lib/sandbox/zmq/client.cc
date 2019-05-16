@@ -3,7 +3,7 @@
 //  Connects REQ socket to tcp://localhost:5555
 //  Sends "Hello" to server, expects "World" back
 //
-//#define ZMQ_BUILD_DRAFT_API 1
+#define ZMQ_BUILD_DRAFT_API 1
 
 #include <iostream>
 #include <sstream>

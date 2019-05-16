@@ -86,7 +86,7 @@ new_git_repository(
 
 new_git_repository(
   name = "libzmq",
-  commit = "b1fd3b2740f4b18ee25aefe193b31e319fcfbbe5",
+  commit = "257244abdd1dbdeeb8f41ed2bcd2d858e0addc16",
   build_file = "third_party/libzmq.BUILD",
   remote = "https://github.com/uas-at-ucla/libzmq.git",
 )
