@@ -1,11 +1,11 @@
-.Telemetry .AttitudeIndicator {
+.AttitudeIndicator {
     position: relative;
     margin-bottom: 10px;
     height: 200px;
     width: 200px;
 }
 
-.Telemetry .AttitudeIndicator > .navball-background {
+.AttitudeIndicator > .navball-background {
     position: absolute;
     margin: 5px;
     background: radial-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 1));
@@ -15,7 +15,7 @@
     width: calc(100% - 10px);
 }
 
-.Telemetry .AttitudeIndicator > .navball {
+.AttitudeIndicator > .navball {
     position: absolute;
     padding: 5px;
     background: rgba(0, 0, 0, 0.6);
@@ -25,4 +25,17 @@
     overflow: hidden;
     height: 100%;
     width: 100%;
+}
+
+.AttitudeIndicator > .position-ref-container {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.AttitudeIndicator .position-ref {
+    width: 50%;
 }
