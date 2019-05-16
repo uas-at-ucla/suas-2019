@@ -2,13 +2,15 @@
 
 const axios = require('axios');
 const qs = require('qs');
-const config = require('./config');
+const config = require('../config');
 
 const interopSendFrequency = 2; //Hz
 const sendInterval = {
   [config.droneSensorsFrequency]: Math.floor(config.droneSensorsFrequency / interopSendFrequency),
   [config.droneSensorsFreqRFD900]: Math.floor(config.droneSensorsFreqRFD900 / interopSendFrequency)
 }
+
+const emptyPromise = new Promise(()=>{});
 
 class InteropClient {
   // axiosInstance;
@@ -46,6 +48,7 @@ class InteropClient {
   }
 
   newTelemetry(telemetry, frequency) {
+    let promise = emptyPromise;
     if (telemetry.sensors) {
       if (this.telemetryCount == sendInterval[frequency]) {
         let interopTelemetry = {
@@ -55,16 +58,18 @@ class InteropClient {
           uas_heading: telemetry.sensors.heading
         }
         // console.log(interopTelemetry);
-        this.postTelemetry(interopTelemetry).then(msg => 
+        promise = this.postTelemetry(interopTelemetry).then(msg => 
           config.verbose && console.log(msg)
         ).catch(error => {
           console.log("Failed to upload telemetry!");
           if (config.verbose) console.log(error);
+          throw error;
         });
         this.telemetryCount = 0;
       }
       this.telemetryCount++;
     }
+    return promise;
   }
 }
 

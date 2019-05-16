@@ -1,5 +1,5 @@
 const socketIOClient = require('socket.io-client');
-const config = require('../config');
+const config = require('../../config');
 
 const port = 8081;
 
