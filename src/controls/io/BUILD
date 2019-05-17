@@ -7,9 +7,6 @@ cc_binary(
   deps = [
     ":io_lib"
   ],
-  copts = [
-    "-g",
-  ],
 )
 
 cc_library(
@@ -22,28 +19,15 @@ cc_library(
     'io.h'
   ],
   deps = [
-    ':loop_handler',
-    '//src/controls/io/autopilot_interface:autopilot_interface',
     '//src/controls:messages_cpp',
-    '//lib/logger:log_sender',
-    '//lib/dslr_interface:dslr_interface',
-    '//lib/proto_comms:proto_comms',
-    '//lib/trigger:trigger',
+    '//src/controls/io/led_strip:led_strip',
+    '//src/controls/io/ros_to_proto:ros_to_proto',
+    '//lib/ros:ros',
+    '//lib/alarm:alarm',
+    '//lib/phased_loop:phased_loop',
     "@WiringPi//:WiringPi",
     "@pigpio//:pigpio",
-  ],
-)
-
-cc_library(
-  name = 'loop_handler',
-  visibility = ['//visibility:public'],
-  srcs = [
-    'loop_handler.cc'
-  ],
-  hdrs = [
-    'loop_handler.h'
-  ],
-  deps = [
-    '//lib/phased_loop:phased_loop',
+    "@mavros_msgs//:mavros_msgs",
+    "@sensor_msgs//:sensor_msgs",
   ],
 )

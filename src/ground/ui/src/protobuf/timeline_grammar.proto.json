@@ -43,6 +43,11 @@
         "rule": "required",
         "type": "double",
         "id": 2
+      },
+      "cylinderHeight": {
+        "rule": "required",
+        "type": "double",
+        "id": 3
       }
     }
   },

@@ -13,7 +13,7 @@ void UnknownState::Handle(::src::controls::Sensors &sensors,
   (void)goal;
   (void)output;
 
-  LOG_LINE("Unknown state!");
+  // LOG_LINE("Unknown state!");
 }
 
 void UnknownState::Reset() {}

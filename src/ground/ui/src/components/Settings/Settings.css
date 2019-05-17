@@ -1,0 +1,13 @@
+.Settings .logo {
+  text-align: center;
+}
+
+.Settings .row {
+  margin-bottom: 10px;
+}
+
+.Settings .connect-btn {
+  margin-right: 10px;
+  padding-top: 6px;
+  padding-bottom: 6px;
+}

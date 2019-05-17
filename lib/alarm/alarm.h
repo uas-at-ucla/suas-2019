@@ -16,6 +16,7 @@ class Alarm {
   Alarm(double frequency);
   void AddAlert(AlertPeriod alert_period);
   bool ShouldAlarm();
+  void ClearAlerts();
 
  private:
   ::std::queue<AlertPeriod> alerts_;

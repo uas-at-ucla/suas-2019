@@ -55,16 +55,6 @@ RUN apt-get install -y                                                         \
   xvfb                                                                         \
   vim
 
-# Set up Oracle Java8. #########################################################
-RUN add-apt-repository                                                         \
-     "deb http://ppa.launchpad.net/webupd8team/java/ubuntu xenial main"
-RUN apt-get update                                                          && \
-    echo debconf shared/accepted-oracle-license-v1-1 select true             | \
-    debconf-set-selections                                                  && \
-    apt-get install -y                                                         \
-      oracle-java8-installer
-
-
 # Set up workspace. ############################################################
 RUN useradd -ms /bin/bash uas
 RUN echo 'uas:spinny' | chpasswd
@@ -72,7 +62,7 @@ RUN echo "%sudo  ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 RUN usermod -aG sudo uas
 
 # User env setup. ##############################################################
-RUN apt-get install -y \
+RUN apt-get update && apt-get install -y \
     bzip2 \
     ca-certificates \
     ccache \
@@ -113,6 +103,23 @@ RUN apt-get install -y \
       libreadline-dev \
       xvfb
 
+# needed for cmavnode
+RUN apt-get update && apt-get install -y libpthread-stubs0-dev
+
+# needed for mavlink-router
+RUN apt-get update && apt-get install -y python3-pip
+RUN pip3 install --upgrade pip && pip3 install future
+
+# Get Oracle Java 8
+RUN apt-get update && apt-get install -y locales && \
+    echo oracle-java8-installer shared/accepted-oracle-license-v1-1            \
+      select true | debconf-set-selections                                  && \
+    wget -O oracle-java8-installer.deb http://debian.opennms.org/dists/opennms-23/main/binary-all/oracle-java8-installer_8u131-1~webupd8~2_all.deb && \
+    dpkg -i ./oracle-java8-installer.deb && apt-get install -f && \
+    wget -O oracle-java8-set-default.deb http://debian.opennms.org/dists/opennms-23/main/binary-all/oracle-java8-set-default_8u131-1~webupd8~2_all.deb && \
+    dpkg -i ./oracle-java8-set-default.deb && apt-get install -f && \
+    apt autoremove -y && rm ./oracle-java8-installer.deb ./oracle-java8-set-default.deb
+
 USER uas
 WORKDIR /home/uas
 RUN git clone https://github.com/MonashUAS/cmavnode.git && \
@@ -132,7 +139,7 @@ RUN git clone https://github.com/intel/mavlink-router.git && \
     make && \
     sudo make install
 
-RUN pip install --user mavproxy
+RUN pip install --upgrade pip && pip install --user mavproxy
 
 WORKDIR /home/uas
 

@@ -14,4 +14,16 @@ then
   exit 1
 fi
 
-docker exec -t $UAS_AT_UCLA_IMAGE sh -c "for f in /tmp/docker-exec-*.pid;do PID=\$(cat \"\$f\");echo \"KILLING \$PID\";kill -15 \$PID > /dev/null 2>&1 || true;rm \$f;done"
+docker exec -t $UAS_AT_UCLA_IMAGE sh -c " \
+  for f in /tmp/docker-exec-*.pid
+  do
+    if [ ! -f \"\$f\" ]
+    then
+      continue
+    fi
+
+    PID=\$(cat \"\$f\")
+    echo \"KILLING \$PID\"
+    kill -15 \$PID > /dev/null 2>&1 || true
+    rm \$f
+  done"

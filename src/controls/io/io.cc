@@ -4,135 +4,184 @@ namespace src {
 namespace controls {
 namespace io {
 
-autopilot_interface::AutopilotInterface *copter_io_quit;
-IO *io_quit;
-void quit_handler(int sig) {
-  io_quit->Quit();
-
-  try {
-    copter_io_quit->handle_quit(sig);
-  } catch (int error) {
-  }
-}
-
-IO::IO(const char *drone_address) :
-    autopilot_interface_(drone_address),
-    autopilot_output_writer_(&autopilot_interface_) {
-  copter_io_quit = &autopilot_interface_;
-  io_quit = this;
-  signal(SIGINT, quit_handler);
-}
-
-void IO::Run() {
-  autopilot_interface_.start();
-
-  ::std::thread autopilot_output_writer_thread(
-      ::std::ref(autopilot_output_writer_));
-
-  autopilot_output_writer_thread.join();
-  ::std::cout << "HERE\n";
-  autopilot_interface_.stop();
-}
-
-void IO::Quit() {
-  run_ = false;
-  // autopilot_sensor_reader_.Quit();
-  autopilot_output_writer_.Quit();
-}
-
-AutopilotOutputWriter::AutopilotOutputWriter(
-    autopilot_interface::AutopilotInterface *copter_io) :
-    autopilot_interface_(copter_io),
-    output_receiver_("ipc:///tmp/uasatucla_output.ipc", 5),
-    takeoff_trigger_(kTriggerSignalTolerance),
-    hold_trigger_(kTriggerSignalTolerance),
-    offboard_trigger_(kTriggerSignalTolerance),
-    rtl_trigger_(kTriggerSignalTolerance),
-    land_trigger_(kTriggerSignalTolerance),
-    arm_trigger_(kTriggerSignalTolerance),
-    disarm_trigger_(kTriggerSignalTolerance) {
+IO::IO() :
+    alarm_(kWriterPhasedLoopFrequency),
+    next_sensors_write_(::lib::phased_loop::GetCurrentTime()),
+    should_override_alarm_(false),
+    last_alarm_override_(::lib::phased_loop::GetCurrentTime()),
+    did_arm_(false),
+    sensors_publisher_(ros_node_handle_.advertise<::src::controls::Sensors>(
+        kRosSensorsTopic, kRosMessageQueueSize)),
+    output_subscriber_(ros_node_handle_.subscribe(
+        kRosOutputTopic, kRosMessageQueueSize, &IO::Output, this)),
+    alarm_subscriber_(ros_node_handle_.subscribe(kRosAlarmTriggerTopic,
+                                                 kRosMessageQueueSize,
+                                                 &IO::AlarmTriggered, this)),
+    rc_input_subscriber_(ros_node_handle_.subscribe(
+        kRosRcInTopic, kRosMessageQueueSize, &IO::RcInReceived, this)),
+    battery_status_subscriber_(
+        ros_node_handle_.subscribe(kRosBatteryStatusTopic, kRosMessageQueueSize,
+                                   &IO::BatteryStatusReceived, this)),
+    state_subscriber_(ros_node_handle_.subscribe(
+        kRosStateTopic, kRosMessageQueueSize, &IO::StateReceived, this)),
+    imu_subscriber_(ros_node_handle_.subscribe(
+        kRosImuTopic, kRosMessageQueueSize, &IO::ImuReceived, this)),
+    writer_thread_(&IO::WriterThread, this),
+    writer_phased_loop_(kWriterPhasedLoopFrequency) {
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   // Alarm IO setup.
   wiringPiSetup();
-  pinMode(kAlarmGPIOPin, OUTPUT);
-
-  // Gimbal IO setup.
   pigpio_ = pigpio_start(0, 0);
-  set_mode(pigpio_, 23, PI_OUTPUT);
-  set_mode(pigpio_, 24, PI_OUTPUT);
+
+  pinMode(kAlarmGPIOPin, OUTPUT);
+  softPwmCreate(kDeploymentGPIOPin, 0, 100);
+  set_mode(pigpio_, kGimbalGPIOPin, PI_OUTPUT);
 #endif
+
+  // Chirp when the io program starts.
+  alarm_.AddAlert({kAlarmChirpDuration, 0});
 }
 
-void AutopilotOutputWriter::RunIteration() {
-  ::src::controls::Output output;
-  if (!output_receiver_.HasMessages()) {
-    return;
-  }
+void IO::WriterThread() {
+  while (::ros::ok()) {
+    // Write out the alarm signal.
+    bool should_override_alarm = (should_override_alarm_ &&
+                                  last_alarm_override_ + kAlarmOverrideTimeGap >
+                                      ::lib::phased_loop::GetCurrentTime());
+    bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
 
-  output = output_receiver_.GetLatest();
-
-  if (output.dslr()) {
-    dslr_interface_.TakePhotos();
-  }
-
-  mavlink_set_position_target_local_ned_t sp;
-
-  autopilot_interface::set_velocity(output.velocity_x(), output.velocity_y(),
-                                    output.velocity_z(), sp);
-
-  autopilot_interface::set_yaw(output.yaw_setpoint(), sp);
-
-  autopilot_interface_->update_setpoint(sp);
+    led_strip_.set_alarm(should_override_alarm);
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
-  digitalWrite(kAlarmGPIOPin, output.alarm() ? HIGH : LOW);
+    digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
+    // static int i = 1300;
+    // static bool up = true;
+    // if(up) {
+    //   i++;
+    //   if(i > 1700) {
+    //     up = false;
+    //   }
+    // } else {
+    //   i--;
+    //   if(i < 1300) {
+    //     up = true;
+    //   }
+    // }
+    // softPwmWrite(kDeploymentGPIOPin, i / 10);
+    // if(i % 10 == 0) {
+    //   ::std::cout << "sending " << i << ::std::endl;
+    // }
+    // set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, kGimbalMiddlePpmSignal);
 
-  int bomb_drop_signal = output.bomb_drop() ? 1000 : 1600;
-
-  set_servo_pulsewidth(pigpio_, 23, bomb_drop_signal);
-
-  int gimbal_angle = 1000 + output.gimbal_angle() * 1000;
-  set_servo_pulsewidth(pigpio_, 24, gimbal_angle);
+    // Set gimbal angle
+    static int i = 15000;
+    static bool flip = false;
+    if (flip) {
+      i--;
+      if (i < 11000) {
+        flip = false;
+      }
+    } else {
+      i++;
+      if (i > 19000) {
+        flip = true;
+      }
+    }
+    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, i / 10);
 #endif
 
-  if (takeoff_trigger_.Process(output.trigger_takeoff())) {
-    autopilot_interface_->Takeoff();
-  }
+    // Write output to LED strip.
+    led_strip_.Render();
 
-  if (hold_trigger_.Process(output.trigger_hold())) {
-    autopilot_interface_->Hold();
-  }
+    // Write out sensors protobuf at a slower rate than the write loop.
+    if (::lib::phased_loop::GetCurrentTime() > next_sensors_write_ &&
+        ros_to_proto_.SensorsValid()) {
+      sensors_publisher_.publish(ros_to_proto_.GetSensors());
 
-  if (offboard_trigger_.Process(output.trigger_offboard())) {
-    autopilot_interface_->Offboard();
-  }
+      next_sensors_write_ =
+          ::lib::phased_loop::GetCurrentTime() + kSensorsPublisherPeriod;
+    }
 
-  if (offboard_trigger_.Process(output.trigger_rtl())) {
-    autopilot_interface_->ReturnToLaunch();
-  }
+    // Log the current GPIO outputs.
+    ROS_DEBUG_STREAM("Writer thread iteration: "
+                     << ::std::endl
+                     << "alarm[" << should_alarm << "]" << ::std::endl
+                     << "led_strip[" << led_strip_.GetStrip() << ::std::endl
+                     << "]");
 
-  if (land_trigger_.Process(output.trigger_land())) {
-    autopilot_interface_->Land();
-  }
-
-  if (arm_trigger_.Process(output.trigger_arm())) {
-    autopilot_interface_->Arm();
-  }
-
-  if (disarm_trigger_.Process(output.trigger_disarm())) {
-    autopilot_interface_->Disarm();
+    // Wait until next iteration of loop.
+    writer_phased_loop_.sleep();
   }
 }
 
-void AutopilotOutputWriter::Stop() {
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-  // Don't leave the alarm on after quitting code.
-  digitalWrite(kAlarmGPIOPin, LOW);
-#endif
+void IO::Output(const ::src::controls::Output output) {
+  ROS_DEBUG_STREAM(
+      "Got output protobuf from flight_loop. vx: " << output.velocity_x());
+}
 
-  // No recent output queue messages received, so land drone.
-  dslr_interface_.Quit();
+void IO::AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence) {
+  ROS_DEBUG_STREAM("Alarm triggered via ROS.");
+
+  // Override any current alarms.
+  alarm_.ClearAlerts();
+
+  // Iterate through all on-off pairs and add them to the alarm sequence.
+  for (int i = 0; i < alarm_sequence.on_off_cycles_size() -
+                          alarm_sequence.on_off_cycles_size() % 2;
+       i += 2) {
+    alarm_.AddAlert(
+        {alarm_sequence.on_off_cycles(i), alarm_sequence.on_off_cycles(i + 1)});
+  }
+}
+
+void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
+  bool new_should_override_alarm = should_override_alarm_;
+
+  // Trigger the alarm if the RC controller override switch was flipped.
+  if (rc_in.channels[kAlarmOverrideRcChannel - 1] >
+      kAlarmOverrideRcSignalThreshold) {
+    new_should_override_alarm = true;
+    last_alarm_override_ = ::lib::phased_loop::GetCurrentTime();
+  } else {
+    new_should_override_alarm = false;
+  }
+
+  // Record a log message on every edge.
+  if (new_should_override_alarm != should_override_alarm_) {
+    ROS_INFO_STREAM("Alarm RC override changed: " << should_override_alarm_
+                                                  << " -> "
+                                                  << new_should_override_alarm);
+  }
+
+  should_override_alarm_ = new_should_override_alarm;
+}
+
+void IO::BatteryStatusReceived(
+    const ::sensor_msgs::BatteryState battery_state) {
+  led_strip_.set_battery_percentage(battery_state.percentage);
+}
+
+void IO::StateReceived(const ::mavros_msgs::State state) {
+  if (state.armed != did_arm_) {
+    ROS_INFO_STREAM("Arming state changed: "
+                    << (did_arm_ ? "ARMED" : "DISARMED") << " -> "
+                    << (state.armed ? "ARMED" : "DISARMED"));
+
+    if (state.armed) {
+      // Send out the armed chirp.
+      // alarm_.AddAlert({kAlarmChirpDuration, 0});
+    }
+
+    did_arm_ = state.armed;
+  }
+
+  led_strip_.set_armed(state.armed);
+}
+
+void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
+  (void)imu;
+  led_strip_.set_last_imu(::lib::phased_loop::GetCurrentTime());
 }
 
 } // namespace io

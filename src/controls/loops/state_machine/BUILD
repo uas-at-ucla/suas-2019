@@ -23,11 +23,9 @@ cc_library(
   deps = [
     '//src/controls:messages_cpp',
 
-    '//src/controls/ground_server/timeline/executor:executor',
-    '//lib/logger:log_writer_lib',
+    '//src/controls/ground_controls/timeline/executor:executor',
     '//lib/proto_comms:proto_comms',
     '//lib/physics_structs:physics_structs',
-    '//lib/logger:log_sender',
     '//lib/phased_loop:phased_loop',
     '//lib/alarm:alarm',
   ],

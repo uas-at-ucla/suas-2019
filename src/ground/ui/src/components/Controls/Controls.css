@@ -4,7 +4,6 @@
 
 .Controls .Map {
   position: absolute;
-  top: 0;
   width: 100vw;
   height: 100vh;
   z-index: -1;
@@ -13,9 +12,9 @@
 .Controls .map-overlay {
   padding: 10px;
   position: absolute;
-  top: 0;
   height: 100%;
   width: 100%;
+  bottom:0; 
   pointer-events: none;
 }
 
@@ -30,9 +29,10 @@
 }
 
 .Controls .left-side {
+  position: absolute;
+  padding-top: 50px;
   height: 100%;
   width: 100%;
-  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -43,8 +43,6 @@
   flex-direction: column;
   align-items: flex-start;
   flex-grow: 1;
-  flex-shrink: 10000;
-  overflow: auto;
   padding-bottom: 10px;
 }
 
@@ -53,12 +51,26 @@
 }
 
 .Controls .right-side {
+  position: absolute;
   height: 100%;
   width: 100%;
-  position: absolute;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
+}
+
+.Controls .logo  {
+  background-color: rgba(0 , 0 , 0 , .6);
+  display: inline-block;
+}
+
+.map-infobox {
+  color: black;
+}
+
+.buttonArray
+{
+  margin-top: 10px;
 }
 
 .buttonArray > button
@@ -68,12 +80,16 @@
   border-radius: 5px;
   border-style: solid;
 
-  margin: 10px 5px;
   padding: auto auto;
 
   background-color: rgba(0 , 0 , 0 , .6);
 
   transition: .3s;
+}
+
+.buttonArray > button+button
+{
+  margin-left: 10px;
 }
 
 .buttonArray > button:hover
@@ -82,16 +98,29 @@
 }
 
 
-#takeoffButton 
+#runMissionButton
 {
   color: #56a54f;
   border-color: #56a54f;
 }
 
-#takeoffButton:hover
+#runMissionButton:hover
 {
   color: #4e8c48;
   border-color: #4e8c48;
+}
+
+
+#takeoffButton 
+{
+  color: #e9d902;
+  border-color: #e9d902;
+}
+
+#takeoffButton:hover
+{
+  color: #ccbe00;
+  border-color: #ccbe00;
 }
 
 
@@ -131,8 +160,4 @@
 {
   color: #c61515;
   border-color: #c61515;
-}
-
-.map-infobox {
-  color: black;
 }

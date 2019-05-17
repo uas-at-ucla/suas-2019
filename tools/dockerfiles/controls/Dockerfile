@@ -31,7 +31,7 @@ RUN apt-get update -qq                                                      && \
     build-essential                                                            \
     ca-certificates-java                                                       \
     check                                                                      \
-    clang-3.9                                                                  \
+    clang-6.0                                                                  \
     clang-format-7                                                             \
     cmake                                                                      \
     g++                                                                        \
@@ -40,6 +40,7 @@ RUN apt-get update -qq                                                      && \
     gphoto2                                                                    \
     gphotofs                                                                   \
     htop                                                                       \
+    libclang-6.0-dev                                                           \
     libc++-dev                                                                 \
     libc++abi-dev                                                              \
     lib32z1-dev                                                                \
@@ -101,16 +102,7 @@ WORKDIR /home/uas
 
 # Install python requirements. #################################################
 RUN pip2.7 install --user future
-RUN git clone https://github.com/intel/mavlink-router.git
-WORKDIR /home/uas/mavlink-router
-RUN git submodule update --init --recursive
-RUN ./autogen.sh && ./configure CFLAGS='-g -O2' \
-    --sysconfdir=/etc \
-    --localstatedir=/var \
-    --libdir=/usr/lib64 \
-    --prefix=/usr
-RUN make
-RUN sudo make install
+RUN pip3.7 install --user future
 
 RUN pip2.7 install --user                                                      \
   future==0.16.0                                                               \
@@ -136,6 +128,17 @@ RUN pip2.7 install --user                                                      \
   pyzmq==17.0.0                                                                \
   zmq==0.0.0
 
+RUN git clone https://github.com/intel/mavlink-router.git
+WORKDIR /home/uas/mavlink-router
+RUN git submodule update --init --recursive
+RUN ./autogen.sh && ./configure CFLAGS='-g -O2' \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --libdir=/usr/lib64 \
+    --prefix=/usr
+RUN make
+RUN sudo make install
+
 RUN rm -rf /home/uas/mavlink-router
 
 # Use a stable version of bazel. ###############################################
@@ -159,20 +162,15 @@ RUN wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/
   chmod +x install_geographiclib_datasets.sh && \
   ./install_geographiclib_datasets.sh
 
-
-#RUN pip install --user rosinstall_generator wstool
-#RUN sudo rosdep init && rosdep update
-#RUN sudo apt-get install -y libxmlrpcpp-dev librosconsole-dev
-
-# TODO: Do we need these?
-#RUN ln /usr/lib/x86_64-linux-gnu/libroscpp.so.2d /usr/lib/x86_64-linux-gnu/libroscpp.so
-#RUN ln /usr/lib/x86_64-linux-gnu/libroslib.so.1.14.4 /usr/lib/x86_64-linux-gnu/libroslib.so
-#RUN ln /usr/lib/x86_64-linux-gnu/librospack.so.2.5.2 /usr/lib/x86_64-linux-gnu/librospack.so
+USER uas
+RUN ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
+USER root
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
 
 ENV ROS_MASTER_URI http://0.0.0.0:11311
+COPY htoprc /home/uas/.config/htop/htoprc
 
 EXPOSE 8085/udp
 EXPOSE 8086/udp

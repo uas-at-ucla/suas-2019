@@ -1,14 +1,216 @@
-import React, { Component } from 'react';
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import {
+  Button, Container, Row, Col,
+  InputGroup, InputGroupAddon, InputGroupText, Input,
+  InputGroupButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem
+} from "reactstrap";
+import { Marker } from "react-google-maps";
 
-import './Settings.css';
+import "./Settings.css";
+import GoogleMap from "components/Utils/GoogleMap/GoogleMap";
+import UasLogo from "components/Utils/UasLogo/UasLogo";
+import settingsActions from "redux/actions/settingsActions";
+
+const mapStateToProps = state => {
+  return {
+    settings: state.settings,
+    interopData: state.mission.interopData
+  };
+};
+
+const mapDispatchToProps = settingsActions;
 
 class Settings extends Component {
+  state = { 
+    gndServerDropdown: false,
+    interopDropdown: false
+  };
+  toggleGndServerDropdown = () => this.setState({ gndServerDropdown: !this.state.gndServerDropdown });
+  toggleInteropDropdown = () => this.setState({ interopDropdown: !this.state.interopDropdown });
+  toggleCompLocDropdown = () => this.setState({ compLocDropdown: !this.state.compLocDropdown });
+
+  handleChange = (event) => {
+    this.props.updateSettings({ [event.target.name]: event.target.value });
+  };
+
+  handleSelect = (event) => {
+    console.log(event.target)
+    let name = event.target.parentElement.dataset.name;
+    if (name) {
+      this.props.updateSettings({ [name]: event.target.innerText });
+    }
+  };
+
+  changeCompLocation = (event) => {
+    this.handleSelect(event);
+    this.props.changeCompLocation(event.target.innerText);
+  }
+
+  connectToInterop = () => {
+    this.props.connectToInterop(
+      this.props.settings.interopIp,
+      this.props.settings.interopUsername,
+      this.props.settings.interopPassword
+    );
+  };
+
+  connectToGndServer = () => {
+    this.props.connectToGndServer();
+  };
+
+  handleClickedMap = (event) => {
+    this.props.updateSettings({ antennaPos: {lat: event.latLng.lat(), lng: event.latLng.lng()} });
+  };
+
   render() {
+    let connectedGroundServer = this.props.settings.gndServerConnected ? this.props.settings.connectedGndServerIp : "NONE";
+    let connectedInteropServer = this.props.interopData ? this.props.interopData.ip : "NONE";
     return (
-      <div className="Settings">
-      </div>
+      <Container className="Settings">
+        <Row><Col className="logo"><UasLogo/></Col></Row>
+        <Row>
+          <Col>
+            <InputGroup>
+              <InputGroupButtonDropdown 
+                addonType="prepend" isOpen={this.state.gndServerDropdown} 
+                toggle={this.toggleGndServerDropdown}
+              >
+                <DropdownToggle caret>Ground Server IP</DropdownToggle>
+                <DropdownMenu data-name="gndServerIp" onClick={this.handleSelect}>
+                  <DropdownItem>localhost:8081</DropdownItem>
+                  <DropdownItem>192.168.2.20:8081</DropdownItem>
+                </DropdownMenu>
+              </InputGroupButtonDropdown>
+              <Input
+                value={this.props.settings.gndServerIp}
+                name="gndServerIp"
+                type="text"
+                placeholder="0"
+                onChange={this.handleChange}
+              />
+            </InputGroup>
+          </Col>
+          <Col>
+            <Button color="primary" className="connect-btn" onClick={this.connectToGndServer}>
+              Connect To Ground Server
+            </Button>
+            <span>Connected to <b>{connectedGroundServer}</b></span>
+          </Col>
+        </Row>
+        <br />
+        <Row>
+          <Col>
+            <InputGroup>
+              <InputGroupAddon addonType="prepend">
+                Interop Username
+              </InputGroupAddon>
+              <Input
+                value={this.props.settings.interopUsername}
+                name="interopUsername"
+                type="text"
+                placeholder="Enter username..."
+                onChange={this.handleChange}
+              />
+            </InputGroup>
+          </Col>
+          <Col>
+            <InputGroup>
+              <InputGroupAddon addonType="prepend">
+                Interop Password
+              </InputGroupAddon>
+              <Input
+                value={this.props.settings.interopPassword}
+                name="interopPassword"
+                type="text"
+                placeholder="Enter password..."
+                onChange={this.handleChange}
+              />
+            </InputGroup>
+          </Col>
+        </Row>
+        {/* <br /> */}
+        <Row>
+          <Col>
+            <InputGroup>
+              <InputGroupButtonDropdown 
+                addonType="prepend" isOpen={this.state.interopDropdown} 
+                toggle={this.toggleInteropDropdown}
+              >
+                <DropdownToggle caret>Interop IP</DropdownToggle>
+                <DropdownMenu data-name="interopIp" onClick={this.handleSelect}>
+                  <DropdownItem>134.209.2.203:8000</DropdownItem>
+                </DropdownMenu>
+              </InputGroupButtonDropdown>
+              <Input
+                value={this.props.settings.interopIp}
+                name="interopIp"
+                type="text"
+                placeholder={this.props.settings.interopIp}
+                onChange={this.handleChange}
+              />
+            </InputGroup>
+          </Col>
+          <br />
+          <Col>
+            <Button color="success" className="connect-btn" onClick={this.connectToInterop}>
+              Connect To Interop
+            </Button>
+            <span>Connected to <b>{connectedInteropServer}</b></span>
+          </Col>
+        </Row>
+        <br />
+        <Row>
+          <Col>
+            <Button onClick={this.props.logReduxState}>Log Redux State</Button>
+          </Col>
+        </Row>
+        <br />
+        <Row>
+          <Col>
+            <h2>File Browser</h2>
+            <Input type="file" />
+            <br />
+          </Col>
+          <br />
+          <Col>
+            <h2>Antenna Tracker Location:</h2>
+            <p>
+              {this.props.settings.antennaPos.lat}° , {this.props.settings.antennaPos.lng}°
+            </p>
+            <div style={{ height: "350px", width: "500px" }}>
+              <GoogleMap
+                defaultZoom={17}
+                center={
+                  /*if*/ this.props.interopData ? 
+                    {
+                      lat: this.props.interopData.mission.home_pos.latitude,
+                      lng: this.props.interopData.mission.home_pos.longitude
+                    } 
+                  /*else*/: 
+                    {lat: 34.0689, lng: -118.4452}
+                }
+                defaultMapTypeId="customTiles"
+                defaultOptions={{
+                  disableDefaultUI: true,
+                  disableDoubleClickZoom: true,
+                  scaleControl: true
+                }}
+                onDblClick={this.handleClickedMap}
+              >
+                <Marker
+                  position={this.props.settings.antennaPos}
+                />
+              </GoogleMap>
+            </div>
+          </Col>
+        </Row>
+      </Container>
     );
   }
 }
 
-export default Settings;
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(Settings);

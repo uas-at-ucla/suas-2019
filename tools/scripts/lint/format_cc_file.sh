@@ -1,6 +1,6 @@
 #!/bin/bash
 
-CC_FILES=$(find src -name \*.h -print -o -name \*.cpp -o -name \*.cc -print)
+CC_FILES=$(find src/controls -name \*.h -print -o -name \*.cpp -o -name \*.cc -print)
 CC_FILES="$CC_FILES $(find lib -name \*.h -print -o -name \*.cpp -o -name \*.cc -print)"
 PASSED=0
 FAILED=0

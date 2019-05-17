@@ -1,14 +1,58 @@
 .MissionPlannerContainer {
-  margin-top: 10px;
-  width: 400px;
   background: rgba(0, 0, 0, 0.6);
-  overflow: scroll;
+  /* flex-grow: 1; */
+  margin-top: 10px;
+  padding: 10px;
+  width: 300px;
 }
 
-.MissionPlannerContainer.modal-dialog {
+.MissionPlannerContainer > .missionPlannerHeader {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.MissionPlannerContainer > .missionPlannerHeader > span {
+  font-size: 20px;
+  line-height: 25px;
+}
+
+.MissionPlannerContainer > .missionPlannerHeader > i {
+  font-size: 25px;
+  line-height: 25px;
+  cursor: pointer;
+}
+
+.MissionPlannerModal.modal-dialog {
   max-width: none;
   margin-left: 20px;
   margin-right: 20px;
+}
+
+.MissionPlannerModal.modal-dialog > .modal-content > .modal-body {
+  padding: 0;
+  margin: 16px;
+  max-height: calc(100vh - 160px);
+}
+
+.MissionPlannerModal.modal-dialog > .modal-content > .modal-body > .BigMissionPlanner {
+  max-height: inherit;
+}
+
+.MissionPlanner {
+  z-index: 1050; /*make sortable rows appear in front of Modal*/
+  max-height: inherit;
+}
+
+.MissionPlanner > .container-fluid {
+  padding: 0px;
+  max-height: inherit;
+  overflow: auto;
+}
+
+.MissionPlanner .command-btn {
+  margin-top: 10px;
 }
 
 .MissionPlanner [class*="col"] {
@@ -38,7 +82,7 @@
   border: none;
 } */
 
-.MissionPlanner .row {
+.MissionPlanner .row, .MissionPlanner.row {
   margin: 0px;
 }
 
@@ -67,6 +111,8 @@
 /* Small mission planner */
 .SmallMissionPlanner {
   font-size: 11px;
+  max-height: 400px;
+  color: white;
 }
 
 .SmallMissionPlanner .command-btn {

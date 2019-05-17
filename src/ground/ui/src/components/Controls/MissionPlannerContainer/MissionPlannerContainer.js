@@ -12,18 +12,24 @@ class MissionPlannerContainer extends Component {
   render() {
     return (
       <div className="MissionPlannerContainer">
-        <Button onClick={this.expand}>Expand</Button>
-        <div className="SmallMissionPlanner">
-          <MissionPlanner/>
+
+        <div className="missionPlannerHeader"> 
+          <span><b>Mission Planner</b></span>
+          <i onClick={this.expand} className="fa fa-expand"></i>
         </div>
-        <Modal isOpen={this.state.expand} toggle={this.close} className="MissionPlannerContainer">
+        <div className="SmallMissionPlanner">
+          <MissionPlanner className="SmallMissionPlanner"/>
+        </div>
+        
+        <Modal isOpen={this.state.expand} toggle={this.close} className="MissionPlannerModal">
           <ModalHeader toggle={this.close}>Mission Planner</ModalHeader>
           <ModalBody>
             <div className="BigMissionPlanner">
-              <MissionPlanner/>
+              <MissionPlanner className="BigMissionPlanner"/>
             </div>
           </ModalBody>
         </Modal>
+
       </div>
     );
   }

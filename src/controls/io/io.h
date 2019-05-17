@@ -1,101 +1,102 @@
 #pragma once
 
-#include <atomic>
-#include <iomanip>
-#include <iostream>
-#include <limits>
-#include <unistd.h>
+#include <functional>
+#include <string>
+#include <thread>
+
+#include <ros/console.h>
+#include <ros/ros.h>
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
 #include <pigpiod_if2.h>
+#include <softPwm.h>
 #include <wiringPi.h>
 #endif
 
-#include <ros/ros.h>
+#include <mavros_msgs/RCIn.h>
+#include <mavros_msgs/State.h>
+#include <sensor_msgs/BatteryState.h>
+#include <sensor_msgs/Imu.h>
 
-#include "lib/dslr_interface/dslr_interface.h"
-#include "lib/logger/log_sender.h"
-#include "lib/proto_comms/proto_comms.h"
-#include "lib/trigger/trigger.h"
-
-#include "src/controls/io/autopilot_interface/autopilot_interface.h"
-#include "src/controls/io/loop_handler.h"
+#include "lib/alarm/alarm.h"
+#include "lib/phased_loop/phased_loop.h"
+#include "src/controls/io/led_strip/led_strip.h"
+#include "src/controls/io/ros_to_proto/ros_to_proto.h"
 #include "src/controls/messages.pb.h"
 
 namespace src {
 namespace controls {
 namespace io {
 namespace {
-// Output GPIO pins for sending out servo PWM signals to control actuators.
-const int kAlarmGPIOPin = 2;
-const int kGimbalGPIOPin = 18;
+static const int kAlarmGPIOPin = 0;
+static const int kDeploymentGPIOPin = 2;
+static const int kGimbalGPIOPin = 23;
 
-// Tolerance for the time period to accept a trigger signal edge, in seconds.
-const double kTriggerSignalTolerance = 0.1;
+static const int kGimbalMiddlePpmSignal = 1500;
 
-// Bit patterns for the custom modes used by the PX4 flight controller.
-const int kTakeoffCommandMode = 0b00000010000001000000000000000000;
-const int kHoldCommandMode = 0b00000100000001000000000000000000;
-const int kHoldAlternateCommandMode = 0b00000011000001000000000000000000;
-const int kOffboardCommandMode = 0b00000000000001100000000000000000;
-const int kRtlCommandMode = 0b00000101000001000000000000000000;
-const int kLandCommandMode = 0b00000110000001000000000000000000;
+static const int kAlarmOverrideRcChannel = 7;
+static const int kAlarmOverrideRcSignalThreshold = 1800;
 
+static const int kWriterPhasedLoopFrequency = 250;
+static const double kAlarmOverrideTimeGap = 1.0 / 10;
+
+static const int kSensorsPublisherRate = 50;
+static const double kSensorsPublisherPeriod = 1.0 / kSensorsPublisherRate;
+
+static const double kAlarmChirpDuration = 0.005;
+
+static const int kRosMessageQueueSize = 1;
+static const ::std::string kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
+static const ::std::string kRosSensorsTopic = "/uasatucla/proto/sensors";
+static const ::std::string kRosOutputTopic = "/uasatucla/proto/output";
+
+static const ::std::string kRosRcInTopic = "/mavros/rc/in";
+static const ::std::string kRosBatteryStatusTopic = "/mavros/battery";
+static const ::std::string kRosStateTopic = "/mavros/state";
+static const ::std::string kRosImuTopic = "/mavros/imu/data";
 } // namespace
-
-enum AutopilotState {
-  UNKNOWN = 0,
-  TAKEOFF = 1,
-  HOLD = 2,
-  OFFBOARD = 3,
-  RTL = 4,
-  LAND = 5,
-};
-
-void quit_handler(int sig);
-
-class AutopilotOutputWriter : public LoopHandler {
- public:
-  AutopilotOutputWriter(autopilot_interface::AutopilotInterface *copter_io);
-
- private:
-  virtual void RunIteration() override;
-  virtual void Stop() override;
-
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-  int pigpio_;
-
-  int camera_script_pid_;
-  int camera_script_run_;
-#endif
-
-  ::lib::DSLRInterface dslr_interface_;
-
-  autopilot_interface::AutopilotInterface *autopilot_interface_;
-
-  ::lib::proto_comms::ProtoReceiver<::src::controls::Output> output_receiver_;
-
-  ::lib::trigger::Trigger takeoff_trigger_;
-  ::lib::trigger::Trigger hold_trigger_;
-  ::lib::trigger::Trigger offboard_trigger_;
-  ::lib::trigger::Trigger rtl_trigger_;
-  ::lib::trigger::Trigger land_trigger_;
-  ::lib::trigger::Trigger arm_trigger_;
-  ::lib::trigger::Trigger disarm_trigger_;
-};
 
 class IO {
  public:
-  IO(const char *drone_address);
-  void Run();
-  void Quit();
+  IO();
 
  private:
-  autopilot_interface::AutopilotInterface autopilot_interface_;
-  ::std::atomic<bool> run_{true};
+  void WriterThread();
 
-  // AutopilotSensorReader autopilot_sensor_reader_;
-  AutopilotOutputWriter autopilot_output_writer_;
+  void Output(const ::src::controls::Output output);
+  void AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence);
+  void RcInReceived(const ::mavros_msgs::RCIn rc_in);
+  void BatteryStatusReceived(const ::sensor_msgs::BatteryState battery_state);
+  void StateReceived(const ::mavros_msgs::State state);
+  void ImuReceived(const ::sensor_msgs::Imu imu);
+
+  ::lib::alarm::Alarm alarm_;
+
+  led_strip::LedStrip led_strip_;
+
+  ros_to_proto::RosToProto ros_to_proto_;
+  double next_sensors_write_;
+
+  bool should_override_alarm_;
+  double last_alarm_override_;
+
+  bool did_arm_;
+
+  ::ros::NodeHandle ros_node_handle_;
+  ::ros::Publisher sensors_publisher_;
+  ::ros::Subscriber output_subscriber_;
+  ::ros::Subscriber alarm_subscriber_;
+  ::ros::Subscriber rc_input_subscriber_;
+  ::ros::Subscriber battery_status_subscriber_;
+  ::ros::Subscriber state_subscriber_;
+  ::ros::Subscriber imu_subscriber_;
+
+#ifdef UAS_AT_UCLA_DEPLOYMENT
+  int pigpio_;
+#endif
+
+  ::std::thread writer_thread_;
+  ::ros::Rate writer_phased_loop_;
 };
 
 } // namespace io

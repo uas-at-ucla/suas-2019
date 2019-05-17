@@ -1,24 +1,51 @@
 import socketIOClient from 'socket.io-client';
 
-const isWebServer = window.location.protocol.startsWith("http");
+class Communicator {
+  constructor(store) {
+    this.store = store;
+    console.log("Initializing communicator");
+    this.initSocket();
+  }
 
-const serverIP = "localhost"; // TODO: Make configurable via Settings
-const socketHost = isWebServer ? window.location.hostname : serverIP;
-const socketPort = 8081;
-const socket = socketIOClient("http://"+socketHost+':'+socketPort+'/ui', { transports: ['websocket'] });
+  initSocket() {
+    this.socket = socketIOClient("http://"+this.store.getState().settings.gndServerIp+'/ui', { transports: ['websocket'] });
+    
+    this.socket.on('connect', () => {
+      this.store.dispatch({ type: 'GND_SERVER_CONNECTED' });
+    });
+
+    this.socket.on('disconnect', () => {
+      this.store.dispatch({ type: 'GND_SERVER_DISCONNECTED' });
+    });
+
+    this.socket.on('TELEMETRY', (data) => {
+      this.store.dispatch({ type: 'TELEMETRY', payload: data });
+    });
+
+    this.socket.on('INTEROP_DATA', (data) => {
+      this.store.dispatch({ type: 'INTEROP_DATA', payload: data });
+    });
+
+    this.socket.on('PING', (data) => {
+      this.store.dispatch({ type: 'PING', payload: data });
+    });
+  }
+
+  reduxMiddleware(next) {
+    return (action) => {
+      if (action.type === 'TRANSMIT') {
+        this.socket.emit(action.payload.msg, action.payload.data);
+        console.log("Transmitting", action.payload);
+      } else if (action.type === 'CONNECT_TO_GND_SERVER') {
+        this.socket.disconnect();
+        this.initSocket();
+      }
+      next(action);
+    }
+  }
+}
 
 export default (store) => {
-  console.log("Initializing communicator");
-
-  socket.on('telemetry', (data) => {
-    store.dispatch({ type: 'TELEMETRY', payload: data });
-  });
-
-  return (next) => (action) => {
-    if (action.type === 'TRANSMIT') {
-      socket.emit(action.payload.msg, action.payload.data);
-      console.log("Transmitting", action.payload);
-    }
-    next(action);
-  }
+  let communicator = new Communicator(store);
+  return (next) => communicator.reduxMiddleware(next);
 }
