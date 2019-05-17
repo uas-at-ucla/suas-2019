@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import sys
 
-IMG_SIZE = 224
+IMG_SIZE = 100
 
 def letter_seg(path):
     #convert image to a numpy array

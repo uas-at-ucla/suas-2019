@@ -151,7 +151,7 @@ def gen_images(t_gen, n, letter, t_size, i_size, r_angle, bg_dir, dest_dir,
             target = target.rotate(
                 r_angle, resample=Image.BICUBIC,
                 expand=1).resize((t_size, t_size), resample=Image.BOX)
-        elif 'rotate' in transforms:
+        if 'rotate' in transforms:
             r_angle = random.randint(0, 359)
             target = target.rotate(
                 r_angle, resample=Image.BICUBIC,

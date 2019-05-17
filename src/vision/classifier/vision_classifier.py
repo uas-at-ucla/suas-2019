@@ -43,6 +43,13 @@ def letter_img(path):
     img = cv2.resize(img, dsize=(32, 32), interpolation=cv2.INTER_LINEAR)
     img = np.expand_dims(img, axis=2) 
     img = np.expand_dims(img, axis=0)
+
+    im = img.astype('uint8')[0]
+    im[im > 0] = 255
+    im = np.repeat(im, 3, axis=2);
+    im = Image.fromarray(im)
+    im.save('seg/img' + path[-9:])
+    # np.savetxt('seg/img' + path[-9:] + '.csv', img[0,:,:,0])
     return img
 
 def load_model(path):

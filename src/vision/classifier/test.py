@@ -4,8 +4,8 @@ import vision_classifier as vc
 import image_classification as ic
 
 IMG_SIZE = 100
-N_TRAIN = 20000
-N_TEST = 1000
+N_TRAIN = 20
+N_TEST = 1
 
 print(os.getcwd())
 
@@ -84,6 +84,6 @@ def eval_models(i=1):
     eval_letter_model(i)
 
 if __name__=='__main__':
-    train_shape_model(30)
+    train_letter_model(10)
     #eval_models(1)
 
