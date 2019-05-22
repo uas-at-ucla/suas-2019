@@ -20,8 +20,8 @@
 int main() {
   //  Prepare our context and socket
   zmq::context_t context(1);
-  //zmq::socket_t socket(context, ZMQ_DISH);
-  //socket.bind("udp://127.0.0.1:6005");
+  // zmq::socket_t socket(context, ZMQ_DISH);
+  // socket.bind("udp://127.0.0.1:6005");
 
   /*
   while (true) {
@@ -32,7 +32,7 @@ int main() {
 
     ::std::string output;
     cmd.SerializeToString(&output);
-    
+
     zmq::message_t request;
 
     //  Wait for next request from client

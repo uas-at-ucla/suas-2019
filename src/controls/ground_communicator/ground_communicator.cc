@@ -11,7 +11,7 @@ GroundCommunicator::GroundCommunicator() :
     proto_sender_("tcp://127.0.0.1:6005"),
     rfd900_("/dev/ttyUSB0", B57600, 0) {
 
-    proto_sender_.Connect();
+  proto_sender_.Connect();
 }
 
 void GroundCommunicator::SensorsReceived(

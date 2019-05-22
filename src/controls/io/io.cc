@@ -100,7 +100,7 @@ void IO::WriterThread() {
     led_strip_.set_alarm(should_override_alarm);
     */
     bool should_alarm = alarm_.ShouldAlarm();
-    (void) should_alarm;
+    (void)should_alarm;
 
     if (should_override_alarm_) {
       deployment_servo_setpoint_ = kDeploymentServoOpen;
@@ -251,4 +251,3 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
 } // namespace io
 } // namespace controls
 } // namespace src
-

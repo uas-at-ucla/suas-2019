@@ -16,10 +16,10 @@
 int main() {
   //  Prepare our context and socket
   zmq::context_t context(1);
-  //zmq::socket_t socket(context, ZMQ_RADIO);
+  // zmq::socket_t socket(context, ZMQ_RADIO);
 
-  //std::cout << "Connecting to hello world server…" << std::endl;
-  //socket.connect("udp://127.0.0.1:6005");
+  // std::cout << "Connecting to hello world server…" << std::endl;
+  // socket.connect("udp://127.0.0.1:6005");
 
   //  Do 10 requests, waiting each time for a response
   /*
@@ -29,7 +29,7 @@ int main() {
     std::cout << "Sending Hello " << request_nbr << "…" << std::endl;
     socket.send(request);
 
-    
+
     //  Get the reply.
     zmq::message_t reply;
     socket.recv(&reply);
@@ -41,7 +41,7 @@ int main() {
     std::cout << cmd.type() << std::endl;
 
     std::cout << "Received World " << reply.data() << std::endl;
-    
+
   }
   */
 

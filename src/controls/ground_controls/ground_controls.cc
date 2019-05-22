@@ -27,7 +27,8 @@ GroundControls::GroundControls() :
   client_.set_open_listener(on_connect);
   client_.set_fail_listener(on_fail);
 
-  client_.connect("http://192.168.1.10:8081"); // Docker network ground server IP
+  client_.connect(
+      "http://192.168.1.10:8081"); // Docker network ground server IP
 }
 
 void GroundControls::SendSensorsToServer(
@@ -89,7 +90,7 @@ void GroundControls::ReadUDP() {
     // Get the connection's uas messages
     ::src::controls::UasMessage uas_message1;
     ::src::controls::UasMessage uas_message2;
-    bool udp_res = udp_connection_.GetLatestProto(uas_message1); 
+    bool udp_res = udp_connection_.GetLatestProto(uas_message1);
 
     // Check for either availability
     if (!udp_res) {
@@ -133,7 +134,8 @@ void GroundControls::OnConnect() {
         }
 
         // Compile the GroundProgram into a DroneProgram.
-        ::src::controls::ground_controls::timeline::DroneProgram drone_program = ground2drone_visitor_.Process(&ground_program);
+        ::src::controls::ground_controls::timeline::DroneProgram drone_program =
+            ground2drone_visitor_.Process(&ground_program);
         bool success = true; // TODO temporary
 
         if (!success) {
