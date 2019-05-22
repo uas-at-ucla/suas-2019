@@ -14,6 +14,7 @@ cc_library(
     '//lib/proto_comms:proto_comms',
     '//lib/physics_structs:physics_structs',
     '//lib/phased_loop:phased_loop',
+    '//lib/ros:ros',
     '//lib/alarm:alarm',
   ],
 )

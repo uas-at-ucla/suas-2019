@@ -8,6 +8,8 @@ namespace state_machine {
 StateMachine::StateMachine() :
     state_(STANDBY),
     unknown_state_(new UnknownState()) {
+
+  // Create an instance of all state handlers.
   state_handlers_[STANDBY] = new StandbyState();
   state_handlers_[ARMING] = new ArmingState();
   state_handlers_[ARMED_WAIT_FOR_SPINUP] = new ArmedWaitForSpinupState();
@@ -21,6 +23,7 @@ StateMachine::StateMachine() :
 }
 
 StateMachine::~StateMachine() {
+  // Delete all state handler instances.
   for (auto const &state_handler_pair : state_handlers_) {
     delete state_handler_pair.second;
   }
@@ -46,15 +49,17 @@ void StateMachine::Handle(::src::controls::Sensors &sensors,
 }
 
 void StateMachine::StateTransition(::src::controls::Output &output) {
-  // FlightLoopState old_state = state_;
+  // Record the old and new states.
+  FlightLoopState old_state = state_;
   FlightLoopState new_state = static_cast<FlightLoopState>(output.state());
 
-  // if (old_state != new_state) {
-  //   // Handle state transitions.
-  //   LOG_LINE("Switching states: " << StateToString(old_state) << " -> "
-  //                                 << StateToString(new_state));
-  // }
+  // Log all state transitions.
+  if (old_state != new_state) {
+    ROS_INFO_STREAM("Switching states: " << StateToString(old_state) << " -> "
+                                         << StateToString(new_state));
+  }
 
+  // Apply the state transition.
   state_ = new_state;
 }
 
@@ -110,6 +115,7 @@ State *StateMachine::GetStateHandler(FlightLoopState state) {
     case FLIGHT_TERMINATION:
       return "FLIGHT_TERMINATION";
   }
+
   return "UNKNOWN";
 }
 
