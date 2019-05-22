@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace state_machine {
 UnknownState::UnknownState() {}
 
@@ -19,6 +19,6 @@ void UnknownState::Handle(::src::controls::Sensors &sensors,
 void UnknownState::Reset() {}
 
 } // namespace state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

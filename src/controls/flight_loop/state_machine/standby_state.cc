@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace state_machine {
 
 StandbyState::StandbyState() {}
@@ -24,6 +24,6 @@ void StandbyState::Handle(::src::controls::Sensors &sensors,
 void StandbyState::Reset() {}
 
 } // namespace state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

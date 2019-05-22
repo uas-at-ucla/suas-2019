@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace state_machine {
 
 StateMachine::StateMachine() :
@@ -119,6 +119,6 @@ State *StateMachine::GetStateHandler(FlightLoopState state) {
 }
 
 } // namespace state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

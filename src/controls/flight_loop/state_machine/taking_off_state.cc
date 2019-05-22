@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace state_machine {
 
 TakingOffState::TakingOffState() {}
@@ -28,6 +28,6 @@ void TakingOffState::Handle(::src::controls::Sensors &sensors,
 void TakingOffState::Reset() {}
 
 } // namespace state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

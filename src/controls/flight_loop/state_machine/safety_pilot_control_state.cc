@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace state_machine {
 
 SafetyPilotControlState::SafetyPilotControlState() {}
@@ -18,6 +18,6 @@ void SafetyPilotControlState::Handle(::src::controls::Sensors &sensors,
 void SafetyPilotControlState::Reset() {}
 
 } // namespace state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

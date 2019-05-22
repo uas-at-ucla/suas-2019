@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace state_machine {
 LandingState::LandingState() {}
 
@@ -24,6 +24,6 @@ void LandingState::Handle(::src::controls::Sensors &sensors,
 void LandingState::Reset() {}
 
 } // namespace state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

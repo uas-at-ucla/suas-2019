@@ -2,26 +2,22 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace state_machine {
 
-TakenOffState::TakenOffState() {}
+FailsafeState::FailsafeState() {}
 
-void TakenOffState::Handle(::src::controls::Sensors &sensors,
+void FailsafeState::Handle(::src::controls::Sensors &sensors,
                            ::src::controls::Goal &goal,
                            ::src::controls::Output &output) {
   (void)sensors;
   (void)goal;
   (void)output;
-
-  if (goal.run_mission()) {
-    output.set_state(ARMED);
-  }
 }
 
-void TakenOffState::Reset() {}
+void FailsafeState::Reset() {}
 
 } // namespace state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

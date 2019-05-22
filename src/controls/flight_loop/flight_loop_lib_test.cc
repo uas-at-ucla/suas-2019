@@ -1,4 +1,4 @@
-#include "src/controls/loops/flight_loop.h"
+#include "src/controls/flight_loop/flight_loop.h"
 
 #include <fcntl.h>
 #include <getopt.h>
@@ -9,11 +9,11 @@
 
 #include "gtest/gtest.h"
 
-#include "src/controls/loops/state_machine/state_machine.h"
+#include "src/controls/flight_loop/state_machine/state_machine.h"
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace testing {
 
 class FlightLoopTest : public ::testing::Test {
@@ -89,7 +89,7 @@ TEST_F(FlightLoopTest, Initialization) {
   for (double start = sensors().time(); sensors().time() < start + 1;) {
     StepLoop();
     ASSERT_EQ(output().state(),
-              ::src::controls::loops::state_machine::FlightLoopState::STANDBY);
+              ::src::controls::flight_loop::state_machine::FlightLoopState::STANDBY);
     ASSERT_EQ(output().velocity_x(), 0);
     ASSERT_EQ(output().velocity_y(), 0);
     ASSERT_EQ(output().velocity_z(), 0);
@@ -109,7 +109,7 @@ TEST_F(FlightLoopTest, Initialization) {
     StepLoop();
 
     ASSERT_EQ(output().state(),
-              ::src::controls::loops::state_machine::FlightLoopState::ARMED);
+              ::src::controls::flight_loop::state_machine::FlightLoopState::ARMED);
     ASSERT_FALSE(output().trigger_arm());
     ASSERT_FALSE(output().trigger_takeoff());
     ASSERT_FALSE(output().trigger_hold());
@@ -125,7 +125,7 @@ TEST_F(FlightLoopTest, Initialization) {
     StepLoop();
 
     ASSERT_EQ(output().state(),
-              ::src::controls::loops::state_machine::FlightLoopState::STANDBY);
+              ::src::controls::flight_loop::state_machine::FlightLoopState::STANDBY);
     ASSERT_FALSE(output().trigger_arm());
     ASSERT_FALSE(output().trigger_takeoff());
     ASSERT_FALSE(output().trigger_hold());
@@ -139,13 +139,13 @@ TEST_F(FlightLoopTest, Initialization) {
 TEST_F(FlightLoopTest, RunMission) {
   StepLoop();
   ASSERT_EQ(output().state(),
-            ::src::controls::loops::state_machine::FlightLoopState::STANDBY);
+            ::src::controls::flight_loop::state_machine::FlightLoopState::STANDBY);
 
   // Check if loop goes back into ARMING state if arm is attempted.
   goal().set_run_mission(true);
   StepLoop();
   ASSERT_EQ(output().state(),
-            ::src::controls::loops::state_machine::FlightLoopState::ARMING);
+            ::src::controls::flight_loop::state_machine::FlightLoopState::ARMING);
 
   // Check if loop waits for propellers to spin up before continuing to ARMED
   // state.
@@ -153,22 +153,22 @@ TEST_F(FlightLoopTest, RunMission) {
   for (double start = sensors().time();
        sensors().time() < start + state_machine::kSpinupTime;) {
     StepLoop();
-    ASSERT_EQ(output().state(), ::src::controls::loops::state_machine::
+    ASSERT_EQ(output().state(), ::src::controls::flight_loop::state_machine::
                                     FlightLoopState::ARMED_WAIT_FOR_SPINUP);
   }
 
   StepLoop();
   StepLoop();
   ASSERT_EQ(output().state(),
-            ::src::controls::loops::state_machine::FlightLoopState::ARMED);
+            ::src::controls::flight_loop::state_machine::FlightLoopState::ARMED);
 
   StepLoop();
   ASSERT_EQ(output().state(),
-            ::src::controls::loops::state_machine::FlightLoopState::TAKING_OFF);
+            ::src::controls::flight_loop::state_machine::FlightLoopState::TAKING_OFF);
 }
 
 } // namespace testing
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src
 

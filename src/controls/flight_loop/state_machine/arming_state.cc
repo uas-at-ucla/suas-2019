@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace state_machine {
 
 ArmingState::ArmingState() {}
@@ -33,6 +33,6 @@ void ArmingState::Handle(::src::controls::Sensors &sensors,
 void ArmingState::Reset() {}
 
 } // namespace state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

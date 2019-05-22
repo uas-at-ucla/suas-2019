@@ -19,7 +19,7 @@
 #include "lib/physics_structs/physics_structs.h"
 #include "src/controls/ground_controls/timeline/executor/executor.h"
 #include "src/controls/io/io.h"
-#include "src/controls/loops/state_machine/state_machine.h"
+#include "src/controls/flight_loop/state_machine/state_machine.h"
 #include "src/controls/messages.pb.h"
 
 /*      ________  ________  ___  ________   ________       ___    ___
@@ -33,7 +33,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 
 namespace {
 static constexpr double kDefaultGimbalAngle = 0.15;
@@ -85,6 +85,6 @@ class FlightLoop {
   ::ros::Subscriber sensors_subscriber_;
 };
 
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

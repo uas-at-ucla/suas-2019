@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace mission_state_machine {
 
 TranslateState::TranslateState() {}
@@ -18,6 +18,6 @@ void TranslateState::Handle(::src::controls::Sensors &sensors,
 void TranslateState::Reset() {}
 
 } // namespace mission_state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

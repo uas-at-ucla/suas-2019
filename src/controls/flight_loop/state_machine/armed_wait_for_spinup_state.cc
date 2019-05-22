@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace state_machine {
 ArmedWaitForSpinupState::ArmedWaitForSpinupState() :
     start_(::std::numeric_limits<double>::infinity()) {}
@@ -28,6 +28,6 @@ void ArmedWaitForSpinupState::Reset() {
 }
 
 } // namespace state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src
