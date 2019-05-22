@@ -51,7 +51,7 @@ if (config.testing) {
   connectToInterop("134.209.2.203:8000", "testuser", "testpass")
     .catch(error => {
       if (fs.existsSync("/.dockerenv")) { // If inside Docker container
-        connectToInterop("192.168.2.30:80", "testuser", "testpass");
+        connectToInterop("192.168.1.30:80", "testuser", "testpass");
       } else {
         connectToInterop("localhost:8000", "testuser", "testpass");
       }

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# For now, this is a copy of run_env.sh, but it runs without the Docker ip network so that it doesn't clash with the physical network at competition
+
 source tools/scripts/docker/start_machine_mac.sh
 
 unset ENV_DOCKER_RUNNING_CONTAINER
@@ -28,7 +30,7 @@ fi
 if [ $MATCH -eq 0 ]
 then
   RUNNING_DOCKER_CONTAINERS=$(docker ps \
-    --filter name=uas-at-ucla_controls \
+    --filter name=uas-at-ucla_ground-controls \
     --filter status=running \
     --format "{{.ID}}" \
     --latest \
@@ -43,7 +45,7 @@ then
     while [ ! -z $RUNNING_DOCKER_CONTAINERS ]
     do
       RUNNING_DOCKER_CONTAINERS=$(docker ps \
-        --filter name=uas-at-ucla_controls \
+        --filter uas-at-ucla_ground-controls \
         --filter status=running \
         --format "{{.ID}}" \
         --latest \
@@ -58,7 +60,7 @@ then
 fi
 
 ENV_DOCKER_RUNNING_CONTAINER=$(docker ps \
-  --filter name=uas-at-ucla_controls \
+  --filter name=uas-at-ucla_ground-controls \
   --filter status=running \
   --format "{{.ID}}" \
   --latest \
@@ -72,7 +74,7 @@ then
 fi
 
 ENV_DOCKER_CONTAINER=$(docker ps \
-  --filter name=uas-at-ucla_controls \
+  --filter name=uas-at-ucla_ground-controls \
   --format "{{.ID}}" \
   --latest
   )
@@ -109,9 +111,6 @@ then
     exit 1
 fi
 
-# Create network for docker container to use.
-./tools/scripts/docker/create_network.sh > /dev/null 2>&1 || true
-
 mkdir -p tools/cache/bazel
 pwd
 
@@ -141,40 +140,21 @@ DOCKER_BUILD_CMD="set -x; \
   echo STARTED > /tmp/uas_init; \
   sudo -u uas bash -c \"bazel; \
   source /home/uas/.bashrc; \
+  export ROS_MASTER_URI=http://192.168.1.20:11311 \
   /opt/ros/melodic/bin/roscore &> /dev/null; \
-  sleep infinity\""
+  bazel run //src/controls/ground_controls:ground_controls\""
 
 docker run                          \
-  -d                                \
+  -it                               \
   --rm                              \
   --cap-add=SYS_PTRACE              \
   --security-opt seccomp=unconfined \
-  --net uas_bridge                  \
-  --ip 192.168.1.20                 \
   -v $ROOT_PATH:/home/uas/code_env  \
   -v ~/.ssh:/home/uas/.ssh          \
   -e DISPLAY=$DISPLAY               \
   -v /tmp/.X11-unix:/tmp/.X11-unix  \
   --privileged                      \
   --dns 8.8.8.8                     \
-  --name uas-at-ucla_controls       \
+  --name uas-at-ucla_ground-controls\
   uas-at-ucla_controls              \
   bash -c "$DOCKER_BUILD_CMD"
-
-echo "Started uas-at-ucla_controls docker image. Waiting for it to boot..."
-
-# Wait for docker container to start up.
-while [ -z $RUNNING_DOCKER_CONTAINERS ]
-do
-  RUNNING_DOCKER_CONTAINERS=$(docker ps \
-    --filter name=uas-at-ucla_controls \
-    --filter status=running \
-    --format "{{.ID}}" \
-    --latest \
-  )
-
-  sleep 0.25
-done
-
-# Wait for permission scripts to execute.
-./tools/scripts/controls/exec.sh "while [ ! -f /tmp/uas_init ];do sleep 0.25;done"

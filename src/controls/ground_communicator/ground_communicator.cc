@@ -23,16 +23,19 @@ void GroundCommunicator::SensorsReceived(
 
   uas_message.set_allocated_sensors(sensors_allocated);
 
+  bool required_fields_set = uas_message.IsInitialized();
+
   static int count = 0;
-  if (count == 0) {
+  if (count == 0 && required_fields_set) {
     rfd900_.WritePort(uas_message);
   }
 
   count = (count + 1) % 2; // 50/2 = 25 Hz
 
   // Send the message
-  std::cout << "Sending";
-  proto_sender_.Send(uas_message);
+  if (required_fields_set) {
+    proto_sender_.Send(uas_message);
+  }
 }
 
 } // namespace ground_communicator

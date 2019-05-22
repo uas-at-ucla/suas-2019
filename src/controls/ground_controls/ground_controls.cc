@@ -27,11 +27,7 @@ GroundControls::GroundControls() :
   client_.set_open_listener(on_connect);
   client_.set_fail_listener(on_fail);
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-  client_.connect("http://localhost:8081");
-#else
-  client_.connect("http://192.168.2.20:8081");
-#endif
+  client_.connect("http://192.168.1.10:8081"); // Docker network ground server IP
 }
 
 void GroundControls::SendSensorsToServer(
@@ -137,9 +133,8 @@ void GroundControls::OnConnect() {
         }
 
         // Compile the GroundProgram into a DroneProgram.
-        ::src::controls::ground_controls::timeline::DroneProgram drone_program;
-        bool success =
-            ground2drone_visitor_.Process(&ground_program, drone_program);
+        ::src::controls::ground_controls::timeline::DroneProgram drone_program = ground2drone_visitor_.Process(&ground_program);
+        bool success = true; // TODO temporary
 
         if (!success) {
           ::std::cout << "drone program compilation failure: Could not compile "

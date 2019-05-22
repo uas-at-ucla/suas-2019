@@ -207,6 +207,10 @@ void RosToProto::BatteryStateReceived(
 }
 
 bool RosToProto::SensorsValid() {
+  if (!sensors_.IsInitialized()) { // all required fields are filled
+    return false;
+  }
+
   double oldest_valid_packet_time =
       ::lib::phased_loop::GetCurrentTime() - kRosReceiveTolerance;
 
