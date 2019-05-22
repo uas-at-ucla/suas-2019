@@ -1,0 +1,2 @@
+# pigpio must be installed from http://abyz.me.uk/rpi/pigpio/download.html
+python-socketio==4.0.1

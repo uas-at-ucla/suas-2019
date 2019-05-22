@@ -19,7 +19,7 @@ class ProtobufUtils {
   // Output;
 
   constructor(timelineRoot, telemetryRoot) {
-    this.GroundProgram = timelineRoot.lookupType("src.controls.ground_server.timeline.GroundProgram");
+    this.GroundProgram = timelineRoot.lookupType("src.controls.ground_controls.timeline.GroundProgram");
     this.Sensors = telemetryRoot.lookupType("src.controls.Sensors");
     this.Goal = telemetryRoot.lookupType("src.controls.Goal");
     this.Output = telemetryRoot.lookupType("src.controls.Output");
@@ -108,10 +108,12 @@ class ProtobufUtils {
 
 module.exports = (callback) => {
   process.chdir("../../..")
-  protobuf.load("src/controls/ground_server/timeline/timeline_grammar.proto", (err, timelineRoot) => {
+  let timelineRoot = new protobuf.Root();
+  timelineRoot.load("src/controls/ground_controls/timeline/timeline_grammar.proto", {keepCase: true}, (err) => {
     if (err) throw err;
 
-    protobuf.load("src/controls/messages.proto", (err, telemetryRoot) => {
+    let telemetryRoot = new protobuf.Root();
+    telemetryRoot.load("src/controls/messages.proto", {keepCase: true}, (err) => {
       if (err) throw err;
 
       callback(new ProtobufUtils(timelineRoot, telemetryRoot));

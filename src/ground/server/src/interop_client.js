@@ -2,9 +2,15 @@
 
 const axios = require('axios');
 const qs = require('qs');
-const config = require('./config');
+const config = require('../config');
 
 const interopSendFrequency = 2; //Hz
+const sendInterval = {
+  [config.droneSensorsFrequency]: Math.floor(config.droneSensorsFrequency / interopSendFrequency),
+  [config.droneSensorsFreqRFD900]: Math.floor(config.droneSensorsFreqRFD900 / interopSendFrequency)
+}
+
+const emptyPromise = new Promise(()=>{});
 
 class InteropClient {
   // axiosInstance;
@@ -41,26 +47,29 @@ class InteropClient {
     return this.axiosInstance.post("/odlcs/"+odlcId+"/image", image).then(res => res.data);
   }
 
-  newTelemetry(droneTelemetry, frequency) {
-    let sendInterval = Math.floor(frequency / interopSendFrequency);
-    if (droneTelemetry.sensors) {
-      if (this.telemetryCount == sendInterval) {
+  newTelemetry(telemetry, frequency) {
+    let promise = emptyPromise;
+    if (telemetry.sensors) {
+      if (this.telemetryCount == sendInterval[frequency]) {
         let interopTelemetry = {
-          latitude: droneTelemetry.sensors.latitude,
-          longitude: droneTelemetry.sensors.longitude,
-          altitude_msl: droneTelemetry.sensors.altitude,
-          uas_heading: droneTelemetry.sensors.heading
+          latitude: telemetry.sensors.latitude,
+          longitude: telemetry.sensors.longitude,
+          altitude_msl: telemetry.sensors.altitude,
+          uas_heading: telemetry.sensors.heading
         }
         // console.log(interopTelemetry);
-        this.postTelemetry(interopTelemetry).then(
-          msg => { if (config.verbose) console.log(msg) }
+        promise = this.postTelemetry(interopTelemetry).then(msg => 
+          config.verbose && console.log(msg)
         ).catch(error => {
-          console.log(error);
+          console.log("Failed to upload telemetry!");
+          if (config.verbose) console.log(error);
+          throw error;
         });
         this.telemetryCount = 0;
       }
       this.telemetryCount++;
     }
+    return promise;
   }
 }
 
@@ -83,7 +92,7 @@ module.exports = (ip, username, password) => {
   })
   .catch(error => {
     console.log("Failed to login to interop!");
-    console.log(error);
+    if (config.verbose) console.log(error);
     throw error;
   });
 }

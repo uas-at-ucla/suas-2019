@@ -5,17 +5,20 @@ export default {
   centerMapOnCommand: (cmd, protoInfo) => {
     for (let locationField of protoInfo.locationFields) {
       let location = cmd[cmd.type][locationField];
-      return {
-        type: 'CENTER_ON_COMMAND',
-        payload: {
-          id: cmd.id,
-          pos: {
-            lat: location.latitude,
-            lng: location.longitude
+      if (location) {
+        return {
+          type: 'CENTER_ON_COMMAND',
+          payload: {
+            id: cmd.id,
+            pos: {
+              lat: location.latitude,
+              lng: location.longitude
+            }
           }
         }
       }
     }
+    return { type: "NONE" };
   },
   commandStopAnimation: (cmd) => {
     return {

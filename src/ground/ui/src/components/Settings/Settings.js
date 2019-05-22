@@ -2,15 +2,17 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import {
   Button, Container, Row, Col,
-  InputGroup, InputGroupAddon, InputGroupText, Input,
+  InputGroup, InputGroupAddon, Input,
   InputGroupButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem
 } from "reactstrap";
 import { Marker } from "react-google-maps";
 
 import "./Settings.css";
-import GoogleMap from "components/Utils/GoogleMap/GoogleMap";
-import UasLogo from "components/Utils/UasLogo/UasLogo";
+import GoogleMap from "components/utils/GoogleMap/GoogleMap";
+import UasLogo from "components/utils/UasLogo/UasLogo";
 import settingsActions from "redux/actions/settingsActions";
+
+const defaultMapCenter = {lat: 34.0689, lng: -118.4452};
 
 const mapStateToProps = state => {
   return {
@@ -59,6 +61,10 @@ class Settings extends Component {
     this.props.connectToGndServer();
   };
 
+  configureTrackyPos = () => {
+    this.props.configureTrackyPos(this.props.settings.antennaPos);
+  }
+
   handleClickedMap = (event) => {
     this.props.updateSettings({ antennaPos: {lat: event.latLng.lat(), lng: event.latLng.lng()} });
   };
@@ -79,7 +85,7 @@ class Settings extends Component {
                 <DropdownToggle caret>Ground Server IP</DropdownToggle>
                 <DropdownMenu data-name="gndServerIp" onClick={this.handleSelect}>
                   <DropdownItem>localhost:8081</DropdownItem>
-                  <DropdownItem>192.168.2.20:8081</DropdownItem>
+                  <DropdownItem>192.168.1.10:8081</DropdownItem>
                 </DropdownMenu>
               </InputGroupButtonDropdown>
               <Input
@@ -178,6 +184,7 @@ class Settings extends Component {
             <p>
               {this.props.settings.antennaPos.lat}° , {this.props.settings.antennaPos.lng}°
             </p>
+            <Button color="success" onClick={this.configureTrackyPos}>Send Position!</Button>
             <div style={{ height: "350px", width: "500px" }}>
               <GoogleMap
                 defaultZoom={17}
@@ -188,7 +195,7 @@ class Settings extends Component {
                       lng: this.props.interopData.mission.home_pos.longitude
                     } 
                   /*else*/: 
-                    {lat: 34.0689, lng: -118.4452}
+                    defaultMapCenter
                 }
                 defaultMapTypeId="customTiles"
                 defaultOptions={{
