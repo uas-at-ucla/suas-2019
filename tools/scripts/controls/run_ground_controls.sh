@@ -111,6 +111,9 @@ then
     exit 1
 fi
 
+# Create network for docker container to use.
+./tools/scripts/docker/create_network.sh > /dev/null 2>&1 || true
+
 mkdir -p tools/cache/bazel
 pwd
 
@@ -149,6 +152,8 @@ docker run                          \
   --rm                              \
   --cap-add=SYS_PTRACE              \
   --security-opt seccomp=unconfined \
+  --net uas_bridge                  \
+  --ip 192.168.1.11                 \
   -v $ROOT_PATH:/home/uas/code_env  \
   -v ~/.ssh:/home/uas/.ssh          \
   -e DISPLAY=$DISPLAY               \
