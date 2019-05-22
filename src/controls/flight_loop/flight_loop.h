@@ -17,9 +17,9 @@
 #include "lib/alarm/alarm.h"
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/physics_structs/physics_structs.h"
+#include "src/controls/flight_loop/state_machine/state_machine.h"
 #include "src/controls/ground_controls/timeline/executor/executor.h"
 #include "src/controls/io/io.h"
-#include "src/controls/flight_loop/state_machine/state_machine.h"
 #include "src/controls/messages.pb.h"
 
 /*      ________  ________  ___  ________   ________       ___    ___
