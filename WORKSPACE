@@ -86,14 +86,14 @@ new_git_repository(
 
 new_git_repository(
   name = "libzmq",
-  commit = "257244abdd1dbdeeb8f41ed2bcd2d858e0addc16",
+  commit = "b1fd3b2740f4b18ee25aefe193b31e319fcfbbe5",
   build_file = "third_party/libzmq.BUILD",
   remote = "https://github.com/uas-at-ucla/libzmq.git",
 )
 
 new_git_repository(
   name = "cppzmq",
-  commit = "213da0b04ae3b4d846c9abc46bab87f86bfb9cf4",
+  commit = "a96e0ded6456757ed74947cec2b5d2b875f9dab4",
   build_file = "third_party/cppzmq.BUILD",
   remote = "https://github.com/zeromq/cppzmq.git",
 )
