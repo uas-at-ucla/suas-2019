@@ -16,11 +16,12 @@ const loadProtobufUtils = require('./src/protobuf_utils');
 const loadInteropClient = require('./src/interop_client');
 const config = require('./config');
 
-const USE_FAKE_DRONE = true;
 const server_port = 8081;
 var droneIP = "192.168.1.20";
 const pingInterval = 1000 //ms
 const uiSendFrequency = 5; //Hz
+const trackySendFrequency = 5; //Hz
+var telemetry = {};
 
 var drone_connected = false;
 
@@ -43,7 +44,6 @@ loadProtobufUtils((theProtobufUtils) => {
 /**************************
  * INTEROP CONNECTION
  **************************/
-var interopCanUpload = true;
 var interopClient = null;
 var interopData = null;
 if (config.testing) {
@@ -60,7 +60,7 @@ if (config.testing) {
 
 function connectToInterop(ip, username, password) {
   interopClient = null;
-  return loadInteropClient(ip, username, password)
+  return loadInteropClient(ip, username, password, ui_io)
     .then(theInteropClient => {
       interopClient = theInteropClient;
       interopClient.getMissions().then(missions =>
@@ -81,46 +81,31 @@ function connectToInterop(ip, username, password) {
     });
 }
 
+/**************************
+ * ANTENNA TRACKER
+ **************************/
+const trackySendInterval = 1000 / trackySendFrequency;
+setInterval(() => {
+  if (telemetry.sensors) {
+    tracky_io.emit('DRONE_POS', telemetry.sensors);
+  }
+}, trackySendInterval);
 
 /**************************
  * GROUND_CONTROLS SOCKET
  **************************/
-const uiSendInterval = {
-  [config.droneSensorsFrequency]: Math.floor(config.droneSensorsFrequency / uiSendFrequency),
-  [config.droneSensorsFreqRFD900]: Math.floor(config.droneSensorsFreqRFD900 / uiSendFrequency)
-}
 controls_io.on('connect', (socket) => {
   drone_connected = true;
   // droneIP = socket.handshake.address.replace('::ffff:', '');
   console.log("ground_controls connected");
-  let telemetryCount = 0;
-  function onSensors(sensors, frequency) {
+  function onSensors(sensors) {
     if (protobufUtils) {
       //TODO receive and cache other data to send along with sensors
-      telemetry = {}
       telemetry.sensors = protobufUtils.decodeSensors(sensors);
       if (interopClient) {
-        interopClient.newTelemetry(telemetry, frequency).then(() => {
-          if (!interopCanUpload) {
-            interopCanUpload = true;
-            ui_io.emit('INTEROP_UPLOAD_SUCCESS');
-          }
-        }).catch(() => {
-          if (interopCanUpload) {
-            interopCanUpload = false;
-            ui_io.emit('INTEROP_UPLOAD_FAIL');
-          }
-        });
-      }
-      // When telemetry is received from the drone, send it to clients on the UI namespace
-      if (telemetryCount >= uiSendInterval[frequency]) {
-        if (config.verbose) console.log(JSON.stringify(telemetry, null, 2));
-        ui_io.emit('TELEMETRY', telemetry);
-        tracky_io.emit('DRONE_POS', telemetry.sensors);
-        telemetryCount = 0;
+        interopClient.newTelemetry(telemetry);
       }
     }
-    telemetryCount++;
   }
 
   socket.on('SENSORS', (sensors) => {
@@ -136,6 +121,13 @@ controls_io.on('connect', (socket) => {
 /**************************
  * UI SOCKET
  **************************/
+const uiSendInterval = 1000 / uiSendFrequency;
+setInterval(() => { // periodically send telemetry to UI
+  if (telemetry.sensors) {
+    if (config.verbose) console.log(JSON.stringify(telemetry, null, 2));
+    ui_io.emit('TELEMETRY', telemetry);
+  }
+}, uiSendInterval);
 ui_io.on('connect', (socket) => {
   console.log("ui connected!");
   if (interopData) {
@@ -171,7 +163,6 @@ ui_io.on('connect', (socket) => {
     tracky_io.emit('CONFIGURE_POS', pos);
   });
 });
-
 
 /**************************
  * PING THE DRONE
@@ -220,37 +211,19 @@ if (ping) {
 /**************************
  * FAKE_DRONE SOCKET
  **************************/
-let fakeTelemetryCount = 0;
 fake_drone_io.on('connect', (socket) => {
   console.log("fake drone connected!");
-  socket.on('TELEMETRY', (telemetry) => {
+  socket.on('TELEMETRY', (droneTelemetry) => {
     if (!drone_connected) { // only do stuff if the real drone is not connected
+      telemetry = droneTelemetry;
       if (interopClient) {
-        interopClient.newTelemetry(telemetry, config.droneSensorsFrequency).then(() => {
-          if (!interopCanUpload) {
-            interopCanUpload = true;
-            ui_io.emit('INTEROP_UPLOAD_SUCCESS');
-          }
-        }).catch(() => {
-          if (interopCanUpload) {
-            interopCanUpload = false;
-            ui_io.emit('INTEROP_UPLOAD_FAIL');
-          }
-        });
+        interopClient.newTelemetry(telemetry);
       }
-      // When telemetry is received from the drone, send it to clients on the UI namespace
-      if (fakeTelemetryCount >= uiSendInterval[config.droneSensorsFrequency]) {
-        if (config.verbose) console.log(JSON.stringify(telemetry, null, 2));
-        ui_io.emit('TELEMETRY', telemetry);
-        tracky_io.emit('DRONE_POS', telemetry.sensors);
-        fakeTelemetryCount = 0;
-      }
-      fakeTelemetryCount++;
     }
   });
 });
 
 
-if (USE_FAKE_DRONE) {
+if (config.useFakeDrone) {
   require('./src/fake_drone/fake_drone');
 }
