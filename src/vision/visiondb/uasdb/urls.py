@@ -17,7 +17,10 @@ from rest_framework import routers
 from django.contrib import admin
 from django.conf.urls import url, include
 
+from . import views
+
 urlpatterns = [
     url('admin/', admin.site.urls),
-    url('api/',include('db.urls')),
+    url('api/', include('db.urls')),
+    url('test_updates', views.test_updates, name='test_updates')
 ]
