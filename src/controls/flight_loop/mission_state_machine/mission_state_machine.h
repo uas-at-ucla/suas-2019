@@ -24,7 +24,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace mission_state_machine {
 namespace {
 // Time for propellers to spin up before taking off, in seconds.
@@ -118,6 +118,6 @@ class MissionStateMachine {
 };
 
 } // namespace mission_state_machine
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

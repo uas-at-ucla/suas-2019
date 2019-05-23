@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace executor {
 namespace {
 constexpr double kSpeed = 4.0;
@@ -315,6 +315,6 @@ void Executor::SetMission(::lib::mission_manager::Mission mission) {
 }
 
 } // namespace executor
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

@@ -37,7 +37,7 @@ cc_library(
   ],
   deps = [
     '//src/controls/ground_controls/timeline/executor:executor',
-    '//src/controls/loops/state_machine:state_machine',
+    '//src/controls/flight_loop/state_machine:state_machine',
     '//src/controls:messages_cpp',
     '//src/controls/io:io_lib',
     '//lib/proto_comms:proto_comms',
