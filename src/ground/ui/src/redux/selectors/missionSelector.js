@@ -10,19 +10,15 @@ selectors.protoInfo = createSelector(
     if (!timelineGrammar) {
       return null;
     }
-    let commands = {};
-    let commandTypes = [];
+    let commandNames = timelineGrammar.GroundCommand.oneofs.command.oneof;
     let commandAbbr = {};
-    for (let varName of timelineGrammar.GroundCommand.oneofs.command.oneof) {
-      let commandType = timelineGrammar.GroundCommand.fields[varName].type;
-      commands[commandType] = timelineGrammar[commandType];
-      commandTypes.push(commandType);
-      commandAbbr[commandType] = commandType.replace("Command", "");
+    for (let commandName of commandNames) {
+      let commandType = timelineGrammar.GroundCommand.fields[commandName].type;
+      commandAbbr[commandName] = commandType.replace("Command", "");
     }
     return {
       timelineGrammar: timelineGrammar,
-      commands: commands,
-      commandTypes: commandTypes,
+      commandNames: commandNames,
       commandAbbr: commandAbbr,
       fieldUnits: {
         altitude: "ft",
@@ -46,7 +42,7 @@ selectors.commandMarkers = createObjectSelector(
   [selectors.commandsById, selectors.protoInfo],
   (cmd, protoInfo) => {
     for (let locationField of protoInfo.locationFields) {
-      if (cmd[cmd.type][locationField]) {
+      if (cmd[cmd.name][locationField]) {
         let label = null;
         if (cmd.type === 'WaypointCommand') {
           label = {
@@ -55,7 +51,7 @@ selectors.commandMarkers = createObjectSelector(
             fontSize: '15px'
           }
         }
-        let location = cmd[cmd.type][locationField];
+        let location = cmd[cmd.name][locationField];
         return {
           position: {
             lat: location.latitude,

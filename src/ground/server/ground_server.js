@@ -6,10 +6,9 @@ try {
   ping = require("net-ping"); //might fail since it needs to be compiled specifically on each platform
 } catch(e) {
   console.log(e);
-  console.log("Can't load net-ping. Uninstall and reinstall for your platform with the following:");
+  console.log("Can't load net-ping. It either did not install succesfully, or it may be installed for the wrong platform. Uninstall it with:");
   console.log("    cd src/ground/server");
-  console.log("    npm uninstall net-ping");
-  console.log("    npm install net-ping\n");
+  console.log("    npm uninstall net-ping\n");
 }
 
 const loadProtobufUtils = require('./src/protobuf_utils');
@@ -115,6 +114,11 @@ controls_io.on('connect', (socket) => {
   socket.on('SENSORS_RFD900', (sensors) => {
     onSensors(sensors, config.droneSensorsFreqRFD900);
   });
+
+  socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
+    console.log("hello");
+    console.log(droneProgram);
+  });
 });
 
 
@@ -143,13 +147,14 @@ ui_io.on('connect', (socket) => {
     console.log("THE DRONE is asked to " + state + ". Hey DRONE, are you listening?");
   });
 
-  socket.on('RUN_MISSION', (commands) => {
-    console.log("received mission from UI");
+  socket.on('COMPILE_GROUND_PROGRAM', (commands) => {
+    console.log("received ground program from UI");
     if (protobufUtils) {
       let groundProgram = protobufUtils.makeGroundProgram(commands, interopData);
       console.log(JSON.stringify(groundProgram, null, 2));
       let encodedGroundProgram = protobufUtils.encodeGroundProgram(groundProgram);
-      controls_io.emit('RUN_MISSION', encodedGroundProgram);
+      console.log("Sending ground program. to the drone");
+      controls_io.emit('COMPILE_GROUND_PROGRAM', encodedGroundProgram);
     }
   });
 
@@ -224,6 +229,6 @@ fake_drone_io.on('connect', (socket) => {
 });
 
 
-if (config.useFakeDrone) {
+if (config.testing && config.useFakeDrone) {
   require('./src/fake_drone/fake_drone');
 }

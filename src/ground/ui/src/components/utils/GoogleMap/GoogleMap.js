@@ -20,7 +20,8 @@ function getCustomTilesMapType() {
             throw new Error();
           }
         } catch(e) {
-          url = `https://khms0.googleapis.com/kh?v=821&hl=en-US&x=${coord.x}&y=${coord.y}&z=${zoom}`;
+          // Note: 'v=844' may need to be updated to a new number from time to time.
+          url = `https://khms0.googleapis.com/kh?v=844&hl=en-US&x=${coord.x}&y=${coord.y}&z=${zoom}`;
         }
   
         // UNCOMMENT TO TEST:
