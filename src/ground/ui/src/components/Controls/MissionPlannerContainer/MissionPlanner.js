@@ -128,24 +128,24 @@ class CommandRow extends PureComponent {
         <Col xs="auto" className="command-column command-index command-header">{index+1}</Col>
         <Col xs="auto" className="command-column command-type command-header">
           <span className="value">
-            {this.props.protoInfo.commandAbbr[command.type]}
+            {this.props.protoInfo.commandAbbr[command.name]}
           </span>
           <Input
-            type="select" className="input" value={command.type}
+            type="select" className="input" value={command.name}
             data-index={index} onChange={this.props.changeCommandType}
           >
-            {this.props.protoInfo.commandTypes.map(commandType =>
-              <option value={commandType} key={commandType}>
-                {this.props.protoInfo.commandAbbr[commandType]}
+            {this.props.protoInfo.commandNames.map(commandName =>
+              <option value={commandName} key={commandName}>
+                {this.props.protoInfo.commandAbbr[commandName]}
               </option>
             )}
           </Input>
         </Col>
         <Col xs="auto" className="command-column">
           <this.Field
-            dotProp={index + "." + command.type}
+            dotProp={index + "." + command.name}
             type={command.type}
-            object={command[command.type]}
+            object={command[command.name]}
           />
         </Col>
       </Row>

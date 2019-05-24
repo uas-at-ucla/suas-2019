@@ -43,7 +43,7 @@ export default function reducer(state=initialState, action) {
     }
     case 'INTEROP_DATA': {
       if (!action.payload) {
-        return null;
+        return state;
       }
       return {
         ...state,

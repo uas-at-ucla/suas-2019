@@ -24,6 +24,9 @@
 #include "src/controls/io/io.h"
 #include "src/controls/messages.pb.h"
 
+#include "src/controls/ground_controls/timeline/ground2drone_visitor/ground2drone_visitor.h"
+#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
+
 namespace src {
 namespace controls {
 namespace ground_controls {
@@ -38,6 +41,7 @@ class GroundControls {
  public:
   GroundControls();
   void ReadRFD900();
+  void ReadUDP();
 
   void OnConnect();
   void OnFail();
@@ -54,8 +58,8 @@ class GroundControls {
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber sensors_subscriber_;
 
-  // ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
-  // udp_connection_;
+  ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
+      udp_connection_;
   ::lib::serial_device::SerialDevice<::src::controls::UasMessage>
       rfd900_connection_;
 
@@ -63,6 +67,9 @@ class GroundControls {
   ::sio::client client_;
 
   ::lib::phased_loop::PhasedLoop phased_loop_;
+
+  ::src::controls::ground_controls::timeline::ground2drone_visitor::
+      Ground2DroneVisitor ground2drone_visitor_;
 };
 
 } // namespace ground_controls

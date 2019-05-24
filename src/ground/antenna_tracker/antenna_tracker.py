@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
     server_ip = 'localhost'
     if os.uname().machine.startswith("arm"): # if on raspberry pi
-        server_ip = '192.168.1.20' # static ip of ground station
+        server_ip = '192.168.1.10' # static ip of ground station
 
     sio = socketio.Client()
 
