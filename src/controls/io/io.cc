@@ -91,7 +91,7 @@ void IO::WriterThread() {
     // set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, i / 10);
 #else
     // Silence unused variable errors for AMD64 platforms.
-    (void) should_alarm;
+    (void)should_alarm;
 #endif
 
     // Write output to LED strip.

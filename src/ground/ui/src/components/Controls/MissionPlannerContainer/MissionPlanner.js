@@ -28,6 +28,13 @@ class MissionPlanner extends Component {
   CommandList = SortableContainer(() => {
     return (
       <Container fluid>
+        {this.props.mission.interopData ? 
+          <div>
+            Mission Altitude Range:&nbsp;
+            {this.props.mission.interopData.mission.fly_zones[0].altitude_msl_min} -&nbsp;
+            {this.props.mission.interopData.mission.fly_zones[0].altitude_msl_max} ft
+          </div> 
+        : null}
         {this.props.mission.commands.map((command, index) => 
           <SortableCommand
             className={this.props.className}
@@ -64,6 +71,11 @@ class MissionPlanner extends Component {
         this.props.centerMapOnCommand(command, this.props.protoInfo);
         setTimeout(() => this.props.commandStopAnimation(command), 1000);
       }
+    },
+
+    deleteCommand: (event) => {
+      let index = event.target.dataset.index;
+      this.props.deleteCommand(index);
     },
 
     changeCommandType: (event) => {
@@ -108,8 +120,13 @@ class CommandRow extends PureComponent {
     let index = this.props.myIndex;
     return (
       <Row className={`MissionPlanner ${this.props.className}`} onClick={this.centerMapOnCommand}>
-        <Col xs="auto" className="command-column command-index">{index+1}</Col>
-        <Col xs="auto" className="command-column command-type">
+        <Col xs="auto" className="command-column input command-header">
+          <Button className="delete-btn" color="danger" size="sm" data-index={index} onClick={this.props.deleteCommand}>
+            <i className="fa fa-minus"></i>
+          </Button>
+        </Col>
+        <Col xs="auto" className="command-column command-index command-header">{index+1}</Col>
+        <Col xs="auto" className="command-column command-type command-header">
           <span className="value">
             {this.props.protoInfo.commandAbbr[command.type]}
           </span>

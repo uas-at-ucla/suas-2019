@@ -64,6 +64,7 @@ function connectToInterop(ip, username, password) {
             mission: missions[0],
             obstacles: obstacles
           }
+          console.log("Interop data retrieved");
           ui_io.emit('INTEROP_DATA', interopData);
         })
       );

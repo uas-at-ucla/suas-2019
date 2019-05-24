@@ -42,6 +42,9 @@ export default function reducer(state=initialState, action) {
       return {...state, mapCenter: action.payload.pos};
     }
     case 'INTEROP_DATA': {
+      if (!action.payload) {
+        return null;
+      }
       return {
         ...state,
         mapCenter: {

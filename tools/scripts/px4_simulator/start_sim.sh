@@ -46,4 +46,7 @@ docker run \
   su - uas bash -c \"
   cd px4_simulator
   HOST_IP=\\\$(/sbin/ip route|awk '/default/ { print \\\$3 }')
+  export PX4_HOME_LAT=38.147483
+  export PX4_HOME_LON=-76.427778
+  export PX4_HOME_ALT=40
   make posix_sitl_default jmavsim\""
