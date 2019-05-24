@@ -28,7 +28,8 @@ GroundControls::GroundControls() :
   client_.set_fail_listener(on_fail);
 
   client_.connect(
-      "http://192.168.1.10:8081"); // Docker network ground server IP
+      "http://192.168.1.10:8081"); // ground server IP on both Docker network
+                                   // and "real" network
 }
 
 void GroundControls::SendSensorsToServer(
@@ -38,7 +39,7 @@ void GroundControls::SendSensorsToServer(
     ::std::string sensors_serialized;
     sensors.SerializeToString(&sensors_serialized);
 
-    ::std::cout << "sensors: " << sensors.DebugString() << "\n";
+    // ::std::cout << "sensors: " << sensors.DebugString() << "\n";
 
     if (client_.opened()) {
       client_.socket("ground-controls")
@@ -106,8 +107,8 @@ void GroundControls::ReadUDP() {
 }
 
 void GroundControls::OnConnect() {
-  client_.socket("drone")->on(
-      "compile_ground_program",
+  client_.socket("ground-controls")->on(
+      "COMPILE_GROUND_PROGRAM",
       ::sio::socket::event_listener_aux([&](::std::string const &name,
                                             ::sio::message::ptr const &data,
                                             bool isAck,
@@ -136,7 +137,7 @@ void GroundControls::OnConnect() {
         // Compile the GroundProgram into a DroneProgram.
         ::src::controls::ground_controls::timeline::DroneProgram drone_program =
             ground2drone_visitor_.Process(&ground_program);
-        bool success = true; // TODO temporary
+        bool success = drone_program.IsInitialized();
 
         if (!success) {
           ::std::cout << "drone program compilation failure: Could not compile "
@@ -145,11 +146,13 @@ void GroundControls::OnConnect() {
           return;
         }
 
+        ::std::cout << "compiled drone program:\n" << drone_program.DebugString() << "\n";
+
         ::std::string serialized_drone_program;
         drone_program.SerializeToString(&serialized_drone_program);
         serialized_drone_program =
             ::lib::base64_tools::Encode(serialized_drone_program);
-        client_.socket("drone")->emit("compiled_drone_program",
+        client_.socket("ground-controls")->emit("COMPILED_DRONE_PROGRAM",
                                       serialized_drone_program);
       }));
 }

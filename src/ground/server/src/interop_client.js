@@ -28,13 +28,14 @@ class InteropClient {
             if (config.verbose) console.log(msg);
             if (!this.telemetryCanUpload) {
               this.telemetryCanUpload = true;
+              console.log("Now able to upload telemetry :)");
               ui_io.emit('INTEROP_UPLOAD_SUCCESS');
             }
           }).catch(error => {
-            console.log("Failed to upload telemetry!");
             if (config.verbose) console.log(error);
             if (this.telemetryCanUpload) {
               this.telemetryCanUpload = false;
+              console.log("Failing to upload telemetry!");
               ui_io.emit('INTEROP_UPLOAD_FAIL');
             }
           });
