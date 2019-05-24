@@ -10,7 +10,8 @@ import { selector } from 'redux/store';
 const mapStateToProps = state => { 
   return { 
     mission: state.mission,
-    protoInfo: selector(state).mission.protoInfo
+    protoInfo: selector(state).mission.protoInfo,
+    interopData: state.mission.interopData
   };
 };
 
@@ -23,6 +24,21 @@ class MissionPlanner extends Component {
         <this.CommandList onSortEnd={this.reorderCommand} distance={2}/>
       </div>
     );
+  }
+
+  autoGenerate() {
+    console.log(this.props.interopData.mission);
+    //example:
+    let defaultWaypointCommand = {
+      goal: {
+        latitude: 0,
+        longitude: 0,
+        altitude: 100
+      }
+    }
+    this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
+
+    this.props.addCommand('ugv_drop', defaultWaypointCommand, this.props.protoInfo);
   }
 
   CommandList = SortableContainer(() => {
@@ -47,6 +63,7 @@ class MissionPlanner extends Component {
           ></SortableCommand>
         )}
         <Button onClick={this.addCommand} className="command-btn">Add Command</Button>
+        {this.props.interopData && this.props.mission.commands.length === 0 ? <Button onClick={()=>{}}>Auto-Generate</Button> : null}
       </Container>
     );
   });

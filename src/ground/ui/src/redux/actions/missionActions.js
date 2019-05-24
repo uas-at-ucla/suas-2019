@@ -26,10 +26,10 @@ export default {
       payload: { id: cmd.id }
     }
   },
-  addCommand: (type, options, protoInfo) => {
+  addCommand: (name, options, protoInfo) => {
     return {
       type: 'ADD_COMMAND',
-      payload: createCommand(type, options, protoInfo)
+      payload: createCommand(name, options, protoInfo)
     }
   },
   addWaypointCommand: (options, protoInfo) => {
