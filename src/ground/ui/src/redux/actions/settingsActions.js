@@ -34,6 +34,16 @@ export default {
     };
   },
 
+  configureUgvDest: function(pos) {
+    return { 
+      type: 'TRANSMIT', 
+      payload: {
+        msg: 'SET_UGV_TARGET',
+        data: pos
+      }
+    };
+  },
+
   logReduxState: function() {
     return { type: 'LOG_REDUX_STATE' };
   }

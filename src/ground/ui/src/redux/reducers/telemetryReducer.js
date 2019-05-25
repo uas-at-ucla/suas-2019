@@ -4,7 +4,8 @@ const initialState = {
   droneTelemetry: null,
   playback: false,
   pingDelay: null,
-  mapCenter: { lat: 38.147483, lng: -76.427778 }
+  mapCenter: { lat: 38.147483, lng: -76.427778 },
+  ugvStatus: null
 };
 
 export default function reducer(state=initialState, action) {
@@ -52,6 +53,9 @@ export default function reducer(state=initialState, action) {
           lng: action.payload.mission.home_pos.longitude
         }
       };
+    }
+    case 'UGV_MESSAGE': {
+      return {...state, ugvStatus: action.payload.status};
     }
     default: {
       return state;

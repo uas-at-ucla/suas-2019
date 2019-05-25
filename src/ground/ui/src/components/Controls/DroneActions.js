@@ -23,6 +23,7 @@ class DroneActions extends Component {
           <button id="landButton" onClick={this.props.droneLand}>Land</button>
           <button id="failsafeButton" onClick={this.props.droneFailsafe}>Failsafe Landing</button>
           <button id="throttleCutButton" onClick={this.props.droneThrottleCut}>Throttle Cut</button>
+          <button id="takeoffButton" onClick={this.props.driveUgv}>Drive UGV</button>
         </div>
       </span>
     );

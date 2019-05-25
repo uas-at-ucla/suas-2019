@@ -18,11 +18,12 @@ class ProtobufUtils {
   // Goal;
   // Output;
 
-  constructor(timelineRoot, telemetryRoot) {
+  constructor(timelineRoot, telemetryRoot, ugvRoot) {
     this.GroundProgram = timelineRoot.lookupType("src.controls.ground_controls.timeline.GroundProgram");
     this.Sensors = telemetryRoot.lookupType("src.controls.Sensors");
     this.Goal = telemetryRoot.lookupType("src.controls.Goal");
     this.Output = telemetryRoot.lookupType("src.controls.Output");
+    this.UGV_Message = ugvRoot.lookupType("ugv.messages.UGV_Message");
   }
 
   makeGroundProgram(commands, missionAndObstacles) {
@@ -55,6 +56,10 @@ class ProtobufUtils {
 
   encodeGroundProgram(message) {
     return ProtobufUtils.encode(this.GroundProgram, message);
+  }
+
+  decodeUGV_Message(message) {
+    return ProtobufUtils.decode(this.UGV_Message, message);
   }
 
   decodeSensors(message) {
@@ -108,7 +113,7 @@ class ProtobufUtils {
 }
 
 module.exports = (callback) => {
-  process.chdir("../../..")
+  process.chdir("../../..");
   let timelineRoot = new protobuf.Root();
   timelineRoot.load("src/controls/ground_controls/timeline/timeline_grammar.proto", {keepCase: true}, (err) => {
     if (err) throw err;
@@ -117,7 +122,13 @@ module.exports = (callback) => {
     telemetryRoot.load("src/controls/messages.proto", {keepCase: true}, (err) => {
       if (err) throw err;
 
-      callback(new ProtobufUtils(timelineRoot, telemetryRoot));
+      process.chdir("src/ground/server/src/ugv");
+      let ugvRoot = new protobuf.Root();
+      ugvRoot.load("messages.proto", {keepCase: true}, (err) => {
+        if (err) throw err;
+  
+        callback(new ProtobufUtils(timelineRoot, telemetryRoot, ugvRoot));
+      });
     });
   });
 }

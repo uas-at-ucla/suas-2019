@@ -1,0 +1,21 @@
+syntax = "proto3";
+
+package ugv.config;
+
+option optimize_for = LITE_RUNTIME;
+
+message PidParams {
+  float kp = 1;
+  float ki = 2;
+  float kd = 3;
+  float max_output = 4;
+  float max_i_error = 5;
+}
+
+message Config {
+  float min_target_dist = 1;
+  float drive_power = 2;
+  PidParams angle_pid = 3;
+  float min_flip_pitch = 4;
+  float mag_declination = 5;
+}
