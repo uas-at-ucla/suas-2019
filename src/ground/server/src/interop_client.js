@@ -2,23 +2,49 @@
 
 const axios = require('axios');
 const qs = require('qs');
-const config = require('./config');
+const config = require('../config');
 
+const FEET_PER_METER = 3.28084;
 const interopSendFrequency = 2; //Hz
-const sendInterval = {
-  [config.droneSensorsFrequency]: Math.floor(config.droneSensorsFrequency / interopSendFrequency),
-  [config.droneSensorsFreqRFD900]: Math.floor(config.droneSensorsFreqRFD900 / interopSendFrequency)
-}
+const sendInterval = 1000 / interopSendFrequency;
 
 class InteropClient {
   // axiosInstance;
-  // telemetryCount = 0;
+  // interopTelemetry;
+  // telemetryCanUpload;
 
-  constructor(axiosConfig, loginResponse) {
+  constructor(axiosConfig, loginResponse, ui_io) {
     let sessionCookie = loginResponse.headers['set-cookie'][0];
     axiosConfig.headers = {'Cookie': sessionCookie};
     this.axiosInstance = axios.create(axiosConfig);
-    this.telemetryCount = 0;
+    this.interopTelemetry = null;
+    this.telemetryCanUpload = true;
+
+    setInterval(() => {
+      if (this.interopTelemetry) {
+        if (!this.interopTelemetry.sent) {
+          this.interopTelemetry.sent = true;
+          this.postTelemetry(this.interopTelemetry).then(msg => {
+            if (config.verbose) console.log(msg);
+            if (!this.telemetryCanUpload) {
+              this.telemetryCanUpload = true;
+              console.log("Now able to upload telemetry :)");
+              ui_io.emit('INTEROP_UPLOAD_SUCCESS');
+            }
+          }).catch(error => {
+            if (config.verbose) console.log(error);
+            if (this.telemetryCanUpload) {
+              this.telemetryCanUpload = false;
+              console.log("Failing to upload telemetry!");
+              ui_io.emit('INTEROP_UPLOAD_FAIL');
+            }
+          });
+        } else {
+          console.log("No new telemetry to send to interop.");
+          this.interopTelemetry = null;
+        }
+      }
+    }, sendInterval);
   }
 
   getMissions() {
@@ -45,30 +71,19 @@ class InteropClient {
     return this.axiosInstance.post("/odlcs/"+odlcId+"/image", image).then(res => res.data);
   }
 
-  newTelemetry(telemetry, frequency) {
+  newTelemetry(telemetry) {
     if (telemetry.sensors) {
-      if (this.telemetryCount == sendInterval[frequency]) {
-        let interopTelemetry = {
-          latitude: telemetry.sensors.latitude,
-          longitude: telemetry.sensors.longitude,
-          altitude_msl: telemetry.sensors.altitude,
-          uas_heading: telemetry.sensors.heading
-        }
-        // console.log(interopTelemetry);
-        this.postTelemetry(interopTelemetry).then(msg => 
-          config.verbose && console.log(msg)
-        ).catch(error => {
-          console.log("Failed to upload telemetry!");
-          if (config.verbose) console.log(error);
-        });
-        this.telemetryCount = 0;
+      this.interopTelemetry = {
+        latitude: telemetry.sensors.latitude,
+        longitude: telemetry.sensors.longitude,
+        altitude_msl: telemetry.sensors.altitude * FEET_PER_METER,
+        uas_heading: telemetry.sensors.heading
       }
-      this.telemetryCount++;
     }
   }
 }
 
-module.exports = (ip, username, password) => {
+module.exports = (ip, username, password, ui_io) => {
   let axiosConfig = {
     baseURL: "http://" + ip + "/api/",
     timeout: 5000
@@ -83,7 +98,7 @@ module.exports = (ip, username, password) => {
     axiosConfig
   )
   .then(response => {
-    return new InteropClient(axiosConfig, response);
+    return new InteropClient(axiosConfig, response, ui_io);
   })
   .catch(error => {
     console.log("Failed to login to interop!");

@@ -25,7 +25,7 @@ export default {
     return {
       type: 'TRANSMIT',
       payload: {
-        msg: 'RUN_MISSION',
+        msg: 'COMPILE_GROUND_PROGRAM',
         data: commands
       }
     }

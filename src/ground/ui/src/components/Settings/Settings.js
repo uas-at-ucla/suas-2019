@@ -85,7 +85,7 @@ class Settings extends Component {
                 <DropdownToggle caret>Ground Server IP</DropdownToggle>
                 <DropdownMenu data-name="gndServerIp" onClick={this.handleSelect}>
                   <DropdownItem>localhost:8081</DropdownItem>
-                  <DropdownItem>192.168.2.20:8081</DropdownItem>
+                  <DropdownItem>192.168.1.10:8081</DropdownItem>
                 </DropdownMenu>
               </InputGroupButtonDropdown>
               <Input

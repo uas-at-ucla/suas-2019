@@ -10,7 +10,8 @@ import { selector } from 'redux/store';
 const mapStateToProps = state => { 
   return { 
     mission: state.mission,
-    protoInfo: selector(state).mission.protoInfo
+    protoInfo: selector(state).mission.protoInfo,
+    interopData: state.mission.interopData
   };
 };
 
@@ -23,6 +24,72 @@ class MissionPlanner extends Component {
         <this.CommandList onSortEnd={this.reorderCommand} distance={2}/>
       </div>
     );
+  }
+
+  autoGenerate = () => {
+    //console.log(this.props.interopData.mission);
+    //example:
+    var i
+    for (i = 0; i < this.props.interopData.mission.mission_waypoints.length; i++){
+      var lat = this.props.interopData.mission.mission_waypoints[i].latitude
+      var long = this.props.interopData.mission.mission_waypoints[i].longitude
+      var alt = this.props.interopData.mission.mission_waypoints[i].altitude_msl 
+      let defaultWaypointCommand = {
+        goal: {
+          latitude: lat,
+          longitude: long,
+          altitude: alt
+        }
+      }
+      this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
+    }
+    var search_grid = []
+    var default_alt = 150
+    for (i = 0; i < this.props.interopData.mission.search_grid_points.length; i++){
+      var lat = this.props.interopData.mission.search_grid_points[i].latitude
+      var long = this.props.interopData.mission.search_grid_points[i].longitude
+      let search_point = {
+        latitude: lat, 
+        longitude: long
+      }
+      search_grid.push(search_point)
+    }
+
+    let search_command = {
+      altitude: default_alt,
+      survey_polygon: search_grid
+    }
+
+    this.props.addCommand("survey_command", search_command, this.props.protoInfo)
+    
+    var lat = this.props.interopData.mission.air_drop_pos.latitude
+    var long = this.props.interopData.mission.air_drop_pos.longitude
+    var default_drp_height = 150
+    let airDropCommand = {
+      drop_height: default_drp_height,
+      ground_target: {
+        latitude: lat,
+        longitude: long
+      } 
+    }
+    this.props.addCommand("ugv_drop_command", airDropCommand, this.props.protoInfo);
+    
+    var lat = this.props.interopData.mission.off_axis_odlc_pos.latitude
+    var long = this.props.interopData.mission.off_axis_odlc_pos.longitude
+    var default_height = 150
+    let off_axis_command = {
+      photographer_location: {
+        latitude: lat,
+        longitude: long,
+        altitude: default_height
+      },
+      subject_location: {
+        latitude: lat,
+        longitude: long,
+      }
+    }
+    this.props.addCommand("off_axis_command", off_axis_command, this.props.protoInfo)
+
   }
 
   CommandList = SortableContainer(() => {
@@ -47,6 +114,7 @@ class MissionPlanner extends Component {
           ></SortableCommand>
         )}
         <Button onClick={this.addCommand} className="command-btn">Add Command</Button>
+        {this.props.interopData && this.props.mission.commands.length === 0 ? <Button onClick={this.autoGenerate}>Auto-Generate</Button> : null}
       </Container>
     );
   });
@@ -128,24 +196,24 @@ class CommandRow extends PureComponent {
         <Col xs="auto" className="command-column command-index command-header">{index+1}</Col>
         <Col xs="auto" className="command-column command-type command-header">
           <span className="value">
-            {this.props.protoInfo.commandAbbr[command.type]}
+            {this.props.protoInfo.commandAbbr[command.name]}
           </span>
           <Input
-            type="select" className="input" value={command.type}
+            type="select" className="input" value={command.name}
             data-index={index} onChange={this.props.changeCommandType}
           >
-            {this.props.protoInfo.commandTypes.map(commandType =>
-              <option value={commandType} key={commandType}>
-                {this.props.protoInfo.commandAbbr[commandType]}
+            {this.props.protoInfo.commandNames.map(commandName =>
+              <option value={commandName} key={commandName}>
+                {this.props.protoInfo.commandAbbr[commandName]}
               </option>
             )}
           </Input>
         </Col>
         <Col xs="auto" className="command-column">
           <this.Field
-            dotProp={index + "." + command.type}
+            dotProp={index + "." + command.name}
             type={command.type}
-            object={command[command.type]}
+            object={command[command.name]}
           />
         </Col>
       </Row>

@@ -35,8 +35,8 @@ class ProtobufUtils {
             latitude: obstacle.latitude,
             longitude: obstacle.longitude
           },
-          cylinderRadius: obstacle.cylinder_radius,
-          cylinderHeight: obstacle.cylinder_height
+          cylinder_radius: obstacle.cylinder_radius,
+          cylinder_height: obstacle.cylinder_height
         });
       }
       for (let point of missionAndObstacles.mission.fly_zones[0].boundary_pts) {
@@ -48,8 +48,8 @@ class ProtobufUtils {
     }
     return {
       commands: commands,
-      staticObstacles: obstacles_proto,
-      fieldBoundary: fieldBoundary_proto
+      static_obstacles: obstacles_proto,
+      field_boundary: fieldBoundary_proto
     }
   }
 
@@ -102,6 +102,7 @@ class ProtobufUtils {
     if (errMsg) {
       throw Error(errMsg);
     }
+    // console.log(Type.decode(ProtobufUtils.decodeBase64(ProtobufUtils.encodeBase64(Type.encode(Type.create(message)).finish()))));
     return ProtobufUtils.encodeBase64(Type.encode(message).finish());
   }
 }
