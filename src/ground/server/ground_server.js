@@ -175,7 +175,7 @@ ui_io.on('connect', (socket) => {
       let groundProgram = protobufUtils.makeGroundProgram(commands, interopData);
       console.log(JSON.stringify(groundProgram, null, 2));
       let encodedGroundProgram = protobufUtils.encodeGroundProgram(groundProgram);
-      console.log("Sending ground program. to the drone");
+      console.log("Sending ground program to the drone");
       controls_io.emit('COMPILE_GROUND_PROGRAM', encodedGroundProgram);
     }
   });

@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { Button, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 
 import droneActions from "redux/actions/droneActions";
 
@@ -14,16 +15,61 @@ const mapStateToProps = state => {
 const mapDispatchToProps = droneActions;
 
 class DroneActions extends Component {
+  state = {
+    modal: false,
+    message: ""
+  };
+  
+  toggle = () => {
+    this.setState(prevState => ({
+      modal: !prevState.modal
+    }));
+  }
+
+  toggleWithName = (message) => {
+    this.setState({ message: message, modal: !this.state.modal });
+  }
+
+  doAction = () => {
+    switch (this.state.message)
+    { 
+      case "Run Mission" : this.runMission();
+      break;
+      case "Takeoff" : this.props.droneTakeoff();
+      break;
+      case "Land" : this.props.droneLand();
+      break;
+      case "Failsafe Landing": this.props.droneFailsafe();
+      break;
+      case "Throttle Cut":  this.props.droneThrottleCut();
+      break; 
+      case "Drive UGV":  this.props.driveUgv();
+      break; 
+    }
+    this.toggle();
+  }
+
   render() {
+    const { message } = this.state;
     return (
       <span className="DroneActions">        
         <div className="buttonArray">
-          <button id="runMissionButton" onClick={this.runMission}>Run Mission</button>
-          <button id="takeoffButton" onClick={this.props.droneTakeoff}>Takeoff</button>
-          <button id="landButton" onClick={this.props.droneLand}>Land</button>
-          <button id="failsafeButton" onClick={this.props.droneFailsafe}>Failsafe Landing</button>
-          <button id="throttleCutButton" onClick={this.props.droneThrottleCut}>Throttle Cut</button>
-          <button id="takeoffButton" onClick={this.props.driveUgv}>Drive UGV</button>
+          <button id="runMissionButton" onClick={()=>this.toggleWithName("Run Mission")}>Run Mission</button>
+          <button id="takeoffButton" onClick={()=>this.toggleWithName("Takeoff")}>Takeoff</button>
+          <button id="landButton" onClick={()=>this.toggleWithName("Land")}>Land</button>
+          <button id="failsafeButton" onClick={()=>this.toggleWithName("Failsafe Landing")}>Failsafe Landing</button>
+          <button id="throttleCutButton" onClick={()=>this.toggleWithName("Throttle Cut")}>Throttle Cut</button>
+          <button id="takeoffButton" onClick={()=>this.toggleWithName("Drive UGV")}>Drive UGV</button>
+          <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
+          <ModalHeader toggle={this.toggle}>WARNING</ModalHeader>
+          <ModalBody>
+            Are you sure you want to {message}?
+          </ModalBody>
+          <ModalFooter>
+            <Button color="primary" onClick={this.doAction}>{message}</Button>
+            <Button color="secondary" onClick={this.toggle}>Cancel</Button>
+          </ModalFooter>
+        </Modal>
         </div>
       </span>
     );
