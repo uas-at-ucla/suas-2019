@@ -30,6 +30,12 @@ export default {
       }
     }
   },
+  driveUgv: () => {
+    return {
+      type: 'TRANSMIT',
+      payload: { msg: 'DRIVE_UGV' }
+    }
+  },
   testTransmit: (data) => {
     return {
       type: 'TRANSMIT',

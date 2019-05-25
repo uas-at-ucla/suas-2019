@@ -144,7 +144,7 @@ if __name__ == "__main__":
 
     while True:
         try:
-            sio.connect('http://'+server_ip+':8081', namespaces=['/tracky'])
+            sio.connect('http://'+server_ip+':8081', namespaces=['/tracky'], transports='websocket')
             break
         except:
             print("Can't connect to ground server. Retrying in 2 seconds...")

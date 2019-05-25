@@ -30,6 +30,7 @@ const io = socketIOServer(server_port);
 // create namespaces
 const ui_io = io.of('/ui');
 const controls_io = io.of('/ground-controls');
+const ugv_io = io.of('/ugv');
 const tracky_io = io.of('/tracky');
 const fake_drone_io = io.of('/fake-drone');
 
@@ -89,6 +90,10 @@ setInterval(() => {
     tracky_io.emit('DRONE_POS', telemetry.sensors);
   }
 }, trackySendInterval);
+tracky_io.on('connect', (socket) => {
+  console.log("Antenna tracker connected!");
+});
+
 
 /**************************
  * GROUND_CONTROLS SOCKET
@@ -118,6 +123,23 @@ controls_io.on('connect', (socket) => {
   socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
     console.log("hello");
     console.log(droneProgram);
+  });
+});
+
+
+/**************************
+ * UGV SOCKET
+ **************************/
+ugv_io.on('connect', (socket) => {
+  console.log("UGV controls connected!");
+  socket.emit('SET_TARGET', {lat: 38.14617, lng: -76.42642}); // Official competition destination
+
+  socket.on('UGV_MESSAGE', (msg) => {
+    if (protobufUtils) {
+      msg = protobufUtils.decodeUGV_Message(msg);
+      console.log(msg);
+      ui_io.emit('UGV_MESSAGE', msg);
+    }
   });
 });
 
@@ -153,7 +175,7 @@ ui_io.on('connect', (socket) => {
       let groundProgram = protobufUtils.makeGroundProgram(commands, interopData);
       console.log(JSON.stringify(groundProgram, null, 2));
       let encodedGroundProgram = protobufUtils.encodeGroundProgram(groundProgram);
-      console.log("Sending ground program. to the drone");
+      console.log("Sending ground program to the drone");
       controls_io.emit('COMPILE_GROUND_PROGRAM', encodedGroundProgram);
     }
   });
@@ -166,6 +188,16 @@ ui_io.on('connect', (socket) => {
   socket.on('CONFIGURE_TRACKY_POS', (pos) => {
     console.log("Sending Tracky its estimated position");
     tracky_io.emit('CONFIGURE_POS', pos);
+  });
+
+  socket.on('SET_UGV_TARGET', (pos) => {
+    console.log("Sending the UGV its target position");
+    ugv_io.emit('SET_TARGET', pos);
+  });
+
+  socket.on('DRIVE_UGV', () => {
+    console.log("Driving the UGV!");
+    ugv_io.emit('DRIVE_TO_TARGET'); // TODO automatically send to UGV when it hits the ground
   });
 });
 

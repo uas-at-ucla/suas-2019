@@ -15,6 +15,7 @@ import UasLogo from "components/utils/UasLogo/UasLogo";
 const mapStateToProps = state => {
   return {
     telemetry: state.telemetry.droneTelemetry,
+    ugvStatus: state.telemetry.ugvStatus,
     playback: state.telemetry.playback,
     interopData: state.mission.interopData,
   };
@@ -116,6 +117,13 @@ class Analytics extends Component {
           <h2>File Browser</h2>
           <input type="file" ref={this.fileInput} />
           </Col>
+        </Row>
+
+        <br />
+        <Row>
+          <div id="ugv-status">
+            UGV Status: {JSON.stringify(this.props.ugvStatus, null, 2)} 
+          </div>
         </Row>
 
         </Container>

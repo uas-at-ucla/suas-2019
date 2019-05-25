@@ -65,6 +65,10 @@ class Settings extends Component {
     this.props.configureTrackyPos(this.props.settings.antennaPos);
   }
 
+  configureUgvDest = () => {
+    this.props.configureUgvDest(this.props.settings.antennaPos); // temporary, but convenient to use the same map
+  }
+
   handleClickedMap = (event) => {
     this.props.updateSettings({ antennaPos: {lat: event.latLng.lat(), lng: event.latLng.lng()} });
   };
@@ -185,6 +189,7 @@ class Settings extends Component {
               {this.props.settings.antennaPos.lat}° , {this.props.settings.antennaPos.lng}°
             </p>
             <Button color="success" onClick={this.configureTrackyPos}>Send Position!</Button>
+            <Button color="danger" onClick={this.configureUgvDest}><b>UGV</b> Target!</Button>
             <div style={{ height: "350px", width: "500px" }}>
               <GoogleMap
                 defaultZoom={17}
