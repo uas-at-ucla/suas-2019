@@ -1,11 +1,11 @@
-#include "state_machine.h"
+#include "flight_state_machine.h"
 
 namespace src {
 namespace controls {
 namespace flight_loop {
-namespace state_machine {
+namespace flight_state_machine {
 
-StateMachine::StateMachine() :
+FlightStateMachine::FlightStateMachine() :
     state_(STANDBY),
     unknown_state_(new UnknownState()) {
 
@@ -22,7 +22,7 @@ StateMachine::StateMachine() :
   state_handlers_[FLIGHT_TERMINATION] = new FlightTerminationState();
 }
 
-StateMachine::~StateMachine() {
+FlightStateMachine::~FlightStateMachine() {
   // Delete all state handler instances.
   for (auto const &state_handler_pair : state_handlers_) {
     delete state_handler_pair.second;
@@ -31,7 +31,7 @@ StateMachine::~StateMachine() {
   delete unknown_state_;
 }
 
-void StateMachine::Handle(::src::controls::Sensors &sensors,
+void FlightStateMachine::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Goal &goal,
                           ::src::controls::Output &output) {
 
@@ -48,7 +48,7 @@ void StateMachine::Handle(::src::controls::Sensors &sensors,
   StateTransition(output);
 }
 
-void StateMachine::StateTransition(::src::controls::Output &output) {
+void FlightStateMachine::StateTransition(::src::controls::Output &output) {
   // Record the old and new states.
   FlightLoopState old_state = state_;
   FlightLoopState new_state = static_cast<FlightLoopState>(output.state());
@@ -63,7 +63,7 @@ void StateMachine::StateTransition(::src::controls::Output &output) {
   state_ = new_state;
 }
 
-bool StateMachine::SafetyStateOverride(::src::controls::Goal &goal,
+bool FlightStateMachine::SafetyStateOverride(::src::controls::Goal &goal,
                                        ::src::controls::Output &output) {
   // Prioritize the throttle cut check, so that the drone always cuts throttle
   // instead of following any failsafe commands.
@@ -82,7 +82,7 @@ bool StateMachine::SafetyStateOverride(::src::controls::Goal &goal,
   return false;
 }
 
-State *StateMachine::GetStateHandler(FlightLoopState state) {
+State *FlightStateMachine::GetStateHandler(FlightLoopState state) {
   if (state_handlers_.count(state)) {
     return state_handlers_[state];
   }
@@ -360,7 +360,7 @@ void UnknownState::Handle(::src::controls::Sensors &sensors,
 
 void UnknownState::Reset() {}
 
-} // namespace state_machine
+} // namespace flight_state_machine
 } // namespace flight_loop
 } // namespace controls
 } // namespace src

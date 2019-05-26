@@ -14,10 +14,11 @@
 #include <google/protobuf/text_format.h>
 #include <ros/ros.h>
 
+#include "flight_state_machine.h"
+
 #include "lib/alarm/alarm.h"
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/physics_structs/physics_structs.h"
-#include "src/controls/flight_loop/state_machine/state_machine.h"
 #include "src/controls/ground_controls/timeline/executor/executor.h"
 #include "src/controls/io/io.h"
 #include "src/controls/messages.pb.h"
@@ -68,7 +69,7 @@ class FlightLoop {
                            ::src::controls::Output &output);
 
   // Fields ////////////////////////////////////////////////////////////////////
-  state_machine::StateMachine state_machine_;
+  flight_state_machine::FlightStateMachine state_machine_;
 
   ::std::atomic<bool> running_;
 

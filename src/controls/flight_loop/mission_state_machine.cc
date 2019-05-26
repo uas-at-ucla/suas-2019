@@ -8,9 +8,9 @@ namespace mission_state_machine {
 MissionStateMachine::MissionStateMachine() :
     state_(GET_NEXT_CMD),
     unknown_state_(new UnknownState()) {
-  state_handlers_[TRANSLATE] = new TranslateState();
-  state_handlers_[GET_NEXT_CMD] = new GetNextCmdState();
-  state_handlers_[UGV_RELEASE] = new UGVReleaseState();
+  // state_handlers_[TRANSLATE] = new TranslateState();
+  // state_handlers_[GET_NEXT_CMD] = new GetNextCmdState();
+  // state_handlers_[UGV_RELEASE] = new UGVReleaseState();
 }
 
 MissionStateMachine::~MissionStateMachine() {
@@ -82,6 +82,58 @@ State *MissionStateMachine::GetStateHandler(MissionState state) {
   }
   return "UNKNOWN";
 }
+
+// GetNextCmdState /////////////////////////////////////////////////////////////
+GetNextCmdState::GetNextCmdState() {}
+
+void GetNextCmdState::Handle(::src::controls::Sensors &sensors,
+                             ::src::controls::Goal &goal,
+                             ::src::controls::Output &output) {
+  (void)sensors;
+  (void)goal;
+  (void)output;
+}
+
+void GetNextCmdState::Reset() {}
+
+// TranslateState //////////////////////////////////////////////////////////////
+TranslateState::TranslateState() {}
+
+void TranslateState::Handle(::src::controls::Sensors &sensors,
+                            ::src::controls::Goal &goal,
+                            ::src::controls::Output &output) {
+  (void)sensors;
+  (void)goal;
+  (void)output;
+}
+
+void TranslateState::Reset() {}
+
+// UGVReleaseState /////////////////////////////////////////////////////////////
+UGVReleaseState::UGVReleaseState() {}
+
+void UGVReleaseState::Handle(::src::controls::Sensors &sensors,
+                             ::src::controls::Goal &goal,
+                             ::src::controls::Output &output) {
+  (void)sensors;
+  (void)goal;
+  (void)output;
+}
+
+void UGVReleaseState::Reset() {}
+
+// UGVReleaseState /////////////////////////////////////////////////////////////
+UnknownState::UnknownState() {}
+
+void UnknownState::Handle(::src::controls::Sensors &sensors,
+                          ::src::controls::Goal &goal,
+                          ::src::controls::Output &output) {
+  (void)sensors;
+  (void)goal;
+  (void)output;
+}
+
+void UnknownState::Reset() {}
 
 } // namespace mission_state_machine
 } // namespace flight_loop
