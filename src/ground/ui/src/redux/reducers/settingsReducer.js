@@ -12,6 +12,7 @@ const initialState = {
   interopIp: "134.209.2.203:8000",
   interopUsername: "testuser",
   interopPassword: "testpass",
+  interopMissionId: 2,
   antennaPos: {lat: 0, lng: 0}
 };
 

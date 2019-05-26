@@ -49,8 +49,8 @@ export default function reducer(state=initialState, action) {
       return {
         ...state,
         mapCenter: {
-          lat: action.payload.mission.home_pos.latitude,
-          lng: action.payload.mission.home_pos.longitude
+          lat: action.payload.mission.airDropPos.latitude,
+          lng: action.payload.mission.airDropPos.longitude
         }
       };
     }

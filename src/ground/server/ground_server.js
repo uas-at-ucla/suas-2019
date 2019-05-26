@@ -48,36 +48,39 @@ var interopClient = null;
 var interopData = null;
 if (config.testing) {
   // try our test server
-  connectToInterop("134.209.2.203:8000", "testuser", "testpass")
+  connectToInterop("134.209.2.203:8000", "testuser", "testpass", 2)
     .catch(error => {
       if (fs.existsSync("/.dockerenv")) { // If inside Docker container
-        connectToInterop("192.168.1.30:80", "testuser", "testpass");
+        connectToInterop("192.168.1.30:80", "testuser", "testpass", 2);
       } else {
-        connectToInterop("localhost:8000", "testuser", "testpass");
+        connectToInterop("localhost:8000", "testuser", "testpass", 2);
       }
     });
 }
 
-function connectToInterop(ip, username, password) {
+function connectToInterop(ip, username, password, missionId) {
   interopClient = null;
   return loadInteropClient(ip, username, password, ui_io)
     .then(theInteropClient => {
       interopClient = theInteropClient;
-      interopClient.getMissions().then(missions =>
-        interopClient.getObstacles().then(obstacles => {
-          interopData = {
-            ip: ip,
-            mission: missions[0],
-            obstacles: obstacles
-          }
-          console.log("Interop data retrieved");
-          ui_io.emit('INTEROP_DATA', interopData);
-        })
-      );
+      interopClient.getMission(missionId).then(mission => {
+        interopData = {
+          ip: ip,
+          mission: mission
+        }
+        console.log("Interop data retrieved");
+        ui_io.emit('INTEROP_DATA', interopData);
+      }).catch(error => {
+        console.log("Interop mission retrieval failed. Check the mission ID.");
+        interopData = null;
+        ui_io.emit('INTEROP_DATA', interopData);
+        if (config.verbose) console.log(error);
+      });
     }).catch(error => {
+      console.log("Interop login failed");
       interopData = null;
       ui_io.emit('INTEROP_DATA', interopData);
-      throw error;
+      if (config.verbose) console.log(error);
     });
 }
 
@@ -182,7 +185,7 @@ ui_io.on('connect', (socket) => {
 
   socket.on('CONNECT_TO_INTEROP', (cred) => {
     console.log('CONNECT TO INTEROP');
-    connectToInterop(cred.ip, cred.username, cred.password);
+    connectToInterop(cred.ip, cred.username, cred.password, cred.missionId);
   });
 
   socket.on('CONFIGURE_TRACKY_POS', (pos) => {

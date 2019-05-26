@@ -7,11 +7,13 @@ import { SortableContainer, SortableElement } from 'react-sortable-hoc';
 import missionActions from 'redux/actions/missionActions';
 import { selector } from 'redux/store';
 
-const mapStateToProps = state => { 
+const mapStateToProps = state => {
+  let derivedData = selector(state);
   return { 
     mission: state.mission,
-    protoInfo: selector(state).mission.protoInfo,
-    interopData: state.mission.interopData
+    protoInfo: derivedData.mission.protoInfo,
+    interopData: state.mission.interopData,
+    mainFlyZone: derivedData.mission.mainFlyZone
   };
 };
 
@@ -28,12 +30,15 @@ class MissionPlanner extends Component {
 
   autoGenerate = () => {
     //console.log(this.props.interopData.mission);
-    //example:
+    var default_alt = 150
+    var default_drp_height = default_alt
+    var default_height = default_alt
+
     var i
-    for (i = 0; i < this.props.interopData.mission.mission_waypoints.length; i++){
-      var lat = this.props.interopData.mission.mission_waypoints[i].latitude
-      var long = this.props.interopData.mission.mission_waypoints[i].longitude
-      var alt = this.props.interopData.mission.mission_waypoints[i].altitude_msl 
+    for (i = 0; i < this.props.interopData.mission.waypoints.length; i++){
+      var lat = this.props.interopData.mission.waypoints[i].latitude
+      var long = this.props.interopData.mission.waypoints[i].longitude
+      var alt = this.props.interopData.mission.waypoints[i].altitude 
       let defaultWaypointCommand = {
         goal: {
           latitude: lat,
@@ -44,10 +49,10 @@ class MissionPlanner extends Component {
       this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
     }
     var search_grid = []
-    var default_alt = 150
-    for (i = 0; i < this.props.interopData.mission.search_grid_points.length; i++){
-      var lat = this.props.interopData.mission.search_grid_points[i].latitude
-      var long = this.props.interopData.mission.search_grid_points[i].longitude
+    
+    for (i = 0; i < this.props.interopData.mission.searchGridPoints.length; i++){
+      var lat = this.props.interopData.mission.searchGridPoints[i].latitude
+      var long = this.props.interopData.mission.searchGridPoints[i].longitude
       let search_point = {
         latitude: lat, 
         longitude: long
@@ -62,9 +67,8 @@ class MissionPlanner extends Component {
 
     this.props.addCommand("survey_command", search_command, this.props.protoInfo)
     
-    var lat = this.props.interopData.mission.air_drop_pos.latitude
-    var long = this.props.interopData.mission.air_drop_pos.longitude
-    var default_drp_height = 150
+    var lat = this.props.interopData.mission.airDropPos.latitude
+    var long = this.props.interopData.mission.airDropPos.longitude
     let airDropCommand = {
       drop_height: default_drp_height,
       ground_target: {
@@ -74,9 +78,8 @@ class MissionPlanner extends Component {
     }
     this.props.addCommand("ugv_drop_command", airDropCommand, this.props.protoInfo);
     
-    var lat = this.props.interopData.mission.off_axis_odlc_pos.latitude
-    var long = this.props.interopData.mission.off_axis_odlc_pos.longitude
-    var default_height = 150
+    var lat = this.props.interopData.mission.offAxisOdlcPos.latitude
+    var long = this.props.interopData.mission.offAxisOdlcPos.longitude
     let off_axis_command = {
       photographer_location: {
         latitude: lat,
@@ -98,8 +101,8 @@ class MissionPlanner extends Component {
         {this.props.mission.interopData ? 
           <div>
             Mission Altitude Range:&nbsp;
-            {this.props.mission.interopData.mission.fly_zones[0].altitude_msl_min} -&nbsp;
-            {this.props.mission.interopData.mission.fly_zones[0].altitude_msl_max} ft
+            {this.props.mainFlyZone.altitudeMin} -&nbsp;
+            {this.props.mainFlyZone.altitudeMax} ft
           </div> 
         : null}
         {this.props.mission.commands.map((command, index) => 

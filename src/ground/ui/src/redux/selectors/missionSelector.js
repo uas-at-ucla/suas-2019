@@ -91,19 +91,47 @@ selectors.commandPoints = createSelector(
   }
 );
 
-selectors.interopElements = createSelector(
+selectors.mainFlyZone = createSelector(
   [state => state.mission.interopData],
   (interopData) => {
-    if (interopData) {
-      return {
-        home_marker: {
-          position: interopData.mission.home_pos
-        }
-        // TODO: Add map elements to represent the rest of the mission/obstacles
+    if (!interopData) {
+      return null;
+    }
+    let maxArea = -1;
+    let mainFlyZone = null;
+    for (let flyZone of interopData.mission.flyZones) {
+      let area = polygonArea(flyZone.boundaryPoints);
+      if (area > maxArea) {
+        maxArea = area;
+        mainFlyZone = flyZone;
       }
     }
-    return null;
+    mainFlyZone.isClockwise = polygonIsClockwise(mainFlyZone.boundaryPoints);
+    return mainFlyZone;
   }
 );
+
+function shoelace(vertices) {
+  // The shoelace formula determines the area of a polygon
+  let area = 0;
+
+  for (let i = 0; i < vertices.length; i++) {
+    let j = (i + 1) % vertices.length;
+    area += vertices[i].longitude * vertices[j].latitude;
+    area -= vertices[j].longitude * vertices[i].latitude;
+  }
+
+  return area;
+}
+
+function polygonArea(vertices) {
+  return Math.abs(shoelace(vertices));
+}
+
+function polygonIsClockwise(vertices) {
+  // Determine whether vertices are clockwise/counterclockwise using the
+  // sign of the output from the shoelace formula.
+  return shoelace(vertices) < 0;
+}
 
 export default createStructuredSelector(selectors);
