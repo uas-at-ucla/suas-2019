@@ -32,8 +32,8 @@ FlightStateMachine::~FlightStateMachine() {
 }
 
 void FlightStateMachine::Handle(::src::controls::Sensors &sensors,
-                          ::src::controls::Goal &goal,
-                          ::src::controls::Output &output) {
+                                ::src::controls::Goal &goal,
+                                ::src::controls::Output &output) {
 
   // Use same state in next loop iteration, unless it is changed.
   output.set_state(state_);
@@ -64,7 +64,7 @@ void FlightStateMachine::StateTransition(::src::controls::Output &output) {
 }
 
 bool FlightStateMachine::SafetyStateOverride(::src::controls::Goal &goal,
-                                       ::src::controls::Output &output) {
+                                             ::src::controls::Output &output) {
   // Prioritize the throttle cut check, so that the drone always cuts throttle
   // instead of following any failsafe commands.
   if (goal.trigger_throttle_cut()) {
