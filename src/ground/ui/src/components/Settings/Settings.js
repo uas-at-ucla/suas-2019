@@ -53,7 +53,8 @@ class Settings extends Component {
     this.props.connectToInterop(
       this.props.settings.interopIp,
       this.props.settings.interopUsername,
-      this.props.settings.interopPassword
+      this.props.settings.interopPassword,
+      this.props.settings.interopMissionId
     );
   };
 
@@ -105,6 +106,8 @@ class Settings extends Component {
             <Button color="primary" className="connect-btn" onClick={this.connectToGndServer}>
               Connect To Ground Server
             </Button>
+          </Col>
+          <Col className="connect-status">
             <span>Connected to <b>{connectedGroundServer}</b></span>
           </Col>
         </Row>
@@ -132,8 +135,22 @@ class Settings extends Component {
               <Input
                 value={this.props.settings.interopPassword}
                 name="interopPassword"
-                type="text"
+                type="password"
                 placeholder="Enter password..."
+                onChange={this.handleChange}
+              />
+            </InputGroup>
+          </Col>
+          <Col>
+            <InputGroup>
+              <InputGroupAddon addonType="prepend">
+                Mission ID
+              </InputGroupAddon>
+              <Input
+                value={this.props.settings.interopMissionId}
+                name="interopMissionId"
+                type="text"
+                placeholder="Provided by the judges"
                 onChange={this.handleChange}
               />
             </InputGroup>
@@ -166,6 +183,8 @@ class Settings extends Component {
             <Button color="success" className="connect-btn" onClick={this.connectToInterop}>
               Connect To Interop
             </Button>
+          </Col>
+          <Col className="connect-status">
             <span>Connected to <b>{connectedInteropServer}</b></span>
           </Col>
         </Row>
@@ -196,8 +215,8 @@ class Settings extends Component {
                 center={
                   /*if*/ this.props.interopData ? 
                     {
-                      lat: this.props.interopData.mission.home_pos.latitude,
-                      lng: this.props.interopData.mission.home_pos.longitude
+                      lat: this.props.interopData.mission.airDropPos.latitude,
+                      lng: this.props.interopData.mission.airDropPos.longitude
                     } 
                   /*else*/: 
                     defaultMapCenter

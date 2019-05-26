@@ -6,7 +6,7 @@ export default {
     };
   },
 
-  connectToInterop: function(ip, username, password) {
+  connectToInterop: function(ip, username, password, missionId) {
     return {
       type: 'TRANSMIT',
       payload: {
@@ -14,7 +14,8 @@ export default {
         data: {
           ip: ip,
           username: username,
-          password: password
+          password: password,
+          missionId: missionId
         }
       }
     };

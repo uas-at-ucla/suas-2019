@@ -26,21 +26,31 @@ class ProtobufUtils {
     this.UGV_Message = ugvRoot.lookupType("ugv.messages.UGV_Message");
   }
 
-  makeGroundProgram(commands, missionAndObstacles) {
+  makeGroundProgram(commands, interopData) {
     let obstacles_proto = []
     let fieldBoundary_proto = []
-    if (missionAndObstacles) {
-      for (let obstacle of missionAndObstacles.obstacles.stationary_obstacles) {
+    if (interopData) {
+      for (let obstacle of interopData.mission.stationaryObstacles) {
         obstacles_proto.push({
           location: {
             latitude: obstacle.latitude,
             longitude: obstacle.longitude
           },
-          cylinder_radius: obstacle.cylinder_radius,
-          cylinder_height: obstacle.cylinder_height
+          cylinder_radius: obstacle.radius,
+          cylinder_height: obstacle.height
         });
       }
-      for (let point of missionAndObstacles.mission.fly_zones[0].boundary_pts) {
+
+      let maxArea = -1;
+      let mainFlyZone = null;
+      for (let flyZone of interopData.mission.flyZones) {
+        let area = polygonArea(flyZone.boundaryPoints);
+        if (area > maxArea) {
+          maxArea = area;
+          mainFlyZone = flyZone;
+        }
+      }
+      for (let point of mainFlyZone.boundaryPoints) {
         fieldBoundary_proto.push({
           latitude: point.latitude,
           longitude: point.longitude
@@ -133,3 +143,20 @@ module.exports = (callback) => {
   });
 }
 
+
+function shoelace(vertices) {
+  // The shoelace formula determines the area of a polygon
+  let area = 0;
+
+  for (let i = 0; i < vertices.length; i++) {
+    let j = (i + 1) % vertices.length;
+    area += vertices[i].longitude * vertices[j].latitude;
+    area -= vertices[j].longitude * vertices[i].latitude;
+  }
+
+  return area;
+}
+
+function polygonArea(vertices) {
+  return Math.abs(shoelace(vertices));
+}
