@@ -16,9 +16,11 @@ GroundControls::GroundControls(int argc, char** argv) :
     sensors_subscriber_(ros_node_handle_.subscribe(
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
         &GroundControls::SensorsReceived, this, ros::TransportHints().udp())),
+    drone_program_publisher_(ros_node_handle_.advertise<::src::controls::ground_controls::timeline::DroneProgram>(kRosDroneProgramTopic, kRosMessageQueueSize)),
     udp_connection_("tcp://127.0.0.1:6005", 1),
     rfd900_connection_("/dev/ttyUSB0", B57600, 0), // TODO
-    phased_loop_(1e2) {
+    phased_loop_(1e2),
+    drone_program_success_(false) {
 
   // Connect proto_receiver_
   udp_connection_.Connect();
@@ -138,25 +140,39 @@ void GroundControls::OnConnect() {
         }
 
         // Compile the GroundProgram into a DroneProgram.
-        ::src::controls::ground_controls::timeline::DroneProgram drone_program =
-            ground2drone_visitor_.Process(&ground_program);
-        bool success = drone_program.IsInitialized();
+        drone_program_ = ground2drone_visitor_.Process(&ground_program);
+        drone_program_success_ = drone_program_.IsInitialized();
 
-        if (!success) {
+        if (!drone_program_success_) {
           ::std::cout << "drone program compilation failure: Could not compile "
                          "GroundProgram"
                       << ::std::endl;
+          client_.socket("ground-controls")->emit("MISSION_COMPILE_ERROR");
           return;
         }
 
-        ::std::cout << "compiled drone program:\n" << drone_program.DebugString() << "\n";
+        ::std::cout << "compiled drone program:\n" << drone_program_.DebugString() << "\n";
 
         ::std::string serialized_drone_program;
-        drone_program.SerializeToString(&serialized_drone_program);
+        drone_program_.SerializeToString(&serialized_drone_program);
         serialized_drone_program =
             ::lib::base64_tools::Encode(serialized_drone_program);
         client_.socket("ground-controls")->emit("COMPILED_DRONE_PROGRAM",
                                       serialized_drone_program);
+        
+      }));
+
+      client_.socket("ground-controls")->on("RUN_MISSION", ::sio::socket::event_listener_aux([&](::std::string const &name, ::sio::message::ptr const &data, bool isAck, ::sio::message::list &ack_resp) {
+        (void)name;
+        (void)data;
+        (void)isAck;
+        (void)ack_resp;
+        if (drone_program_success_) {
+          ::std::cout << "Running mission!\n";
+          drone_program_publisher_.publish(drone_program_);
+        } else {
+          ::std::cout << "Oops, can't run mission. The drone program hasn't been successfully compiled.\n";
+        }
       }));
 }
 

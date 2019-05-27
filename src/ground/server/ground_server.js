@@ -124,8 +124,13 @@ controls_io.on('connect', (socket) => {
   });
 
   socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
-    console.log("hello");
-    console.log(droneProgram);
+    if (protobufUtils) {
+      ui_io.emit('COMPILED_DRONE_PROGRAM', protobufUtils.decodeDroneProgam(droneProgram));
+    }
+  });
+
+  socket.on('MISSION_COMPILE_ERROR', (droneProgram) => {
+    ui_io.emit('MISSION_COMPILE_ERROR', droneProgram);
   });
 });
 
@@ -181,6 +186,11 @@ ui_io.on('connect', (socket) => {
       console.log("Sending ground program to the drone");
       controls_io.emit('COMPILE_GROUND_PROGRAM', encodedGroundProgram);
     }
+  });
+
+  socket.on('RUN_MISSION', (pos) => {
+    console.log("Running mission!");
+    controls_io.emit('RUN_MISSION', pos);
   });
 
   socket.on('CONNECT_TO_INTEROP', (cred) => {

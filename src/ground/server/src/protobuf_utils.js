@@ -20,6 +20,7 @@ class ProtobufUtils {
 
   constructor(timelineRoot, telemetryRoot, ugvRoot) {
     this.GroundProgram = timelineRoot.lookupType("src.controls.ground_controls.timeline.GroundProgram");
+    this.DroneProgram = timelineRoot.lookupType("src.controls.ground_controls.timeline.DroneProgram");
     this.Sensors = telemetryRoot.lookupType("src.controls.Sensors");
     this.Goal = telemetryRoot.lookupType("src.controls.Goal");
     this.Output = telemetryRoot.lookupType("src.controls.Output");
@@ -66,6 +67,10 @@ class ProtobufUtils {
 
   encodeGroundProgram(message) {
     return ProtobufUtils.encode(this.GroundProgram, message);
+  }
+
+  decodeDroneProgam(message) {
+    return ProtobufUtils.decode(this.DroneProgram, message);
   }
 
   decodeUGV_Message(message) {

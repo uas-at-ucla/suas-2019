@@ -6,7 +6,8 @@ import droneActions from "redux/actions/droneActions";
 
 const mapStateToProps = state => { 
   return {
-    missionCommands: state.mission.commands
+    missionCommands: state.mission.commands,
+    missionUploaded: state.mission.missionUploaded
   }; 
 };
 
@@ -33,7 +34,9 @@ class DroneActions extends Component {
   doAction = () => {
     switch (this.state.message)
     { 
-      case "Run Mission" : this.runMission();
+      case "Compile Mission" : this.compileMission(); 
+      break;
+      case "Run Mission" : this.props.runMission();
       break;
       case "Takeoff" : this.props.droneTakeoff();
       break;
@@ -54,7 +57,11 @@ class DroneActions extends Component {
     return (
       <span className="DroneActions">        
         <div className="buttonArray">
-          <button id="runMissionButton" onClick={()=>this.toggleWithName("Run Mission")}>Run Mission</button>
+          {this.props.missionUploaded ? 
+            <button id="runMissionButton" onClick={()=>this.toggleWithName("Run Mission")}>Run Mission</button>
+          :
+            <button id="runMissionButton" onClick={()=>this.toggleWithName("Compile Mission")}>Compile Mission</button>
+          }
           <button id="takeoffButton" onClick={()=>this.toggleWithName("Takeoff")}>Takeoff</button>
           <button id="landButton" onClick={()=>this.toggleWithName("Land")}>Land</button>
           <button id="failsafeButton" onClick={()=>this.toggleWithName("Failsafe Landing")}>Failsafe Landing</button>
@@ -75,8 +82,8 @@ class DroneActions extends Component {
     );
   }
 
-  runMission = () => {
-    this.props.runMission(this.props.missionCommands);
+  compileMission = () => {
+    this.props.compileMission(this.props.missionCommands);
   }
 }
 

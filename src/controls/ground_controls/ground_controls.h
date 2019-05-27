@@ -32,6 +32,7 @@ namespace controls {
 namespace ground_controls {
 namespace {
 static const int kRosMessageQueueSize = 1;
+static const ::std::string kRosDroneProgramTopic = "/uasatucla/proto/drone_program";
 } // namespace
 
 void on_connect();
@@ -57,6 +58,7 @@ class GroundControls {
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber sensors_subscriber_;
+  ::ros::Publisher drone_program_publisher_;
 
   ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
       udp_connection_;
@@ -70,6 +72,9 @@ class GroundControls {
 
   ::src::controls::ground_controls::timeline::ground2drone_visitor::
       Ground2DroneVisitor ground2drone_visitor_;
+
+  ::src::controls::ground_controls::timeline::DroneProgram drone_program_;
+  bool drone_program_success_;
 };
 
 } // namespace ground_controls

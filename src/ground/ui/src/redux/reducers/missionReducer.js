@@ -5,6 +5,8 @@ const initialState = {
   timelineGrammar: null,
   commands: [],
   commandAnimate: {},
+  droneProgram: null,
+  missionUploaded: false,
   interopData: null
 };
 
@@ -17,33 +19,50 @@ export default function reducer(state=initialState, action) {
       return dotProp.set(state, `interopData`, action.payload);
     }
     case 'ADD_COMMAND': {
-      return dotProp.set(state, `commands`, state.commands.concat(action.payload));
+      let newState = dotProp.set(state, `commands`, state.commands.concat(action.payload));
+      newState.missionUploaded = false;
+      return newState;
     }
     case 'DELETE_COMMAND': {
-      return dotProp.delete(state, `commands.${action.payload}`);
+      let newState = dotProp.delete(state, `commands.${action.payload}`);
+      newState.missionUploaded = false;
+      return newState;
     }
     case 'REORDER_COMMAND': {
-      return dotProp.set(state, `commands`, arrayMove(state.commands, action.payload.oldIndex, action.payload.newIndex));
+      let newState = dotProp.set(state, `commands`, arrayMove(state.commands, action.payload.oldIndex, action.payload.newIndex));
+      newState.missionUploaded = false;
+      return newState;
     }
     case 'CHANGE_COMMAND_TYPE': {
-      return dotProp.set(state, `commands.${action.payload.index}`, action.payload.newCommand);
+      let newState = dotProp.set(state, `commands.${action.payload.index}`, action.payload.newCommand);
+      newState.missionUploaded = false;
+      return newState;
     }
     case 'CHANGE_COMMAND_FIELD': {
-      return dotProp.set(state, `commands.${action.payload.dotProp}`, action.payload.newValue);
+      let newState = dotProp.set(state, `commands.${action.payload.dotProp}`, action.payload.newValue);
+      newState.missionUploaded = false;
+      return newState;
     }
     case 'ADD_REPEATED_FIELD': {
       let newRepeatedFields = dotProp.get(state, `commands.${action.payload.dotProp}`)
         .concat(action.payload.newObject);
-      return dotProp.set(state, `commands.${action.payload.dotProp}`, newRepeatedFields);
+        let newState = dotProp.set(state, `commands.${action.payload.dotProp}`, newRepeatedFields);
+      newState.missionUploaded = false;
+      return newState;
     }
     case 'POP_REPEATED_FIELD': {
-      return dotProp.delete(state, `commands.${action.payload.dotProp}.$end`);
+      let newState = dotProp.delete(state, `commands.${action.payload.dotProp}.$end`);
+      newState.missionUploaded = false;
+      return newState;
     }
     case 'CENTER_ON_COMMAND': {
       return dotProp.set(state, `commandAnimate.${action.payload.id}`, true);
     }
     case 'COMMAND_STOP_ANIMATION': {
       return dotProp.set(state, `commandAnimate.${action.payload.id}`, false);
+    }
+    case 'COMPILED_DRONE_PROGRAM': {
+      return {...state, missionUploaded: true, droneProgram: action.payload};
     }
     default: {
       return state;
