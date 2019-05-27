@@ -4,6 +4,12 @@ namespace src {
 namespace controls {
 namespace io {
 
+void deploymentChannelOneTrigger(int gpio, int level, uint32_t tick) {
+  (void) gpio;
+  (void) level;
+  (void) tick;
+}
+
 IO::IO() :
     alarm_(kWriterPhasedLoopFrequency),
     next_sensors_write_(::lib::phased_loop::GetCurrentTime()),
@@ -38,6 +44,11 @@ IO::IO() :
   wiringPiSetup();
 
   pigpio_ = pigpio_start(0, 0);
+  // Inputs.
+  set_mode(pigpio_, kDeploymentEncoderChannelOne, PI_INPUT);
+  set_mode(pigpio_, kDeploymentEncoderChannelTwo, PI_INPUT);
+
+  // Outputs.
   set_mode(pigpio_, kGimbalGPIOPin, PI_OUTPUT);
   set_mode(pigpio_, kDeploymentLatchServoGPIOPin, PI_OUTPUT);
   set_mode(pigpio_, kDeploymentMotorGPIOPin, PI_OUTPUT);
@@ -55,6 +66,9 @@ IO::IO() :
   set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin, 0);
   gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, 0);
   gpio_write(pigpio_, kDeploymentHotwireGPIOPin, 0);
+
+  // Add callback functions for encoder pins.
+  gpioSetAlertFunc(kDeploymentEncoderChannelOne, deploymentChannelOneTrigger);
 #endif
 
   // Chirp when the io program starts.
@@ -91,13 +105,12 @@ void IO::Quit(int sig) {
 void IO::WriterThread() {
   while (running_ && ::ros::ok()) {
     // Write out the alarm signal.
+    // This was hacked to make the alarm switch trigger deployment!
     /*
     bool should_override_alarm = (should_override_alarm_ &&
                                   last_rc_in_ + kRcInTimeGap >
                                       ::lib::phased_loop::GetCurrentTime());
     bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
-
-    led_strip_.set_alarm(should_override_alarm);
     */
     bool should_alarm = alarm_.ShouldAlarm();
     (void)should_alarm;
@@ -161,6 +174,12 @@ void IO::WriterThread() {
 void IO::Output(const ::src::controls::Output output) {
   ROS_DEBUG_STREAM(
       "Got output protobuf from flight_loop. vx: " << output.velocity_x());
+
+  // Only listen to output if safety pilot override is not active.
+  bool run_uas_flight_loop = true;
+  if(!run_uas_flight_loop) {
+    return;
+  }
 }
 
 void IO::AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence) {
@@ -231,11 +250,6 @@ void IO::StateReceived(const ::mavros_msgs::State state) {
     ROS_INFO_STREAM("Arming state changed: "
                     << (did_arm_ ? "ARMED" : "DISARMED") << " -> "
                     << (state.armed ? "ARMED" : "DISARMED"));
-
-    // if (state.armed) {
-    //   // Send out the armed chirp.
-    //   alarm_.AddAlert({kAlarmChirpDuration, 0});
-    // }
 
     did_arm_ = state.armed;
   }

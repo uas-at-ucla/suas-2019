@@ -275,15 +275,17 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Goal &goal,
                           ::src::controls::Output &output) {
 
+  (void) sensors;
+
   if (!goal.run_mission()) {
-    output.set_state(LANDING);
+    output.set_state(SAFETY_PILOT_CONTROL);
     return;
   }
 
-  if (!sensors.armed()) {
-    output.set_state(ARMING);
-    return;
-  }
+  // if (!sensors.armed()) {
+  //   output.set_state(ARMING);
+  //   return;
+  // }
 
   // TODO(comran): Do mission.
 
@@ -311,6 +313,40 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
 
 void MissionState::Reset() {}
 
+// SafetyPilotControlState /////////////////////////////////////////////////////
+SafetyPilotControlState::SafetyPilotControlState() {}
+
+void SafetyPilotControlState::Handle(::src::controls::Sensors &sensors,
+                                     ::src::controls::Goal &goal,
+                                     ::src::controls::Output &output) {
+  (void)sensors;
+  (void)goal;
+  (void)output;
+}
+
+void SafetyPilotControlState::Reset() {}
+
+// LandingState ////////////////////////////////////////////////////////////////
+LandingState::LandingState() {}
+
+void LandingState::Handle(::src::controls::Sensors &sensors,
+                          ::src::controls::Goal &goal,
+                          ::src::controls::Output &output) {
+  (void) goal;
+
+  if (!sensors.armed()) {
+    // EndFlightTimer();
+    output.set_state(STANDBY);
+    return;
+  }
+
+  // if (goal.run_mission() && sensors.relative_altitude() > 5.0) {
+  //   output.set_state(MISSION);
+  // }
+}
+
+void LandingState::Reset() {}
+
 // FailsafeState ///////////////////////////////////////////////////////////////
 FailsafeState::FailsafeState() {}
 
@@ -324,26 +360,6 @@ void FailsafeState::Handle(::src::controls::Sensors &sensors,
 
 void FailsafeState::Reset() {}
 
-// LandingState ////////////////////////////////////////////////////////////////
-LandingState::LandingState() {}
-
-void LandingState::Handle(::src::controls::Sensors &sensors,
-                          ::src::controls::Goal &goal,
-                          ::src::controls::Output &output) {
-
-  if (!sensors.armed()) {
-    // EndFlightTimer();
-    output.set_state(STANDBY);
-    return;
-  }
-
-  if (goal.run_mission() && sensors.relative_altitude() > 5.0) {
-    output.set_state(MISSION);
-  }
-}
-
-void LandingState::Reset() {}
-
 // FlightTerminationState //////////////////////////////////////////////////////
 FlightTerminationState::FlightTerminationState() {}
 
@@ -356,19 +372,6 @@ void FlightTerminationState::Handle(::src::controls::Sensors &sensors,
 }
 
 void FlightTerminationState::Reset() {}
-
-// SafetyPilotControlState /////////////////////////////////////////////////////
-SafetyPilotControlState::SafetyPilotControlState() {}
-
-void SafetyPilotControlState::Handle(::src::controls::Sensors &sensors,
-                                     ::src::controls::Goal &goal,
-                                     ::src::controls::Output &output) {
-  (void)sensors;
-  (void)goal;
-  (void)output;
-}
-
-void SafetyPilotControlState::Reset() {}
 
 // UnknownState ////////////////////////////////////////////////////////////////
 UnknownState::UnknownState() {}
