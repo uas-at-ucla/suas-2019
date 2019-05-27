@@ -10,13 +10,16 @@ void on_connect() { socketio_ground_controls->OnConnect(); }
 
 void on_fail() { socketio_ground_controls->OnFail(); }
 
-GroundControls::GroundControls(int argc, char** argv) :
+GroundControls::GroundControls(int argc, char **argv) :
     running_(false),
     ros_node_handle_(),
     sensors_subscriber_(ros_node_handle_.subscribe(
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
         &GroundControls::SensorsReceived, this, ros::TransportHints().udp())),
-    drone_program_publisher_(ros_node_handle_.advertise<::src::controls::ground_controls::timeline::DroneProgram>(kRosDroneProgramTopic, kRosMessageQueueSize)),
+    drone_program_publisher_(
+        ros_node_handle_.advertise<
+            ::src::controls::ground_controls::timeline::DroneProgram>(
+            kRosDroneProgramTopic, kRosMessageQueueSize)),
     udp_connection_("tcp://127.0.0.1:6005", 1),
     rfd900_connection_("/dev/ttyUSB0", B57600, 0), // TODO
     phased_loop_(1e2),
@@ -31,7 +34,7 @@ GroundControls::GroundControls(int argc, char** argv) :
 
   if (argc >= 2) {
     ::std::string ip(argv[1]);
-    client_.connect("http://"+ip+":8081");
+    client_.connect("http://" + ip + ":8081");
   } else {
     client_.connect("http://localhost:8081");
   }
@@ -112,68 +115,78 @@ void GroundControls::ReadUDP() {
 }
 
 void GroundControls::OnConnect() {
-  client_.socket("ground-controls")->on(
-      "COMPILE_GROUND_PROGRAM",
-      ::sio::socket::event_listener_aux([&](::std::string const &name,
-                                            ::sio::message::ptr const &data,
-                                            bool isAck,
-                                            ::sio::message::list &ack_resp) {
-        (void)name;
-        (void)isAck;
-        (void)ack_resp;
+  client_.socket("ground-controls")
+      ->on(
+          "COMPILE_GROUND_PROGRAM",
+          ::sio::socket::event_listener_aux(
+              [&](::std::string const &name, ::sio::message::ptr const &data,
+                  bool isAck, ::sio::message::list &ack_resp) {
+                (void)name;
+                (void)isAck;
+                (void)ack_resp;
 
-        // Get the encoded serialized GroundProgram protobuf from the payload.
-        ::std::string serialized_protobuf_mission = data->get_string();
+                // Get the encoded serialized GroundProgram protobuf from the
+                // payload.
+                ::std::string serialized_protobuf_mission = data->get_string();
 
-        // Use base64 to decode the string data into raw bytes.
-        serialized_protobuf_mission =
-            ::lib::base64_tools::Decode(serialized_protobuf_mission);
+                // Use base64 to decode the string data into raw bytes.
+                serialized_protobuf_mission =
+                    ::lib::base64_tools::Decode(serialized_protobuf_mission);
 
-        // Deserialize the GroundProgram protobuf from the serialized data.
-        ::src::controls::ground_controls::timeline::GroundProgram
-            ground_program;
-        if (!ground_program.ParseFromString(serialized_protobuf_mission)) {
-          ::std::cout << "drone program compilation failure: failed to "
-                         "deserialize protobuf data."
-                      << ::std::endl;
-          return;
-        }
+                // Deserialize the GroundProgram protobuf from the serialized
+                // data.
+                ::src::controls::ground_controls::timeline::GroundProgram
+                    ground_program;
+                if (!ground_program.ParseFromString(
+                        serialized_protobuf_mission)) {
+                  ::std::cout << "drone program compilation failure: failed to "
+                                 "deserialize protobuf data."
+                              << ::std::endl;
+                  return;
+                }
 
-        // Compile the GroundProgram into a DroneProgram.
-        drone_program_ = ground2drone_visitor_.Process(&ground_program);
-        drone_program_success_ = drone_program_.IsInitialized();
+                // Compile the GroundProgram into a DroneProgram.
+                drone_program_ = ground2drone_visitor_.Process(&ground_program);
+                drone_program_success_ = drone_program_.IsInitialized();
 
-        if (!drone_program_success_) {
-          ::std::cout << "drone program compilation failure: Could not compile "
+                if (!drone_program_success_) {
+                  ::std::cout
+                      << "drone program compilation failure: Could not compile "
                          "GroundProgram"
                       << ::std::endl;
-          client_.socket("ground-controls")->emit("MISSION_COMPILE_ERROR");
-          return;
-        }
+                  client_.socket("ground-controls")
+                      ->emit("MISSION_COMPILE_ERROR");
+                  return;
+                }
 
-        ::std::cout << "compiled drone program:\n" << drone_program_.DebugString() << "\n";
+                ::std::cout << "compiled drone program:\n"
+                            << drone_program_.DebugString() << "\n";
 
-        ::std::string serialized_drone_program;
-        drone_program_.SerializeToString(&serialized_drone_program);
-        serialized_drone_program =
-            ::lib::base64_tools::Encode(serialized_drone_program);
-        client_.socket("ground-controls")->emit("COMPILED_DRONE_PROGRAM",
-                                      serialized_drone_program);
-        
-      }));
+                ::std::string serialized_drone_program;
+                drone_program_.SerializeToString(&serialized_drone_program);
+                serialized_drone_program =
+                    ::lib::base64_tools::Encode(serialized_drone_program);
+                client_.socket("ground-controls")
+                    ->emit("COMPILED_DRONE_PROGRAM", serialized_drone_program);
+              }));
 
-      client_.socket("ground-controls")->on("RUN_MISSION", ::sio::socket::event_listener_aux([&](::std::string const &name, ::sio::message::ptr const &data, bool isAck, ::sio::message::list &ack_resp) {
-        (void)name;
-        (void)data;
-        (void)isAck;
-        (void)ack_resp;
-        if (drone_program_success_) {
-          ::std::cout << "Running mission!\n";
-          drone_program_publisher_.publish(drone_program_);
-        } else {
-          ::std::cout << "Oops, can't run mission. The drone program hasn't been successfully compiled.\n";
-        }
-      }));
+  client_.socket("ground-controls")
+      ->on("RUN_MISSION",
+           ::sio::socket::event_listener_aux(
+               [&](::std::string const &name, ::sio::message::ptr const &data,
+                   bool isAck, ::sio::message::list &ack_resp) {
+                 (void)name;
+                 (void)data;
+                 (void)isAck;
+                 (void)ack_resp;
+                 if (drone_program_success_) {
+                   ::std::cout << "Running mission!\n";
+                   drone_program_publisher_.publish(drone_program_);
+                 } else {
+                   ::std::cout << "Oops, can't run mission. The drone program "
+                                  "hasn't been successfully compiled.\n";
+                 }
+               }));
 }
 
 void GroundControls::OnFail() { ::std::cout << "socketio failed! :(\n"; }

@@ -32,7 +32,8 @@ namespace controls {
 namespace ground_controls {
 namespace {
 static const int kRosMessageQueueSize = 1;
-static const ::std::string kRosDroneProgramTopic = "/uasatucla/proto/drone_program";
+static const ::std::string kRosDroneProgramTopic =
+    "/uasatucla/proto/drone_program";
 } // namespace
 
 void on_connect();
@@ -40,7 +41,7 @@ void on_fail();
 
 class GroundControls {
  public:
-  GroundControls(int argc, char** argv);
+  GroundControls(int argc, char **argv);
   void ReadRFD900();
   void ReadUDP();
 
