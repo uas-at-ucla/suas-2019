@@ -6,6 +6,7 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
 RUN apt-get update && apt-get install -y gnupg
 RUN apt-get update && apt-get install -y build-essential
 RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y sudo
 
 # ROS
 # RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu stretch main" > /etc/apt/sources.list.d/ros-latest.list'
@@ -15,7 +16,10 @@ RUN apt-get update && apt-get install -y git
 # RUN printf "source /opt/ros/melodic/setup.bash" > /home/uas/.bashrc
 
 RUN useradd -ms /bin/bash uas
+RUN echo 'uas:spinny' | chpasswd
+RUN echo "%sudo  ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 RUN usermod -aG sudo uas
+
 RUN mkdir -p /home/uas/code_env
 WORKDIR /home/uas/code_env
 USER root

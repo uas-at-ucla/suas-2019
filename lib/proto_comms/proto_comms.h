@@ -42,7 +42,7 @@ template <typename T> class ProtoSender {
   }
 
   void Send(T proto_message) {
-    assert(connected_);
+    // assert(connected_);
 
     ::std::string proto_string;
     proto_message.SerializeToString(&proto_string);

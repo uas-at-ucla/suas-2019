@@ -41,6 +41,7 @@ class GroundControls {
  public:
   GroundControls();
   void ReadRFD900();
+  void ReadUDP();
 
   void OnConnect();
   void OnFail();
@@ -57,8 +58,8 @@ class GroundControls {
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber sensors_subscriber_;
 
-  // ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
-  // udp_connection_;
+  ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
+      udp_connection_;
   ::lib::serial_device::SerialDevice<::src::controls::UasMessage>
       rfd900_connection_;
 

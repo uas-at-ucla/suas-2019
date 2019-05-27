@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import CustomMarker from './CustomMarker';
 import { Marker } from 'react-google-maps';
-import GoogleMap from '../../Utils/GoogleMap/GoogleMap';
+import GoogleMap from '../../utils/GoogleMap/GoogleMap';
 import HeatmapLayer from "react-google-maps/lib/components/visualization/HeatmapLayer";
 import './Map.css';
 import { Link } from "react-router-dom";

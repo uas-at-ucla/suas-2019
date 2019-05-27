@@ -25,9 +25,15 @@ export default {
     return {
       type: 'TRANSMIT',
       payload: {
-        msg: 'RUN_MISSION',
+        msg: 'COMPILE_GROUND_PROGRAM',
         data: commands
       }
+    }
+  },
+  driveUgv: () => {
+    return {
+      type: 'TRANSMIT',
+      payload: { msg: 'DRIVE_UGV' }
     }
   },
   testTransmit: (data) => {
