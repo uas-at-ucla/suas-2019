@@ -87,15 +87,6 @@ fi
 
 BUILD_FLAGS="-t uas-at-ucla_controls"
 
-while test $# -gt 0
-do
-    case "$1" in
-        --rebuild) BUILD_FLAGS="$BUILD_FLAGS --no-cache"
-            ;;
-    esac
-    shift
-done
-
 # Build docker container.
 docker build $BUILD_FLAGS tools/dockerfiles/controls
 # if [[ -z $TRAVIS ]]
@@ -142,7 +133,7 @@ DOCKER_BUILD_CMD="set -x; \
   source /home/uas/.bashrc; \
   export ROS_MASTER_URI=http://192.168.1.20:11311 \
   /opt/ros/melodic/bin/roscore &> /dev/null; \
-  bazel run //src/controls/ground_controls:ground_controls\""
+  bazel run //src/controls/ground_controls:ground_controls $1\""
 
 docker run                          \
   -it                               \
