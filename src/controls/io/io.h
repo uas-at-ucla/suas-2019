@@ -5,9 +5,9 @@
 #include <string>
 #include <thread>
 
+#include <linux/limits.h>
 #include <ros/console.h>
 #include <ros/ros.h>
-#include <linux/limits.h>
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
 #include <pigpiod_if2.h>

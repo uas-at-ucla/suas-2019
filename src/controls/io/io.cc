@@ -5,9 +5,9 @@ namespace controls {
 namespace io {
 
 void deploymentChannelOneTrigger(int gpio, int level, uint32_t tick) {
-  (void) gpio;
-  (void) level;
-  (void) tick;
+  (void)gpio;
+  (void)level;
+  (void)tick;
 }
 
 IO::IO() :
@@ -177,7 +177,7 @@ void IO::Output(const ::src::controls::Output output) {
 
   // Only listen to output if safety pilot override is not active.
   bool run_uas_flight_loop = true;
-  if(!run_uas_flight_loop) {
+  if (!run_uas_flight_loop) {
     return;
   }
 }

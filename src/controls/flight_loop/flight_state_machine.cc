@@ -125,7 +125,7 @@ StandbyState::StandbyState() {}
 void StandbyState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Goal &goal,
                           ::src::controls::Output &output) {
-  (void) sensors;
+  (void)sensors;
 
   if (goal.run_mission()) {
     //  LOG_LINE("Run mission requested; attempting to arm.");
@@ -275,7 +275,7 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Goal &goal,
                           ::src::controls::Output &output) {
 
-  (void) sensors;
+  (void)sensors;
 
   if (!goal.run_mission()) {
     output.set_state(SAFETY_PILOT_CONTROL);
@@ -332,7 +332,7 @@ LandingState::LandingState() {}
 void LandingState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Goal &goal,
                           ::src::controls::Output &output) {
-  (void) goal;
+  (void)goal;
 
   if (!sensors.armed()) {
     // EndFlightTimer();
