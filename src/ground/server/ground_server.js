@@ -16,7 +16,7 @@ const loadInteropClient = require('./src/interop_client');
 const config = require('./config');
 
 const server_port = 8081;
-var droneIP = "192.168.1.20";
+var droneIP = config.testing ? "192.168.3.20" : "192.168.1.20";
 const pingInterval = 1000 //ms
 const uiSendFrequency = 5; //Hz
 const trackySendFrequency = 5; //Hz
@@ -51,7 +51,7 @@ if (config.testing) {
   connectToInterop("134.209.2.203:8000", "testuser", "testpass", 2)
     .catch(error => {
       if (fs.existsSync("/.dockerenv")) { // If inside Docker container
-        connectToInterop("192.168.1.30:80", "testuser", "testpass", 2);
+        connectToInterop("192.168.3.30:80", "testuser", "testpass", 2);
       } else {
         connectToInterop("localhost:8000", "testuser", "testpass", 2);
       }

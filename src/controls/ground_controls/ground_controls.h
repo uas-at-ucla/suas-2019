@@ -39,7 +39,7 @@ void on_fail();
 
 class GroundControls {
  public:
-  GroundControls();
+  GroundControls(int argc, char** argv);
   void ReadRFD900();
   void ReadUDP();
 

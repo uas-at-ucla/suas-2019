@@ -10,7 +10,7 @@ void on_connect() { socketio_ground_controls->OnConnect(); }
 
 void on_fail() { socketio_ground_controls->OnFail(); }
 
-GroundControls::GroundControls() :
+GroundControls::GroundControls(int argc, char** argv) :
     running_(false),
     ros_node_handle_(),
     sensors_subscriber_(ros_node_handle_.subscribe(
@@ -27,9 +27,12 @@ GroundControls::GroundControls() :
   client_.set_open_listener(on_connect);
   client_.set_fail_listener(on_fail);
 
-  client_.connect(
-      "http://192.168.1.10:8081"); // ground server IP on both Docker network
-                                   // and "real" network
+  if (argc >= 2) {
+    ::std::string ip(argv[1]);
+    client_.connect("http://"+ip+":8081");
+  } else {
+    client_.connect("http://localhost:8081");
+  }
 }
 
 void GroundControls::SendSensorsToServer(
