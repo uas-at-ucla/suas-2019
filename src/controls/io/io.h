@@ -5,6 +5,7 @@
 #include <string>
 #include <thread>
 
+#include <linux/limits.h>
 #include <ros/console.h>
 #include <ros/ros.h>
 
@@ -33,6 +34,9 @@ namespace {
 static const int kAlarmGPIOPin = 0;
 
 // Pigpio GPIO identifiers (same as BCM)
+static const int kDeploymentEncoderChannelOne = 8;
+static const int kDeploymentEncoderChannelTwo = 7;
+
 static const int kDeploymentMotorReverseGPIOPin = 11;
 static const int kDeploymentHotwireGPIOPin = 9;
 static const int kGimbalGPIOPin = 23;
