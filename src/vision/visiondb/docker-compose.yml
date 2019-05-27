@@ -1,0 +1,21 @@
+version: '3.4'
+services:
+  visiondb:
+    build: .
+    image: visiondb:latest
+    command: pipenv run python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - vision_db:/uas/data
+    ports:
+      - 8000:8000
+    depends_on:
+      - redis
+  redis:
+    image: redis:2.8
+    networks:
+      default:
+        aliases:
+          - redis
+volumes:
+  vision_db:
+    name: visiondb
