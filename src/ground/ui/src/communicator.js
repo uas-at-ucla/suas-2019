@@ -37,6 +37,10 @@ class Communicator {
     this.socket.on('INTEROP_UPLOAD_SUCCESS', () => {
       alert("Now able to upload telemetry to interop. :)");
     });
+
+    this.socket.on('UGV_MESSAGE', (msg) => {
+      this.store.dispatch({ type: 'UGV_MESSAGE', payload: msg });
+    });
   }
 
   reduxMiddleware(next) {

@@ -6,7 +6,7 @@ export default {
     };
   },
 
-  connectToInterop: function(ip, username, password) {
+  connectToInterop: function(ip, username, password, missionId) {
     return {
       type: 'TRANSMIT',
       payload: {
@@ -14,7 +14,8 @@ export default {
         data: {
           ip: ip,
           username: username,
-          password: password
+          password: password,
+          missionId: missionId
         }
       }
     };
@@ -29,6 +30,16 @@ export default {
       type: 'TRANSMIT', 
       payload: {
         msg: 'CONFIGURE_TRACKY_POS',
+        data: pos
+      }
+    };
+  },
+
+  configureUgvDest: function(pos) {
+    return { 
+      type: 'TRANSMIT', 
+      payload: {
+        msg: 'SET_UGV_TARGET',
         data: pos
       }
     };
