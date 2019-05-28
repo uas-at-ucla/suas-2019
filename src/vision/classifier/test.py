@@ -42,6 +42,18 @@ def train_letter_model(nEpochs=10):
                             model_name='letter_model', nEpochs=nEpochs)
     print(letter_model.evaluate(x=x_test, y=y_test))
 
+def train_alt_letter_model(nEpocsh=10):
+    letter_model = ic.alt_letter_model()
+    print(letter_model)
+
+    x_train, _, x_test, _ = get_train_and_test('shape', N_TRAIN, N_TEST)
+    _, y_train, _, y_test = get_train_and_test('letter', N_TRAIN, N_TEST)
+    print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
+
+    letter_model = ic.train(letter_model, x_train, y_train, x_test, y_test, 
+                            model_name='letter_model', nEpochs=nEpochs)
+    print(letter_model.evaluate(x=x_test, y=y_test))
+
 def train_models(nEpochs=10): 
     train_shape_model(nEpochs)
     train_letter_model(nEpochs)
@@ -84,6 +96,7 @@ def eval_models(i=1):
     eval_letter_model(i)
 
 if __name__=='__main__':
-    train_letter_model(10)
-    #eval_models(1)
+    train_alt_letter_model()
+    # train_letter_model(10)
+    # eval_models(1)
 

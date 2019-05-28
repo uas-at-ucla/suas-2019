@@ -32,7 +32,7 @@ def letter_model():
     model.add(Dense(N_LETTERS, activation='softmax', name='fc4'))
     return model
 
-def shape_model():
+def shape_model(n_outputs=N_SHAPES):
     K.set_image_data_format( 'channels_last' )
     model = Sequential()
     model.add(Permute((1,2,3), input_shape=(IMG_SIZE, IMG_SIZE, 3)))
@@ -63,10 +63,13 @@ def shape_model():
     width = IMG_SIZE//16
     model.add(Conv2D(4096, kernel_size=(width, width), activation='relu', name='fc6'))
     model.add(Conv2D(4096, kernel_size=(1,1), activation='relu', name='fc7'))
-    model.add(Conv2D(N_SHAPES, kernel_size=(1,1),  name='fc8'))
+    model.add(Conv2D(n_outputs, kernel_size=(1,1),  name='fc8'))
     model.add(Flatten())
     model.add( Activation('softmax') )
     return model
+
+def alt_letter_model():
+    return shape_model(N_LETTERS)
 
 # def old_process_data(data_path, type=""):
 #     if type == "":
