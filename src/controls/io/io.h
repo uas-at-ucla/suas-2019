@@ -15,7 +15,11 @@
 #include <wiringPi.h>
 #endif
 
+#include <mavros_msgs/CommandBool.h>
+#include <mavros_msgs/CommandTOL.h>
+#include <mavros_msgs/GlobalPositionTarget.h>
 #include <mavros_msgs/RCIn.h>
+#include <mavros_msgs/SetMode.h>
 #include <mavros_msgs/State.h>
 #include <sensor_msgs/BatteryState.h>
 #include <sensor_msgs/Imu.h>
@@ -45,8 +49,8 @@ static const int kDeploymentMotorGPIOPin = 27;
 
 static const int kPpmMiddleSignal = 1500;
 
-static const int kDeploymentServoClosed = 1000;
-static const int kDeploymentServoOpen = 1600;
+static const int kDeploymentServoClosed = 1600;
+static const int kDeploymentServoOpen = 1000;
 
 // Actuator RC channels.
 static const int kAlarmOverrideRcChannel = 7;
@@ -72,6 +76,14 @@ static const ::std::string kRosRcInTopic = "/mavros/rc/in";
 static const ::std::string kRosBatteryStatusTopic = "/mavros/battery";
 static const ::std::string kRosStateTopic = "/mavros/state";
 static const ::std::string kRosImuTopic = "/mavros/imu/data";
+
+static const ::std::string kRosGlobalPositionTopic =
+    "/mavros/setpoint_position/global";
+
+static const ::std::string kRosSetModeService = "/mavros/set_mode";
+static const ::std::string kRosArmService = "/mavros/cmd/arming";
+static const ::std::string kRosTakeoffService = "/mavros/cmd/takeoff";
+
 } // namespace
 
 class IO {
@@ -103,16 +115,32 @@ class IO {
   double deployment_servo_setpoint_;
 
   bool did_arm_;
+
+  void FlyToLocation();
+
   ::std::atomic<bool> running_;
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Publisher sensors_publisher_;
+  ::ros::Publisher global_position_publisher_;
+
   ::ros::Subscriber output_subscriber_;
   ::ros::Subscriber alarm_subscriber_;
   ::ros::Subscriber rc_input_subscriber_;
   ::ros::Subscriber battery_status_subscriber_;
   ::ros::Subscriber state_subscriber_;
   ::ros::Subscriber imu_subscriber_;
+
+  ::ros::ServiceClient set_mode_service_;
+  ::ros::ServiceClient arm_service_;
+  ::ros::ServiceClient takeoff_service_;
+
+  double fly_start_time;
+  bool did_arm;
+  bool did_takeoff;
+  bool did_land;
+  bool did_offboard;
+  double last_msg;
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   int pigpio_;

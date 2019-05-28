@@ -3,7 +3,8 @@ source tools/scripts/docker/start_machine_mac.sh
 
 echo "Waiting for PX4 simulator docker to start..."
 
-DOCKER_IP="192.168.3.20" # drone's docker network ip
+# The drone's ip
+DOCKER_IP="192.168.3.20"
 
 while true
 do
