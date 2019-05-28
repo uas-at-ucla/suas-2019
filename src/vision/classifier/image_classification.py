@@ -93,7 +93,7 @@ def process_data(data_dir, n_images, feature="", old=False):
     img_func = {"shape": vc.shape_img, "letter": vc.letter_img}
     # Load data from data_dir
     x_train = np.zeros((n_images,) + img_size[feature])
-    path = os.path.join(data_dir, 'labels.csv')
+    path = os.path.join(data_dir, 'labels.csv', skiprows=1)
     labels = np.loadtxt(path, delimiter=',')
     y_train = labels[0:n_images, label_col[feature]]
     for i in range(n_images):
