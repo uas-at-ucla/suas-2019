@@ -66,6 +66,7 @@ class Map extends Component {
           {this.props.commandPoints.map((commandPoint, index) => 
             commandPoint ?
               <Marker
+              draggable={true}
                 {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.toggleOpen(commandPoint.id)}
                 animation={(this.props.commandAnimate[commandPoint.id] && window.google) ? window.google.maps.Animation.BOUNCE : null}
               >
@@ -79,7 +80,7 @@ class Map extends Component {
                      {commandPoint.infobox.content}
                     </div>
                    
-                    <Button onClick={this.deleteCommand} data-index={index}>
+                    <Button onClick={this.deleteCommand} data-index={index} color="danger">
                       <i className="fa fa-trash" style={{pointerEvents: "none"}}></i>
                     </Button>
                   </div>
