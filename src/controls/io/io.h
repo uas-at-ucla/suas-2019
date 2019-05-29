@@ -89,6 +89,9 @@ static constexpr double kPixhawkGlobalSetpointMaxHz = 10.0;
 
 // Pixhawk custom modes.
 // Documentation: https://dev.px4.io/en/concept/flight_modes.html
+// TODO(comran): Use custom mode constants provided internally by Mavros.
+static const ::std::string kPixhawkArmCommand = "ARM";
+
 static const ::std::string kPixhawkCustomModeManual = "MANUAL";
 static const ::std::string kPixhawkCustomModeAcro = "ACRO";
 static const ::std::string kPixhawkCustomModeAltitudeControl = "ALTCTL";
@@ -138,9 +141,7 @@ class IO {
   double gimbal_setpoint_;
   double deployment_servo_setpoint_;
 
-  void PixhawkSendArm(bool arm);
-  void PixhawkSendTakeoff(bool takeoff);
-  void PixhawkSendLand(bool land);
+  void PixhawkSendModePosedge(::std::string mode, bool signal);
   void PixhawkSetGlobalPositionGoal(double latitude, double longitude,
                                     double altitude);
 
@@ -162,6 +163,7 @@ class IO {
   ::ros::ServiceClient takeoff_service_;
 
   bool last_arm_;
+  ::std::map<::std::string, bool> last_mode_signals_;
   bool last_takeoff_;
   bool last_land_;
   double last_global_position_setpoint_;

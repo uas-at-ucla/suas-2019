@@ -46,6 +46,7 @@ IO::IO() :
         kRosTakeoffService)),
     last_arm_(false),
     last_takeoff_(false),
+    last_offboard_(false),
     last_land_(false),
     last_global_position_setpoint_(-std::numeric_limits<double>::infinity()),
     last_arm_state_(false),
@@ -305,45 +306,40 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
 }
 
 // Pixhawk interfacing methods. ////////////////////////////////////////////////
-// Send an arm command to the pixhawk when "arm" has a posedge.
-void IO::PixhawkSendArm(bool arm) {
-  // Only send arm command on posedge.
-  if (arm == last_arm_) {
-    return;
-  }
-  last_arm_ = arm;
 
-  // If arm is false, don't arm.
-  if (!arm) {
-    return;
-  }
-
-  ::mavros_msgs::CommandBool cmd;
-  cmd.request.value = true;
-
-  if (arm_service_.call(cmd)) {
-    ROS_INFO("Arm sent; got success %d", cmd.response.success);
-  } else {
-    ROS_ERROR("Arm failed!");
-  }
-}
-
-// Send a takeoff command to the pixhawk when "takeoff" has a posedge.
-void IO::PixhawkSendTakeoff(bool takeoff) {
+// Send a SetMode command to the Pixhawk when the signal for the mode has a
+// posedge.
+void IO::PixhawkSendModePosedge(::std::string mode, bool signal) {
   // Only send takeoff command on posedge.
-  if (takeoff == last_takeoff_) {
+  if (last_mode_signals_.contains(mode) && signal == last_mode_signals_[mode]) {
     return;
   }
-  last_takeoff_ = takeoff;
+  last_mode_signals_[mode] = signal;
 
-  // If takeoff is false, don't take off.
-  if (!takeoff) {
+  // If signal is false, don't take off.
+  if (!signal) {
     return;
   }
 
+  // Handle case where an arm command is provided.
+  if (mode == kPixhawkArmCommand) {
+    // Send arm command to Pixhawk.
+    ::mavros_msgs::CommandBool cmd;
+    cmd.request.value = true;
+
+    if (arm_service_.call(cmd)) {
+      ROS_INFO("Arm sent; got success %d", cmd.response.success);
+    } else {
+      ROS_ERROR("Arm failed!");
+    }
+
+    return;
+  }
+
+  // Send SetMode command to Pixhawk.
   ::mavros_msgs::SetMode cmd;
   cmd.request.base_mode = 0;
-  cmd.request.custom_mode = kPixhawkCustomModeTakeoff;
+  cmd.request.custom_mode = mode;
 
   if (!set_mode_service_.call(cmd)) {
     ROS_INFO("Takeoff sent; got response %d", cmd.response.mode_sent);
@@ -352,31 +348,7 @@ void IO::PixhawkSendTakeoff(bool takeoff) {
   }
 }
 
-// Send a land command to the pixhawk when "land" has a posedge.
-void IO::PixhawkSendLand(bool land) {
-  // Only send land command on posedge.
-  if (land == last_land_) {
-    return;
-  }
-  last_land_ = land;
-
-  // If land is false, don't take off.
-  if (!land) {
-    return;
-  }
-
-  // Send land command to Pixhawk.
-  ::mavros_msgs::SetMode cmd;
-  cmd.request.base_mode = 0;
-  cmd.request.custom_mode = kPixhawkCustomModeLand;
-
-  if (!set_mode_service_.call(cmd)) {
-    ROS_INFO("Land sent; got response %d", cmd.response.mode_sent);
-  } else {
-    ROS_ERROR("Land failed!");
-  }
-}
-
+// Send a global position setpoint to the Pixhawk, up to a maximum rate.
 void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
                                       double altitude) {
   double current_time = ::lib::phased_loop::GetCurrentTime();
