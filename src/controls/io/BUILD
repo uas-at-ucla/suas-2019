@@ -20,6 +20,7 @@ cc_library(
   ],
   deps = [
     '//src/controls:messages_cpp',
+    '//src/controls/ground_controls/timeline:timeline_grammar_cc',
     '//src/controls/io/led_strip:led_strip',
     '//src/controls/io/ros_to_proto:ros_to_proto',
     '//lib/ros:ros',

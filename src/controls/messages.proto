@@ -9,6 +9,9 @@ message Sensors {
   required float altitude                                                  = 4;  // meters above MSL (mean sea level) (http://docs.ros.org/api/mavros_msgs/html/msg/Altitude.html)
   required float relative_altitude                                         = 5;  // meters above home position (link above)
   required float heading                                                   = 6;  // degrees clockwise from north (http://wiki.ros.org/mavros#mavros.2BAC8-Plugins.global_position)
+  required float velocity_x                                                = 7;  // m/s (https://mavlink.io/en/messages/common.html#LOCAL_POSITION_NED)
+  required float velocity_y                                                = 8;  // m/s (link above)
+  required float velocity_z                                                = 9;  // m/s (link above)
   required float gps_ground_speed                                          = 10; // m/s (http://docs.ros.org/api/mavros_msgs/html/msg/VFR_HUD.html)
   required int32 gps_satellite_count                                       = 11; // (https://mavlink.io/en/messages/common.html#GPS_RAW_INT, https://github.com/mavlink/mavros/blob/a7ef4fc0ec153307cbce3c98a998956c6296b954/mavros/src/plugins/global_position.cpp#L427)
   required float gps_eph                                                   = 12; // meters (horizontal position uncertainty) (see ros_to_proto.cc for explanation)
@@ -26,9 +29,6 @@ message Sensors {
   required float battery_current                                           = 27; // A (negative when discharging) (link above)
   required bool armed                                                      = 28; // (http://docs.ros.org/api/mavros_msgs/html/msg/State.html)
   required string autopilot_state                                          = 29; // (link above)
-  optional float velocity_x                                                = 7;  // m/s (https://mavlink.io/en/messages/common.html#LOCAL_POSITION_NED)
-  optional float velocity_y                                                = 8;  // m/s (link above)
-  optional float velocity_z                                                = 9;  // m/s (link above)
   optional double last_gps                                                 = 30;
 }
 

@@ -39,6 +39,9 @@ IO::IO() :
         kRosStateTopic, kRosMessageQueueSize, &IO::StateReceived, this)),
     imu_subscriber_(ros_node_handle_.subscribe(
         kRosImuTopic, kRosMessageQueueSize, &IO::ImuReceived, this)),
+    drone_program_subscriber_(ros_node_handle_.subscribe(
+        "/uasatucla/proto/drone_program", kRosMessageQueueSize,
+        &IO::DroneProgramReceived, this)),
     set_mode_service_(ros_node_handle_.serviceClient<::mavros_msgs::SetMode>(
         kRosSetModeService)),
     arm_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandBool>(
@@ -130,10 +133,10 @@ void IO::WriterThread() {
     // If running in a simulator, trigger the arm/takeoff/land sequence after
     // a certain amount of time.
 #ifndef UAS_AT_UCLA_DEPLOYMENT
-    static double start = ::lib::phased_loop::GetCurrentTime();
-    if (::lib::phased_loop::GetCurrentTime() - start > 5) {
-      should_override_alarm_ = true;
-    }
+    // static double start = ::lib::phased_loop::GetCurrentTime();
+    // if (::lib::phased_loop::GetCurrentTime() - start > 5) {
+      // should_override_alarm_ = true;
+    // }
 #endif
 
     if (should_override_alarm_) {
@@ -300,6 +303,7 @@ void IO::StateReceived(const ::mavros_msgs::State state) {
                     << (state.armed ? "ARMED" : "DISARMED"));
 
     did_arm_ = state.armed;
+    px4_mode_ = state.mode;
   }
 
   led_strip_.set_armed(state.armed);
@@ -310,113 +314,71 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
   led_strip_.set_last_imu(::lib::phased_loop::GetCurrentTime());
 }
 
+void IO::DroneProgramReceived(
+    const ::src::controls::ground_controls::timeline::DroneProgram
+        drone_program) {
+  ::std::cout << "Executing Drone Program...\n";
+  drone_program_ = drone_program;
+  should_override_alarm_ = true;
+  // ::std::cout << drone_program.DebugString() << "\n";
+}
+
 void IO::FlyToLocation() {
-  double current_time = ::lib::phased_loop::GetCurrentTime();
-
-  // static bool did_set_mode = false;
-  // if(current_time - fly_start_time > 5 && !did_set_mode) {
-  //   ::std::cout << "set guided!" << ::std::endl;
-  //   ::mavros_msgs::SetMode srv_setMode;
-  //   srv_setMode.request.base_mode = 0;
-  //   srv_setMode.request.custom_mode = "GUIDED";
-
-  //   if(set_mode_service_.call(srv_setMode)){
-  //     ROS_ERROR("setmode send ok %d value:", srv_setMode.response.mode_sent);
-  //   }else{
-  //     ROS_ERROR("Failed SetMode");
-  //   }
-
-  //   did_set_mode = true;
-  // }
-
-  // static bool did_set_params = false;
-  // if(current_time - fly_start_time > 10 && !did_set_params) {
-  //   ::std::cout << "arming!" << ::std::endl;
-  //   ::mavros_msgs::ParamSet srv;
-  //   srv.request.value = true;
-
-  //   if(arm_service_.call(srv)){
-  //     ROS_ERROR("ARM send ok %d", srv.response.success);
-  //   }else{
-  //     ROS_ERROR("Failed arming or disarming");
-  //   }
-
-  //   did_set_params = true;
-  // }
-
-  if (current_time - fly_start_time > 1 && !did_arm) {
+  if (!did_arm_) {
     ::std::cout << "arming!" << ::std::endl;
     ::mavros_msgs::CommandBool srv;
     srv.request.value = true;
-
     if (arm_service_.call(srv)) {
-      ROS_ERROR("ARM send ok %d", srv.response.success);
+      ROS_INFO("ARM send ok %d", srv.response.success);
     } else {
       ROS_ERROR("Failed arming or disarming");
     }
-
-    did_arm = true;
-  }
-
-  if (current_time - fly_start_time > 5 && !did_takeoff) {
-    ::std::cout << "takeoff!" << ::std::endl;
-
+  } else if (!did_takeoff) {
+    if (px4_mode_ == "AUTO.TAKEOFF") {
+      did_takeoff = true;
+    } else {
+      ::std::cout << "taking off!" << ::std::endl;
+      ::mavros_msgs::SetMode srv_setMode;
+      srv_setMode.request.base_mode = 0;
+      srv_setMode.request.custom_mode = "AUTO.TAKEOFF";
+      if (set_mode_service_.call(srv_setMode)) {
+        ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
+      } else {
+        ROS_ERROR("Failed SetMode");
+      }
+    }
+  } else if (px4_mode_ == "AUTO.LOITER") {
+    ::std::cout << "setting to offboard!" << ::std::endl;
     ::mavros_msgs::SetMode srv_setMode;
     srv_setMode.request.base_mode = 0;
-    srv_setMode.request.custom_mode = "AUTO.TAKEOFF";
-
+    srv_setMode.request.custom_mode = "OFFBOARD";
     if (set_mode_service_.call(srv_setMode)) {
-      ROS_ERROR("setmode send ok %d value:", srv_setMode.response.mode_sent);
+      ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
     } else {
       ROS_ERROR("Failed SetMode");
     }
-
-    did_takeoff = true;
-  }
-
-  // Fly to two waypoints after a certain amount of time.
-  if (current_time - fly_start_time > 15 && current_time - last_msg > 1.0 / 3) {
-    last_msg = current_time;
-
+  } else if (px4_mode_ == "OFFBOARD") {
+    ::std::cout << "setting setpoint!" << ::std::endl;
     ::mavros_msgs::GlobalPositionTarget target;
     target.header.stamp = ::ros::Time::now();
-
-    if (current_time - fly_start_time > 15 &&
-        current_time - fly_start_time < 45) {
-      ::std::cout << "fly to point #1!" << ::std::endl;
-
-      target.latitude = 34.173044;
-      target.longitude = -118.480953;
-      target.altitude = 10;
-    }
-
-    if (current_time - fly_start_time > 45 &&
-        current_time - fly_start_time < 70) {
-      ::std::cout << "fly to point #2!" << ::std::endl;
-
-      target.latitude = 34.172934;
-      target.longitude = -118.480700;
-      target.altitude = 10;
-    }
-
+    target.type_mask = ::mavros_msgs::GlobalPositionTarget::IGNORE_VX | ::mavros_msgs::GlobalPositionTarget::IGNORE_VY | ::mavros_msgs::GlobalPositionTarget::IGNORE_VZ | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFX | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFY | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFZ | ::mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE;
+    target.coordinate_frame = ::mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_REL_ALT;
+    target.latitude = drone_program_.commands(0).goto_command().goal().latitude();
+    target.longitude = drone_program_.commands(0).goto_command().goal().longitude();
+    target.altitude = drone_program_.commands(0).goto_command().goal().altitude();
     target.yaw = 30;
     global_position_publisher_.publish(target);
-  }
-
-  if (current_time - fly_start_time > 70 && !did_land) {
-    ::std::cout << "land!" << ::std::endl;
-
+  } else if (false) { // done with mission
+    ::std::cout << "RTL!" << ::std::endl;
     ::mavros_msgs::SetMode srv_setMode;
     srv_setMode.request.base_mode = 0;
-    srv_setMode.request.custom_mode = "AUTO.LAND";
-
+    srv_setMode.request.custom_mode = "AUTO.RTL";
     if (set_mode_service_.call(srv_setMode)) {
-      ROS_ERROR("setmode send ok %d value:", srv_setMode.response.mode_sent);
+      ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
     } else {
       ROS_ERROR("Failed SetMode");
     }
-
-    did_land = true;
+    did_land = true; // TODO
   }
 }
 
