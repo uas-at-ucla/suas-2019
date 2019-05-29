@@ -147,8 +147,10 @@ void IO::WriterThread() {
         fly_start_time = ::lib::phased_loop::GetCurrentTime();
         did_trigger_takeoff = false;
         did_takeoff = false;
-        did_land = false;
+        did_finish_takeoff = false;
         did_offboard = false;
+        did_mission = false;
+        did_land = false;
         last_msg = ::lib::phased_loop::GetCurrentTime();
       }
 
@@ -297,13 +299,13 @@ void IO::BatteryStatusReceived(
 }
 
 void IO::StateReceived(const ::mavros_msgs::State state) {
+  px4_mode_ = state.mode;
+
   if (state.armed != did_arm_) {
     ROS_INFO_STREAM("Arming state changed: "
                     << (did_arm_ ? "ARMED" : "DISARMED") << " -> "
                     << (state.armed ? "ARMED" : "DISARMED"));
-
     did_arm_ = state.armed;
-    px4_mode_ = state.mode;
   }
 
   led_strip_.set_armed(state.armed);
@@ -344,19 +346,29 @@ void IO::FlyToLocation() {
       ROS_ERROR("Failed SetMode");
     }
     did_trigger_takeoff = true;
-  } else if (did_trigger_takeoff && px4_mode_ == "AUTO.TAKEOFF") {
-    did_takeoff = true;
-  } else if (did_takeoff && px4_mode_ == "AUTO.LOITER") {
-    ::std::cout << "setting to offboard!" << ::std::endl;
-    ::mavros_msgs::SetMode srv_setMode;
-    srv_setMode.request.base_mode = 0;
-    srv_setMode.request.custom_mode = "OFFBOARD";
-    if (set_mode_service_.call(srv_setMode)) {
-      ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
-    } else {
-      ROS_ERROR("Failed SetMode");
+  } else if (!did_takeoff) {
+    if (px4_mode_ == "AUTO.TAKEOFF") {
+      did_takeoff = true;
     }
-  } else if (px4_mode_ == "OFFBOARD") {
+  } else if (!did_finish_takeoff) {
+    if (px4_mode_ == "AUTO.LOITER") {
+      did_finish_takeoff = true;
+    }
+  } else if (!did_offboard) {
+    if (px4_mode_ == "OFFBOARD") {
+      did_offboard = true;
+    } else {
+      ::std::cout << "setting to offboard!" << ::std::endl;
+      ::mavros_msgs::SetMode srv_setMode;
+      srv_setMode.request.base_mode = 0;
+      srv_setMode.request.custom_mode = "OFFBOARD";
+      if (set_mode_service_.call(srv_setMode)) {
+        ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
+      } else {
+        ROS_ERROR("Failed SetMode");
+      }
+    }
+  } else if (!did_mission) {
     ::std::cout << "setting setpoint!" << ::std::endl;
     ::mavros_msgs::GlobalPositionTarget target;
     target.header.stamp = ::ros::Time::now();
@@ -367,7 +379,8 @@ void IO::FlyToLocation() {
     target.altitude = drone_program_.commands(0).goto_command().goal().altitude();
     target.yaw = 30;
     global_position_publisher_.publish(target);
-  } else if (false) { // done with mission
+    // did_mission true; // when done with mission
+  } else { // done with mission
     ::std::cout << "RTL!" << ::std::endl;
     ::mavros_msgs::SetMode srv_setMode;
     srv_setMode.request.base_mode = 0;

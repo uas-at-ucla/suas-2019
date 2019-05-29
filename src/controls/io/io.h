@@ -144,8 +144,10 @@ class IO {
   double fly_start_time;
   bool did_trigger_takeoff;
   bool did_takeoff;
-  bool did_land;
+  bool did_finish_takeoff;
   bool did_offboard;
+  bool did_mission;
+  bool did_land;
   double last_msg;
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
