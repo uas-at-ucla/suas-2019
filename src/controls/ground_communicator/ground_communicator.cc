@@ -8,6 +8,9 @@ GroundCommunicator::GroundCommunicator() :
     sensors_subscriber_(ros_node_handle_.subscribe(
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
         &GroundCommunicator::SensorsReceived, this)),
+    drone_program_subscriber_(ros_node_handle_.subscribe(
+        ground_controls::kRosDroneProgramTopic, io::kRosMessageQueueSize,
+        &GroundCommunicator::DroneProgramReceived, this)),
     proto_sender_("tcp://127.0.0.1:6005"),
     rfd900_("/dev/ttyUSB0", B57600, 0) {
 
@@ -36,6 +39,13 @@ void GroundCommunicator::SensorsReceived(
   if (required_fields_set) {
     proto_sender_.Send(uas_message);
   }
+}
+
+void GroundCommunicator::DroneProgramReceived(
+    const ::src::controls::ground_controls::timeline::DroneProgram
+        drone_program) {
+  ::std::cout << "Executing Drone Program...\n";
+  // ::std::cout << drone_program.DebugString() << "\n";
 }
 
 } // namespace ground_communicator

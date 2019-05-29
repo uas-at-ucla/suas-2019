@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
+import { selector } from 'redux/store';
 import './Altimeter.css';
 
 const FEET_PER_METER = 3.28084;
@@ -10,6 +11,7 @@ const mapStateToProps = state => {
   return {
     telemetry: state.telemetry.droneTelemetry,
     interopData: state.mission.interopData,
+    mainFlyZone: selector(state).mission.mainFlyZone
   };
 };
 class Altimeter extends Component {
@@ -23,8 +25,8 @@ class Altimeter extends Component {
     }
     let percentage = (rel_altitude / MAX_ALT) * 100;
 
-    let min = this.props.interopData ? this.props.interopData.mission.fly_zones[0].altitude_msl_min - ground_alt : 0;
-    let max = this.props.interopData ? this.props.interopData.mission.fly_zones[0].altitude_msl_max - ground_alt : 0;
+    let min = this.props.interopData ? this.props.mainFlyZone.altitudeMin - ground_alt : 0;
+    let max = this.props.interopData ? this.props.mainFlyZone.altitudeMax - ground_alt : 0;
     if (max > MAX_ALT) max = MAX_ALT;    
 
     return (
