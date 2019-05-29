@@ -64,6 +64,7 @@ DroneProgram Ground2DroneVisitor::Visit(WaypointCommand *n) {
   {
     GotoCommand *goto_command = new GotoCommand();
     goto_command->mutable_goal()->CopyFrom(n->goal());
+    goto_command->set_come_to_stop(false);
 
     DroneProgram goto_command_program = Visit(goto_command);
     ConcatenateDroneProgramCommands(drone_program, goto_command_program);
@@ -126,6 +127,7 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
     DroneCommand *translate_cmd = new DroneCommand();
     TranslateCommand *translate = translate_cmd->mutable_translate_command();
     translate->set_allocated_goal(n->mutable_goal());
+    translate->set_come_to_stop(false);
     drone_program.mutable_commands()->AddAllocated(translate_cmd);
   }
 

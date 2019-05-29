@@ -50,11 +50,11 @@ pipeline {
     }
     stage('TEST') {
       parallel {
-        stage('SITL TESTS') {
-          steps {
-            sh './uas controls sitl'
-          }
-        }
+//      stage('SITL TESTS') {
+//        steps {
+//          sh './uas controls sitl'
+//        }
+//      }
         stage('UNIT TESTS') {
           steps {
             echo 'unit tests'
