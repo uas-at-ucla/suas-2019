@@ -29,6 +29,18 @@ class Communicator {
     this.socket.on('PING', (delay) => {
       this.store.dispatch({ type: 'PING', payload: delay });
     });
+
+    this.socket.on('INTEROP_UPLOAD_FAIL', () => {
+      alert("FAILED to upload telemetry to interop!");
+    });
+
+    this.socket.on('INTEROP_UPLOAD_SUCCESS', () => {
+      alert("Now able to upload telemetry to interop. :)");
+    });
+
+    this.socket.on('UGV_MESSAGE', (msg) => {
+      this.store.dispatch({ type: 'UGV_MESSAGE', payload: msg });
+    });
   }
 
   reduxMiddleware(next) {
