@@ -4,6 +4,7 @@ import { arrayMove } from 'react-sortable-hoc';
 const initialState = {
   timelineGrammar: null,
   commands: [],
+  commandAnimate: {},
   interopData: null
 };
 
@@ -37,6 +38,12 @@ export default function reducer(state=initialState, action) {
     }
     case 'POP_REPEATED_FIELD': {
       return dotProp.delete(state, `commands.${action.payload.dotProp}.$end`);
+    }
+    case 'CENTER_ON_COMMAND': {
+      return dotProp.set(state, `commandAnimate.${action.payload.id}`, true);
+    }
+    case 'COMMAND_STOP_ANIMATION': {
+      return dotProp.set(state, `commandAnimate.${action.payload.id}`, false);
     }
     default: {
       return state;

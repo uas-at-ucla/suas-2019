@@ -5,5 +5,7 @@ int main(int argc, char **argv) {
   ::ros::start();
 
   ::src::controls::ground_communicator::GroundCommunicator ground_communicator;
-  ground_communicator.Run();
+  ::src::controls::Sensors sensors;
+  ground_communicator.SensorsReceived(sensors);
+  ::ros::spin();
 }

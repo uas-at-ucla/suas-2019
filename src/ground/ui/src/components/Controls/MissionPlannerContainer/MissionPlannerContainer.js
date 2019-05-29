@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 
 import './MissionPlannerContainer.css';
 import MissionPlanner from './MissionPlanner';
@@ -14,8 +14,8 @@ class MissionPlannerContainer extends Component {
       <div className="MissionPlannerContainer">
 
         <div className="missionPlannerHeader"> 
-          <h1>Mission Planner</h1>
-          <Button onClick={this.expand}>Expand</Button>
+          <span><b>Mission Planner</b></span>
+          <i onClick={this.expand} className="fa fa-expand"></i>
         </div>
         <div className="SmallMissionPlanner">
           <MissionPlanner className="SmallMissionPlanner"/>

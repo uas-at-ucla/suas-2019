@@ -13,8 +13,15 @@
   margin-bottom: 10px;
 }
 
-.MissionPlannerContainer > .missionPlannerHeader > h1 {
+.MissionPlannerContainer > .missionPlannerHeader > span {
+  font-size: 20px;
+  line-height: 25px;
+}
+
+.MissionPlannerContainer > .missionPlannerHeader > i {
   font-size: 25px;
+  line-height: 25px;
+  cursor: pointer;
 }
 
 .MissionPlannerModal.modal-dialog {
@@ -81,12 +88,22 @@
 
 .MissionPlanner .command-index {
   width: 2em;
-  padding: 4px;
-  border: 1px solid dimgray;
 }
 
 .MissionPlanner .command-type {
   width: 6em;
+}
+
+.MissionPlanner .delete-btn {
+  line-height: 15px;
+}
+
+.MissionPlanner .delete-btn > .fa {
+  vertical-align: middle;
+  pointer-events: none;
+}
+
+.MissionPlanner .command-header {
   padding: 4px;
   border: 1px solid dimgray;
 }

@@ -9,7 +9,6 @@ import telemetryReducer from './reducers/telemetryReducer';
 import missionReducer from './reducers/missionReducer';
 import settingsReducer from './reducers/settingsReducer';
 
-import telemetrySelector from './selectors/telemetrySelector';
 import missionSelector from './selectors/missionSelector';
 
 const reducer = combineReducers({
@@ -19,17 +18,22 @@ const reducer = combineReducers({
 });
 
 export const selector = createStructuredSelector({
-  telemetry: telemetrySelector,
   mission: missionSelector
 });
 
+let printingPrevState = true;
 const logger = createLogger({
   predicate: (getState, action) => {
-    // let shouldLog = (action.type === 'TELEMETRY');
-    let shouldLog = false;
+    let shouldLog = (action.type === 'LOG_REDUX_STATE');
+    // let shouldLog = false;
     return shouldLog;
   },
-  collapsed: true
+  stateTransformer: (state) => {
+    let msg = printingPrevState ? "prev derived data" : "next derived data";
+    console.log(msg, selector(state));
+    printingPrevState = !printingPrevState;
+    return state;
+  }
 });
 
 const middleware = applyMiddleware(logger, communicator);

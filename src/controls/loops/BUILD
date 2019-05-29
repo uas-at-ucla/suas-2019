@@ -36,9 +36,10 @@ cc_library(
     'flight_loop.h',
   ],
   deps = [
-    '//src/controls/ground_server/timeline/executor:executor',
+    '//src/controls/ground_controls/timeline/executor:executor',
     '//src/controls/loops/state_machine:state_machine',
     '//src/controls:messages_cpp',
+    '//src/controls/io:io_lib',
     '//lib/proto_comms:proto_comms',
     '//lib/physics_structs:physics_structs',
     '//lib/phased_loop:phased_loop',
@@ -46,5 +47,7 @@ cc_library(
     '//lib/ros:ros',
     "@cppzmq//:cppzmq",
     '@boost//:algorithm',
+    "@mavros_msgs//:mavros_msgs",
+    "@sensor_msgs//:sensor_msgs",
   ],
 )

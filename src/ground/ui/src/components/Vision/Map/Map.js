@@ -2,7 +2,7 @@
 import React, { Component } from 'react';
 import CustomMarker from './CustomMarker';
 import { Marker } from 'react-google-maps';
-import GoogleMap from '../../Utils/GoogleMap/GoogleMap';
+import GoogleMap from '../../utils/GoogleMap/GoogleMap';
 import HeatmapLayer from "react-google-maps/lib/components/visualization/HeatmapLayer";
 import './Map.css';
 import { Link } from "react-router-dom";
@@ -32,7 +32,29 @@ class Map extends Component {
           data: 'second'
         }
       ],
-      hmData: [
+      hmData: [],
+      hmGradient: [
+        'rgba(0, 255, 255, 0)',
+        'rgba(0, 255, 255, 1)',
+        'rgba(0, 191, 255, 1)',
+        'rgba(0, 127, 255, 1)',
+        'rgba(0, 63, 255, 1)',
+        'rgba(0, 0, 255, 1)',
+        'rgba(0, 0, 223, 1)',
+        'rgba(0, 0, 191, 1)',
+        'rgba(0, 0, 159, 1)',
+        'rgba(0, 0, 127, 1)',
+        'rgba(63, 0, 91, 1)',
+        'rgba(127, 0, 63, 1)',
+        'rgba(191, 0, 31, 1)',
+        'rgba(255, 0, 0, 1)'
+      ],
+      hmRadius:70, hmOpacity:1, hmdissipating:true, hmHeatmapOn:true,
+      heatMapOpen:true
+    }
+    
+    setTimeout(() => 
+      this.setState({hmData: [
         new window.google.maps.LatLng(37.782551, -122.445368),
         new window.google.maps.LatLng(37.782745, -122.444586),
         new window.google.maps.LatLng(37.782842, -122.443688),
@@ -168,28 +190,8 @@ class Map extends Component {
         new window.google.maps.LatLng(37.797885, -122.429069),
         new window.google.maps.LatLng(37.797887, -122.429050),
         new window.google.maps.LatLng(37.797933, -122.428954),
-        new window.google.maps.LatLng(34.067364, -118.442663)
-      ],
-      hmGradient: [
-        'rgba(0, 255, 255, 0)',
-        'rgba(0, 255, 255, 1)',
-        'rgba(0, 191, 255, 1)',
-        'rgba(0, 127, 255, 1)',
-        'rgba(0, 63, 255, 1)',
-        'rgba(0, 0, 255, 1)',
-        'rgba(0, 0, 223, 1)',
-        'rgba(0, 0, 191, 1)',
-        'rgba(0, 0, 159, 1)',
-        'rgba(0, 0, 127, 1)',
-        'rgba(63, 0, 91, 1)',
-        'rgba(127, 0, 63, 1)',
-        'rgba(191, 0, 31, 1)',
-        'rgba(255, 0, 0, 1)'
-      ],
-      hmRadius:70, hmOpacity:1, hmdissipating:true, hmHeatmapOn:true,
-      heatMapOpen:true
-    }
-      
+        new window.google.maps.LatLng(34.067364, -118.442663)]})
+    ,1000); // Temporary: give time for google maps api to download
   }
 
   toggleHeatmap=(props)=>{
@@ -252,7 +254,7 @@ class Map extends Component {
           <GoogleMap
             defaultZoom={16}
             defaultCenter={{lat: 37.782551, lng: - 122.445368}}
-            defaultMapTypeId="satellite"
+            defaultMapTypeId="customTiles"
             defaultOptions={{
               disableDefaultUI: true,
               disableDoubleClickZoom: true,

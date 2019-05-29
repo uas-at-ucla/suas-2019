@@ -1,29 +1,63 @@
 import socketIOClient from 'socket.io-client';
 
-const isWebServer = window.location.protocol.startsWith("http");
-
-const serverIP = "localhost"; // TODO: Make configurable via Settings
-const socketHost = isWebServer ? window.location.hostname : serverIP;
-const socketPort = 8081;
-const socket = socketIOClient("http://"+socketHost+':'+socketPort+'/ui', { transports: ['websocket'] });
-
-// Make redux middleware
-export default (store) => {
-  console.log("Initializing communicator");
-
-  socket.on('TELEMETRY', (data) => {
-    store.dispatch({ type: 'TELEMETRY', payload: data });
-  });
-
-  socket.on('INTEROP_DATA', (data) => {
-    store.dispatch({ type: 'INTEROP_DATA', payload: data });
-  });
-
-  return (next) => (action) => {
-    if (action.type === 'TRANSMIT') {
-      socket.emit(action.payload.msg, action.payload.data);
-      console.log("Transmitting", action.payload);
-    }
-    next(action);
+class Communicator {
+  constructor(store) {
+    this.store = store;
+    console.log("Initializing communicator");
+    this.initSocket();
   }
+
+  initSocket() {
+    this.socket = socketIOClient("http://"+this.store.getState().settings.gndServerIp+'/ui', { transports: ['websocket'] });
+    
+    this.socket.on('connect', () => {
+      this.store.dispatch({ type: 'GND_SERVER_CONNECTED' });
+    });
+
+    this.socket.on('disconnect', () => {
+      this.store.dispatch({ type: 'GND_SERVER_DISCONNECTED' });
+    });
+
+    this.socket.on('TELEMETRY', (telemetry) => {
+      this.store.dispatch({ type: 'TELEMETRY', payload: telemetry });
+    });
+
+    this.socket.on('INTEROP_DATA', (interopData) => {
+      this.store.dispatch({ type: 'INTEROP_DATA', payload: interopData });
+    });
+
+    this.socket.on('PING', (delay) => {
+      this.store.dispatch({ type: 'PING', payload: delay });
+    });
+
+    this.socket.on('INTEROP_UPLOAD_FAIL', () => {
+      alert("FAILED to upload telemetry to interop!");
+    });
+
+    this.socket.on('INTEROP_UPLOAD_SUCCESS', () => {
+      alert("Now able to upload telemetry to interop. :)");
+    });
+
+    this.socket.on('UGV_MESSAGE', (msg) => {
+      this.store.dispatch({ type: 'UGV_MESSAGE', payload: msg });
+    });
+  }
+
+  reduxMiddleware(next) {
+    return (action) => {
+      if (action.type === 'TRANSMIT') {
+        this.socket.emit(action.payload.msg, action.payload.data);
+        console.log("Transmitting", action.payload);
+      } else if (action.type === 'CONNECT_TO_GND_SERVER') {
+        this.socket.disconnect();
+        this.initSocket();
+      }
+      next(action);
+    }
+  }
+}
+
+export default (store) => {
+  let communicator = new Communicator(store);
+  return (next) => communicator.reduxMiddleware(next);
 }

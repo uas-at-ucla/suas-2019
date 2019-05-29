@@ -38,10 +38,6 @@ class FlightLoopTest : public ::testing::Test {
     sensors_.set_gyro_x(0);
     sensors_.set_gyro_y(0);
     sensors_.set_gyro_z(0);
-    sensors_.set_absolute_pressure(0);
-    sensors_.set_relative_pressure(0);
-    sensors_.set_pressure_altitude(0);
-    sensors_.set_temperature(0);
     sensors_.set_battery_voltage(0);
     sensors_.set_battery_current(0);
     sensors_.set_armed(0);
@@ -70,9 +66,8 @@ class FlightLoopTest : public ::testing::Test {
   }
 
   void StepLoop() {
-    output_ = flight_loop_.RunIteration(sensors_, goal_);
-    sensors_.set_time(sensors_.time() +
-                      1.0 / ::src::controls::loops::kFlightLoopFrequency);
+    flight_loop_.RunIteration(sensors_);
+    sensors_.set_time(sensors_.time() + 1.0 / 50);
   }
 
   ::src::controls::Sensors &sensors() { return sensors_; }

@@ -1,4 +1,4 @@
-# UAS@UCLA 2018 Drone Code
+# UAS@UCLA 2019 Drone Code
 Code used on our drone competing in the AUVSI SUAS competition.
 
 | CI Tool | Status of `master` |

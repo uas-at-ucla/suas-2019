@@ -40,10 +40,8 @@ toolchain {
   tool_path { name: "compat-ld" path: "/usr/bin/ld" }
   tool_path { name: "cpp" path: "/usr/bin/cpp" }
   tool_path { name: "dwp" path: "/usr/bin/dwp" }
-  tool_path { name: "gcc" path: "/usr/bin/clang-3.9" }
+  tool_path { name: "gcc" path: "/usr/bin/clang-6.0" }
   tool_path { name: "gcov" path: "/usr/bin/gcov" }
-  # C(++) compiles invoke the compiler (as that is the one knowing where
-  # to find libraries), but we provide LD so other rules can invoke the linker.
   tool_path { name: "ld" path: "/usr/bin/ld" }
   tool_path { name: "nm" path: "/usr/bin/nm" }
   tool_path { name: "objcopy" path: "/usr/bin/objcopy" }
@@ -54,26 +52,32 @@ toolchain {
 
   # absolute locations and has no remote execution, yet. However, this will need
   # to be fixed, maybe with auto-detection?
-  cxx_builtin_include_directory: '/usr/include/c++/4.8'
-  cxx_builtin_include_directory: '/usr/include/c++/v1'
-  cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu/c++/3.9'
-  cxx_builtin_include_directory: '/usr/include/c++/4.8/backward'
-  cxx_builtin_include_directory: '/usr/include/libcxxabi'
-  cxx_builtin_include_directory: '/usr/local/include'
-  cxx_builtin_include_directory: '/usr/lib/llvm-3.6/lib/clang/3.9.1/include'
-  cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu'
-  cxx_builtin_include_directory: '/usr/include'
-  cxx_builtin_include_directory: '/usr/lib/clang/3.9.1/include'
+  # cxx_builtin_include_directory: '/usr/include/c++/8'
+  # cxx_builtin_include_directory: '/usr/include/c++/8/backward'
+  # cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu/c++/8'
+  # cxx_builtin_include_directory: '/usr/include/x86_64-linux-gnu'
   cxx_builtin_include_directory: '/usr/include/python2.7'
+  cxx_builtin_include_directory: '/usr/lib/llvm-6.0/lib/clang/6.0.1/include'
+  cxx_builtin_include_directory: '/usr/include'
+  cxx_builtin_include_directory: '/usr/lib/clang/6.0/include'
+  cxx_builtin_include_directory: '/usr/lib/clang/6.0.1/include'
 
   # cxx_flag: "-isystem"
   # cxx_flag: "/usr/include/libcxxabi"
 
-  compiler_flag: "-Wno-error=unused-command-line-argument"
+  unfiltered_cxx_flag: "-Wno-null-arithmetic"
+  unfiltered_cxx_flag: "-Wno-null-pointer-arithmetic"
+  unfiltered_cxx_flag: "-Wno-non-virtual-dtor"
+  unfiltered_cxx_flag: "-Wno-delete-non-virtual-dtor"
+
   linker_flag: "-lstdc++"
   # linker_flag: "-lc++"
   # linker_flag: "-lprofiler"
   linker_flag: "-B/usr/bin/"
+
+  # get ZeroMQ to compile:
+  linker_flag: "-lunwind"
+  linker_flag: "-ldl"
 
   feature {
     name: "opt"
@@ -156,8 +160,6 @@ toolchain {
   # This makes GCC and Clang do what we want when called through symlinks.
   unfiltered_cxx_flag: "-no-canonical-prefixes"
   linker_flag: "-no-canonical-prefixes"
-
-  compiler_flag: "-Wno-expansion-to-defined"
 
   # Things that the code wants defined.
   compiler_flag: "-D__STDC_FORMAT_MACROS"

@@ -3,87 +3,86 @@ import * as THREE from 'three';
 
 import './AttitudeIndicator.css';
 import NavballImg from './navball.png';
+import PositionRef from "./navball_pos_ref.svg";
 
+/*
+More navball skins:
+https://forum.kerbalspaceprogram.com/index.php?/topic/164158-13-navballtexturechanger-v16-8717/&do=findComment&comment=3142105
+*/
 
 class Navball extends Component {
-    constructor(props) {
-        super(props);
+  componentDidMount() {
+    const MARGIN = 5; // from CSS
+    const WIDTH = 200 - MARGIN*2;
+    const HEIGHT = WIDTH;
 
-        // State
-    }
+    this.scene = new THREE.Scene();
 
+    const sphereRadius = 1;
+    const cameraDistance = 8;
 
-    componentDidMount() {
-        const WIDTH = 200;
-        const HEIGHT = WIDTH;
+    const fov = Math.asin(sphereRadius/cameraDistance)*180/Math.PI * 2;
+    this.camera = new THREE.PerspectiveCamera(fov, 1, cameraDistance-sphereRadius, cameraDistance+sphereRadius);
+    this.scene.add(this.camera);
+    this.camera.position.set(cameraDistance, 0, 0);
+    this.camera.up.set(0, 0, 1);
+    this.camera.lookAt(0, 0, 0);
 
-        this.scene = new THREE.Scene();
+    this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    this.renderer.setSize(WIDTH, HEIGHT);
+    this.refs.navball.appendChild(this.renderer.domElement);
 
-        this.camera = new THREE.PerspectiveCamera(41 , 1 , 1 , 2000);
-        this.scene.add(this.camera);
-        this.camera.position.set(0 , 0 , 120);
-        this.camera.lookAt(this.scene.position);
+    var light = new THREE.AmbientLight(0xffffff, 1.5);
+    this.scene.add(light);
 
+    var sphereGeom = new THREE.SphereGeometry(sphereRadius, 48, 32);
+    var texture = new THREE.TextureLoader().load(NavballImg);
+    texture.offset.x = 1/4; // 0 radians yaw is East
+    texture.wrapS = THREE.RepeatWrapping;
+    var material = new THREE.MeshPhongMaterial({map: texture});
+    var ball = new THREE.Mesh(sphereGeom, material);
+    ball.position.set(0, 0, 0);
+    ball.rotation.x = Math.PI/2;
+    this.ballContainer = new THREE.Object3D();
+    this.ballContainer.add(ball);
+    this.ballContainer.position.copy(ball.position);
+    this.scene.add(this.ballContainer);
 
-        this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        this.renderer.setSize(WIDTH, HEIGHT);
-        document.getElementById("navball").appendChild(this.renderer.domElement);
+    this.updateRotation();
 
-        var light = new THREE.AmbientLight( 0xffffff , 1.5 );;
-        this.scene.add(light);
+    this.frameId = requestAnimationFrame(this.animate);
+  }
 
+  updateRotation = () => {
+    this.ballContainer.rotation.x = this.props.data["roll"];
+    this.ballContainer.rotation.y = -this.props.data["pitch"];
+    this.ballContainer.rotation.z = this.props.data["yaw"];
+  }
 
-        var sphereGeom = new THREE.SphereGeometry(40 , 48 , 32);
-        var texture = new THREE.TextureLoader().load(NavballImg);
-        var material = new THREE.MeshPhongMaterial({map: texture});
-        this.ball = new THREE.Mesh(sphereGeom , material);
-        this.ball.position.set(0 , 0 , 0);
-        this.ball.rotation.set(this.props.data["navX"] , this.props.data["navY"] - 3.1415926 / 2 , 
-            this.props.data["navZ"]);
-        this.scene.add(this.ball);
+  componentWillUnmount() {
+    cancelAnimationFrame(this.frameId);
+  }
 
-        this.start();
-    }
+  animate = () => {
+    this.frameId = window.requestAnimationFrame(this.animate);
+    this.renderer.render(this.scene, this.camera);
+  }
 
+  componentDidUpdate(prevProps) {
+    this.updateRotation();
+  }
 
-    start = () => {
-        if (!this.frameId) {
-          this.frameId = requestAnimationFrame(this.animate)
-        }
-    }
-
-
-    stop = () => {
-        cancelAnimationFrame(this.frameId)
-    }
-
-
-    animate = () => {
-       this.ball.rotation.x = this.props.data["navX"];
-       this.ball.rotation.y = this.props.data["navY"] - 3.1415926 / 2;     // Zero me!
-       this.ball.rotation.z = this.props.data["navZ"];
-       this.renderScene()
-       this.frameId = window.requestAnimationFrame(this.animate)
-    }
-
-
-    renderScene = () => {
-      this.renderer.render(this.scene, this.camera)
-    }
-
-
-
-    render() {
-        return(
-            <div className="AttitudeIndicator">
-                <div className="navball-background">
-                </div>
-                <div className="navball" id="navball" ref={(mount) => {this.mount = mount}}>
-                </div>
-            </div>
-        );
-    }
+  render() {
+    return(
+      <div className="AttitudeIndicator">
+        <div className="navball-background"></div>
+        <div className="navball" ref="navball"></div>
+        <div className="position-ref-container">
+          <img className="position-ref" src={PositionRef} alt=""/>
+        </div>
+      </div>
+    );
+  }
 }
-
 
 export default Navball;
