@@ -40,9 +40,11 @@ INSTALLED_APPS = [
     'db',
     'rest_framework',
     'channels',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -131,3 +133,4 @@ CHANNEL_LAYERS = {
     },
 }
 
+CORS_ORIGIN_ALLOW_ALL = True
