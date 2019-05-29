@@ -145,7 +145,7 @@ void IO::WriterThread() {
 
       if (last_should_alarm != should_override_alarm_) {
         fly_start_time = ::lib::phased_loop::GetCurrentTime();
-        did_arm = false;
+        did_trigger_takeoff = false;
         did_takeoff = false;
         did_land = false;
         did_offboard = false;
@@ -333,21 +333,20 @@ void IO::FlyToLocation() {
     } else {
       ROS_ERROR("Failed arming or disarming");
     }
-  } else if (!did_takeoff) {
-    if (px4_mode_ == "AUTO.TAKEOFF") {
-      did_takeoff = true;
+  } else if (!did_trigger_takeoff) {
+    ::std::cout << "taking off!" << ::std::endl;
+    ::mavros_msgs::SetMode srv_setMode;
+    srv_setMode.request.base_mode = 0;
+    srv_setMode.request.custom_mode = "AUTO.TAKEOFF";
+    if (set_mode_service_.call(srv_setMode)) {
+      ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
     } else {
-      ::std::cout << "taking off!" << ::std::endl;
-      ::mavros_msgs::SetMode srv_setMode;
-      srv_setMode.request.base_mode = 0;
-      srv_setMode.request.custom_mode = "AUTO.TAKEOFF";
-      if (set_mode_service_.call(srv_setMode)) {
-        ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
-      } else {
-        ROS_ERROR("Failed SetMode");
-      }
+      ROS_ERROR("Failed SetMode");
     }
-  } else if (px4_mode_ == "AUTO.LOITER") {
+    did_trigger_takeoff = true;
+  } else if (did_trigger_takeoff && px4_mode_ == "AUTO.TAKEOFF") {
+    did_takeoff = true;
+  } else if (did_takeoff && px4_mode_ == "AUTO.LOITER") {
     ::std::cout << "setting to offboard!" << ::std::endl;
     ::mavros_msgs::SetMode srv_setMode;
     srv_setMode.request.base_mode = 0;

@@ -142,7 +142,7 @@ class IO {
   ::ros::ServiceClient takeoff_service_;
 
   double fly_start_time;
-  bool did_arm;
+  bool did_trigger_takeoff;
   bool did_takeoff;
   bool did_land;
   bool did_offboard;
