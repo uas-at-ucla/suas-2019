@@ -9,7 +9,7 @@
 #include <ros/console.h>
 #include <ros/ros.h>
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+#ifdef RASPI_DEPLOYMENT
 #include <pigpiod_if2.h>
 #include <softPwm.h>
 #include <wiringPi.h>
@@ -110,13 +110,12 @@ static const ::std::string kPixhawkCustomModeTakeoff = "AUTO.TAKEOFF";
 static const ::std::string kPixhawkCustomModeFollowTarget =
     "AUTO.FOLLOW_TARGET";
 static const ::std::string kPixhawkCustomModePrecland = "AUTO.PRECLAND";
-
 } // namespace
 
 class IO {
  public:
   IO();
-  void Quit(int sig);
+  void Quit(int signal);
 
  private:
   void WriterThread();
@@ -127,6 +126,16 @@ class IO {
   void BatteryStatusReceived(const ::sensor_msgs::BatteryState battery_state);
   void StateReceived(const ::mavros_msgs::State state);
   void ImuReceived(const ::sensor_msgs::Imu imu);
+
+  // Actuator setup and write handlers.
+  void InitializeActuators();
+  void WriteAlarm(bool alarm);
+  void WriteGimbal(double pitch);
+  void WriteDeployment(double motor, bool latch, bool hotwire);
+
+  void PixhawkSendModePosedge(::std::string mode, bool signal);
+  void PixhawkSetGlobalPositionGoal(double latitude, double longitude,
+                                    double altitude);
 
   ::lib::alarm::Alarm alarm_;
   ::src::controls::io::led_strip::LedStrip led_strip_;
@@ -139,11 +148,6 @@ class IO {
 
   double deployment_motor_setpoint_;
   double gimbal_setpoint_;
-  double deployment_servo_setpoint_;
-
-  void PixhawkSendModePosedge(::std::string mode, bool signal);
-  void PixhawkSetGlobalPositionGoal(double latitude, double longitude,
-                                    double altitude);
 
   ::std::atomic<bool> running_;
 
@@ -162,15 +166,12 @@ class IO {
   ::ros::ServiceClient arm_service_;
   ::ros::ServiceClient takeoff_service_;
 
-  bool last_arm_;
   ::std::map<::std::string, bool> last_mode_signals_;
-  bool last_takeoff_;
-  bool last_land_;
   double last_global_position_setpoint_;
 
   bool last_arm_state_;
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+#ifdef RASPI_DEPLOYMENT
   int pigpio_;
 #endif
 

@@ -53,7 +53,7 @@ LedStrip::LedStrip() :
       {channel_0_, channel_1_} // Channels
   };
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+#ifdef RASPI_DEPLOYMENT
   ws2811_return_t ret = ws2811_init(&leds_);
 
   if (ret != WS2811_SUCCESS) {
@@ -66,7 +66,7 @@ LedStrip::LedStrip() :
 LedStrip::~LedStrip() {
   delete led_pixels_;
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+#ifdef RASPI_DEPLOYMENT
   ws2811_fini(&leds_);
 #endif
 }
@@ -174,7 +174,7 @@ bool LedStrip::Render(bool force) {
     }
   }
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+#ifdef RASPI_DEPLOYMENT
   ws2811_return_t ret = ws2811_render(&leds_);
 
   if (ret != WS2811_SUCCESS) {
