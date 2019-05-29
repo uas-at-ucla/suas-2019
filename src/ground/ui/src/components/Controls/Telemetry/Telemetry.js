@@ -6,9 +6,6 @@ import AttitudeIndicator from './AttitudeIndicator/AttitudeIndicator';
 import Altimeter from './Altimeter/Altimeter';
 import Readout from './Readout';
 
-const FEET_PER_METER = 3.28084;
-const KNOTS_PER_METER_SECOND = 1.94384;
-
 const mapStateToProps = state => {
   return {
     telemetry: state.telemetry,
@@ -22,16 +19,15 @@ class Telemetry extends Component {
     if (rawTelmet != null) {
       this.telmet = {
         pingDelay: pingDelay,
-        autopilotState: rawTelmet["sensors"]["autopilot_state"],
-        roll: rawTelmet["sensors"]["roll"],
-        pitch: rawTelmet["sensors"]["pitch"],
-        yaw: rawTelmet["sensors"]["yaw"],
-        speed: rawTelmet["sensors"]["gps_ground_speed"] * KNOTS_PER_METER_SECOND,
+        navX: rawTelmet["sensors"]["gyroX"],
+        navY: rawTelmet["sensors"]["gyroY"],
+        navZ: rawTelmet["sensors"]["gyroZ"],
+        speed: 0,
         lat: rawTelmet["sensors"]["latitude"],
         long: rawTelmet["sensors"]["longitude"],
-        heading: rawTelmet["sensors"]["heading"],
-        alt: rawTelmet["sensors"]["altitude"] * FEET_PER_METER,
-        satCount: rawTelmet["sensors"]["gps_satellite_count"],
+        heading: 0,
+        alt: rawTelmet["sensors"]["relativeAltitude"],
+        satCount: rawTelmet["sensors"]["gpsSatelliteCount"],
         gpsHdop: 0,
         gpsVdop: 0,
       }
@@ -39,10 +35,9 @@ class Telemetry extends Component {
     else {
       this.telmet = {
         pingDelay: null,
-        autopilotState: null,
-        roll: 0,
-        pitch: 0,
-        yaw: Math.PI/2,
+        navX: 0,
+        navY: 0,
+        navZ: 0,
         speed: 0,
         lat: 0,
         long: 0,
@@ -59,23 +54,19 @@ class Telemetry extends Component {
     return [
       {
         key: "Ping",
-        values: this.telmet.pingDelay != null ? [this.telmet.pingDelay, " ms"] : ["Not Connected"]
+        values: [this.telmet.pingDelay, " ms"]
       },
       {
-        key: "State",
-        values: [this.telmet.autopilotState]
-      },
-      {
-        key: "Ground Speed",
-        values: [this.telmet.speed.toFixed(3) , " knots"]
+        key: "Speed",
+        values: [this.telmet.speed.toFixed(3) , " mph"]
       },
       {
         key: "Position",
         values: [this.telmet.lat.toFixed(3) , ", " , this.telmet.long.toFixed(3)]
       },
       {
-        key: "Altitude MSL",
-        values: [this.telmet.alt.toFixed(3) , " feet"]
+        key: "Altitude",
+        values: [this.telmet.alt.toFixed(3) , " meters"]
       },
       {
         key: "Satellite Count",

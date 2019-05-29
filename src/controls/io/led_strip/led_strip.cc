@@ -10,8 +10,7 @@ LedStrip::LedStrip() :
     startup_sequence_frame_(0),
     battery_percentage_(0.0),
     armed_(false),
-    alarm_(false),
-    blank_(false) {
+    alarm_(false) {
 
   led_pixels_ =
       static_cast<ws2811_led_t *>(malloc(sizeof(ws2811_led_t) * kNumberOfLeds));
@@ -71,12 +70,12 @@ LedStrip::~LedStrip() {
 #endif
 }
 
-bool LedStrip::Render(bool force) {
+bool LedStrip::Render() {
   // 11 arm leds
   // 10 gps leds
   // 10 battery leds
 
-  if (!force && ::lib::phased_loop::GetCurrentTime() < next_led_write_) {
+  if (::lib::phased_loop::GetCurrentTime() < next_led_write_) {
     return true;
   }
 
@@ -166,12 +165,6 @@ bool LedStrip::Render(bool force) {
       }
     }
     startup_sequence_frame_++;
-  }
-
-  if (blank_) {
-    for (int i = 0; i < kNumberOfLeds; i++) {
-      SetLed(i, 0, 0, 0);
-    }
   }
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT

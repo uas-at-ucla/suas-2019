@@ -4,7 +4,7 @@ import { withScriptjs, withGoogleMap, GoogleMap } from 'react-google-maps';
 import './GoogleMap.css';
 import downloadToBrowser from 'utils/downloadToBrowser';
 
-// UNCOMMENT TO USE MAPS OFFLINE (1/2)
+// UNCOMMENT TO USE MAPS OFFLINE
 // import 'google_maps_js_api';
 var google;
 
@@ -14,14 +14,13 @@ function getCustomTilesMapType() {
       if (coord.y >= 0) {
         let url = null;
         try {
-          // UNCOMMENT TO USE MAPS OFFLINE (2/2)
+          // UNCOMMENT TO USE MAPS OFFLINE
           // url = require(`google_maps_js_api/map_images/${zoom}/mag-${zoom}_x-${coord.x}_y-${coord.y}.jpg`);
           if (!url) {
             throw new Error();
           }
         } catch(e) {
-          // Note: 'v=844' may need to be updated to a new number from time to time.
-          url = `https://khms0.googleapis.com/kh?v=844&hl=en-US&x=${coord.x}&y=${coord.y}&z=${zoom}`;
+          url = `https://khms0.googleapis.com/kh?v=821&hl=en-US&x=${coord.x}&y=${coord.y}&z=${zoom}`;
         }
   
         // UNCOMMENT TO TEST:

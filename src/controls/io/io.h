@@ -1,6 +1,5 @@
 #pragma once
 
-#include <atomic>
 #include <functional>
 #include <string>
 #include <thread>
@@ -29,30 +28,17 @@ namespace src {
 namespace controls {
 namespace io {
 namespace {
-// WiringPi GPIO identifiers
 static const int kAlarmGPIOPin = 0;
-
-// Pigpio GPIO identifiers (same as BCM)
-static const int kDeploymentMotorReverseGPIOPin = 11;
-static const int kDeploymentHotwireGPIOPin = 9;
+static const int kDeploymentGPIOPin = 2;
 static const int kGimbalGPIOPin = 23;
-static const int kDeploymentLatchServoGPIOPin = 24;
-static const int kDeploymentMotorGPIOPin = 27;
 
-static const int kPpmMiddleSignal = 1500;
+static const int kGimbalMiddlePpmSignal = 1500;
 
-static const int kDeploymentServoClosed = 1000;
-static const int kDeploymentServoOpen = 1600;
-
-// Actuator RC channels.
 static const int kAlarmOverrideRcChannel = 7;
-static const int kDeploymentMotorRcChannel = 8;
-static const int kGimbalMotorRcChannel = 9;
-
 static const int kAlarmOverrideRcSignalThreshold = 1800;
 
 static const int kWriterPhasedLoopFrequency = 250;
-static const double kRcInTimeGap = 1.0 / 5;
+static const double kAlarmOverrideTimeGap = 1.0 / 10;
 
 static const int kSensorsPublisherRate = 50;
 static const double kSensorsPublisherPeriod = 1.0 / kSensorsPublisherRate;
@@ -73,7 +59,6 @@ static const ::std::string kRosImuTopic = "/mavros/imu/data";
 class IO {
  public:
   IO();
-  void Quit(int sig);
 
  private:
   void WriterThread();
@@ -86,20 +71,16 @@ class IO {
   void ImuReceived(const ::sensor_msgs::Imu imu);
 
   ::lib::alarm::Alarm alarm_;
-  ::src::controls::io::led_strip::LedStrip led_strip_;
+
+  led_strip::LedStrip led_strip_;
 
   ros_to_proto::RosToProto ros_to_proto_;
   double next_sensors_write_;
 
   bool should_override_alarm_;
-  double last_rc_in_;
-
-  double deployment_motor_setpoint_;
-  double gimbal_setpoint_;
-  double deployment_servo_setpoint_;
+  double last_alarm_override_;
 
   bool did_arm_;
-  ::std::atomic<bool> running_;
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Publisher sensors_publisher_;

@@ -1,0 +1,15 @@
+cc_library(
+  name = 'drone2state_visitor',
+  visibility = ['//visibility:public'],
+  srcs = [
+    'drone2state_visitor.cc'
+  ],
+  hdrs = [
+    'drone2state_visitor.hh'
+  ],
+  deps = [
+    '//src/controls/ground_controls/timeline/drone_state_machine:drone_state_machine',
+    '//src/controls/ground_controls/timeline:timeline_grammar_cc'
+  ]
+)
+

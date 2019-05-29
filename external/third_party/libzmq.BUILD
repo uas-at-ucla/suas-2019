@@ -13,5 +13,8 @@ cc_library(
   includes = [
     'include',
     'src',
-  ]
+  ],
+  copts = [
+    '-Wno-macro-redefined'
+  ],
 )

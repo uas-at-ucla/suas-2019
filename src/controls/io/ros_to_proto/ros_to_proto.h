@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cmath>
 #include <limits>
 #include <map>
 #include <mutex>
@@ -10,12 +9,8 @@
 #include <ros/ros.h>
 
 #include <diagnostic_msgs/DiagnosticArray.h>
-#include <diagnostic_msgs/DiagnosticStatus.h>
-#include <diagnostic_msgs/KeyValue.h>
-#include <geometry_msgs/Quaternion.h>
 #include <geometry_msgs/TwistStamped.h>
 #include <google/protobuf/text_format.h>
-#include <mavros_msgs/Altitude.h>
 #include <mavros_msgs/CommandBool.h>
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/State.h>
@@ -39,7 +34,8 @@ static const double kRosReceiveTolerance = 1.5;
 static const int kRosMessageQueueSize = 1;
 static const ::std::string kRosGlobalPositionTopic =
     "/mavros/global_position/global";
-static const ::std::string kRosAltitudeTopic = "/mavros/altitude";
+static const ::std::string kRosRelativeAltitudeTopic =
+    "/mavros/global_position/rel_alt";
 static const ::std::string kRosCompassHeadingTopic =
     "/mavros/global_position/compass_hdg";
 static const ::std::string kRosVelocityTopic =
@@ -63,7 +59,7 @@ class RosToProto {
 
  private:
   void GlobalPositionReceived(const ::sensor_msgs::NavSatFix global_position);
-  void AltitudeReceived(const ::mavros_msgs::Altitude altitude);
+  void RelativeAltitudeReceived(const ::std_msgs::Float64 relative_altitude);
   void CompassHeadingReceived(const ::std_msgs::Float64 compass_heading);
   void VelocityReceived(const ::geometry_msgs::TwistStamped velocity);
   void VfrHudReceived(::mavros_msgs::VFR_HUD vfr_hud);
@@ -81,7 +77,7 @@ class RosToProto {
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber global_position_subscriber_;
-  ::ros::Subscriber altitude_subscriber_;
+  ::ros::Subscriber relative_altitude_subscriber_;
   ::ros::Subscriber compass_heading_subscriber_;
   ::ros::Subscriber velocity_subscriber_;
   ::ros::Subscriber vfr_hud_subscriber_;
@@ -92,9 +88,6 @@ class RosToProto {
 
   ::ros::ServiceClient arming_service_;
 };
-
-void toEulerAngle(const ::geometry_msgs::Quaternion &q, double &roll,
-                  double &pitch, double &yaw);
 
 } // namespace ros_to_proto
 } // namespace io

@@ -8,7 +8,4 @@ cc_library(
   deps = [
     '@libzmq//:libzmq',
   ],
-  copts = [
-    '-DZMQ_BUILD_DRAFT_API=1',
-  ],
 )

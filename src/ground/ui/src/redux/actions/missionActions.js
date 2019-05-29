@@ -4,7 +4,7 @@ import { createMessage } from 'protobuf/timelineGrammarUtil';
 export default {
   centerMapOnCommand: (cmd, protoInfo) => {
     for (let locationField of protoInfo.locationFields) {
-      let location = cmd[cmd.name][locationField];
+      let location = cmd[cmd.type][locationField];
       if (location) {
         return {
           type: 'CENTER_ON_COMMAND',
@@ -26,16 +26,16 @@ export default {
       payload: { id: cmd.id }
     }
   },
-  addCommand: (name, options, protoInfo) => {
+  addCommand: (type, options, protoInfo) => {
     return {
       type: 'ADD_COMMAND',
-      payload: createCommand(name, options, protoInfo)
+      payload: createCommand(type, options, protoInfo)
     }
   },
   addWaypointCommand: (options, protoInfo) => {
     return {
       type: 'ADD_COMMAND',
-      payload: createCommand('waypoint_command', options, protoInfo)
+      payload: createCommand('WaypointCommand', options, protoInfo)
     }
   },
   deleteCommand: (index) => {
@@ -53,13 +53,13 @@ export default {
       }
     }
   },
-  changeCommandType: (index, oldCommand, newName, protoInfo) => {
-    setLocationFields(oldCommand[oldCommand.name], protoInfo);
+  changeCommandType: (index, oldCommand, newType, protoInfo) => {
+    setLocationFields(oldCommand[oldCommand.type], protoInfo);
     return {
       type: 'CHANGE_COMMAND_TYPE',
       payload: {
         index: index,
-        newCommand: createCommand(newName, oldCommand[oldCommand.name], protoInfo)
+        newCommand: createCommand(newType, oldCommand[oldCommand.type], protoInfo)
       }
     }
   },
@@ -91,12 +91,10 @@ export default {
   }
 }
 
-function createCommand(name, options, protoInfo) {
+function createCommand(type, options, protoInfo) {
   let command = {};
-  let type = protoInfo.timelineGrammar.GroundCommand.fields[name].type;
-  command[name] = createMissionObject(type, options, protoInfo);
+  command[type] = createMissionObject(type, options, protoInfo);
   command.type = type;             // not part of protobuf, but helpful info
-  command.name = name;             // not part of protobuf, but helpful info
   command.id = shortid.generate(); // not part of protobuf, but helpful info
   createMessage('GroundCommand', command); // Verify that object correctly represents protobuf
   return command;

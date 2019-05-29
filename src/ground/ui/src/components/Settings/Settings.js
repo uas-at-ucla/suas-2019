@@ -2,7 +2,7 @@ import React, { Component } from "react";
 import { connect } from "react-redux";
 import {
   Button, Container, Row, Col,
-  InputGroup, InputGroupAddon, Input,
+  InputGroup, InputGroupAddon, InputGroupText, Input,
   InputGroupButtonDropdown, DropdownToggle, DropdownMenu, DropdownItem
 } from "reactstrap";
 import { Marker } from "react-google-maps";
@@ -11,8 +11,6 @@ import "./Settings.css";
 import GoogleMap from "components/utils/GoogleMap/GoogleMap";
 import UasLogo from "components/utils/UasLogo/UasLogo";
 import settingsActions from "redux/actions/settingsActions";
-
-const defaultMapCenter = {lat: 34.0689, lng: -118.4452};
 
 const mapStateToProps = state => {
   return {
@@ -53,22 +51,13 @@ class Settings extends Component {
     this.props.connectToInterop(
       this.props.settings.interopIp,
       this.props.settings.interopUsername,
-      this.props.settings.interopPassword,
-      this.props.settings.interopMissionId
+      this.props.settings.interopPassword
     );
   };
 
   connectToGndServer = () => {
     this.props.connectToGndServer();
   };
-
-  configureTrackyPos = () => {
-    this.props.configureTrackyPos(this.props.settings.antennaPos);
-  }
-
-  configureUgvDest = () => {
-    this.props.configureUgvDest(this.props.settings.antennaPos); // temporary, but convenient to use the same map
-  }
 
   handleClickedMap = (event) => {
     this.props.updateSettings({ antennaPos: {lat: event.latLng.lat(), lng: event.latLng.lng()} });
@@ -90,7 +79,7 @@ class Settings extends Component {
                 <DropdownToggle caret>Ground Server IP</DropdownToggle>
                 <DropdownMenu data-name="gndServerIp" onClick={this.handleSelect}>
                   <DropdownItem>localhost:8081</DropdownItem>
-                  <DropdownItem>192.168.1.10:8081</DropdownItem>
+                  <DropdownItem>192.168.2.20:8081</DropdownItem>
                 </DropdownMenu>
               </InputGroupButtonDropdown>
               <Input
@@ -106,8 +95,6 @@ class Settings extends Component {
             <Button color="primary" className="connect-btn" onClick={this.connectToGndServer}>
               Connect To Ground Server
             </Button>
-          </Col>
-          <Col className="connect-status">
             <span>Connected to <b>{connectedGroundServer}</b></span>
           </Col>
         </Row>
@@ -135,22 +122,8 @@ class Settings extends Component {
               <Input
                 value={this.props.settings.interopPassword}
                 name="interopPassword"
-                type="password"
-                placeholder="Enter password..."
-                onChange={this.handleChange}
-              />
-            </InputGroup>
-          </Col>
-          <Col>
-            <InputGroup>
-              <InputGroupAddon addonType="prepend">
-                Mission ID
-              </InputGroupAddon>
-              <Input
-                value={this.props.settings.interopMissionId}
-                name="interopMissionId"
                 type="text"
-                placeholder="Provided by the judges"
+                placeholder="Enter password..."
                 onChange={this.handleChange}
               />
             </InputGroup>
@@ -183,8 +156,6 @@ class Settings extends Component {
             <Button color="success" className="connect-btn" onClick={this.connectToInterop}>
               Connect To Interop
             </Button>
-          </Col>
-          <Col className="connect-status">
             <span>Connected to <b>{connectedInteropServer}</b></span>
           </Col>
         </Row>
@@ -207,19 +178,17 @@ class Settings extends Component {
             <p>
               {this.props.settings.antennaPos.lat}° , {this.props.settings.antennaPos.lng}°
             </p>
-            <Button color="success" onClick={this.configureTrackyPos}>Send Position!</Button>
-            <Button color="danger" onClick={this.configureUgvDest}><b>UGV</b> Target!</Button>
             <div style={{ height: "350px", width: "500px" }}>
               <GoogleMap
                 defaultZoom={17}
                 center={
                   /*if*/ this.props.interopData ? 
                     {
-                      lat: this.props.interopData.mission.airDropPos.latitude,
-                      lng: this.props.interopData.mission.airDropPos.longitude
+                      lat: this.props.interopData.mission.home_pos.latitude,
+                      lng: this.props.interopData.mission.home_pos.longitude
                     } 
                   /*else*/: 
-                    defaultMapCenter
+                    {lat: 34.0689, lng: -118.4452}
                 }
                 defaultMapTypeId="customTiles"
                 defaultOptions={{

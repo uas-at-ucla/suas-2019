@@ -1,5 +1,5 @@
 const socketIOClient = require('socket.io-client');
-const config = require('../../config');
+const config = require('../config');
 
 const port = 8081;
 
@@ -7,7 +7,7 @@ const socket = socketIOClient('http://localhost:'+port+'/fake-drone', { transpor
 
 const telemetry = require('./test_telemetry.json');
 
-const sleepTime = 1000 / 50; // 50 Hz
+const sleepTime = 1000 / config.droneSensorsFrequency;
 let i = 0;
 setInterval(() => {
   socket.emit('TELEMETRY', telemetry[i]);

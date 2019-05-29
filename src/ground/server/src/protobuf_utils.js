@@ -18,39 +18,28 @@ class ProtobufUtils {
   // Goal;
   // Output;
 
-  constructor(timelineRoot, telemetryRoot, ugvRoot) {
+  constructor(timelineRoot, telemetryRoot) {
     this.GroundProgram = timelineRoot.lookupType("src.controls.ground_controls.timeline.GroundProgram");
     this.Sensors = telemetryRoot.lookupType("src.controls.Sensors");
     this.Goal = telemetryRoot.lookupType("src.controls.Goal");
     this.Output = telemetryRoot.lookupType("src.controls.Output");
-    this.UGV_Message = ugvRoot.lookupType("ugv.messages.UGV_Message");
   }
 
-  makeGroundProgram(commands, interopData) {
+  makeGroundProgram(commands, missionAndObstacles) {
     let obstacles_proto = []
     let fieldBoundary_proto = []
-    if (interopData) {
-      for (let obstacle of interopData.mission.stationaryObstacles) {
+    if (missionAndObstacles) {
+      for (let obstacle of missionAndObstacles.obstacles.stationary_obstacles) {
         obstacles_proto.push({
           location: {
             latitude: obstacle.latitude,
             longitude: obstacle.longitude
           },
-          cylinder_radius: obstacle.radius,
-          cylinder_height: obstacle.height
+          cylinderRadius: obstacle.cylinder_radius,
+          cylinderHeight: obstacle.cylinder_height
         });
       }
-
-      let maxArea = -1;
-      let mainFlyZone = null;
-      for (let flyZone of interopData.mission.flyZones) {
-        let area = polygonArea(flyZone.boundaryPoints);
-        if (area > maxArea) {
-          maxArea = area;
-          mainFlyZone = flyZone;
-        }
-      }
-      for (let point of mainFlyZone.boundaryPoints) {
+      for (let point of missionAndObstacles.mission.fly_zones[0].boundary_pts) {
         fieldBoundary_proto.push({
           latitude: point.latitude,
           longitude: point.longitude
@@ -59,17 +48,13 @@ class ProtobufUtils {
     }
     return {
       commands: commands,
-      static_obstacles: obstacles_proto,
-      field_boundary: fieldBoundary_proto
+      staticObstacles: obstacles_proto,
+      fieldBoundary: fieldBoundary_proto
     }
   }
 
   encodeGroundProgram(message) {
     return ProtobufUtils.encode(this.GroundProgram, message);
-  }
-
-  decodeUGV_Message(message) {
-    return ProtobufUtils.decode(this.UGV_Message, message);
   }
 
   decodeSensors(message) {
@@ -117,46 +102,20 @@ class ProtobufUtils {
     if (errMsg) {
       throw Error(errMsg);
     }
-    // console.log(Type.decode(ProtobufUtils.decodeBase64(ProtobufUtils.encodeBase64(Type.encode(Type.create(message)).finish()))));
     return ProtobufUtils.encodeBase64(Type.encode(message).finish());
   }
 }
 
 module.exports = (callback) => {
-  process.chdir("../../..");
-  let timelineRoot = new protobuf.Root();
-  timelineRoot.load("src/controls/ground_controls/timeline/timeline_grammar.proto", {keepCase: true}, (err) => {
+  process.chdir("../../..")
+  protobuf.load("src/controls/ground_controls/timeline/timeline_grammar.proto", (err, timelineRoot) => {
     if (err) throw err;
 
-    let telemetryRoot = new protobuf.Root();
-    telemetryRoot.load("src/controls/messages.proto", {keepCase: true}, (err) => {
+    protobuf.load("src/controls/messages.proto", (err, telemetryRoot) => {
       if (err) throw err;
 
-      process.chdir("src/ground/server/src/ugv");
-      let ugvRoot = new protobuf.Root();
-      ugvRoot.load("messages.proto", {keepCase: true}, (err) => {
-        if (err) throw err;
-  
-        callback(new ProtobufUtils(timelineRoot, telemetryRoot, ugvRoot));
-      });
+      callback(new ProtobufUtils(timelineRoot, telemetryRoot));
     });
   });
 }
 
-
-function shoelace(vertices) {
-  // The shoelace formula determines the area of a polygon
-  let area = 0;
-
-  for (let i = 0; i < vertices.length; i++) {
-    let j = (i + 1) % vertices.length;
-    area += vertices[i].longitude * vertices[j].latitude;
-    area -= vertices[j].longitude * vertices[i].latitude;
-  }
-
-  return area;
-}
-
-function polygonArea(vertices) {
-  return Math.abs(shoelace(vertices));
-}

@@ -6,7 +6,7 @@ export default {
     };
   },
 
-  connectToInterop: function(ip, username, password, missionId) {
+  connectToInterop: function(ip, username, password) {
     return {
       type: 'TRANSMIT',
       payload: {
@@ -14,8 +14,7 @@ export default {
         data: {
           ip: ip,
           username: username,
-          password: password,
-          missionId: missionId
+          password: password
         }
       }
     };
@@ -23,26 +22,6 @@ export default {
 
   connectToGndServer: function() {
     return { type: 'CONNECT_TO_GND_SERVER' };
-  },
-
-  configureTrackyPos: function(pos) {
-    return { 
-      type: 'TRANSMIT', 
-      payload: {
-        msg: 'CONFIGURE_TRACKY_POS',
-        data: pos
-      }
-    };
-  },
-
-  configureUgvDest: function(pos) {
-    return { 
-      type: 'TRANSMIT', 
-      payload: {
-        msg: 'SET_UGV_TARGET',
-        data: pos
-      }
-    };
   },
 
   logReduxState: function() {

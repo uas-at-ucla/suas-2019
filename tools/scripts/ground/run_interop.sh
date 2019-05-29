@@ -49,6 +49,6 @@ docker run \
   -t \
   -p 8000:80 \
   --net uas_bridge \
-  --ip 192.168.1.30 \
+  --ip 192.168.2.30 \
   --name uas-at-ucla_interop-server \
   auvsisuas/interop-server

@@ -15,38 +15,43 @@ const mapStateToProps = state => {
 const mapDispatchToProps = droneActions;
 
 class DroneActions extends Component {
-  state = {
+  constructor(props) {
+    super(props);
+  this.state = {
     modal: false,
     message: ""
   };
+  this.toggle = this.toggle.bind(this);
+  this.toggleWithName = this.toggleWithName.bind(this);
+  }
   
-  toggle = () => {
+  toggle() {
     this.setState(prevState => ({
       modal: !prevState.modal
     }));
   }
 
-  toggleWithName = (message) => {
-    this.setState({ message: message, modal: !this.state.modal });
+  toggleWithName(message){
+    this.setState({message: message });
+    this.toggle();
   }
 
-  doAction = () => {
-    switch (this.state.message)
+  doAction(action){
+    switch (action)
     { 
-      case "Run Mission" : this.runMission();
-      break;
-      case "Takeoff" : this.props.droneTakeoff();
-      break;
-      case "Land" : this.props.droneLand();
-      break;
-      case "Failsafe Landing": this.props.droneFailsafe();
-      break;
-      case "Throttle Cut":  this.props.droneThrottleCut();
-      break; 
-      case "Drive UGV":  this.props.driveUgv();
-      break; 
+     case "Run Mission" : this.runMission();
+     break;
+     case "Takeoff" : this.props.droneTakeoff();
+     break;
+     case "Land" : this.props.droneLand();
+     break;
+     case "Failsafe Landing": this.props.droneFailsafe();
+     break;
+     case "Throttle Cut":  this.props.droneThrottleCut();
+     break; 
+     default: this.props.droneLand();
+     break; 
     }
-    this.toggle();
   }
 
   render() {
@@ -59,14 +64,13 @@ class DroneActions extends Component {
           <button id="landButton" onClick={()=>this.toggleWithName("Land")}>Land</button>
           <button id="failsafeButton" onClick={()=>this.toggleWithName("Failsafe Landing")}>Failsafe Landing</button>
           <button id="throttleCutButton" onClick={()=>this.toggleWithName("Throttle Cut")}>Throttle Cut</button>
-          <button id="takeoffButton" onClick={()=>this.toggleWithName("Drive UGV")}>Drive UGV</button>
           <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
           <ModalHeader toggle={this.toggle}>WARNING</ModalHeader>
           <ModalBody>
             Are you sure you want to {message}?
           </ModalBody>
           <ModalFooter>
-            <Button color="primary" onClick={this.doAction}>{message}</Button>
+            <Button color="primary" onClick={this.toggle}>{message}</Button>{' '}
             <Button color="secondary" onClick={this.toggle}>Cancel</Button>
           </ModalFooter>
         </Modal>
@@ -74,6 +78,7 @@ class DroneActions extends Component {
       </span>
     );
   }
+
 
   runMission = () => {
     this.props.runMission(this.props.missionCommands);

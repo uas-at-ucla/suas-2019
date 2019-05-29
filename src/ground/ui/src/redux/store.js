@@ -9,6 +9,7 @@ import telemetryReducer from './reducers/telemetryReducer';
 import missionReducer from './reducers/missionReducer';
 import settingsReducer from './reducers/settingsReducer';
 
+import telemetrySelector from './selectors/telemetrySelector';
 import missionSelector from './selectors/missionSelector';
 
 const reducer = combineReducers({
@@ -18,6 +19,7 @@ const reducer = combineReducers({
 });
 
 export const selector = createStructuredSelector({
+  telemetry: telemetrySelector,
   mission: missionSelector
 });
 

@@ -14,8 +14,6 @@ int main(int argc, char **argv) {
   // Serial device test
   ::lib::serial_device::SerialDevice<::src::controls::UasMessage> rfd900(
       "/dev/ttyUSB0", B57600, 0);
-  ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage> udp(
-      "tcp://127.0.0.1:5555", 1);
 
   // ::ros::Rate loop(30);
 
@@ -43,7 +41,7 @@ int main(int argc, char **argv) {
 
   rfd900.Quit();
   */
-  /*
+
   ::src::controls::ground_controls::GroundControls ground_controls;
   ::std::thread rfd900_thread(
       &::src::controls::ground_controls::GroundControls::ReadRFD900,
@@ -51,14 +49,6 @@ int main(int argc, char **argv) {
   ::ros::spin();
   ground_controls.running_ = false;
   rfd900_thread.join();
-  */
-  ::src::controls::ground_controls::GroundControls ground_controls;
-  ::std::thread udp_thread(
-      &::src::controls::ground_controls::GroundControls::ReadUDP,
-      &ground_controls);
-  ::ros::spin();
-  ground_controls.running_ = false;
-  udp_thread.join();
 
   // while (true) {
   //   if (!::ros::ok()) {

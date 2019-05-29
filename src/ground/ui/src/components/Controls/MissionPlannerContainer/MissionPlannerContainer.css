@@ -88,22 +88,12 @@
 
 .MissionPlanner .command-index {
   width: 2em;
+  padding: 4px;
+  border: 1px solid dimgray;
 }
 
 .MissionPlanner .command-type {
   width: 6em;
-}
-
-.MissionPlanner .delete-btn {
-  line-height: 15px;
-}
-
-.MissionPlanner .delete-btn > .fa {
-  vertical-align: middle;
-  pointer-events: none;
-}
-
-.MissionPlanner .command-header {
   padding: 4px;
   border: 1px solid dimgray;
 }

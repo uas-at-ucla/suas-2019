@@ -150,9 +150,8 @@ docker run                          \
   --cap-add=SYS_PTRACE              \
   --security-opt seccomp=unconfined \
   --net uas_bridge                  \
-  --ip 192.168.1.20                 \
+  --ip 192.168.2.21                 \
   -v $ROOT_PATH:/home/uas/code_env  \
-  -v ~/.ssh:/home/uas/.ssh          \
   -e DISPLAY=$DISPLAY               \
   -v /tmp/.X11-unix:/tmp/.X11-unix  \
   --privileged                      \
