@@ -144,7 +144,7 @@ void IO::WriterThread() {
       deployment_servo_setpoint_ = kDeploymentServoOpen;
       hotwire_setpoint = true;
 
-      (void) last_should_alarm;
+      (void)last_should_alarm;
       // if (last_should_alarm != should_override_alarm_) {
       //   fly_start_time = ::lib::phased_loop::GetCurrentTime();
       //   did_arm = false;
