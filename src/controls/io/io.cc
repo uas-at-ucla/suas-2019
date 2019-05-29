@@ -18,7 +18,6 @@ IO::IO() :
     deployment_motor_setpoint_(0.0),
     gimbal_setpoint_(0.0),
     deployment_servo_setpoint_(kDeploymentServoClosed),
-    did_arm_(false),
     running_(true),
     sensors_publisher_(ros_node_handle_.advertise<::src::controls::Sensors>(
         kRosSensorsTopic, kRosMessageQueueSize)),
@@ -45,6 +44,11 @@ IO::IO() :
         kRosArmService)),
     takeoff_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandTOL>(
         kRosTakeoffService)),
+    last_arm_(false),
+    last_takeoff_(false),
+    last_land_(false),
+    last_global_position_setpoint_(-std::numeric_limits<double>::infinity()),
+    last_arm_state_(false),
     writer_thread_(&IO::WriterThread, this),
     writer_phased_loop_(kWriterPhasedLoopFrequency) {
 
@@ -140,28 +144,29 @@ void IO::WriterThread() {
       deployment_servo_setpoint_ = kDeploymentServoOpen;
       hotwire_setpoint = true;
 
-      if (last_should_alarm != should_override_alarm_) {
-        fly_start_time = ::lib::phased_loop::GetCurrentTime();
-        did_arm = false;
-        did_takeoff = false;
-        did_land = false;
-        did_offboard = false;
-        last_msg = ::lib::phased_loop::GetCurrentTime();
-      }
+      (void) last_should_alarm;
+      // if (last_should_alarm != should_override_alarm_) {
+      //   fly_start_time = ::lib::phased_loop::GetCurrentTime();
+      //   did_arm = false;
+      //   did_takeoff = false;
+      //   did_land = false;
+      //   did_offboard = false;
+      //   last_msg = ::lib::phased_loop::GetCurrentTime();
+      // }
 
-      FlyToLocation();
+      // FlyToLocation();
     } else {
-      if (last_should_alarm != should_override_alarm_) {
-        if (did_offboard) {
-          ::mavros_msgs::SetMode srv_setMode;
-          srv_setMode.request.base_mode = 0;
-          srv_setMode.request.custom_mode = "POSCTL";
+      // if (last_should_alarm != should_override_alarm_) {
+      //   if (did_offboard) {
+      //     ::mavros_msgs::SetMode srv_setMode;
+      //     srv_setMode.request.base_mode = 0;
+      //     srv_setMode.request.custom_mode = "POSCTL";
 
-          if (!set_mode_service_.call(srv_setMode)) {
-            ROS_ERROR("Failed SetMode");
-          }
-        }
-      }
+      //     if (!set_mode_service_.call(srv_setMode)) {
+      //       ROS_ERROR("Failed SetMode");
+      //     }
+      //   }
+      // }
 
       deployment_servo_setpoint_ = kDeploymentServoClosed;
     }
@@ -189,17 +194,6 @@ void IO::WriterThread() {
     }
 
     gpio_write(pigpio_, kDeploymentHotwireGPIOPin, hotwire_setpoint ? 1 : 0);
-
-    // static int i = 0;
-    // if(i++ > 500) {
-    //   ::std::cout << "OFF\n";
-    //   if(i > 3000) {
-    //     i = 0;
-    //   }
-    // } else {
-    //   gpio_write(pigpio_, kDeploymentHotwireGPIOPin, 1);
-    //   ::std::cout << "ON\n";
-    // }
 
     set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
                          deployment_servo_setpoint_);
@@ -294,12 +288,12 @@ void IO::BatteryStatusReceived(
 }
 
 void IO::StateReceived(const ::mavros_msgs::State state) {
-  if (state.armed != did_arm_) {
+  if (state.armed != last_arm_state_) {
     ROS_INFO_STREAM("Arming state changed: "
-                    << (did_arm_ ? "ARMED" : "DISARMED") << " -> "
+                    << (last_arm_state_ ? "ARMED" : "DISARMED") << " -> "
                     << (state.armed ? "ARMED" : "DISARMED"));
 
-    did_arm_ = state.armed;
+    last_arm_state_ = state.armed;
   }
 
   led_strip_.set_armed(state.armed);
@@ -310,114 +304,102 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
   led_strip_.set_last_imu(::lib::phased_loop::GetCurrentTime());
 }
 
-void IO::FlyToLocation() {
+// Pixhawk interfacing methods. ////////////////////////////////////////////////
+// Send an arm command to the pixhawk when "arm" has a posedge.
+void IO::PixhawkSendArm(bool arm) {
+  // Only send arm command on posedge.
+  if (arm == last_arm_) {
+    return;
+  }
+  last_arm_ = arm;
+
+  // If arm is false, don't arm.
+  if (!arm) {
+    return;
+  }
+
+  ::mavros_msgs::CommandBool cmd;
+  cmd.request.value = true;
+
+  if (arm_service_.call(cmd)) {
+    ROS_INFO("Arm sent; got success %d", cmd.response.success);
+  } else {
+    ROS_ERROR("Arm failed!");
+  }
+}
+
+// Send a takeoff command to the pixhawk when "takeoff" has a posedge.
+void IO::PixhawkSendTakeoff(bool takeoff) {
+  // Only send takeoff command on posedge.
+  if (takeoff == last_takeoff_) {
+    return;
+  }
+  last_takeoff_ = takeoff;
+
+  // If takeoff is false, don't take off.
+  if (!takeoff) {
+    return;
+  }
+
+  ::mavros_msgs::SetMode cmd;
+  cmd.request.base_mode = 0;
+  cmd.request.custom_mode = kPixhawkCustomModeTakeoff;
+
+  if (!set_mode_service_.call(cmd)) {
+    ROS_INFO("Takeoff sent; got response %d", cmd.response.mode_sent);
+  } else {
+    ROS_ERROR("Takeoff failed!");
+  }
+}
+
+// Send a land command to the pixhawk when "land" has a posedge.
+void IO::PixhawkSendLand(bool land) {
+  // Only send land command on posedge.
+  if (land == last_land_) {
+    return;
+  }
+  last_land_ = land;
+
+  // If land is false, don't take off.
+  if (!land) {
+    return;
+  }
+
+  // Send land command to Pixhawk.
+  ::mavros_msgs::SetMode cmd;
+  cmd.request.base_mode = 0;
+  cmd.request.custom_mode = kPixhawkCustomModeLand;
+
+  if (!set_mode_service_.call(cmd)) {
+    ROS_INFO("Land sent; got response %d", cmd.response.mode_sent);
+  } else {
+    ROS_ERROR("Land failed!");
+  }
+}
+
+void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
+                                      double altitude) {
   double current_time = ::lib::phased_loop::GetCurrentTime();
 
-  // static bool did_set_mode = false;
-  // if(current_time - fly_start_time > 5 && !did_set_mode) {
-  //   ::std::cout << "set guided!" << ::std::endl;
-  //   ::mavros_msgs::SetMode srv_setMode;
-  //   srv_setMode.request.base_mode = 0;
-  //   srv_setMode.request.custom_mode = "GUIDED";
-
-  //   if(set_mode_service_.call(srv_setMode)){
-  //     ROS_ERROR("setmode send ok %d value:", srv_setMode.response.mode_sent);
-  //   }else{
-  //     ROS_ERROR("Failed SetMode");
-  //   }
-
-  //   did_set_mode = true;
-  // }
-
-  // static bool did_set_params = false;
-  // if(current_time - fly_start_time > 10 && !did_set_params) {
-  //   ::std::cout << "arming!" << ::std::endl;
-  //   ::mavros_msgs::ParamSet srv;
-  //   srv.request.value = true;
-
-  //   if(arm_service_.call(srv)){
-  //     ROS_ERROR("ARM send ok %d", srv.response.success);
-  //   }else{
-  //     ROS_ERROR("Failed arming or disarming");
-  //   }
-
-  //   did_set_params = true;
-  // }
-
-  if (current_time - fly_start_time > 1 && !did_arm) {
-    ::std::cout << "arming!" << ::std::endl;
-    ::mavros_msgs::CommandBool srv;
-    srv.request.value = true;
-
-    if (arm_service_.call(srv)) {
-      ROS_ERROR("ARM send ok %d", srv.response.success);
-    } else {
-      ROS_ERROR("Failed arming or disarming");
-    }
-
-    did_arm = true;
+  // Don't send global position setpoint faster than a certain rate.
+  if (current_time - last_global_position_setpoint_ <
+      1.0 / kPixhawkGlobalSetpointMaxHz) {
+    return;
   }
+  last_global_position_setpoint_ = current_time;
 
-  if (current_time - fly_start_time > 5 && !did_takeoff) {
-    ::std::cout << "takeoff!" << ::std::endl;
+  // Send global position setpoint to Pixhawk.
+  ::mavros_msgs::GlobalPositionTarget target;
+  target.header.stamp = ::ros::Time::now();
+  target.latitude = latitude;
+  target.longitude = longitude;
+  target.altitude = altitude;
+  target.yaw = 0;
+  global_position_publisher_.publish(target);
 
-    ::mavros_msgs::SetMode srv_setMode;
-    srv_setMode.request.base_mode = 0;
-    srv_setMode.request.custom_mode = "AUTO.TAKEOFF";
-
-    if (set_mode_service_.call(srv_setMode)) {
-      ROS_ERROR("setmode send ok %d value:", srv_setMode.response.mode_sent);
-    } else {
-      ROS_ERROR("Failed SetMode");
-    }
-
-    did_takeoff = true;
-  }
-
-  // Fly to two waypoints after a certain amount of time.
-  if (current_time - fly_start_time > 15 && current_time - last_msg > 1.0 / 3) {
-    last_msg = current_time;
-
-    ::mavros_msgs::GlobalPositionTarget target;
-    target.header.stamp = ::ros::Time::now();
-
-    if (current_time - fly_start_time > 15 &&
-        current_time - fly_start_time < 45) {
-      ::std::cout << "fly to point #1!" << ::std::endl;
-
-      target.latitude = 34.173044;
-      target.longitude = -118.480953;
-      target.altitude = 10;
-    }
-
-    if (current_time - fly_start_time > 45 &&
-        current_time - fly_start_time < 70) {
-      ::std::cout << "fly to point #2!" << ::std::endl;
-
-      target.latitude = 34.172934;
-      target.longitude = -118.480700;
-      target.altitude = 10;
-    }
-
-    target.yaw = 30;
-    global_position_publisher_.publish(target);
-  }
-
-  if (current_time - fly_start_time > 70 && !did_land) {
-    ::std::cout << "land!" << ::std::endl;
-
-    ::mavros_msgs::SetMode srv_setMode;
-    srv_setMode.request.base_mode = 0;
-    srv_setMode.request.custom_mode = "AUTO.LAND";
-
-    if (set_mode_service_.call(srv_setMode)) {
-      ROS_ERROR("setmode send ok %d value:", srv_setMode.response.mode_sent);
-    } else {
-      ROS_ERROR("Failed SetMode");
-    }
-
-    did_land = true;
-  }
+  ROS_DEBUG("Sending global position setpoint: latitude(%f), longitude(%f), "
+            "altitude(%f)",
+            latitude, longitude, altitude);
 }
 
 } // namespace io

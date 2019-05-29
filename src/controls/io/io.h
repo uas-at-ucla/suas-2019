@@ -67,7 +67,9 @@ static const double kSensorsPublisherPeriod = 1.0 / kSensorsPublisherRate;
 
 static const double kAlarmChirpDuration = 0.005;
 
+// ROS topic parameters.
 static const int kRosMessageQueueSize = 1;
+
 static const ::std::string kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
 static const ::std::string kRosSensorsTopic = "/uasatucla/proto/sensors";
 static const ::std::string kRosOutputTopic = "/uasatucla/proto/output";
@@ -76,13 +78,35 @@ static const ::std::string kRosRcInTopic = "/mavros/rc/in";
 static const ::std::string kRosBatteryStatusTopic = "/mavros/battery";
 static const ::std::string kRosStateTopic = "/mavros/state";
 static const ::std::string kRosImuTopic = "/mavros/imu/data";
-
 static const ::std::string kRosGlobalPositionTopic =
     "/mavros/setpoint_position/global";
-
 static const ::std::string kRosSetModeService = "/mavros/set_mode";
 static const ::std::string kRosArmService = "/mavros/cmd/arming";
 static const ::std::string kRosTakeoffService = "/mavros/cmd/takeoff";
+
+// Pixhawk interface parameters.
+static constexpr double kPixhawkGlobalSetpointMaxHz = 10.0;
+
+// Pixhawk custom modes.
+// Documentation: https://dev.px4.io/en/concept/flight_modes.html
+static const ::std::string kPixhawkCustomModeManual = "MANUAL";
+static const ::std::string kPixhawkCustomModeAcro = "ACRO";
+static const ::std::string kPixhawkCustomModeAltitudeControl = "ALTCTL";
+static const ::std::string kPixhawkCustomModePositionControl = "POSCTL";
+static const ::std::string kPixhawkCustomModeOffboard = "OFFBOARD";
+static const ::std::string kPixhawkCustomModeStabilized = "STABILIZED";
+static const ::std::string kPixhawkCustomModeRattitude = "RATTITUDE";
+static const ::std::string kPixhawkCustomModeMission = "AUTO.MISSION";
+static const ::std::string kPixhawkCustomModeLoiter = "AUTO.LOITER";
+static const ::std::string kPixhawkCustomModeReturnToLand = "AUTO.RTL";
+static const ::std::string kPixhawkCustomModeLand = "AUTO.LAND";
+static const ::std::string kPixhawkCustomModeReturnToGroundStation =
+    "AUTO.RTGS";
+static const ::std::string kPixhawkCustomModeAutoReady = "AUTO.READY";
+static const ::std::string kPixhawkCustomModeTakeoff = "AUTO.TAKEOFF";
+static const ::std::string kPixhawkCustomModeFollowTarget =
+    "AUTO.FOLLOW_TARGET";
+static const ::std::string kPixhawkCustomModePrecland = "AUTO.PRECLAND";
 
 } // namespace
 
@@ -114,9 +138,11 @@ class IO {
   double gimbal_setpoint_;
   double deployment_servo_setpoint_;
 
-  bool did_arm_;
-
-  void FlyToLocation();
+  void PixhawkSendArm(bool arm);
+  void PixhawkSendTakeoff(bool takeoff);
+  void PixhawkSendLand(bool land);
+  void PixhawkSetGlobalPositionGoal(double latitude, double longitude,
+                                    double altitude);
 
   ::std::atomic<bool> running_;
 
@@ -135,12 +161,12 @@ class IO {
   ::ros::ServiceClient arm_service_;
   ::ros::ServiceClient takeoff_service_;
 
-  double fly_start_time;
-  bool did_arm;
-  bool did_takeoff;
-  bool did_land;
-  bool did_offboard;
-  double last_msg;
+  bool last_arm_;
+  bool last_takeoff_;
+  bool last_land_;
+  double last_global_position_setpoint_;
+
+  bool last_arm_state_;
 
 #ifdef UAS_AT_UCLA_DEPLOYMENT
   int pigpio_;
