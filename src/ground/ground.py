@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 import argparse
@@ -8,42 +10,52 @@ sys.dont_write_bytecode = True
 sys.path.insert(0, 'tools')
 import npm_install
 
-def build():
+def build_server():
     os.chdir("server")
     npm_install.npm_install()
     os.chdir("..")
 
+def build_ui():
     os.chdir("ui")
     npm_install.npm_install()
     os.chdir("..")
 
+def build():
+    build_server()
+    build_ui()
     print("done building")
 
 def run_all(args):
+    build()
     # run all-web (w/o Electron) if web option specified. Otherwise, run start (w/ Electron).
     subprocess.call(["npm", "run", "all"+args.web], cwd="server")
 
 def run_server(args):
+    build_server()
     subprocess.call(["npm", "run", "start"], cwd="server")
 
 def run_ui(args):
+    build_ui()
     # run start-web (w/o Electron) if web option specified. Otherwise, run start (w/ Electron).
     subprocess.call(["npm", "run", "start"+args.web], cwd="ui")
 
 def deploy_win(args):
+    build_ui()
     subprocess.call(["npm", "run", "package-win"], cwd="ui")
 
 def deploy_mac(args):
+    build_ui()
     subprocess.call(["npm", "run", "package-mac"], cwd="ui")
 
 def deploy_linux(args):
+    build_ui()
     subprocess.call(["npm", "run", "package-linux"], cwd="ui")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(dest='option')
     subparsers.required = True
-    subparsers.add_parser('build').set_defaults(func=lambda args: None) # do nothing
+    subparsers.add_parser('build').set_defaults(func=build)
 
     run_parser = subparsers.add_parser('run')
     run_parser.set_defaults(func=run_all)
@@ -64,5 +76,4 @@ if __name__ == '__main__':
     deploy_linux_parser.set_defaults(func=deploy_linux)
 
     args = parser.parse_args()
-    build() # always build
     args.func(args)

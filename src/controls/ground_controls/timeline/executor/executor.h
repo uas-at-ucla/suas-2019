@@ -11,8 +11,6 @@
 #include <thread>
 #include <vector>
 
-#include "zmq.hpp"
-
 #include <google/protobuf/util/message_differencer.h>
 
 #include "lib/mission_manager/mission_commands.pb.h"

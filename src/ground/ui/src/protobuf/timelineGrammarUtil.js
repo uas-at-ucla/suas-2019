@@ -1,5 +1,6 @@
 const electronRequire = window.require;
 const protobuf = electronRequire ? electronRequire('protobufjs') : null;
+const fs = electronRequire ? electronRequire('fs') : null;
 // Fix import statement in .proto file:
 if (electronRequire) protobuf.Root.prototype.resolvePath = (origin, target) => {
   return target;
@@ -7,7 +8,7 @@ if (electronRequire) protobuf.Root.prototype.resolvePath = (origin, target) => {
 
 //TODO copy .proto files to app when packaging with Electron and use those files when not electron-is-dev
 
-var root = null;
+var root = new protobuf.Root();
 var packageNames = [];
 
 export default function loadTimelineGrammar(dispatch) {
@@ -17,14 +18,13 @@ export default function loadTimelineGrammar(dispatch) {
 
   let prevCwd = window.process.cwd();
   window.process.chdir("../../../");
-  protobuf.load("src/controls/ground_controls/timeline/timeline_grammar.proto", function(err, protoRoot) {
+  
+  root.load("src/controls/ground_controls/timeline/timeline_grammar.proto", {keepCase: true}, function(err) {
     window.process.chdir(prevCwd);
     if (err) {
       throw Error(err);
     }
     
-    root = protoRoot;
-
     // Combine message definitions from the file and imported files
     let timelineGrammar = {}
     for (let file of root.files) {
@@ -46,7 +46,8 @@ export default function loadTimelineGrammar(dispatch) {
     timelineGrammar = JSON.parse(timelineGrammarString);
 
     console.log(timelineGrammar);
-    // console.log(JSON.stringify(timelineGrammar, null, 2)); // use this to update timeline_grammar.proto.json
+    // update timeline_grammar.proto.json when protobuf format has changed
+    if (fs) fs.writeFile("src/protobuf/timeline_grammar.proto.json", JSON.stringify(timelineGrammar, null, 2), (err) => {});
 
     // Send to Redux store
     dispatch({
