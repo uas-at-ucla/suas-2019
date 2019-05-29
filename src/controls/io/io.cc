@@ -391,6 +391,17 @@ void IO::FlyToLocation() {
     target.altitude = drone_program_.commands(0).goto_command().goal().altitude();
     target.yaw = 30;
     global_position_publisher_.publish(target);
+
+    ::std::cout << "setting to offboard!" << ::std::endl;
+    ::mavros_msgs::SetMode srv_setMode;
+    srv_setMode.request.base_mode = 0;
+    srv_setMode.request.custom_mode = "OFFBOARD";
+    if (set_mode_service_.call(srv_setMode)) {
+      ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
+    } else {
+      ROS_ERROR("Failed SetMode");
+    }
+
     // did_mission = true; // when done with mission
   } else { // done with mission
     ::std::cout << "RTL!" << ::std::endl;
