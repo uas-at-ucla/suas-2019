@@ -6,9 +6,10 @@ try {
   ping = require("net-ping"); //might fail since it needs to be compiled specifically on each platform
 } catch(e) {
   console.log(e);
-  console.log("Can't load net-ping. It either did not install succesfully, or it may be installed for the wrong platform. Uninstall it with:");
+  console.log("Can't load net-ping. It either did not install succesfully, or it may be installed for the wrong platform. Uninstall and reinstall on the desired platform with:");
   console.log("    cd src/ground/server");
-  console.log("    npm uninstall net-ping\n");
+  console.log("    npm uninstall net-ping --no-save");
+  console.log("    npm install net-ping\n");
 }
 
 const loadProtobufUtils = require('./src/protobuf_utils');

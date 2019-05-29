@@ -40,6 +40,13 @@ class InteropClient {
             if (this.telemetryCanUpload) {
               this.telemetryCanUpload = false;
               console.log("Failing to upload telemetry!");
+              if (error.response) {
+                console.log("    Response status " + error.response.status);
+              } else if (error.request) {
+                console.log("    No response received");
+              } else {
+                console.log("    Could not make request");
+              }
               this.ui_io.emit('INTEROP_UPLOAD_FAIL');
             }
           });
@@ -79,6 +86,7 @@ class InteropClient {
         heading: telemetry.sensors.heading
       }
       if (!this.intervalHandle) {
+        console.log("Got new telemetry");
         this.intervalHandle = this.setUploadInterval();
       }
     }
