@@ -1,13 +1,16 @@
-from os import listdir, path, system
+import os
+from identify_colors import mask_image
 
-dir = 'images/test2/'
+def test_all_in_dir(dir, out_dir, display=True):
+    for image in os.listdir(dir):
+        name = os.path.splitext(image)[0]
+        extension = os.path.splitext(image)[1]
+        filename = dir + name + extension
+        
+        if (extension == '.jpg'):
+            print(filename)
+            mask_image(filename, out_dir=out_dir, display=display)
 
-for image in listdir(dir):
-    name = path.splitext(image)[0]
-    extension = path.splitext(image)[1]
-    filename = dir + name + extension
-    
-    if (extension == '.jpg'):
-        print(filename)
-        system("python3 identify_colors.py " + filename)
+if __name__ == '__main__':
+    test_all_in_dir('images/test2/', 'output/test2/', False)
 

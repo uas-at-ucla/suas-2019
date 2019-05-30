@@ -29,3 +29,5 @@ def range_lower(hue):
 
 def range_upper(hue):
     return (hue + BIN_SIZE, 255, 255)
+
+

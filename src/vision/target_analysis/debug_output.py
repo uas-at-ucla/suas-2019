@@ -22,4 +22,6 @@ def showContour(img, contour):
     imgContour = cv.drawContours(img.copy(), [contour], 0, (255, 255, 255), 5)[y:y+h, x:x+w]
     cv.imwrite(OUTPUT_PATH + '/contour.png', imgContour)
     cv.imshow('Contour', imgContour)
-    cv.waitKey()
+    cv.waitKey(2000)
+
+

@@ -30,7 +30,6 @@ def extract_target(image):
     mask = np.zeros(image.shape[:2], np.uint8)
     bgdModel = np.zeros((1,65), np.float64)
     fgdModel = np.zeros((1,65), np.float64)
-
     h, w = image.shape[:2]    
     rect = (10, 10, w-60, h-60)
 
@@ -39,7 +38,6 @@ def extract_target(image):
     image = image * applied_mask[:,:, np.newaxis]
     image = cv2.bitwise_and(raw_image, image)
     return image
-
 
 def distance(a, b):
     # 3D distance between two colors
@@ -50,65 +48,63 @@ def name_color(rgb):
     closest_match = min(COLORS, key=lambda x: distance(rgb, x))
     return closest_match[3]
 
+def mask_image(image_path, out_dir='output', display=False):
+    raw_image = cv2.imread(image_path)
+    height, width, _ = np.shape(raw_image)
+    # use a foreground extraction tool to mask everything around the target
+    image = extract_target(raw_image)
+    # save a copy of this stage cause it looks cool
+    masked_image = image
+    # reshape the image to be a simple list of RGB pixels
+    image = image.reshape((height * width, 3))
 
-# START
-parser = argparse.ArgumentParser()
-parser.add_argument("image_path")
-args = parser.parse_args()
+    # pick the three most common colors (one of which will be the black mask)
+    clt = KMeans(n_clusters=3)
+    clt.fit(image)
+    # remove pure black (the mask) from the clusters
+    clt.cluster_centers_ = clt.cluster_centers_.astype(int)
+    clt.cluster_centers_ = clt.cluster_centers_[~np.all(clt.cluster_centers_ == 0, axis=1)]
+    # create a histogram of color frequency
+    histogram = create_histogram(clt)
 
-image_path = args.image_path
-raw_image = cv2.imread(image_path)
-height, width, _ = np.shape(raw_image)
+    # remove the most common color (should be the black mask), but this is kinda jank
+    max_index = np.where(histogram == np.amax(histogram))
+    histogram = np.delete(histogram, max_index)
+    print(histogram)
+    # associate the histogram results with the cluster centers
+    combined = zip(histogram, clt.cluster_centers_)
+    # sort by historgram value (most dominant color)
+    combined = sorted(combined, key=lambda x: x[0])
 
-# use a foreground extraction tool to mask everything around the target
-image = extract_target(raw_image)
-# save a copy of this stage cause it looks cool
-masked_image = image
-# reshape the image to be a simple list of RGB pixels
-image = image.reshape((height * width, 3))
+    for index, rows in enumerate(combined):
+        color = rows[1]
+        red, green, blue = int(color[2]), int(color[1]), int(color[0])
+        rgb = (red, green, blue)
+        name = name_color(rgb)
+        if index:
+            print("Shape Color: {}, {}".format(name, rgb))
+        else:
+            print("Letter Color: {}, {}".format(name, rgb))
 
-# pick the three most common colors (one of which will be the black mask)
-clt = KMeans(n_clusters=3)
-clt.fit(image)
-# remove pure black (the mask) from the clusters
-clt.cluster_centers_ = clt.cluster_centers_.astype(int)
-clt.cluster_centers_ = clt.cluster_centers_[~np.all(clt.cluster_centers_ == 0, axis=1)]
-# create a histogram of color frequency
-histogram = create_histogram(clt)
+    # Really hacky way to save images
+    os.makedirs(out_dir, exist_ok=True)
+    path = os.path.join(out_dir, image_path.split('/')[-1])
+    cv2.imwrite(path, masked_image)
 
-# remove the most common color (should be the black mask), but this is kinda jank
-max_index = np.where(histogram == np.amax(histogram))
-histogram = np.delete(histogram, max_index)
-print(histogram)
-# associate the histogram results with the cluster centers
-combined = zip(histogram, clt.cluster_centers_)
-# sort by historgram value (most dominant color)
-combined = sorted(combined, key=lambda x: x[0])
+    if display:
+        # cv2.namedWindow('img', cv2.WINDOW_NORMAL)
+        cv2.namedWindow('masked', cv2.WINDOW_NORMAL)
+        # cv2.resizeWindow('img', 500, 500)
+        cv2.resizeWindow('masked', 500, 500)
+        # cv2.imshow('img', raw_image)
+        cv2.imshow('masked', masked_image)
+        cv2.waitKey(2000)
 
-for index, rows in enumerate(combined):
-    color = rows[1]
-    red, green, blue = int(color[2]), int(color[1]), int(color[0])
-    rgb = (red, green, blue)
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('image_path')
+    args = parser.parse_args()
 
-    name = name_color(rgb)
-    if index:
-        print("Shape Color: {}, {}".format(name, rgb))
-    else:
-        print("Letter Color: {}, {}".format(name, rgb))
-
-# Really hacky way to save images
-os.makedirs('output', exist_ok=True)
-path = os.path.join('output', image_path.split('/')[-1])
-cv2.imwrite(path, masked_image)
-
-# cv2.namedWindow('img', cv2.WINDOW_NORMAL)
-cv2.namedWindow('masked', cv2.WINDOW_NORMAL)
-# cv2.resizeWindow('img', 500, 500)
-cv2.resizeWindow('masked', 500, 500)
-
-# cv2.imshow('img', raw_image)
-cv2.imshow('masked', masked_image)
-cv2.waitKey(2000)
-
-
+    image_path = args.image_path
+    mask_image(image_path, display=True)
 

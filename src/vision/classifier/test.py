@@ -42,7 +42,7 @@ def train_letter_model(nEpochs=10):
                             model_name='letter_model', nEpochs=nEpochs)
     print(letter_model.evaluate(x=x_test, y=y_test))
 
-def train_alt_letter_model(nEpocsh=10):
+def train_alt_letter_model(nEpochs=10):
     letter_model = ic.alt_letter_model()
     print(letter_model)
 
