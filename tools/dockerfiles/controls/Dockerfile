@@ -27,6 +27,7 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
 RUN apt-get update -qq                                                      && \
     apt-get upgrade -y -qq                                                  && \
     apt-get install -y                                                         \
+    bash-completion                                                            \
     bmon                                                                       \
     build-essential                                                            \
     ca-certificates-java                                                       \
@@ -55,6 +56,8 @@ RUN apt-get update -qq                                                      && \
     make                                                                       \
     nmap                                                                       \
     openjdk-11-jdk                                                             \
+    openssh-client                                                             \
+    openssh-server                                                             \
     pkg-config                                                                 \
     protobuf-compiler                                                          \
     python2.7                                                                  \
@@ -91,8 +94,6 @@ RUN usermod -aG sudo uas
 
 # User env setup. ##############################################################
 RUN mkdir /external_libs
-
-RUN apt-get install -y openssh-client openssh-server
 
 USER uas
 RUN mkdir -p /home/uas/code_env
@@ -144,9 +145,8 @@ RUN rm -rf /home/uas/mavlink-router
 # Use a stable version of bazel. ###############################################
 WORKDIR /tmp
 USER root
-RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.22.0/bazel_0.22.0-linux-x86_64.deb > bazel_0.22.0-linux-x86_64.deb
-RUN apt-get install -y bash-completion
-RUN dpkg -i bazel_0.22.0-linux-x86_64.deb
+RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.23.2/bazel_0.23.2-linux-x86_64.deb > bazel_0.23.2-linux-x86_64.deb
+RUN dpkg -i bazel_0.23.2-linux-x86_64.deb
 
 #RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
 

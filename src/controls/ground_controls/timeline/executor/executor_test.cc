@@ -6,7 +6,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace executor {
 namespace testing {
 namespace {
@@ -100,6 +100,6 @@ TEST_F(ExecutorTest, ReachesGoalTest) {
 
 } // namespace testing
 } // namespace executor
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

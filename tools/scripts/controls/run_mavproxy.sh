@@ -3,7 +3,7 @@
 source tools/scripts/docker/start_machine_mac.sh
 
 SIM_IP=""
-DOCKER_IP="192.168.1.20"
+DOCKER_IP="192.168.3.20"
 
 while true
 do

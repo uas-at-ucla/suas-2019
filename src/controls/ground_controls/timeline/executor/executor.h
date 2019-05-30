@@ -25,7 +25,7 @@ using namespace lib::mission_manager;
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace executor {
 
 struct ExecutorOutput {
@@ -78,6 +78,6 @@ class Executor {
 };
 
 } // namespace executor
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

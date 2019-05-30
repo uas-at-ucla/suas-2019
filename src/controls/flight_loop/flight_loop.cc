@@ -2,7 +2,7 @@
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 
 FlightLoop::FlightLoop() :
     running_(false),
@@ -146,6 +146,6 @@ void FlightLoop::LogProtobufMessage(::std::string name,
   // LOG_LINE(output.str());
 }
 
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

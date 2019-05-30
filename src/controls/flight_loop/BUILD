@@ -37,7 +37,7 @@ cc_library(
   ],
   deps = [
     '//src/controls/ground_controls/timeline/executor:executor',
-    '//src/controls/loops/state_machine:state_machine',
+    '//src/controls/flight_loop:flight_state_machine',
     '//src/controls:messages_cpp',
     '//src/controls/io:io_lib',
     '//lib/proto_comms:proto_comms',
@@ -49,5 +49,46 @@ cc_library(
     '@boost//:algorithm',
     "@mavros_msgs//:mavros_msgs",
     "@sensor_msgs//:sensor_msgs",
+  ],
+)
+
+cc_library(
+  name = 'flight_state_machine',
+  visibility = ['//visibility:public'],
+  srcs = [
+    'flight_state_machine.cc',
+  ],
+  hdrs = [
+    'flight_state_machine.h',
+  ],
+  deps = [
+    '//src/controls:messages_cpp',
+
+    '//src/controls/ground_controls/timeline/executor:executor',
+    '//lib/proto_comms:proto_comms',
+    '//lib/physics_structs:physics_structs',
+    '//lib/phased_loop:phased_loop',
+    '//lib/ros:ros',
+    '//lib/alarm:alarm',
+  ],
+)
+
+cc_library(
+  name = 'mission_state_machine',
+  visibility = ['//visibility:public'],
+  srcs = [
+    'mission_state_machine.cc',
+  ],
+  hdrs = [
+    'mission_state_machine.h',
+  ],
+  deps = [
+    '//src/controls:messages_cpp',
+
+    '//src/controls/ground_controls/timeline/executor:executor',
+    '//lib/proto_comms:proto_comms',
+    '//lib/physics_structs:physics_structs',
+    '//lib/phased_loop:phased_loop',
+    '//lib/alarm:alarm',
   ],
 )

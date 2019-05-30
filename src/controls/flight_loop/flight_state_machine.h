@@ -13,6 +13,7 @@
 #include "zmq.hpp"
 #include <boost/algorithm/string.hpp>
 #include <google/protobuf/text_format.h>
+#include <ros/console.h>
 
 #include "lib/alarm/alarm.h"
 #include "lib/mission_manager/mission_commands.pb.h"
@@ -24,8 +25,8 @@
 
 namespace src {
 namespace controls {
-namespace loops {
-namespace state_machine {
+namespace flight_loop {
+namespace flight_state_machine {
 namespace {
 // Time for propellers to spin up before taking off, in seconds.
 static constexpr double kSpinupTime = 2.0;
@@ -191,10 +192,10 @@ class UnknownState : public State {
 };
 
 // State machine router ////////////////////////////////////////////////////////
-class StateMachine {
+class FlightStateMachine {
  public:
-  StateMachine();
-  ~StateMachine();
+  FlightStateMachine();
+  ~FlightStateMachine();
 
   void StateTransition(::src::controls::Output &output);
   bool SafetyStateOverride(::src::controls::Goal &goal,
@@ -211,7 +212,7 @@ class StateMachine {
   UnknownState *unknown_state_;
 };
 
-} // namespace state_machine
-} // namespace loops
+} // namespace flight_state_machine
+} // namespace flight_loop
 } // namespace controls
 } // namespace src

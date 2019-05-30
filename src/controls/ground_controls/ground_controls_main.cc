@@ -52,7 +52,7 @@ int main(int argc, char **argv) {
   ground_controls.running_ = false;
   rfd900_thread.join();
   */
-  ::src::controls::ground_controls::GroundControls ground_controls;
+  ::src::controls::ground_controls::GroundControls ground_controls(argc, argv);
   ::std::thread udp_thread(
       &::src::controls::ground_controls::GroundControls::ReadUDP,
       &ground_controls);

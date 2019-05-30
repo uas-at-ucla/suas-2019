@@ -17,7 +17,7 @@ const loadInteropClient = require('./src/interop_client');
 const config = require('./config');
 
 const server_port = 8081;
-var droneIP = "192.168.1.20";
+var droneIP = config.testing ? "192.168.3.20" : "192.168.1.20";
 const pingInterval = 1000 //ms
 const uiSendFrequency = 5; //Hz
 const trackySendFrequency = 5; //Hz
@@ -52,7 +52,7 @@ if (config.testing) {
   connectToInterop("134.209.2.203:8000", "testuser", "testpass", 2)
     .catch(error => {
       if (fs.existsSync("/.dockerenv")) { // If inside Docker container
-        connectToInterop("192.168.1.30:80", "testuser", "testpass", 2);
+        connectToInterop("192.168.3.30:80", "testuser", "testpass", 2);
       } else {
         connectToInterop("localhost:8000", "testuser", "testpass", 2);
       }
@@ -125,8 +125,13 @@ controls_io.on('connect', (socket) => {
   });
 
   socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
-    console.log("hello");
-    console.log(droneProgram);
+    if (protobufUtils) {
+      ui_io.emit('COMPILED_DRONE_PROGRAM', protobufUtils.decodeDroneProgam(droneProgram));
+    }
+  });
+
+  socket.on('MISSION_COMPILE_ERROR', (droneProgram) => {
+    ui_io.emit('MISSION_COMPILE_ERROR', droneProgram);
   });
 });
 
@@ -182,6 +187,11 @@ ui_io.on('connect', (socket) => {
       console.log("Sending ground program to the drone");
       controls_io.emit('COMPILE_GROUND_PROGRAM', encodedGroundProgram);
     }
+  });
+
+  socket.on('RUN_MISSION', (pos) => {
+    console.log("Running mission!");
+    controls_io.emit('RUN_MISSION', pos);
   });
 
   socket.on('CONNECT_TO_INTEROP', (cred) => {
