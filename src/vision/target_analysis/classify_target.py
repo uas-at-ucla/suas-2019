@@ -3,7 +3,7 @@ import shapely as shapely
 import shapely.geometry as sg
 import numpy as np
 import matplotlib.pyplot as plt
-fig, ax = plt.subplots()
+import time
 
 __all__ = ['classifyShape', 'classifyLetter', 'classifyColor']
 
@@ -14,23 +14,20 @@ class customShape:
         self.name = name
         self.delSym = delSym
 
-def plotcoords(coords, label = None):
+def plotcoords(coords, ax, label = None):
     pts = list(coords)
     x, y = zip(*pts)
     ax.plot(x, y, label = label)
-
 
 def carttopol(x, y):
     r = np.sqrt(x**2 + y**2)
     omega = np.arctan2(y, x)
     return (r, omega)
 
-
 def poltocart(r, omega):
     x = r * np.cos(omega)
     y = r * np.sin(omega)
     return (x, y)
-
 
 def genRegPoly(n, area = 1):
     vert = []
@@ -40,12 +37,10 @@ def genRegPoly(n, area = 1):
 
     poly = sg.Polygon(vert)
     sf = area/(poly.area**0.5)
-
     return shapely.affinity.scale(poly, sf, sf)
 
 # Input: degrees 0-179 on color wheel
 # Output: string indicating which color it is
-
 def classifyColor(hue):
     hue = int(hue)
     cdict = {
@@ -57,33 +52,25 @@ def classifyColor(hue):
         'purple': range(135, 150),
         'magenta': range(150, 173),
     }
-
     while(hue >= 173):
         hue -= 180
     while(hue < -7):
         hue += 180
-
     for color in cdict:
         if hue in cdict[color]:
             return color
-
     return None
 
 # Input: list of lists containing 2 integers (i.e. list of xy-pairs)
 # Output: string indicating which shape it is
-
 # current implementation of classify shape should be able to recognize any shape in any rotation
 #   this also covers classifying letters because letters can be represented as shapes
-
 # uses pyplot to display and show the given contour and the believed shape it matches
-
-def classifyShape(contour):
+def classifyShape(contour, display=False):
     contour = [tuple(point) for point in contour.reshape(-1, 2)]
     shapes = []
-
     for sides in range(3, 10):
         shapes.append(customShape(genRegPoly(sides), str(sides) + '-gon', 360/sides))
-
     # for shape in shapes:
     #     print(shape.name, shape.sides, shape.delSym)
 
@@ -98,23 +85,25 @@ def classifyShape(contour):
             if diff < best:
                 best, b_shape = diff, shape
 
-    plotcoords(mPoly.exterior.coords, 'givenpoly')
-    plotcoords(b_shape.poly.exterior.coords, 'matchedpoly')
+    fig, ax = plt.subplots()
+    plotcoords(mPoly.exterior.coords, ax, label='givenpoly')
+    plotcoords(b_shape.poly.exterior.coords, ax, label='matchedpoly')
     ax.legend(loc='upper left')
     ax.axis('equal')
-    plt.show()
+    if display:
+        plt.show(fig)
     return b_shape.name
 
 # Input: list of lists containing 2 integers (i.e. list of xy-pairs)
 # Output: character indicating which letter it is
-
 def classifyLetter(contour):
     pass
 
-#currently testing using a near square quadrilateral
+# currently testing using a near square quadrilateral
 def main():
     testContour = np.array([[[1, 0]], [[-.1, .9]], [[-1.2, -.1]], [[-.1, -.8]]])
     print(classifyShape(testContour))
+
 
 if __name__ == '__main__':
     main()
