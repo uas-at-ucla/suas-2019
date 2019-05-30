@@ -43,7 +43,8 @@ static const ::std::string kRosAltitudeTopic = "/mavros/altitude";
 static const ::std::string kRosCompassHeadingTopic =
     "/mavros/global_position/compass_hdg";
 static const ::std::string kRosVelocityTopic =
-    "/mavros/local_position/velocity";
+    "/mavros/local_position/velocity_local"; // Note: this is different from the
+                                             // mavros docs!
 static const ::std::string kRosVfrHudTopic = "/mavros/vfr_hud";
 static const ::std::string kRosDiagnosticsTopic = "/diagnostics";
 static const ::std::string kRosImuDataTopic = "/mavros/imu/data";
