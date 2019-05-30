@@ -133,10 +133,10 @@ void IO::WriterThread() {
     // If running in a simulator, trigger the arm/takeoff/land sequence after
     // a certain amount of time.
 #ifndef UAS_AT_UCLA_DEPLOYMENT
-    // static double start = ::lib::phased_loop::GetCurrentTime();
-    // if (::lib::phased_loop::GetCurrentTime() - start > 5) {
-      // should_override_alarm_ = true;
-    // }
+    static double start = ::lib::phased_loop::GetCurrentTime();
+    if (::lib::phased_loop::GetCurrentTime() - start > 5) {
+      should_override_alarm_ = true;
+    }
 #endif
 
     if (should_override_alarm_) {
@@ -364,9 +364,9 @@ void IO::FlyToLocation() {
       target.header.stamp = ::ros::Time::now();
       target.type_mask = ::mavros_msgs::GlobalPositionTarget::IGNORE_VX | ::mavros_msgs::GlobalPositionTarget::IGNORE_VY | ::mavros_msgs::GlobalPositionTarget::IGNORE_VZ | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFX | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFY | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFZ | ::mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE;
       target.coordinate_frame = ::mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_REL_ALT;
-      target.latitude = drone_program_.commands(0).goto_command().goal().latitude();
-      target.longitude = drone_program_.commands(0).goto_command().goal().longitude();
-      target.altitude = drone_program_.commands(0).goto_command().goal().altitude();
+      target.latitude = 38.145424243481784;
+      target.longitude = -76.43065332806395;
+      target.altitude = 50;
       target.yaw = 30;
       global_position_publisher_.publish(target);
 
@@ -386,21 +386,11 @@ void IO::FlyToLocation() {
     target.header.stamp = ::ros::Time::now();
     target.type_mask = ::mavros_msgs::GlobalPositionTarget::IGNORE_VX | ::mavros_msgs::GlobalPositionTarget::IGNORE_VY | ::mavros_msgs::GlobalPositionTarget::IGNORE_VZ | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFX | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFY | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFZ | ::mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE;
     target.coordinate_frame = ::mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_REL_ALT;
-    target.latitude = drone_program_.commands(0).goto_command().goal().latitude();
-    target.longitude = drone_program_.commands(0).goto_command().goal().longitude();
-    target.altitude = drone_program_.commands(0).goto_command().goal().altitude();
+    target.latitude = 38.145424243481784;
+    target.longitude = -76.43065332806395;
+    target.altitude = 50;
     target.yaw = 30;
     global_position_publisher_.publish(target);
-
-    ::std::cout << "setting to offboard!" << ::std::endl;
-    ::mavros_msgs::SetMode srv_setMode;
-    srv_setMode.request.base_mode = 0;
-    srv_setMode.request.custom_mode = "OFFBOARD";
-    if (set_mode_service_.call(srv_setMode)) {
-      ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
-    } else {
-      ROS_ERROR("Failed SetMode");
-    }
 
     // did_mission = true; // when done with mission
   } else { // done with mission
