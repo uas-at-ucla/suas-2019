@@ -140,7 +140,8 @@ class InteropItems extends Component {
           </MapElementWithInfo>
 
           {this.props.interopData.mission.stationaryObstacles.map((obstacle, index) => 
-            <MapElementWithInfo 
+            <MapElementWithInfo
+              key={index}
               Element={Circle} name={`obstacle-${index}`} isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
               options={{
                 strokeColor: '#FF0000',
@@ -160,6 +161,7 @@ class InteropItems extends Component {
 
           {this.props.interopData.mission.waypoints.map((coord, index) => 
             <MapElementWithInfo
+              key={index}
               Element={Marker} name={`waypoint-${index}`} isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
               position={{lat: coord.latitude, lng: coord.longitude }}
               icon={{

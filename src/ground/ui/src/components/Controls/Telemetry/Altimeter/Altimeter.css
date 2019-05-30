@@ -1,24 +1,26 @@
 .Altimeter {
   background: rgba(0, 0, 0, 0.6);
-  height: 250px;
   width: 50px;
+  flex-grow: 1;
   padding: 2px;
+  margin-bottom: 1em;
+  display: flex;
 }
 
 .Altimeter .progress-bars {
   position: relative;
-  height: 100%;
   width: 100%;
+  flex-grow: 1;
 }
 
 .Altimeter .progress-bar {
-  background: rgba(0, 0, 0, 0);
   position: absolute;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0);
   display: flex;
   flex-direction: row;
   align-items: flex-end;
-  height: 100%;
-  width: 100%;
 }
 
 .Altimeter .filler {

@@ -62,7 +62,13 @@ export default function reducer(state=initialState, action) {
       return dotProp.set(state, `commandAnimate.${action.payload.id}`, false);
     }
     case 'COMPILED_DRONE_PROGRAM': {
-      return {...state, missionUploaded: true, droneProgram: action.payload};
+      let droneProgram = action.payload;
+      droneProgram.commands.map((command, index) => {
+        command.name = Object.keys(command)[0];
+        command.type = state.timelineGrammar.DroneCommand.fields[command.name].type;
+        command.id = index;
+      });
+      return {...state, missionUploaded: true, droneProgram: droneProgram};
     }
     default: {
       return state;

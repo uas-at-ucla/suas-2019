@@ -15,6 +15,7 @@ const mapStateToProps = state => {
     commandAnimate: state.mission.commandAnimate,
     mapCenter: state.telemetry.mapCenter,
     commandPoints: derivedData.mission.commandPoints,
+    droneProgramPath: derivedData.mission.droneProgramPath,
     protoInfo: derivedData.mission.protoInfo
   };
 };
@@ -89,19 +90,34 @@ class Map extends Component {
 
             : null
           )}
-                <Polyline
-                 path = {commandPointPolyCoords} strokeOpacity= {1} strokeWeight= {5} 
-                 options = {{
-                  icons: window.google ? [{
-                    icon: {
-                      path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                      strokeColor: '#000000'
-                    },
-                    offset: '100%',
-                    repeat: '200px'
-                  }] : null
-                }}
-                />
+          <Polyline
+            path = {commandPointPolyCoords} strokeOpacity= {1} strokeWeight= {5} 
+            options = {{
+              icons: window.google ? [{
+                icon: {
+                  path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                  strokeColor: '#000000'
+                },
+                offset: '100%',
+                repeat: '200px'
+              }] : null
+            }}
+          />
+
+          <Polyline
+            path={this.props.droneProgramPath} strokeOpacity={1} strokeWeight={5} 
+            options = {{
+              strokeColor: '#3355EE',
+              icons: window.google ? [{
+                icon: {
+                  path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                  strokeColor: '#3355EE'
+                },
+                offset: '100%',
+                repeat: '200px'
+              }] : null
+            }}
+          />
         </GoogleMap>
       </div>
     );
