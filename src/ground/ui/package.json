@@ -5,7 +5,11 @@
   "main": "electron.js",
   "homepage": "./",
   "dependencies": {
-    "electron-is-dev": "^1.0.1"
+    "electron-is-dev": "^1.0.1",
+    "material-ui": "^0.20.2",
+    "react-easy-crop": "^1.11.1",
+    "react-image-crop": "^7.0.2",
+    "react-select": "^2.4.3"
   },
   "devDependencies": {
     "check-dependencies": "^1.1.0",

@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "material-ui": "^0.20.2",
+    "react-easy-crop": "^1.12.0"
+  }
+}
