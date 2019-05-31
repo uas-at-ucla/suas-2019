@@ -94,6 +94,7 @@ void IO::WriterThread() {
                                       ::lib::phased_loop::GetCurrentTime());
     bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
     */
+
     bool should_alarm = alarm_.ShouldAlarm();
     (void)should_alarm;
 
@@ -111,6 +112,8 @@ void IO::WriterThread() {
     WriteAlarm(should_alarm);
     WriteGimbal(gimbal_setpoint_);
     WriteDeployment(deployment_motor_setpoint_, hotwire_setpoint, latch);
+
+    PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 105);
 
     // Write output to LED strip.
     led_strip_.Render(false);
@@ -132,6 +135,7 @@ void IO::WriterThread() {
     //                  << "]");
 
     // Wait until next iteration of loop.
+
     writer_phased_loop_.sleep();
   }
 }
