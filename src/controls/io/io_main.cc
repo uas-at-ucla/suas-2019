@@ -47,7 +47,7 @@ int main(int argc, char **argv) {
 
   ::ros::start();
 
-#ifndef UAS_AT_UCLA_DEPLOYMENT
+#ifndef RASPI_DEPLOYMENT
   // Log more verbose output if running in SITL.
   if (::ros::console::set_logger_level(ROSCONSOLE_DEFAULT_NAME,
                                        ::ros::console::levels::Debug)) {

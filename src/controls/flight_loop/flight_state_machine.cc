@@ -1,11 +1,11 @@
-#include "state_machine.h"
+#include "flight_state_machine.h"
 
 namespace src {
 namespace controls {
 namespace flight_loop {
-namespace state_machine {
+namespace flight_state_machine {
 
-StateMachine::StateMachine() :
+FlightStateMachine::FlightStateMachine() :
     state_(STANDBY),
     unknown_state_(new UnknownState()) {
 
@@ -22,7 +22,7 @@ StateMachine::StateMachine() :
   state_handlers_[FLIGHT_TERMINATION] = new FlightTerminationState();
 }
 
-StateMachine::~StateMachine() {
+FlightStateMachine::~FlightStateMachine() {
   // Delete all state handler instances.
   for (auto const &state_handler_pair : state_handlers_) {
     delete state_handler_pair.second;
@@ -31,9 +31,9 @@ StateMachine::~StateMachine() {
   delete unknown_state_;
 }
 
-void StateMachine::Handle(::src::controls::Sensors &sensors,
-                          ::src::controls::Goal &goal,
-                          ::src::controls::Output &output) {
+void FlightStateMachine::Handle(::src::controls::Sensors &sensors,
+                                ::src::controls::Goal &goal,
+                                ::src::controls::Output &output) {
 
   // Use same state in next loop iteration, unless it is changed.
   output.set_state(state_);
@@ -48,7 +48,7 @@ void StateMachine::Handle(::src::controls::Sensors &sensors,
   StateTransition(output);
 }
 
-void StateMachine::StateTransition(::src::controls::Output &output) {
+void FlightStateMachine::StateTransition(::src::controls::Output &output) {
   // Record the old and new states.
   FlightLoopState old_state = state_;
   FlightLoopState new_state = static_cast<FlightLoopState>(output.state());
@@ -63,15 +63,15 @@ void StateMachine::StateTransition(::src::controls::Output &output) {
   state_ = new_state;
 }
 
-bool StateMachine::SafetyStateOverride(::src::controls::Goal &goal,
-                                       ::src::controls::Output &output) {
+bool FlightStateMachine::SafetyStateOverride(::src::controls::Goal &goal,
+                                             ::src::controls::Output &output) {
   // Prioritize the throttle cut check, so that the drone always cuts throttle
   // instead of following any failsafe commands.
-  if (goal.trigger_throttle_cut()) {
-    // EndFlightTimer();
-    output.set_state(FLIGHT_TERMINATION);
-    return true;
-  }
+  // if (goal.trigger_throttle_cut()) {
+  //   // EndFlightTimer();
+  //   output.set_state(FLIGHT_TERMINATION);
+  //   return true;
+  // }
 
   if (goal.trigger_failsafe()) {
     // EndFlightTimer();
@@ -82,7 +82,7 @@ bool StateMachine::SafetyStateOverride(::src::controls::Goal &goal,
   return false;
 }
 
-State *StateMachine::GetStateHandler(FlightLoopState state) {
+State *FlightStateMachine::GetStateHandler(FlightLoopState state) {
   if (state_handlers_.count(state)) {
     return state_handlers_[state];
   }
@@ -119,29 +119,26 @@ State *StateMachine::GetStateHandler(FlightLoopState state) {
   return "UNKNOWN";
 }
 
-// ArmedState //////////////////////////////////////////////////////////////////
-ArmedState::ArmedState() {}
+// StandbyState ////////////////////////////////////////////////////////////////
+StandbyState::StandbyState() {}
 
-void ArmedState::Handle(::src::controls::Sensors &sensors,
-                        ::src::controls::Goal &goal,
-                        ::src::controls::Output &output) {
-
-  if (!sensors.armed()) {
-    if (goal.run_mission()) {
-      output.set_state(ARMING);
-    } else {
-      output.set_state(STANDBY);
-    }
-
-    return;
-  }
+void StandbyState::Handle(::src::controls::Sensors &sensors,
+                          ::src::controls::Goal &goal,
+                          ::src::controls::Output &output) {
+  (void)sensors;
 
   if (goal.run_mission()) {
-    output.set_state(TAKING_OFF);
+    //  LOG_LINE("Run mission requested; attempting to arm.");
+    output.set_state(ARMING);
   }
+
+  // if (sensors.armed()) {
+  //   //  LOG_LINE("Pixhawk is armed; switching to ARMED state.");
+  //   output.set_state(ARMED);
+  // }
 }
 
-void ArmedState::Reset() {}
+void StandbyState::Reset() {}
 
 // ArmingState /////////////////////////////////////////////////////////////////
 ArmingState::ArmingState() {}
@@ -152,21 +149,19 @@ void ArmingState::Handle(::src::controls::Sensors &sensors,
   (void)goal;
 
   // TODO(comran): Check that throttle is at zero before arming.
+  // TODO(comran): Check if we have GPS.
 
-  // Check if we have GPS.
-  if (sensors.last_gps() < sensors.time() - 0.5) {
-    //  LOG_LINE("can't arm; no GPS "
-    //           << "(last gps: " << sensors.last_gps()
-    //           << " current time: " << sensors.time());
-
-    output.set_state(STANDBY);
+  if (!goal.run_mission()) {
+    output.set_state(LANDING);
+    return;
   }
 
   if (sensors.armed()) {
     output.set_state(ARMED_WAIT_FOR_SPINUP);
+    return;
   }
 
-  output.set_trigger_arm(sensors.time());
+  output.set_trigger_arm(true);
 }
 
 void ArmingState::Reset() {}
@@ -178,15 +173,23 @@ ArmedWaitForSpinupState::ArmedWaitForSpinupState() :
 void ArmedWaitForSpinupState::Handle(::src::controls::Sensors &sensors,
                                      ::src::controls::Goal &goal,
                                      ::src::controls::Output &output) {
-  (void)goal;
+  if (!goal.run_mission()) {
+    output.set_state(LANDING);
+    return;
+  }
 
   // Set initial time if it was not set yet.
   if (start_ == ::std::numeric_limits<double>::infinity()) {
     start_ = sensors.time();
   }
 
+  if (!sensors.armed()) {
+    output.set_state(ARMING);
+    return;
+  }
+
   // Wait a bit for the propellers to spin up while armed.
-  if (sensors.time() - start_ >= kSpinupTime) {
+  if (sensors.time() - start_ > kSpinupTime) {
     output.set_state(ARMED);
   }
 }
@@ -195,51 +198,75 @@ void ArmedWaitForSpinupState::Reset() {
   start_ = ::std::numeric_limits<double>::infinity();
 }
 
-// FailsafeState ///////////////////////////////////////////////////////////////
-FailsafeState::FailsafeState() {}
+// ArmedState //////////////////////////////////////////////////////////////////
+ArmedState::ArmedState() {}
 
-void FailsafeState::Handle(::src::controls::Sensors &sensors,
-                           ::src::controls::Goal &goal,
-                           ::src::controls::Output &output) {
-  (void)sensors;
-  (void)goal;
-  (void)output;
-}
-
-void FailsafeState::Reset() {}
-
-// LandingState ////////////////////////////////////////////////////////////////
-LandingState::LandingState() {}
-
-void LandingState::Handle(::src::controls::Sensors &sensors,
-                          ::src::controls::Goal &goal,
-                          ::src::controls::Output &output) {
-
-  if (!sensors.armed()) {
-    // EndFlightTimer();
-    output.set_state(STANDBY);
+void ArmedState::Handle(::src::controls::Sensors &sensors,
+                        ::src::controls::Goal &goal,
+                        ::src::controls::Output &output) {
+  if (!goal.run_mission()) {
+    output.set_state(LANDING);
     return;
   }
 
-  if (goal.run_mission() && sensors.relative_altitude() > 5.0) {
-    output.set_state(MISSION);
+  if (!sensors.armed()) {
+    output.set_state(ARMING);
+    return;
   }
+
+  output.set_state(TAKING_OFF);
 }
 
-void LandingState::Reset() {}
+void ArmedState::Reset() {}
 
-// FlightTerminationState //////////////////////////////////////////////////////
-FlightTerminationState::FlightTerminationState() {}
+// TakingOffState //////////////////////////////////////////////////////////////
+TakingOffState::TakingOffState() {}
 
-void FlightTerminationState::Handle(::src::controls::Sensors &sensors,
-                                    ::src::controls::Goal &goal,
-                                    ::src::controls::Output &output) {
-  (void)sensors;
-  (void)goal;
-  (void)output;
+void TakingOffState::Handle(::src::controls::Sensors &sensors,
+                            ::src::controls::Goal &goal,
+                            ::src::controls::Output &output) {
+  if (!goal.run_mission()) {
+    output.set_state(LANDING);
+    return;
+  }
+
+  // Arm the drone before performing a takeoff.
+  if (!sensors.armed()) {
+    output.set_state(ARMING);
+    return;
+  }
+
+  // Ensure that the drone reaches a safe altitude before going into the next
+  // state.
+  if (sensors.relative_altitude() > kTakeoffAltitude) {
+    output.set_state(TAKEN_OFF);
+  }
+
+  output.set_trigger_takeoff(true);
 }
 
-void FlightTerminationState::Reset() {}
+void TakingOffState::Reset() {}
+
+// TakenOffState ///////////////////////////////////////////////////////////////
+TakenOffState::TakenOffState() {}
+
+void TakenOffState::Handle(::src::controls::Sensors &sensors,
+                           ::src::controls::Goal &goal,
+                           ::src::controls::Output &output) {
+  if (!goal.run_mission()) {
+    output.set_state(LANDING);
+    return;
+  }
+
+  if (!sensors.armed()) {
+    output.set_state(ARMING);
+    return;
+  }
+
+  output.set_state(MISSION);
+}
+
+void TakenOffState::Reset() {}
 
 // MissionState ////////////////////////////////////////////////////////////////
 MissionState::MissionState() {}
@@ -247,28 +274,41 @@ MissionState::MissionState() {}
 void MissionState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Goal &goal,
                           ::src::controls::Output &output) {
-  (void)goal;
 
-  lib::Position3D position = {sensors.latitude(), sensors.longitude(),
-                              sensors.relative_altitude()};
+  (void)sensors;
 
-  ::Eigen::Vector3d velocity(sensors.velocity_x(), sensors.velocity_y(),
-                             sensors.velocity_z());
-
-  executor::ExecutorOutput executor_output =
-      executor_.Calculate(position, velocity);
-
-  // last_bomb_drop_ =
-  //     executor_output.bomb_drop ? sensors.time() : last_bomb_drop_;
-
-  if (executor_output.alarm) {
-    // alarm_.AddAlert({5.0, 0.50});
+  if (!goal.run_mission()) {
+    output.set_state(SAFETY_PILOT_CONTROL);
+    return;
   }
 
-  output.set_velocity_x(executor_output.flight_velocities.x);
-  output.set_velocity_y(executor_output.flight_velocities.y);
-  output.set_velocity_z(executor_output.flight_velocities.z);
-  output.set_yaw_setpoint(executor_output.yaw);
+  // if (!sensors.armed()) {
+  //   output.set_state(ARMING);
+  //   return;
+  // }
+
+  // TODO(comran): Do mission.
+
+  // lib::Position3D position = {sensors.latitude(), sensors.longitude(),
+  //                             sensors.relative_altitude()};
+
+  // ::Eigen::Vector3d velocity(sensors.velocity_x(), sensors.velocity_y(),
+  //                            sensors.velocity_z());
+
+  // executor::ExecutorOutput executor_output =
+  //     executor_.Calculate(position, velocity);
+
+  // // last_bomb_drop_ =
+  // //     executor_output.bomb_drop ? sensors.time() : last_bomb_drop_;
+
+  // if (executor_output.alarm) {
+  //   // alarm_.AddAlert({5.0, 0.50});
+  // }
+
+  // output.set_velocity_x(executor_output.flight_velocities.x);
+  // output.set_velocity_y(executor_output.flight_velocities.y);
+  // output.set_velocity_z(executor_output.flight_velocities.z);
+  // output.set_yaw_setpoint(executor_output.yaw);
 }
 
 void MissionState::Reset() {}
@@ -286,64 +326,52 @@ void SafetyPilotControlState::Handle(::src::controls::Sensors &sensors,
 
 void SafetyPilotControlState::Reset() {}
 
-// StandbyState ////////////////////////////////////////////////////////////////
-StandbyState::StandbyState() {}
+// LandingState ////////////////////////////////////////////////////////////////
+LandingState::LandingState() {}
 
-void StandbyState::Handle(::src::controls::Sensors &sensors,
+void LandingState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Goal &goal,
                           ::src::controls::Output &output) {
-  if (goal.run_mission()) {
-    //  LOG_LINE("Run mission requested; attempting to arm.");
-    output.set_state(ARMING);
+  (void)goal;
+
+  if (!sensors.armed()) {
+    // EndFlightTimer();
+    output.set_state(STANDBY);
+    return;
   }
 
-  if (sensors.armed()) {
-    //  LOG_LINE("Pixhawk is armed; switching to ARMED state.");
-    output.set_state(ARMED);
-  }
+  // if (goal.run_mission() && sensors.relative_altitude() > 5.0) {
+  //   output.set_state(MISSION);
+  // }
 }
 
-void StandbyState::Reset() {}
+void LandingState::Reset() {}
 
-// TakenOffState ///////////////////////////////////////////////////////////////
-TakenOffState::TakenOffState() {}
+// FailsafeState ///////////////////////////////////////////////////////////////
+FailsafeState::FailsafeState() {}
 
-void TakenOffState::Handle(::src::controls::Sensors &sensors,
+void FailsafeState::Handle(::src::controls::Sensors &sensors,
                            ::src::controls::Goal &goal,
                            ::src::controls::Output &output) {
   (void)sensors;
   (void)goal;
   (void)output;
-
-  if (goal.run_mission()) {
-    output.set_state(ARMED);
-  }
 }
 
-void TakenOffState::Reset() {}
+void FailsafeState::Reset() {}
 
-// TakingOffState //////////////////////////////////////////////////////////////
-TakingOffState::TakingOffState() {}
+// FlightTerminationState //////////////////////////////////////////////////////
+FlightTerminationState::FlightTerminationState() {}
 
-void TakingOffState::Handle(::src::controls::Sensors &sensors,
-                            ::src::controls::Goal &goal,
-                            ::src::controls::Output &output) {
+void FlightTerminationState::Handle(::src::controls::Sensors &sensors,
+                                    ::src::controls::Goal &goal,
+                                    ::src::controls::Output &output) {
+  (void)sensors;
   (void)goal;
-
-  // Arm the drone before performing a takeoff.
-  if (!sensors.armed()) {
-    output.set_state(ARMING);
-    return;
-  }
-
-  // Ensure that the drone reaches a safe altitude before going into the next
-  // state.
-  if (sensors.relative_altitude() > kTakeoffAltitude) {
-    output.set_state(TAKEN_OFF);
-  }
+  (void)output;
 }
 
-void TakingOffState::Reset() {}
+void FlightTerminationState::Reset() {}
 
 // UnknownState ////////////////////////////////////////////////////////////////
 UnknownState::UnknownState() {}
@@ -360,7 +388,7 @@ void UnknownState::Handle(::src::controls::Sensors &sensors,
 
 void UnknownState::Reset() {}
 
-} // namespace state_machine
+} // namespace flight_state_machine
 } // namespace flight_loop
 } // namespace controls
 } // namespace src

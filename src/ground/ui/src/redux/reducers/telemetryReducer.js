@@ -4,7 +4,8 @@ const initialState = {
   droneTelemetry: null,
   playback: false,
   pingDelay: null,
-  mapCenter: { lat: 38.147483, lng: -76.427778 }
+  mapCenter: { lat: 38.147483, lng: -76.427778 },
+  ugvStatus: null
 };
 
 export default function reducer(state=initialState, action) {
@@ -43,15 +44,18 @@ export default function reducer(state=initialState, action) {
     }
     case 'INTEROP_DATA': {
       if (!action.payload) {
-        return null;
+        return state;
       }
       return {
         ...state,
         mapCenter: {
-          lat: action.payload.mission.home_pos.latitude,
-          lng: action.payload.mission.home_pos.longitude
+          lat: action.payload.mission.airDropPos.latitude,
+          lng: action.payload.mission.airDropPos.longitude
         }
       };
+    }
+    case 'UGV_MESSAGE': {
+      return {...state, ugvStatus: action.payload.status};
     }
     default: {
       return state;

@@ -12,6 +12,7 @@ const mapStateToProps = state => {
   return {
     interopData: state.mission.interopData,
     protoInfo: derivedData.mission.protoInfo,
+    mainFlyZone: derivedData.mission.mainFlyZone
   };
 };
 
@@ -21,24 +22,24 @@ const mapDispatchToProps = missionActions;
 class InteropItems extends Component {
   render() {
     if (this.props.interopData) {
-      var boxCenter = this.props.interopData.mission.fly_zones[0].boundary_pts[0];
+      var boxCenter = this.props.mainFlyZone.boundaryPoints[0];
       var boxCoordinates = [
         {lat: boxCenter.latitude+.1, lng: boxCenter.longitude+.1}, 
         {lat: boxCenter.latitude+.1, lng: boxCenter.longitude-.1},
         {lat: boxCenter.latitude-.1, lng: boxCenter.longitude-.1},
         {lat: boxCenter.latitude-.1, lng: boxCenter.longitude+.1}
       ];
-      var boundaryCoordinates = this.props.interopData.mission.fly_zones[0].boundary_pts.map((coord) => {
+      var boundaryCoordinates = this.props.mainFlyZone.boundaryPoints.map((coord) => {
         return {lat: coord.latitude, lng: coord.longitude};
       });
-      if (!polygonIsClockwise(boundaryCoordinates)) {
+      if (!this.props.mainFlyZone.isClockwise) {
         boundaryCoordinates.reverse();
       }
 
       var searchCenterLat = 0;
       var searchCenterLng = 0;
-      var searchNum = this.props.interopData.mission.search_grid_points.length;
-      var searchGridPoints = this.props.interopData.mission.search_grid_points.map((coord) => {
+      var searchNum = this.props.interopData.mission.searchGridPoints.length;
+      var searchGridPoints = this.props.interopData.mission.searchGridPoints.map((coord) => {
         searchCenterLat += coord.latitude;
         searchCenterLng += coord.longitude;
         return {lat: coord.latitude, lng: coord.longitude};
@@ -47,23 +48,18 @@ class InteropItems extends Component {
       searchCenterLat = searchCenterLat/searchNum;
 
       var airDropPos = {
-        lat: this.props.interopData.mission.air_drop_pos.latitude, 
-        lng: this.props.interopData.mission.air_drop_pos.longitude
-      };
-
-      var homePosition = {
-        lat: this.props.interopData.mission.home_pos.latitude, 
-        lng: this.props.interopData.mission.home_pos.longitude
+        lat: this.props.interopData.mission.airDropPos.latitude, 
+        lng: this.props.interopData.mission.airDropPos.longitude
       };
 
       var emergentPos = {
-        lat: this.props.interopData.mission.emergent_last_known_pos.latitude, 
-        lng: this.props.interopData.mission.emergent_last_known_pos.longitude
+        lat: this.props.interopData.mission.emergentLastKnownPos.latitude, 
+        lng: this.props.interopData.mission.emergentLastKnownPos.longitude
       };
 
       var offAxisPos = {
-        lat: this.props.interopData.mission.off_axis_odlc_pos.latitude, 
-        lng: this.props.interopData.mission.off_axis_odlc_pos.longitude
+        lat: this.props.interopData.mission.offAxisOdlcPos.latitude, 
+        lng: this.props.interopData.mission.offAxisOdlcPos.longitude
       };
     }
 
@@ -83,21 +79,6 @@ class InteropItems extends Component {
             <Button size="sm" onClick={() => this.addWaypointCommand(airDropPos.lat, airDropPos.lng)}>
               Add to Mission
             </Button>
-          </MapElementWithInfo>
-          
-          <MapElementWithInfo  
-            Element={Marker} name="homePosition" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
-            position={homePosition}
-            icon={{
-              url: "http://www.clker.com/cliparts/F/t/X/o/S/p/simple-blue-house-md.png",
-              scaledSize: {width: 20, height: 20},
-              anchor: {x: 10, y: 10}
-            }}
-          >
-            <div>Home Position</div>
-            <Button size="sm" onClick={() => this.addWaypointCommand(homePosition.lat, homePosition.lng)}>
-              Add to Mission
-            </Button>         
           </MapElementWithInfo>
 
           <MapElementWithInfo  
@@ -152,7 +133,7 @@ class InteropItems extends Component {
             </Button>
           </MapElementWithInfo>
 
-          {this.props.interopData.obstacles.stationary_obstacles.map((obstacle, index) => 
+          {this.props.interopData.mission.stationaryObstacles.map((obstacle, index) => 
             <MapElementWithInfo 
               Element={Circle} name={`obstacle-${index}`} isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
               options={{
@@ -162,16 +143,16 @@ class InteropItems extends Component {
                 fillColor: '#FF0000',
                 fillOpacity: 0.5,
               }} 
-              radius={obstacle.cylinder_radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}
+              radius={obstacle.radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}
               infoPosition={{lat: obstacle.latitude, lng: obstacle.longitude}}
             >
               Obstacle {"("+obstacle.latitude + " " + obstacle.longitude + ")"}
               <br/>
-              {"Height:" + obstacle.cylinder_height + " Radius: " + obstacle.cylinder_radius} 
+              {"Height:" + obstacle.height + " Radius: " + obstacle.radius} 
             </MapElementWithInfo>
           )}
 
-          {this.props.interopData.mission.mission_waypoints.map((coord, index) => 
+          {this.props.interopData.mission.waypoints.map((coord, index) => 
             <MapElementWithInfo
               Element={Marker} name={`waypoint-${index}`} isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
               position={{lat: coord.latitude, lng: coord.longitude }}
@@ -205,17 +186,3 @@ class InteropItems extends Component {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(InteropItems);
-
-function polygonIsClockwise(vertices) {
-  // Determine whether vertices are clockwise/counterclockwise using the
-  // sign of the output of using the shoelace formula.
-  let area = 0;
-
-  for (let i = 0; i < vertices.length; i++) {
-    let j = (i + 1) % vertices.length;
-    area += vertices[i].lng * vertices[j].lat;
-    area -= vertices[j].lng * vertices[i].lat;
-  }
-
-  return area < 0;
-}

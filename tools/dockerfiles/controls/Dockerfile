@@ -166,6 +166,12 @@ USER uas
 RUN ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
 USER root
 
+# Install GeographicLib.
+RUN mkdir /usr/local/share/GeographicLib
+WORKDIR /usr/local/share/GeographicLib
+RUN wget http://downloads.sourceforge.net/project/geographiclib/geoids-distrib/egm96-5.tar.bz2
+RUN tar -xjf egm96-5.tar.bz2 && rm egm96-5.tar.bz2
+
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env
 

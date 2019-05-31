@@ -7,7 +7,7 @@ const socket = socketIOClient('http://localhost:'+port+'/fake-drone', { transpor
 
 const telemetry = require('./test_telemetry.json');
 
-const sleepTime = 1000 / config.droneSensorsFrequency;
+const sleepTime = 1000 / 50; // 50 Hz
 let i = 0;
 setInterval(() => {
   socket.emit('TELEMETRY', telemetry[i]);

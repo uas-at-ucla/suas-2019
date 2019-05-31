@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import os
 import sys
 import argparse
@@ -18,7 +20,7 @@ def build_ui():
     npm_install.npm_install()
     os.chdir("..")
 
-def build():
+def build(args=None):
     build_server()
     build_ui()
     print("done building")
@@ -59,7 +61,7 @@ if __name__ == '__main__':
     run_parser.set_defaults(func=run_all)
     run_parser.add_argument('--web', action='store_const', const="-web", default="")
     run_subparsers = run_parser.add_subparsers()
-    
+
     run_subparsers.add_parser('all')
     run_subparsers.add_parser('server').set_defaults(func=run_server)
     run_subparsers.add_parser('ui').set_defaults(func=run_ui)

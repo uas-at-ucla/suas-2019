@@ -1,5 +1,6 @@
 const electronRequire = window.require;
 const protobuf = electronRequire ? electronRequire('protobufjs') : null;
+const fs = electronRequire ? electronRequire('fs') : null;
 // Fix import statement in .proto file:
 if (electronRequire) protobuf.Root.prototype.resolvePath = (origin, target) => {
   return target;
@@ -45,7 +46,8 @@ export default function loadTimelineGrammar(dispatch) {
     timelineGrammar = JSON.parse(timelineGrammarString);
 
     console.log(timelineGrammar);
-    // console.log(JSON.stringify(timelineGrammar, null, 2)); // use this to update timeline_grammar.proto.json
+    // update timeline_grammar.proto.json when protobuf format has changed
+    if (fs) fs.writeFile("src/protobuf/timeline_grammar.proto.json", JSON.stringify(timelineGrammar, null, 2), (err) => {});
 
     // Send to Redux store
     dispatch({
