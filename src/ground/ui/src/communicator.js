@@ -22,6 +22,14 @@ class Communicator {
       this.store.dispatch({ type: 'TELEMETRY', payload: telemetry });
     });
 
+    this.socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
+      this.store.dispatch({ type: 'COMPILED_DRONE_PROGRAM', payload: droneProgram });
+    });
+    
+    this.socket.on('MISSION_COMPILE_ERROR', () => {
+      alert("FAILED to compile mission!");
+    });
+
     this.socket.on('INTEROP_DATA', (interopData) => {
       this.store.dispatch({ type: 'INTEROP_DATA', payload: interopData });
     });
@@ -29,12 +37,28 @@ class Communicator {
     this.socket.on('PING', (delay) => {
       this.store.dispatch({ type: 'PING', payload: delay });
     });
+
+    this.socket.on('INTEROP_UPLOAD_FAIL', () => {
+      alert("FAILED to upload telemetry to interop!");
+    });
+
+    this.socket.on('INTEROP_UPLOAD_SUCCESS', () => {
+      alert("Now able to upload telemetry to interop. :)");
+    });
+
+    this.socket.on('UGV_MESSAGE', (msg) => {
+      this.store.dispatch({ type: 'UGV_MESSAGE', payload: msg });
+    });
   }
 
   reduxMiddleware(next) {
     return (action) => {
       if (action.type === 'TRANSMIT') {
-        this.socket.emit(action.payload.msg, action.payload.data);
+        if (action.payload.data) {
+          this.socket.emit(action.payload.msg, action.payload.data);
+        } else {
+          this.socket.emit(action.payload.msg);
+        }
         console.log("Transmitting", action.payload);
       } else if (action.type === 'CONNECT_TO_GND_SERVER') {
         this.socket.disconnect();

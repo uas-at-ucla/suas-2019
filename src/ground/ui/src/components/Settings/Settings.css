@@ -7,7 +7,12 @@
 }
 
 .Settings .connect-btn {
-  margin-right: 10px;
+  width: 100%;
   padding-top: 6px;
   padding-bottom: 6px;
+}
+
+.Settings .connect-status {
+  display: flex;
+  align-items: center; 
 }

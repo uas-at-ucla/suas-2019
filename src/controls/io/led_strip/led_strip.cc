@@ -10,7 +10,8 @@ LedStrip::LedStrip() :
     startup_sequence_frame_(0),
     battery_percentage_(0.0),
     armed_(false),
-    alarm_(false) {
+    alarm_(false),
+    blank_(false) {
 
   led_pixels_ =
       static_cast<ws2811_led_t *>(malloc(sizeof(ws2811_led_t) * kNumberOfLeds));
@@ -52,7 +53,7 @@ LedStrip::LedStrip() :
       {channel_0_, channel_1_} // Channels
   };
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+#ifdef RASPI_DEPLOYMENT
   ws2811_return_t ret = ws2811_init(&leds_);
 
   if (ret != WS2811_SUCCESS) {
@@ -65,17 +66,17 @@ LedStrip::LedStrip() :
 LedStrip::~LedStrip() {
   delete led_pixels_;
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+#ifdef RASPI_DEPLOYMENT
   ws2811_fini(&leds_);
 #endif
 }
 
-bool LedStrip::Render() {
+bool LedStrip::Render(bool force) {
   // 11 arm leds
   // 10 gps leds
   // 10 battery leds
 
-  if (::lib::phased_loop::GetCurrentTime() < next_led_write_) {
+  if (!force && ::lib::phased_loop::GetCurrentTime() < next_led_write_) {
     return true;
   }
 
@@ -167,7 +168,13 @@ bool LedStrip::Render() {
     startup_sequence_frame_++;
   }
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+  if (blank_) {
+    for (int i = 0; i < kNumberOfLeds; i++) {
+      SetLed(i, 0, 0, 0);
+    }
+  }
+
+#ifdef RASPI_DEPLOYMENT
   ws2811_return_t ret = ws2811_render(&leds_);
 
   if (ret != WS2811_SUCCESS) {

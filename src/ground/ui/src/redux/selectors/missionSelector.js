@@ -10,25 +10,26 @@ selectors.protoInfo = createSelector(
     if (!timelineGrammar) {
       return null;
     }
-    let commands = {};
-    let commandTypes = [];
+    let groundCommandNames = timelineGrammar.GroundCommand.oneofs.command.oneof;
     let commandAbbr = {};
-    for (let varName of timelineGrammar.GroundCommand.oneofs.command.oneof) {
-      let commandType = timelineGrammar.GroundCommand.fields[varName].type;
-      commands[commandType] = timelineGrammar[commandType];
-      commandTypes.push(commandType);
-      commandAbbr[commandType] = commandType.replace("Command", "");
+    for (let commandName of groundCommandNames) {
+      let commandType = timelineGrammar.GroundCommand.fields[commandName].type;
+      commandAbbr[commandName] = commandType.replace("Command", "");
+    }
+    let droneCommandNames = timelineGrammar.DroneCommand.oneofs.command.oneof;
+    for (let commandName of droneCommandNames) {
+      let commandType = timelineGrammar.DroneCommand.fields[commandName].type;
+      commandAbbr[commandName] = commandType.replace("Command", "");
     }
     return {
       timelineGrammar: timelineGrammar,
-      commands: commands,
-      commandTypes: commandTypes,
+      commandNames: groundCommandNames,
       commandAbbr: commandAbbr,
       fieldUnits: {
         altitude: "ft",
-        dropHeight: "ft"
+        drop_height: "ft"
       },
-      locationFields: ["goal", "groundTarget", "photographerLocation"]
+      locationFields: ["goal", "ground_target", "photographer_location"]
     };
   }
 );
@@ -46,7 +47,7 @@ selectors.commandMarkers = createObjectSelector(
   [selectors.commandsById, selectors.protoInfo],
   (cmd, protoInfo) => {
     for (let locationField of protoInfo.locationFields) {
-      if (cmd[cmd.type][locationField]) {
+      if (cmd[cmd.name][locationField]) {
         let label = null;
         if (cmd.type === 'WaypointCommand') {
           label = {
@@ -55,16 +56,13 @@ selectors.commandMarkers = createObjectSelector(
             fontSize: '15px'
           }
         }
-        let location = cmd[cmd.type][locationField];
+        let location = cmd[cmd.name][locationField];
         return {
           position: {
             lat: location.latitude,
             lng: location.longitude
           },
-          label: label,
-          options: {
-            //icon: url //if u want it to look different
-          }
+          label: label
         }
       }
     }
@@ -85,9 +83,6 @@ selectors.commandPoints = createSelector(
         marker: marker,
         infobox: {
           position: marker.position,
-          options: {
-            //enableEventPropagation: true //we might need this if there are some buttons in the infobox.
-          },
           content: (index+1)
         }
       }
@@ -95,19 +90,70 @@ selectors.commandPoints = createSelector(
   }
 );
 
-selectors.interopElements = createSelector(
-  [state => state.mission.interopData],
-  (interopData) => {
-    if (interopData) {
-      return {
-        home_marker: {
-          position: interopData.mission.home_pos
+selectors.droneProgramPath = createSelector(
+  [state => state.mission.droneProgram, selectors.protoInfo],
+  (droneProgram, protoInfo) => {
+    if (!droneProgram) {
+      return [];
+    }
+    let path = [];
+    for (let cmd of droneProgram.commands) {
+      for (let locationField of protoInfo.locationFields) {
+        if (cmd[cmd.name][locationField]) {
+          let location = cmd[cmd.name][locationField];
+          path.push({
+            lat: location.latitude,
+            lng: location.longitude
+          });
+          break;
         }
-        // TODO: Add map elements to represent the rest of the mission/obstacles
       }
     }
-    return null;
+    return path;
   }
 );
+
+selectors.mainFlyZone = createSelector(
+  [state => state.mission.interopData],
+  (interopData) => {
+    if (!interopData) {
+      return null;
+    }
+    let maxArea = -1;
+    let mainFlyZone = null;
+    for (let flyZone of interopData.mission.flyZones) {
+      let area = polygonArea(flyZone.boundaryPoints);
+      if (area > maxArea) {
+        maxArea = area;
+        mainFlyZone = flyZone;
+      }
+    }
+    mainFlyZone.isClockwise = polygonIsClockwise(mainFlyZone.boundaryPoints);
+    return mainFlyZone;
+  }
+);
+
+function shoelace(vertices) {
+  // The shoelace formula determines the area of a polygon
+  let area = 0;
+
+  for (let i = 0; i < vertices.length; i++) {
+    let j = (i + 1) % vertices.length;
+    area += vertices[i].longitude * vertices[j].latitude;
+    area -= vertices[j].longitude * vertices[i].latitude;
+  }
+
+  return area;
+}
+
+function polygonArea(vertices) {
+  return Math.abs(shoelace(vertices));
+}
+
+function polygonIsClockwise(vertices) {
+  // Determine whether vertices are clockwise/counterclockwise using the
+  // sign of the output from the shoelace formula.
+  return shoelace(vertices) < 0;
+}
 
 export default createStructuredSelector(selectors);

@@ -75,6 +75,10 @@ toolchain {
   # linker_flag: "-lprofiler"
   linker_flag: "-B/usr/bin/"
 
+  # get ZeroMQ to compile:
+  linker_flag: "-lunwind"
+  linker_flag: "-ldl"
+
   feature {
     name: "opt"
     implies: "all_modes"
@@ -265,7 +269,7 @@ toolchain {
   tool_path { name: "objdump" path: "raspi_toolchain/arm-linux-gnueabihf-objdump" }
   tool_path { name: "strip" path: "raspi_toolchain/arm-linux-gnueabihf-strip" }
 
-  compiler_flag: "-DUAS_AT_UCLA_DEPLOYMENT"
+  compiler_flag: "-DRASPI_DEPLOYMENT"
   # compiler_flag: "-DENABLE_PRECOMPILED_HEADERS=OFF"
 
   compiler_flag: "--sysroot=external/raspi_toolchain/arm-linux-gnueabihf"

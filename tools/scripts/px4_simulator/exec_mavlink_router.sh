@@ -3,8 +3,7 @@ source tools/scripts/docker/start_machine_mac.sh
 
 echo "Waiting for PX4 simulator docker to start..."
 
-# 192.168.2.21 is the drone's ip
-DOCKER_IP="192.168.2.21" # `docker network inspect uas_bridge | grep -o -P ".{0,9}2/16" | sed 's/\/16//g'`
+DOCKER_IP="192.168.3.20" # drone's docker network ip
 
 while true
 do

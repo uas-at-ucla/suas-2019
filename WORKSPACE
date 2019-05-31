@@ -155,7 +155,7 @@ new_git_repository(
 
 new_git_repository(
   name = "pigpio",
-  commit = "94025d38ed3d6c1f713d3cb7fc809499ce18b5e4",
+  commit = "2125680045f54bed198636222999d053b738b1bf",
   remote = "https://github.com/uas-at-ucla/pigpio.git",
   build_file = "third_party/pigpio.BUILD",
 )

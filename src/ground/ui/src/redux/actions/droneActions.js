@@ -21,13 +21,25 @@ export default {
   droneLand: () => changeDroneState(DroneStates.LAND),
   droneFailsafe: () => changeDroneState(DroneStates.FAILSAFE),
   droneThrottleCut: () => changeDroneState(DroneStates.THROTTLE_CUT),
-  runMission: (commands) => {
+  compileMission: (commands) => {
     return {
       type: 'TRANSMIT',
       payload: {
-        msg: 'RUN_MISSION',
+        msg: 'COMPILE_GROUND_PROGRAM',
         data: commands
       }
+    }
+  },
+  runMission: () => {
+    return {
+      type: 'TRANSMIT',
+      payload: {msg: 'RUN_MISSION'}
+    }
+  },
+  driveUgv: () => {
+    return {
+      type: 'TRANSMIT',
+      payload: { msg: 'DRIVE_UGV' }
     }
   },
   testTransmit: (data) => {

@@ -1,48 +1,49 @@
 .Altimeter {
   background: rgba(0, 0, 0, 0.6);
+  width: 50px;
+  flex-grow: 1;
+  padding: 2px;
+  margin-bottom: 1em;
+  display: flex;
+}
+
+.Altimeter .progress-bars {
+  position: relative;
+  width: 100%;
+  flex-grow: 1;
 }
 
 .Altimeter .progress-bar {
-  position: relative;
-  height: 200px;
-  width: 50px;
-  border-radius: 50px;
-  border: 3px solid #333;
+  position: absolute;
+  height: 100%;
+  width: 100%;
   background: rgba(0, 0, 0, 0);
+  display: flex;
+  flex-direction: row;
+  align-items: flex-end;
 }
 
 .Altimeter .filler {
-  background: #1DA598;
-  height: 100%;
-  border-radius: inherit;
-  transition: width .2s ease-in;
-  float: bottom
+  background: #2D79A7;
+  width: 100%;
 }
 
-.Altimeter .filler.warning {
+.Altimeter .filler.too-low {
+  background: #F28033;
+}
+
+.Altimeter .filler.too-high {
   background: red;
 }
 
-.Altimeter button {
-  margin-right: 10px;
-  padding: 7px 12px;
-  font-size: 14px;
-  background: pink;
-  color: red;
-  font-family: 'Montserrat', sans-serif;
-  cursor: pointer;
-  outline: 0;
-  border-radius: 0px;
+.Altimeter .filler-min {
+  border-top: solid #F28033 1px;
+  width: 100%;
 }
 
-.Altimeter button1 {
-  margin-right: 10px;
-  padding: 15px 26px;
-  font-size: 14px;
-  background: blue;
-  color: yellow;
-  font-family: 'Montserrat', sans-serif;
-  cursor: pointer;
-  outline: 0;
-  border-radius: 50%;
+.Altimeter .filler-max {
+  border-top: solid red 1px;
+  width: 100%;
 }
+
+

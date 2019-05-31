@@ -33,6 +33,7 @@ docker run \
   -v $ROOT_PATH/tools/cache/px4_simulator:/home/uas/px4_simulator \
   -p 8085:8085/udp \
   -p 8095:8095/udp \
+  -p 5760:5760 \
   --net uas_bridge \
   uas-at-ucla_px4-simulator \
   bash -c "
@@ -45,4 +46,7 @@ docker run \
   su - uas bash -c \"
   cd px4_simulator
   HOST_IP=\\\$(/sbin/ip route|awk '/default/ { print \\\$3 }')
-  make posix_sitl_default jmavsim\""
+  export PX4_HOME_LAT=38.147483
+  export PX4_HOME_LON=-76.427778
+  export PX4_HOME_ALT=40
+  make px4_sitl_default jmavsim\""

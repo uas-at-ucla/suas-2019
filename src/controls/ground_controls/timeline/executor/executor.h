@@ -11,8 +11,6 @@
 #include <thread>
 #include <vector>
 
-#include "zmq.hpp"
-
 #include <google/protobuf/util/message_differencer.h>
 
 #include "lib/mission_manager/mission_commands.pb.h"
@@ -27,7 +25,7 @@ using namespace lib::mission_manager;
 
 namespace src {
 namespace controls {
-namespace loops {
+namespace flight_loop {
 namespace executor {
 
 struct ExecutorOutput {
@@ -80,6 +78,6 @@ class Executor {
 };
 
 } // namespace executor
-} // namespace loops
+} // namespace flight_loop
 } // namespace controls
 } // namespace src
