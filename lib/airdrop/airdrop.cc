@@ -8,31 +8,37 @@ Airdrop::Airdrop() :
   dropTriggered(false),
   _run(true),
   timeTriggered(-1),
-  motor_pwm(0) {}
+  motor_pwm(0),
+  ros_node_handle_(),
+  state_subscriber_(ros_node_handle_.subscribe(
+    kRosStateTopic, ::src::controls::io::kRosMessageQueueSize,
+    &Airdrop::rosSubscriber, this)),
+  status_publisher_(ros_node_handle_.advertise<
+    ::std::string>(
+      kRosStatusTopic, ::src::controls::io::kRosMessageQueueSize))
+    ))
+  )){}
 
-void Airdrop::getStatus(AirdropStatus & curr_status) {
-  // How do we get the information from the ground station?
-}
+void Airdrop::rosSubscriber(::std::string action) {
+  if (action == "RELEASE") {
+    
+  } else if (action == "UGV_LANDED") {
 
-void Airdrop::Run() {
-  while(_run) {
-    RunIteration();
   }
 }
 
-void Airdrop::RunIteration() {
+void Airdrop::RunIteration(struct Airdropstatus & curr_status, double &motorPwm, bool &servoRelease, ) {
   // @TODO: Add wait function
 
   State next_state = _state;
 
   // Get the inputs from the drone
-  Airdropstatus curr_status;
-  getStatus(curr_status);
+  struct Airdropstatus curr_status;
 
   // Wait times, assuming current_time in ns? Change as necessary
-  double steadyTime = 5e9; // Time to steady after unlatch
-  double groundTime = 5e9; //Idle time on ground
-  double burnTime = 7e9; // Hot wire burn time
+  const double steadyTime = 5e9; // Time to steady after unlatch
+  const double groundTime = 5e9; //Idle time on ground
+  const double burnTime = 7e9; // Hot wire burn time
 
    double current_time =
       ::std::chrono::duration_cast<::std::chrono::nanoseconds>(
@@ -42,7 +48,7 @@ void Airdrop::RunIteration() {
 
   switch(_state) {
     case STANDBY:
-      if(curr_status.servoRelease) {
+      if(servoRelease) {
         next_state = UNLATCH_SERVO;
       } else {
         next_state = WAIT;
@@ -93,15 +99,11 @@ void Airdrop::RunIteration() {
       break;
 
     case HOTWIRE:
-      if(curr_status.hotwire) { // Start burning
         if(current_time >= timeTriggered + burnTime) {
           next_state = DONE;
         } else {
           next_state = HOTWIRE;
         }
-      } else {
-        next_state = HOTWIRE;
-      }
 
     case DONE:
     // We done, stop sending info
