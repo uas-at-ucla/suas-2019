@@ -33,3 +33,22 @@
     display: table;
     width: 100%;
 }
+
+.imageCrop {
+    position: absolute;
+    top: 50px;
+    left: 0px;
+    height: 720px;
+    width: 1280px;
+    z-index: 20;
+  }
+
+  .imageButton{
+    padding: 5px;
+    top: 0px;
+    left: 450px;
+    position: absolute;
+    display: table;
+    width: 100%;
+    z-index: 20;
+}

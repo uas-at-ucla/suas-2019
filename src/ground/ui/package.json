@@ -5,17 +5,19 @@
   "main": "main.js",
   "homepage": "./",
   "dependencies": {
-    "electron-is-dev": "^1.0.1"
+    "@material-ui/core": "^4.0.1",
+    "@material-ui/icons": "^4.0.1",
+    "electron-is-dev": "^1.0.1",
+    "react-easy-crop": "^1.12.0"
   },
   "devDependencies": {
-    "check-dependencies": "^1.1.0",
-    "concurrently": "^4.0.1",
-    "electron": "^3.0.6",
-    "electron-packager": "^12.2.0",
-    "wait-on": "^3.1.0",
     "@grpc/proto-loader": "^0.4.0",
     "bootstrap": "^4.1.2",
+    "check-dependencies": "^1.1.0",
+    "concurrently": "^4.0.1",
     "dot-prop-immutable": "^1.5.0",
+    "electron": "^3.0.6",
+    "electron-packager": "^12.2.0",
     "font-awesome": "^4.7.0",
     "google_maps_js_api": "github:uas-at-ucla/google_maps_js_api#1.1",
     "grpc": "^1.18.0",
@@ -26,7 +28,7 @@
     "react-google-maps": "^9.4.5",
     "react-redux": "^5.0.7",
     "react-router-dom": "^5.0.0",
-    "react-scripts": "^2.1.5",
+    "react-scripts": "^3.0.1",
     "react-select": "^2.4.3",
     "react-selectize": "^3.0.1",
     "react-sortable-hoc": "^1.6.1",
@@ -39,7 +41,8 @@
     "shortid": "^2.2.14",
     "socket.io-client": "^2.1.1",
     "styled-components": "^4.2.0",
-    "three": "^0.98.0"
+    "three": "^0.98.0",
+    "wait-on": "^3.1.0"
   },
   "scripts": {
     "react-start": "PORT=3001 BROWSER=none react-scripts start",
