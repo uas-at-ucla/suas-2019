@@ -87,11 +87,10 @@ static const ::std::string kRosTakeoffService = "/mavros/cmd/takeoff";
 // Pixhawk interface parameters.
 static constexpr double kPixhawkGlobalSetpointMaxHz = 10.0;
 
-// Pixhawk custom modes.
+// Pixhawk commands and custom modes.
 // Documentation: https://dev.px4.io/en/concept/flight_modes.html
 // TODO(comran): Use custom mode constants provided internally by Mavros.
 static const ::std::string kPixhawkArmCommand = "ARM";
-
 static const ::std::string kPixhawkCustomModeManual = "MANUAL";
 static const ::std::string kPixhawkCustomModeAcro = "ACRO";
 static const ::std::string kPixhawkCustomModeAltitudeControl = "ALTCTL";

@@ -182,7 +182,7 @@ new_git_repository(
 
 new_git_repository(
   name = "ros_bazel",
-  commit = "b32a4b5280efc056fa7fc522970523be85f149d9",
+  commit = "9435753c27f9f3c5fa5790e5fa3da382259fda2f",
   remote = "https://github.com/uas-at-ucla/ros_bazel.git",
   build_file = "third_party/ros_bazel.BUILD"
 )
