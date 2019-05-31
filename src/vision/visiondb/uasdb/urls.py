@@ -16,11 +16,13 @@ from rest_framework import routers
 
 from django.contrib import admin
 from django.conf.urls import url, include
+from django.conf.urls.static import static
 
 from . import views
+from . import settings
 
 urlpatterns = [
     url('admin/', admin.site.urls),
     url('api/', include('db.urls')),
     url('test_updates', views.test_updates, name='test_updates')
-]
+] + static(settings.STATIC_URL, document_root=settings.STATIC_URL)
