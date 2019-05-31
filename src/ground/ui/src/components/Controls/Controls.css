@@ -54,6 +54,7 @@
   position: absolute;
   height: 100%;
   width: 100%;
+  padding-bottom: 10px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;

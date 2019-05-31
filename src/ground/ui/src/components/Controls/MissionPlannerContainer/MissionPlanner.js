@@ -1,11 +1,12 @@
 import React, { Component, PureComponent } from 'react';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
-import { Container, Row, Col, Input, InputGroup, InputGroupAddon } from 'reactstrap';
-import { SortableContainer, SortableElement } from 'react-sortable-hoc';
+import { Container } from 'reactstrap';
+import { SortableContainer } from 'react-sortable-hoc';
 
 import missionActions from 'redux/actions/missionActions';
 import { selector } from 'redux/store';
+import CommandList from './CommandList';
 
 const mapStateToProps = state => {
   let derivedData = selector(state);
@@ -23,7 +24,7 @@ class MissionPlanner extends Component {
   render() {
     return (
       <div className="MissionPlanner">
-        <this.CommandList onSortEnd={this.reorderCommand} distance={2}/>
+        <this.Commands onSortEnd={this.reorderCommand} distance={2}/>
       </div>
     );
   }
@@ -95,7 +96,7 @@ class MissionPlanner extends Component {
 
   }
 
-  CommandList = SortableContainer(() => {
+  Commands = SortableContainer(() => {
     return (
       <Container fluid>
         {this.props.mission.interopData ? 
@@ -105,17 +106,13 @@ class MissionPlanner extends Component {
             {this.props.mainFlyZone.altitudeMax} ft
           </div> 
         : null}
-        {this.props.mission.commands.map((command, index) => 
-          <SortableCommand
-            className={this.props.className}
-            key={command.id}
-            {...this.commandChangers}
-            command={command}
-            index={index}
-            myIndex={index}
-            protoInfo={this.props.protoInfo}
-          ></SortableCommand>
-        )}
+        <CommandList 
+          commands={this.props.mission.commands}
+          className={this.props.className}
+          protoInfo={this.props.protoInfo}
+          commandChangers={this.commandChangers}
+          mutable={true}
+        />
         <Button onClick={this.addCommand} className="command-btn">Add Command</Button>
         {this.props.interopData && this.props.mission.commands.length === 0 ? <Button onClick={this.autoGenerate}>Auto-Generate</Button> : null}
       </Container>
@@ -178,130 +175,3 @@ class MissionPlanner extends Component {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MissionPlanner);
-
-const SortableCommand = SortableElement(props => <CommandRow {...props}/>);
-// PureComponent improves performance b/c it only re-renders when props change
-class CommandRow extends PureComponent {
-  centerMapOnCommand = () => {
-    this.props.centerMapOnCommand(this.props.myIndex);
-  }
-
-  render() {
-    let command = this.props.command;
-    let index = this.props.myIndex;
-    return (
-      <Row className={`MissionPlanner ${this.props.className}`} onClick={this.centerMapOnCommand}>
-        <Col xs="auto" className="command-column input command-header">
-          <Button className="delete-btn" color="danger" size="sm" data-index={index} onClick={this.props.deleteCommand}>
-            <i className="fa fa-minus"></i>
-          </Button>
-        </Col>
-        <Col xs="auto" className="command-column command-index command-header">{index+1}</Col>
-        <Col xs="auto" className="command-column command-type command-header">
-          <span className="value">
-            {this.props.protoInfo.commandAbbr[command.name]}
-          </span>
-          <Input
-            type="select" className="input" value={command.name}
-            data-index={index} onChange={this.props.changeCommandType}
-          >
-            {this.props.protoInfo.commandNames.map(commandName =>
-              <option value={commandName} key={commandName}>
-                {this.props.protoInfo.commandAbbr[commandName]}
-              </option>
-            )}
-          </Input>
-        </Col>
-        <Col xs="auto" className="command-column">
-          <this.Field
-            dotProp={index + "." + command.name}
-            type={command.type}
-            object={command[command.name]}
-          />
-        </Col>
-      </Row>
-    )
-  }
-
-  // Helper components
-  NumberField = ({name, dotProp, value, units}) => {
-    return (
-      <Row>
-        <Col xs="auto">
-          <InputGroup className="number input">
-            <InputGroupAddon addonType="prepend">{name}</InputGroupAddon>
-            <Input
-              style={{width: Math.min(12, value.toString().length + 3) + "ch"}}
-              value={value} type="number"
-              data-dot-prop={dotProp} onChange={this.props.changeNumberField}
-            ></Input>
-            {units ? <InputGroupAddon addonType="append">{units}</InputGroupAddon> : null}
-          </InputGroup>
-          <span className="value">{Math.round(value*1e4)/1e4} {units}</span>
-        </Col>
-      </Row>
-    );
-  };
-
-  RepeatedField = ({name, dotProp, type, object}) => {
-    return (
-      <span>
-        {object.map((element, index) =>
-          <this.Field
-            name={`${name} ${index+1}`} key={index}
-            dotProp={dotProp + "." + index}
-            type={type}
-            object={element}
-          />
-        )}
-        <Button
-          className="input" data-dot-prop={dotProp}
-          data-type={type} onClick={this.props.addRepeatedField}
-        >+</Button>
-        <Button
-          className="input" data-dot-prop={dotProp}
-          onClick={this.props.popRepeatedField}
-        >-</Button>
-      </span>
-    );
-  }
-
-  Field = ({name, dotProp, type, object}) => {
-    // Recursively create HTML based on protobuf definition
-    let timelineGrammar = this.props.protoInfo.timelineGrammar;
-    if (timelineGrammar[type]) {
-      // object is a protobuf defined object
-      return (
-        <Row>
-          {name ? <Col xs="auto" className="name">{name}:</Col> : null}
-          {Object.keys(timelineGrammar[type].fields).map((fieldName) => {
-            let field = timelineGrammar[type].fields[fieldName];
-            let fieldDotProp = dotProp + "." + fieldName;
-            let fieldProps = {
-              name: fieldName,
-              dotProp: fieldDotProp,
-              type: field.type,
-              object: object[fieldName]
-            };
-            return (
-              <Col xs="auto" className="field-container" key={fieldName}>
-                {field.rule === 'repeated' ?
-                  <this.RepeatedField {...fieldProps}/>
-                : field.rule === 'required' ?
-                  <this.Field {...fieldProps}/>
-                :
-                  (() => {throw new Error("No support for timeline_grammar rule '" + field.rule + "' yet!")})()
-                }
-              </Col>
-            );
-          })}
-        </Row>
-      );
-    } else if (type === "double") {
-      return <this.NumberField name={name} dotProp={dotProp} value={object} 
-        units={this.props.protoInfo.fieldUnits[name]}/>;
-    } else {
-      throw new Error("No support for timeline_grammar type '" + type + "' yet!");
-    }
-  };
-}
