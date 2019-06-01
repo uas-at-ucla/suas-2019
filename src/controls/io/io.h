@@ -157,6 +157,8 @@ class IO {
   double deployment_motor_setpoint_;
   double gimbal_setpoint_;
 
+  ::src::controls::ground_controls::timeline::DroneProgram drone_program_;
+
   ::std::atomic<bool> running_;
 
   ::ros::NodeHandle ros_node_handle_;
@@ -180,7 +182,8 @@ class IO {
 
   bool last_arm_state_;
 
-#ifdef RASPI_DEPLOYMENT int pigpio_;
+#ifdef RASPI_DEPLOYMENT
+  int pigpio_;
 #endif
 
   ::std::thread writer_thread_;
