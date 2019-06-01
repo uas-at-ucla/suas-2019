@@ -44,8 +44,8 @@ void GroundCommunicator::SensorsReceived(
 void GroundCommunicator::DroneProgramReceived(
     const ::src::controls::ground_controls::timeline::DroneProgram
         drone_program) {
-  ::std::cout << "Ground communicator got Drone Program...\n";
   (void)drone_program;
+  ::std::cout << "Executing Drone Program...\n";
   // ::std::cout << drone_program.DebugString() << "\n";
 }
 

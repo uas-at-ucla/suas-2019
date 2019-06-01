@@ -7,6 +7,12 @@ import { selector } from 'redux/store';
 import missionActions from 'redux/actions/missionActions';
 import MapElementWithInfo from 'components/utils/MapElementWithInfo';
 
+import camera from './icons/camera.png'
+import person from './icons/Person-Icon.png'
+import bomb from './icons/bomb_drop.png'
+import blueMarker from './icons/blue_marker.png'
+
+
 const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
@@ -70,7 +76,7 @@ class InteropItems extends Component {
             Element={Marker} name="airDropPosition" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
             position={airDropPos}
             icon={{
-              url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/WA_80_cm_archery_target.svg/180px-WA_80_cm_archery_target.svg.png",
+              url: bomb,
               scaledSize: {width: 25, height: 25},
               anchor: {x: 12.5, y: 12.5}
             }}
@@ -85,7 +91,7 @@ class InteropItems extends Component {
             Element={Marker} name="emergent_last_known_pos" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
             position={emergentPos}
             icon={{
-              url: "https://allenhoole.co.uk/wp-content/uploads/2016/10/Person-Icon.png",
+              url: person,
               scaledSize: {width: 20, height: 20},
               anchor: {x: 10, y: 10}
             }}
@@ -100,7 +106,7 @@ class InteropItems extends Component {
             Element={Marker} name="off_axis_odlc_pos" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
             position={offAxisPos}
             icon={{
-              url: "https://iconsplace.com/wp-content/uploads/_icons/ffa500/256/png/slr-camera-icon-11-256.png",
+              url: camera,
               scaledSize: {width: 20, height: 20},
               anchor: {x: 10, y: 10}
             }}
@@ -134,7 +140,8 @@ class InteropItems extends Component {
           </MapElementWithInfo>
 
           {this.props.interopData.mission.stationaryObstacles.map((obstacle, index) => 
-            <MapElementWithInfo 
+            <MapElementWithInfo
+              key={index}
               Element={Circle} name={`obstacle-${index}`} isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
               options={{
                 strokeColor: '#FF0000',
@@ -154,8 +161,14 @@ class InteropItems extends Component {
 
           {this.props.interopData.mission.waypoints.map((coord, index) => 
             <MapElementWithInfo
+              key={index}
               Element={Marker} name={`waypoint-${index}`} isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
               position={{lat: coord.latitude, lng: coord.longitude }}
+              icon={{
+                url: blueMarker,
+                scaledSize: {width: 25, height: 25},
+                anchor: {x: 12.5, y: 12.5}
+              }}
             >
               TODO
             </MapElementWithInfo>

@@ -5,11 +5,12 @@
 #include <string>
 #include <thread>
 
+#include <GeographicLib/Geoid.hpp>
 #include <linux/limits.h>
 #include <ros/console.h>
 #include <ros/ros.h>
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+#ifdef RASPI_DEPLOYMENT
 #include <pigpiod_if2.h>
 #include <softPwm.h>
 #include <wiringPi.h>
@@ -25,11 +26,14 @@
 #include <sensor_msgs/Imu.h>
 
 #include "lib/alarm/alarm.h"
+#include "lib/deployment/deployment.h"
 #include "lib/phased_loop/phased_loop.h"
 #include "src/controls/io/led_strip/led_strip.h"
 #include "src/controls/io/ros_to_proto/ros_to_proto.h"
 #include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
+
+// #define LOG_LED_STRIP 0
 
 namespace src {
 namespace controls {
@@ -68,7 +72,9 @@ static const double kSensorsPublisherPeriod = 1.0 / kSensorsPublisherRate;
 
 static const double kAlarmChirpDuration = 0.005;
 
+// ROS topic parameters.
 static const int kRosMessageQueueSize = 1;
+
 static const ::std::string kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
 static const ::std::string kRosSensorsTopic = "/uasatucla/proto/sensors";
 static const ::std::string kRosOutputTopic = "/uasatucla/proto/output";
@@ -77,23 +83,43 @@ static const ::std::string kRosRcInTopic = "/mavros/rc/in";
 static const ::std::string kRosBatteryStatusTopic = "/mavros/battery";
 static const ::std::string kRosStateTopic = "/mavros/state";
 static const ::std::string kRosImuTopic = "/mavros/imu/data";
-
 static const ::std::string kRosGlobalPositionTopic =
     "/mavros/setpoint_position/global";
-
 static const ::std::string kRosSetModeService = "/mavros/set_mode";
 static const ::std::string kRosArmService = "/mavros/cmd/arming";
 static const ::std::string kRosTakeoffService = "/mavros/cmd/takeoff";
 
-static const ::std::string kRosDroneProgramTopic =
-    "/uasatucla/proto/drone_program";
+// Pixhawk interface parameters.
+static constexpr double kPixhawkGlobalSetpointMaxHz = 10.0;
 
+// Pixhawk commands and custom modes.
+// Documentation: https://dev.px4.io/en/concept/flight_modes.html
+// TODO(comran): Use custom mode constants provided internally by Mavros.
+static const ::std::string kPixhawkArmCommand = "ARM";
+static const ::std::string kPixhawkCustomModeManual = "MANUAL";
+static const ::std::string kPixhawkCustomModeAcro = "ACRO";
+static const ::std::string kPixhawkCustomModeAltitudeControl = "ALTCTL";
+static const ::std::string kPixhawkCustomModePositionControl = "POSCTL";
+static const ::std::string kPixhawkCustomModeOffboard = "OFFBOARD";
+static const ::std::string kPixhawkCustomModeStabilized = "STABILIZED";
+static const ::std::string kPixhawkCustomModeRattitude = "RATTITUDE";
+static const ::std::string kPixhawkCustomModeMission = "AUTO.MISSION";
+static const ::std::string kPixhawkCustomModeLoiter = "AUTO.LOITER";
+static const ::std::string kPixhawkCustomModeReturnToLand = "AUTO.RTL";
+static const ::std::string kPixhawkCustomModeLand = "AUTO.LAND";
+static const ::std::string kPixhawkCustomModeReturnToGroundStation =
+    "AUTO.RTGS";
+static const ::std::string kPixhawkCustomModeAutoReady = "AUTO.READY";
+static const ::std::string kPixhawkCustomModeTakeoff = "AUTO.TAKEOFF";
+static const ::std::string kPixhawkCustomModeFollowTarget =
+    "AUTO.FOLLOW_TARGET";
+static const ::std::string kPixhawkCustomModePrecland = "AUTO.PRECLAND";
 } // namespace
 
 class IO {
  public:
   IO();
-  void Quit(int sig);
+  void Quit(int signal);
 
  private:
   void WriterThread();
@@ -106,7 +132,18 @@ class IO {
   void ImuReceived(const ::sensor_msgs::Imu imu);
   void DroneProgramReceived(const ::src::controls::ground_controls::timeline::DroneProgram drone_program);
 
+  // Actuator setup and write handlers.
+  void InitializeActuators();
+  void WriteAlarm(bool alarm);
+  void WriteGimbal(double pitch);
+  void WriteDeployment(::lib::deployment::Output &output);
+
+  void PixhawkSendModePosedge(::std::string mode, bool signal);
+  void PixhawkSetGlobalPositionGoal(double latitude, double longitude,
+                                    double altitude);
+
   ::lib::alarm::Alarm alarm_;
+  ::lib::deployment::Deployment deployment_;
   ::src::controls::io::led_strip::LedStrip led_strip_;
 
   ros_to_proto::RosToProto ros_to_proto_;
@@ -117,6 +154,7 @@ class IO {
 
   double deployment_motor_setpoint_;
   double gimbal_setpoint_;
+<<<<<<< HEAD
   double deployment_servo_setpoint_;
 
   bool did_arm_;
@@ -125,6 +163,8 @@ class IO {
   ::src::controls::ground_controls::timeline::DroneProgram drone_program_;
 
   void FlyToLocation();
+=======
+>>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
 
   ::std::atomic<bool> running_;
 
@@ -144,6 +184,7 @@ class IO {
   ::ros::ServiceClient arm_service_;
   ::ros::ServiceClient takeoff_service_;
 
+<<<<<<< HEAD
   double fly_start_time;
   bool did_trigger_takeoff;
   bool did_takeoff;
@@ -152,8 +193,14 @@ class IO {
   bool did_mission;
   bool did_land;
   double last_msg;
+=======
+  ::std::map<::std::string, bool> last_mode_signals_;
+  double last_position_setpoint_;
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+  bool last_arm_state_;
+>>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
+
+#ifdef RASPI_DEPLOYMENT
   int pigpio_;
 #endif
 

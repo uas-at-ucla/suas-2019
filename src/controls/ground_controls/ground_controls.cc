@@ -16,10 +16,19 @@ GroundControls::GroundControls(int argc, char **argv) :
     sensors_subscriber_(ros_node_handle_.subscribe(
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
         &GroundControls::SensorsReceived, this, ros::TransportHints().udp())),
+    drone_program_subscriber_(ros_node_handle_.subscribe(
+        kRosDroneProgramTopic, io::kRosMessageQueueSize,
+        &GroundControls::DroneProgramReceived, this)),
+    mission_status_subscriber_(ros_node_handle_.subscribe(
+        kRosMissionStatusTopic, io::kRosMessageQueueSize,
+        &GroundControls::MissionStatusReceived, this)),
     drone_program_publisher_(
         ros_node_handle_.advertise<
             ::src::controls::ground_controls::timeline::DroneProgram>(
-            io::kRosDroneProgramTopic, io::kRosMessageQueueSize)),
+            kRosDroneProgramTopic, kRosMessageQueueSize)),
+    mission_status_publisher_(
+        ros_node_handle_.advertise<::std_msgs::String>(
+            kRosMissionStatusTopic, kRosMessageQueueSize)),
     udp_connection_("tcp://127.0.0.1:6005", 1),
     rfd900_connection_("/dev/ttyUSB0", B57600, 0), // TODO
     phased_loop_(1e2),
@@ -114,6 +123,17 @@ void GroundControls::ReadUDP() {
   }
 }
 
+void GroundControls::DroneProgramReceived(const ::src::controls::ground_controls::timeline::DroneProgram drone_program) {
+  ::std::string serialized_drone_program;
+  drone_program.SerializeToString(&serialized_drone_program);
+  serialized_drone_program = ::lib::base64_tools::Encode(serialized_drone_program);
+  client_.socket("ground-controls")->emit("UPLOADED_DRONE_PROGRAM", serialized_drone_program);
+}
+
+void GroundControls::MissionStatusReceived(const ::std_msgs::String mission_status) {
+  client_.socket("ground-controls")->emit("MISSION_STATUS", mission_status.data);
+}
+
 void GroundControls::OnConnect() {
   client_.socket("ground-controls")
       ->on(
@@ -171,7 +191,7 @@ void GroundControls::OnConnect() {
               }));
 
   client_.socket("ground-controls")
-      ->on("RUN_MISSION",
+      ->on("UPLOAD_MISSION",
            ::sio::socket::event_listener_aux(
                [&](::std::string const &name, ::sio::message::ptr const &data,
                    bool isAck, ::sio::message::list &ack_resp) {
@@ -180,13 +200,43 @@ void GroundControls::OnConnect() {
                  (void)isAck;
                  (void)ack_resp;
                  if (drone_program_success_) {
-                   ::std::cout << "Running mission!\n";
+                   ::std::cout << "Uploading mission!\n";
                    drone_program_publisher_.publish(drone_program_);
                  } else {
-                   ::std::cout << "Oops, can't run mission. The drone program "
+                   ::std::cout << "Oops, can't upload mission. The drone program "
                                   "hasn't been successfully compiled.\n";
                  }
                }));
+
+  client_.socket("ground-controls")->on("RUN_MISSION", ::sio::socket::event_listener_aux([&](::std::string const &name, ::sio::message::ptr const &data, bool isAck, ::sio::message::list &ack_resp) {
+    (void)name;
+    (void)data;
+    (void)isAck;
+    (void)ack_resp;
+    ::std_msgs::String mission_status;
+    mission_status.data = "RUN_MISSION";
+    mission_status_publisher_.publish(mission_status);
+  }));
+
+  client_.socket("ground-controls")->on("PAUSE_MISSION", ::sio::socket::event_listener_aux([&](::std::string const &name, ::sio::message::ptr const &data, bool isAck, ::sio::message::list &ack_resp) {
+    (void)name;
+    (void)data;
+    (void)isAck;
+    (void)ack_resp;
+    ::std_msgs::String mission_status;
+    mission_status.data = "PAUSE_MISSION";
+    mission_status_publisher_.publish(mission_status);
+  }));
+
+  client_.socket("ground-controls")->on("END_MISSION", ::sio::socket::event_listener_aux([&](::std::string const &name, ::sio::message::ptr const &data, bool isAck, ::sio::message::list &ack_resp) {
+    (void)name;
+    (void)data;
+    (void)isAck;
+    (void)ack_resp;
+    ::std_msgs::String mission_status;
+    mission_status.data = "END_MISSION";
+    mission_status_publisher_.publish(mission_status);
+  }));
 }
 
 void GroundControls::OnFail() { ::std::cout << "socketio failed! :(\n"; }

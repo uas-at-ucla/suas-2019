@@ -104,7 +104,6 @@
           "nothing_command",
           "sleep_command",
           "goto_command",
-          "goto_raw_command",
           "trigger_bomb_drop_command",
           "trigger_alarm_command",
           "translate_command"
@@ -123,10 +122,6 @@
       "goto_command": {
         "type": "GotoCommand",
         "id": 3
-      },
-      "goto_raw_command": {
-        "type": "TranslateCommand",
-        "id": 4
       },
       "trigger_bomb_drop_command": {
         "type": "TriggerBombDropCommand",

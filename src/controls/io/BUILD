@@ -25,10 +25,12 @@ cc_library(
     '//src/controls/io/ros_to_proto:ros_to_proto',
     '//lib/ros:ros',
     '//lib/alarm:alarm',
+    '//lib/deployment:deployment',
     '//lib/phased_loop:phased_loop',
     "@WiringPi//:WiringPi",
     "@pigpio//:pigpio",
     "@mavros_msgs//:mavros_msgs",
     "@sensor_msgs//:sensor_msgs",
+    "@GeographicLib//:GeographicLib",
   ],
 )

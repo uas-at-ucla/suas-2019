@@ -182,7 +182,7 @@ new_git_repository(
 
 new_git_repository(
   name = "ros_bazel",
-  commit = "b32a4b5280efc056fa7fc522970523be85f149d9",
+  commit = "9435753c27f9f3c5fa5790e5fa3da382259fda2f",
   remote = "https://github.com/uas-at-ucla/ros_bazel.git",
   build_file = "third_party/ros_bazel.BUILD"
 )
@@ -243,4 +243,11 @@ http_archive(
     sha256='d7627a2df169e4e8208347d9215e47c723a015b67ef3ed8cda8b61b6cfbf94d2',
     urls = ['https://github.com/ros/gencpp/archive/0.5.5.tar.gz'],
     strip_prefix='gencpp-0.5.5',
+)
+
+http_archive(
+  name='GeographicLib',
+  build_file='third_party/GeographicLib.BUILD',
+  urls = ['https://github.com/Sciumo/GeographicLib/archive/v1.43.zip'],
+  strip_prefix='GeographicLib-1.43',
 )

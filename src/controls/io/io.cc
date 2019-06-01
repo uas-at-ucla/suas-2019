@@ -4,6 +4,8 @@ namespace src {
 namespace controls {
 namespace io {
 
+// TODO(comran): Make trigger call a method in IO instead of a separate
+// function.
 void deploymentChannelOneTrigger(int gpio, int level, uint32_t tick) {
   (void)gpio;
   (void)level;
@@ -12,13 +14,12 @@ void deploymentChannelOneTrigger(int gpio, int level, uint32_t tick) {
 
 IO::IO() :
     alarm_(kWriterPhasedLoopFrequency),
-    next_sensors_write_(::lib::phased_loop::GetCurrentTime()),
+    deployment_(kWriterPhasedLoopFrequency),
+    next_sensors_write_(::ros::Time::now().toSec()),
     should_override_alarm_(false),
-    last_rc_in_(::lib::phased_loop::GetCurrentTime()),
+    last_rc_in_(::ros::Time::now().toSec()),
     deployment_motor_setpoint_(0.0),
     gimbal_setpoint_(0.0),
-    deployment_servo_setpoint_(kDeploymentServoClosed),
-    did_arm_(false),
     running_(true),
     sensors_publisher_(ros_node_handle_.advertise<::src::controls::Sensors>(
         kRosSensorsTopic, kRosMessageQueueSize)),
@@ -48,52 +49,25 @@ IO::IO() :
         kRosArmService)),
     takeoff_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandTOL>(
         kRosTakeoffService)),
+    last_position_setpoint_(-std::numeric_limits<double>::infinity()),
+    last_arm_state_(false),
     writer_thread_(&IO::WriterThread, this),
     writer_phased_loop_(kWriterPhasedLoopFrequency) {
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-  // Alarm IO setup.
-  wiringPiSetup();
+  // Set up all actuators and send out initial outputs.
+  InitializeActuators();
 
-  pigpio_ = pigpio_start(0, 0);
-  // Inputs.
-  set_mode(pigpio_, kDeploymentEncoderChannelOne, PI_INPUT);
-  set_mode(pigpio_, kDeploymentEncoderChannelTwo, PI_INPUT);
-
-  // Outputs.
-  set_mode(pigpio_, kGimbalGPIOPin, PI_OUTPUT);
-  set_mode(pigpio_, kDeploymentLatchServoGPIOPin, PI_OUTPUT);
-  set_mode(pigpio_, kDeploymentMotorGPIOPin, PI_OUTPUT);
-  set_mode(pigpio_, kDeploymentMotorReverseGPIOPin, PI_OUTPUT);
-  set_mode(pigpio_, kDeploymentHotwireGPIOPin, PI_OUTPUT);
-  set_PWM_frequency(pigpio_, kDeploymentMotorGPIOPin, 400);
-  set_PWM_range(pigpio_, kDeploymentMotorGPIOPin, 100);
-
-  pinMode(kAlarmGPIOPin, OUTPUT);
-
-  // Set initial values
-  set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, kPpmMiddleSignal);
-  set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
-                       kDeploymentServoClosed);
-  set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin, 0);
-  gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, 0);
-  gpio_write(pigpio_, kDeploymentHotwireGPIOPin, 0);
-
-  // Add callback functions for encoder pins.
-  gpioSetAlertFunc(kDeploymentEncoderChannelOne, deploymentChannelOneTrigger);
-#endif
-
-  // Chirp when the io program starts.
+  // Chirp the alarm when the IO program starts.
   alarm_.AddAlert({kAlarmChirpDuration, 0});
 }
 
-void IO::Quit(int sig) {
-  (void)sig;
+void IO::Quit(int signal) {
+  (void)signal;
 
   running_ = false;
   writer_thread_.join();
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+#ifdef RASPI_DEPLOYMENT
   set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, kPpmMiddleSignal);
   set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
                        kDeploymentServoClosed);
@@ -109,20 +83,19 @@ void IO::Quit(int sig) {
   // Sleep a bit so that the outputs are actually written.
   usleep(0.1 * 1e6);
 
-#ifdef UAS_AT_UCLA_DEPLOYMENT
+#ifdef RASPI_DEPLOYMENT
   pigpio_stop(pigpio_);
 #endif
 }
 
 void IO::WriterThread() {
   while (running_ && ::ros::ok()) {
-    // Write out the alarm signal.
-    // This was hacked to make the alarm switch trigger deployment!
-    /*
-    bool should_override_alarm = (should_override_alarm_ &&
-                                  last_rc_in_ + kRcInTimeGap >
-                                      ::lib::phased_loop::GetCurrentTime());
+    // Calculate alarm output.
+    bool should_override_alarm =
+        (should_override_alarm_ &&
+         last_rc_in_ + kRcInTimeGap > ::ros::Time::now().toSec());
     bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
+<<<<<<< HEAD
     */
     bool should_alarm = alarm_.ShouldAlarm();
     (void)should_alarm;
@@ -177,62 +150,63 @@ void IO::WriterThread() {
 #ifdef UAS_AT_UCLA_DEPLOYMENT
     // Write out alarm.
     digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
+=======
+>>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
 
-    // Write out gimbal.
-    set_servo_pulsewidth(pigpio_, kGimbalGPIOPin,
-                         1500 + gimbal_setpoint_ * 500);
+    // Calculate deployment output.
+    ::lib::deployment::Input deployment_input;
+    ::lib::deployment::Output deployment_output;
+    deployment_input.direction = 0;
+    deployment_.RunIteration(deployment_input, deployment_output);
 
-    // Write out deployment.
-    if (deployment_motor_setpoint_ >= 0) {
-      set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin,
-                        deployment_motor_setpoint_ * 100);
-      gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, 0);
-    } else {
-      set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin,
-                        deployment_motor_setpoint_ * -100);
-      gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, 1);
-    }
+    // Write out actuators.
+    WriteAlarm(should_alarm);
+    WriteGimbal(gimbal_setpoint_);
+    WriteDeployment(deployment_output);
 
-    gpio_write(pigpio_, kDeploymentHotwireGPIOPin, hotwire_setpoint ? 1 : 0);
-
-    // static int i = 0;
-    // if(i++ > 500) {
-    //   ::std::cout << "OFF\n";
-    //   if(i > 3000) {
-    //     i = 0;
-    //   }
-    // } else {
-    //   gpio_write(pigpio_, kDeploymentHotwireGPIOPin, 1);
-    //   ::std::cout << "ON\n";
-    // }
-
-    set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
-                         deployment_servo_setpoint_);
+#ifndef RASPI_DEPLOYMENT
+    PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 100);
+    // PixhawkSetGlobalPositionGoal(38.147483, -76.427778, 100);
 #endif
 
     // Write output to LED strip.
     led_strip_.Render(false);
 
     // Write out sensors protobuf at a slower rate than the write loop.
-    if (::lib::phased_loop::GetCurrentTime() > next_sensors_write_ &&
+    if (::ros::Time::now().toSec() > next_sensors_write_ &&
         ros_to_proto_.SensorsValid()) {
       sensors_publisher_.publish(ros_to_proto_.GetSensors());
 
       next_sensors_write_ =
-          ::lib::phased_loop::GetCurrentTime() + kSensorsPublisherPeriod;
+          ::ros::Time::now().toSec() + kSensorsPublisherPeriod;
     }
 
     // Log the current GPIO outputs.
-    // ROS_DEBUG_STREAM("Writer thread iteration: "
-    //                  << ::std::endl
-    //                  << "alarm[" << should_alarm << "]" << ::std::endl
-    //                  << "led_strip[" << led_strip_.GetStrip() << ::std::endl
-    //                  << "]");
+    ROS_DEBUG_STREAM_THROTTLE(
+        0.1, "Writer thread iteration: "
+                 << ::std::endl
+                 << "alarm[" << should_alarm << "]" << ::std::endl
+                 << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
+                 << "deployment_motor[" << deployment_output.motor << "]"
+                 << ::std::endl
+                 << "deployment_latch[" << deployment_output.latch << "]" << ::std::endl
+                 << "deployment_hotwire[" << deployment_output.hotwire << "]"
+                 << ::std::endl
+#ifdef LOG_LED_STRIP
+                 << "led_strip[" << led_strip_.GetStrip() << ::std::endl
+#endif
+                 << "]");
 
     // Wait until next iteration of loop.
     writer_phased_loop_.sleep();
   }
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// ROS subscriber callbacks. ///////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// UAS@UCLA callbacks.
 
 void IO::Output(const ::src::controls::Output output) {
   ROS_DEBUG_STREAM(
@@ -260,9 +234,11 @@ void IO::AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence) {
   }
 }
 
+// Mavros callbacks.
+
 void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   bool new_should_override_alarm = should_override_alarm_;
-  last_rc_in_ = ::lib::phased_loop::GetCurrentTime();
+  last_rc_in_ = ::ros::Time::now().toSec();
 
   // Trigger the alarm if the RC controller override switch was flipped.
   if (rc_in.channels[kAlarmOverrideRcChannel - 1] >
@@ -299,23 +275,35 @@ void IO::BatteryStatusReceived(
 }
 
 void IO::StateReceived(const ::mavros_msgs::State state) {
+<<<<<<< HEAD
   px4_mode_ = state.mode;
 
   if (state.armed != did_arm_) {
+=======
+  if (state.armed != last_arm_state_) {
+>>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
     ROS_INFO_STREAM("Arming state changed: "
-                    << (did_arm_ ? "ARMED" : "DISARMED") << " -> "
+                    << (last_arm_state_ ? "ARMED" : "DISARMED") << " -> "
                     << (state.armed ? "ARMED" : "DISARMED"));
+<<<<<<< HEAD
     did_arm_ = state.armed;
+=======
+
+    last_arm_state_ = state.armed;
+>>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
   }
 
   led_strip_.set_armed(state.armed);
 }
 
 void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
+  // Silence unused variable warnings.
   (void)imu;
-  led_strip_.set_last_imu(::lib::phased_loop::GetCurrentTime());
+
+  led_strip_.set_last_imu(::ros::Time::now().toSec());
 }
 
+<<<<<<< HEAD
 void IO::DroneProgramReceived(
     const ::src::controls::ground_controls::timeline::DroneProgram
         drone_program) {
@@ -400,11 +388,179 @@ void IO::FlyToLocation() {
     srv_setMode.request.custom_mode = "AUTO.RTL";
     if (set_mode_service_.call(srv_setMode)) {
       ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
-    } else {
-      ROS_ERROR("Failed SetMode");
-    }
-    did_land = true; // TODO
+=======
+////////////////////////////////////////////////////////////////////////////////
+// Actuator output write methods. //////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+void IO::InitializeActuators() {
+#ifdef RASPI_DEPLOYMENT
+  // Alarm IO setup.
+  wiringPiSetup();
+
+  pigpio_ = pigpio_start(0, 0);
+  // Inputs.
+  set_mode(pigpio_, kDeploymentEncoderChannelOne, PI_INPUT);
+  set_mode(pigpio_, kDeploymentEncoderChannelTwo, PI_INPUT);
+
+  // Outputs.
+  set_mode(pigpio_, kGimbalGPIOPin, PI_OUTPUT);
+  set_mode(pigpio_, kDeploymentLatchServoGPIOPin, PI_OUTPUT);
+  set_mode(pigpio_, kDeploymentMotorGPIOPin, PI_OUTPUT);
+  set_mode(pigpio_, kDeploymentMotorReverseGPIOPin, PI_OUTPUT);
+  set_mode(pigpio_, kDeploymentHotwireGPIOPin, PI_OUTPUT);
+  set_PWM_frequency(pigpio_, kDeploymentMotorGPIOPin, 400);
+  set_PWM_range(pigpio_, kDeploymentMotorGPIOPin, 100);
+
+  pinMode(kAlarmGPIOPin, OUTPUT);
+
+  // Set initial values
+  set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, kPpmMiddleSignal);
+  set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
+                       kDeploymentServoClosed);
+  set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin, 0);
+  gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, 0);
+  gpio_write(pigpio_, kDeploymentHotwireGPIOPin, 0);
+
+  // Add callback functions for encoder pins.
+  gpioSetAlertFunc(kDeploymentEncoderChannelOne, deploymentChannelOneTrigger);
+#endif
+}
+
+void IO::WriteAlarm(bool alarm) {
+#ifdef RASPI_DEPLOYMENT
+  // Write alarm.
+  digitalWrite(kAlarmGPIOPin, alarm ? HIGH : LOW);
+#else
+  // Silence unused variable warnings.
+  (void)alarm;
+#endif
+}
+
+void IO::WriteGimbal(double pitch) {
+#ifdef RASPI_DEPLOYMENT
+  // Cap pitch range to [-1, 1].
+  pitch = ::std::max(::std::min(pitch, 1.0), -1.0);
+
+  // Write gimbal pitch.
+  set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, 1500 + pitch * 500);
+#else
+  // Silence unused variable warnings.
+  (void)pitch;
+#endif
+}
+
+void IO::WriteDeployment(::lib::deployment::Output &output) {
+#ifdef RASPI_DEPLOYMENT
+  // Cap motor range to [-1, 1].
+  output.motor = ::std::max(::std::min(output.motor, 1.0), -1.0);
+
+  // Write motor.
+  set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin,
+                    output.motor * (output.motor >= 0 ? 1 : -1) * 100);
+  gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, output.motor < 0);
+
+  // Write hotwire.
+  gpio_write(pigpio_, kDeploymentHotwireGPIOPin, output.hotwire);
+
+  // Write latch.
+  set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
+                       output.latch ? kDeploymentServoClosed : kDeploymentServoOpen);
+#else
+  // Silence unused variable warnings.
+  (void)output;
+#endif
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// Pixhawk interfacing methods. ////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+// Send a SetMode command to the Pixhawk when the signal has a posedge.
+void IO::PixhawkSendModePosedge(::std::string mode, bool signal) {
+  // Only send takeoff command on posedge.
+  if (last_mode_signals_.count(mode) > 0 &&
+      signal == last_mode_signals_[mode]) {
+    return;
   }
+  last_mode_signals_[mode] = signal;
+
+  // If signal is false, don't take off.
+  if (!signal) {
+    return;
+  }
+
+  // Handle case where an arm command is provided.
+  if (mode == kPixhawkArmCommand) {
+    // Send arm command to Pixhawk.
+    ::mavros_msgs::CommandBool cmd;
+    cmd.request.value = true;
+
+    if (arm_service_.call(cmd)) {
+      ROS_INFO("Arm sent; got success %d", cmd.response.success);
+>>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
+    } else {
+      ROS_ERROR("Arm failed!");
+    }
+<<<<<<< HEAD
+    did_land = true; // TODO
+=======
+
+    return;
+  }
+
+  // Send SetMode command to Pixhawk.
+  ::mavros_msgs::SetMode cmd;
+  cmd.request.base_mode = 0;
+  cmd.request.custom_mode = mode;
+
+  if (!set_mode_service_.call(cmd)) {
+    ROS_INFO("%s sent; got response %d", mode.c_str(), cmd.response.mode_sent);
+  } else {
+    ROS_ERROR("%s failed!", mode.c_str());
+  }
+}
+
+// Send a global position setpoint to the Pixhawk, up to a maximum rate.
+void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
+                                      double altitude) {
+
+  double current_time = ::ros::Time::now().toSec();
+
+  // Don't send global position setpoint faster than a certain rate.
+  if (current_time - last_position_setpoint_ <
+      1.0 / kPixhawkGlobalSetpointMaxHz) {
+    return;
+>>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
+  }
+  last_position_setpoint_ = current_time;
+
+  // Find WGS84 altitude to send as global position setpoint.
+  // https://real.flightairmap.com/tools/geoid
+  static GeographicLib::Geoid geoid_height_convert("egm96-5");
+  double geoid_height = geoid_height_convert(latitude, longitude);
+
+  // Send global position setpoint to Pixhawk, using the geoid height to convert
+  // between WGS84 and AMSL altitudes.
+  ::mavros_msgs::GlobalPositionTarget target;
+  target.header.stamp = ::ros::Time::now();
+  target.type_mask = ::mavros_msgs::GlobalPositionTarget::IGNORE_VX |
+                     ::mavros_msgs::GlobalPositionTarget::IGNORE_VY |
+                     ::mavros_msgs::GlobalPositionTarget::IGNORE_VZ |
+                     ::mavros_msgs::GlobalPositionTarget::IGNORE_AFX |
+                     ::mavros_msgs::GlobalPositionTarget::IGNORE_AFY |
+                     ::mavros_msgs::GlobalPositionTarget::IGNORE_AFZ |
+                     ::mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE;
+  target.coordinate_frame =
+      ::mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_REL_ALT;
+  target.latitude = latitude;
+  target.longitude = longitude;
+  target.altitude = altitude + geoid_height;
+  target.yaw = 0;
+  global_position_publisher_.publish(target);
+
+  ROS_DEBUG("Sending global position setpoint: latitude(%f), longitude(%f), "
+            "altitude(%f)",
+            latitude, longitude, altitude);
 }
 
 } // namespace io

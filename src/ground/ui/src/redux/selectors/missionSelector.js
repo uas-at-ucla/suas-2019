@@ -10,15 +10,20 @@ selectors.protoInfo = createSelector(
     if (!timelineGrammar) {
       return null;
     }
-    let commandNames = timelineGrammar.GroundCommand.oneofs.command.oneof;
+    let groundCommandNames = timelineGrammar.GroundCommand.oneofs.command.oneof;
     let commandAbbr = {};
-    for (let commandName of commandNames) {
+    for (let commandName of groundCommandNames) {
       let commandType = timelineGrammar.GroundCommand.fields[commandName].type;
+      commandAbbr[commandName] = commandType.replace("Command", "");
+    }
+    let droneCommandNames = timelineGrammar.DroneCommand.oneofs.command.oneof;
+    for (let commandName of droneCommandNames) {
+      let commandType = timelineGrammar.DroneCommand.fields[commandName].type;
       commandAbbr[commandName] = commandType.replace("Command", "");
     }
     return {
       timelineGrammar: timelineGrammar,
-      commandNames: commandNames,
+      commandNames: groundCommandNames,
       commandAbbr: commandAbbr,
       fieldUnits: {
         altitude: "ft",
@@ -57,10 +62,7 @@ selectors.commandMarkers = createObjectSelector(
             lat: location.latitude,
             lng: location.longitude
           },
-          label: label,
-          options: {
-            //icon: url //if u want it to look different
-          }
+          label: label
         }
       }
     }
@@ -81,13 +83,33 @@ selectors.commandPoints = createSelector(
         marker: marker,
         infobox: {
           position: marker.position,
-          options: {
-            //enableEventPropagation: true //we might need this if there are some buttons in the infobox.
-          },
           content: (index+1)
         }
       }
     });
+  }
+);
+
+selectors.droneProgramPath = createSelector(
+  [state => state.mission.droneProgram, selectors.protoInfo],
+  (droneProgram, protoInfo) => {
+    if (!droneProgram) {
+      return [];
+    }
+    let path = [];
+    for (let cmd of droneProgram.commands) {
+      for (let locationField of protoInfo.locationFields) {
+        if (cmd[cmd.name][locationField]) {
+          let location = cmd[cmd.name][locationField];
+          path.push({
+            lat: location.latitude,
+            lng: location.longitude
+          });
+          break;
+        }
+      }
+    }
+    return path;
   }
 );
 
