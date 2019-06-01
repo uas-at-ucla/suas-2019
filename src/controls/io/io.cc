@@ -45,7 +45,7 @@ IO::IO() :
         kRosArmService)),
     takeoff_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandTOL>(
         kRosTakeoffService)),
-    last_global_position_setpoint_(-std::numeric_limits<double>::infinity()),
+    last_position_setpoint_(-std::numeric_limits<double>::infinity()),
     last_arm_state_(false),
     writer_thread_(&IO::WriterThread, this),
     writer_phased_loop_(kWriterPhasedLoopFrequency) {
@@ -111,9 +111,11 @@ void IO::WriterThread() {
     // Write out actuators.
     WriteAlarm(should_alarm);
     WriteGimbal(gimbal_setpoint_);
-    WriteDeployment(deployment_motor_setpoint_, hotwire_setpoint, latch);
+    WriteDeployment(deployment_motor_setpoint_, latch, hotwire_setpoint);
 
-    PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 105);
+#ifndef RASPI_DEPLOYMENT
+    PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 100);
+#endif
 
     // Write output to LED strip.
     led_strip_.Render(false);
@@ -356,16 +358,23 @@ void IO::PixhawkSendModePosedge(::std::string mode, bool signal) {
 // Send a global position setpoint to the Pixhawk, up to a maximum rate.
 void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
                                       double altitude) {
-  double current_time = ::lib::phased_loop::GetCurrentTime();
+
+  double current_time = ::ros::Time::now().toSec();
 
   // Don't send global position setpoint faster than a certain rate.
-  if (current_time - last_global_position_setpoint_ <
+  if (current_time - last_position_setpoint_ <
       1.0 / kPixhawkGlobalSetpointMaxHz) {
     return;
   }
-  last_global_position_setpoint_ = current_time;
+  last_position_setpoint_ = current_time;
 
-  // Send global position setpoint to Pixhawk.
+  // Find WGS84 altitude to send as global position setpoint.
+  // https://real.flightairmap.com/tools/geoid
+  static GeographicLib::Geoid geoid_height_convert("egm96-5");
+  double geoid_height = geoid_height_convert(latitude, longitude);
+
+  // Send global position setpoint to Pixhawk, using the geoid height to convert
+  // between WGS84 and AMSL altitudes.
   ::mavros_msgs::GlobalPositionTarget target;
   target.header.stamp = ::ros::Time::now();
   target.type_mask = ::mavros_msgs::GlobalPositionTarget::IGNORE_VX |
@@ -379,7 +388,7 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
       ::mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_REL_ALT;
   target.latitude = latitude;
   target.longitude = longitude;
-  target.altitude = altitude;
+  target.altitude = altitude + geoid_height;
   target.yaw = 0;
   global_position_publisher_.publish(target);
 

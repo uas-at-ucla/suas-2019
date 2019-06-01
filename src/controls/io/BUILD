@@ -29,5 +29,6 @@ cc_library(
     "@pigpio//:pigpio",
     "@mavros_msgs//:mavros_msgs",
     "@sensor_msgs//:sensor_msgs",
+    "@GeographicLib//:GeographicLib",
   ],
 )

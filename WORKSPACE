@@ -244,3 +244,10 @@ http_archive(
     urls = ['https://github.com/ros/gencpp/archive/0.5.5.tar.gz'],
     strip_prefix='gencpp-0.5.5',
 )
+
+http_archive(
+  name='GeographicLib',
+  build_file='third_party/GeographicLib.BUILD',
+  urls = ['https://github.com/Sciumo/GeographicLib/archive/v1.43.zip'],
+  strip_prefix='GeographicLib-1.43',
+)

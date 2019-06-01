@@ -8,6 +8,7 @@
 #include <linux/limits.h>
 #include <ros/console.h>
 #include <ros/ros.h>
+#include <GeographicLib/Geoid.hpp>
 
 #ifdef RASPI_DEPLOYMENT
 #include <pigpiod_if2.h>
@@ -166,7 +167,7 @@ class IO {
   ::ros::ServiceClient takeoff_service_;
 
   ::std::map<::std::string, bool> last_mode_signals_;
-  double last_global_position_setpoint_;
+  double last_position_setpoint_;
 
   bool last_arm_state_;
 
