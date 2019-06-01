@@ -108,7 +108,6 @@ controls_io.on('connect', (socket) => {
   console.log("ground_controls connected");
   function onSensors(sensors) {
     if (protobufUtils) {
-      //TODO receive and cache other data to send along with sensors
       telemetry.sensors = protobufUtils.decodeSensors(sensors);
       if (interopClient) {
         interopClient.newTelemetry(telemetry);
@@ -117,11 +116,11 @@ controls_io.on('connect', (socket) => {
   }
 
   socket.on('SENSORS', (sensors) => {
-    onSensors(sensors, config.droneSensorsFrequency);
+    onSensors(sensors);
   });
 
   socket.on('SENSORS_RFD900', (sensors) => {
-    onSensors(sensors, config.droneSensorsFreqRFD900);
+    onSensors(sensors);
   });
 
   socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
@@ -132,6 +131,17 @@ controls_io.on('connect', (socket) => {
 
   socket.on('MISSION_COMPILE_ERROR', (droneProgram) => {
     ui_io.emit('MISSION_COMPILE_ERROR', droneProgram);
+  });
+
+  socket.on('UPLOADED_DRONE_PROGRAM', (droneProgram) => {
+    console.log("Got acknowledgment that the Drone Program was uploaded")
+    if (protobufUtils) {
+      ui_io.emit('UPLOADED_DRONE_PROGRAM', protobufUtils.decodeDroneProgam(droneProgram));
+    }  
+  });
+
+  socket.on('MISSION_STATUS', (status) => {
+    ui_io.emit('MISSION_STATUS', status);
   });
 });
 
@@ -189,10 +199,13 @@ ui_io.on('connect', (socket) => {
     }
   });
 
-  socket.on('RUN_MISSION', (pos) => {
-    console.log("Running mission!");
-    controls_io.emit('RUN_MISSION', pos);
-  });
+  for (controls_msg of ['UPLOAD_MISSION', 'RUN_MISSION', 'PAUSE_MISSION', 'END_MISSION']) {
+    let local_controls_msg = controls_msg;
+    socket.on(local_controls_msg, () => {
+      console.log(local_controls_msg);
+      controls_io.emit(local_controls_msg);
+    });
+  }
 
   socket.on('CONNECT_TO_INTEROP', (cred) => {
     console.log('CONNECT TO INTEROP');

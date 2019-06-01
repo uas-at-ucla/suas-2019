@@ -7,7 +7,9 @@ import droneActions from "redux/actions/droneActions";
 const mapStateToProps = state => { 
   return {
     missionCommands: state.mission.commands,
-    missionUploaded: state.mission.missionUploaded
+    missionCompiled: state.mission.missionCompiled,
+    missionUploaded: state.mission.missionUploaded,
+    missionStatus: state.mission.missionStatus,
   }; 
 };
 
@@ -27,28 +29,16 @@ class DroneActions extends Component {
     }));
   }
 
-  toggleWithName = (message) => {
-    this.setState({ message: message, modal: !this.state.modal });
+  toggleWithName = (message, action) => {
+    this.setState({ 
+      message: message,
+      action: action,
+      modal: !this.state.modal
+    });
   }
 
   doAction = () => {
-    switch (this.state.message)
-    { 
-      case "Compile Mission" : this.compileMission(); 
-      break;
-      case "Run Mission" : this.props.runMission();
-      break;
-      case "Takeoff" : this.props.droneTakeoff();
-      break;
-      case "Land" : this.props.droneLand();
-      break;
-      case "Failsafe Landing": this.props.droneFailsafe();
-      break;
-      case "Throttle Cut":  this.props.droneThrottleCut();
-      break; 
-      case "Drive UGV":  this.props.driveUgv();
-      break; 
-    }
+    this.state.action();
     this.toggle();
   }
 
@@ -57,16 +47,23 @@ class DroneActions extends Component {
     return (
       <span className="DroneActions">        
         <div className="buttonArray">
-          {this.props.missionUploaded ? 
-            <button id="runMissionButton" onClick={()=>this.toggleWithName("Run Mission")}>Run Mission</button>
+          {this.props.missionStatus === 'PAUSE_MISSION' ? 
+            <button id="runMissionButton" onClick={()=>this.toggleWithName("Run Mission", this.props.runMission)}>Run Mission</button>
+          : this.props.missionStatus === 'RUN_MISSION' ? 
+            <button id="takeoffButton" onClick={()=>this.toggleWithName("Pause Mission", this.props.pauseMission)}>Pause Mission</button>
+          : this.props.missionCompiled && this.props.missionUploaded ?
+            <button id="runMissionButton" onClick={()=>this.toggleWithName("Run Mission", this.props.runMission)}>Run Mission</button>
+          : this.props.missionCompiled ?
+            <button id="runMissionButton" onClick={()=>this.toggleWithName("Upload Mission", this.props.uploadMission)}>Upload Mission</button>
           :
-            <button id="runMissionButton" onClick={()=>this.toggleWithName("Compile Mission")}>Compile Mission</button>
+            <button id="runMissionButton" onClick={()=>this.toggleWithName("Compile Mission", this.compileMission)}>Compile Mission</button> 
           }
-          <button id="takeoffButton" onClick={()=>this.toggleWithName("Takeoff")}>Takeoff</button>
-          <button id="landButton" onClick={()=>this.toggleWithName("Land")}>Land</button>
-          <button id="failsafeButton" onClick={()=>this.toggleWithName("Failsafe Landing")}>Failsafe Landing</button>
-          <button id="throttleCutButton" onClick={()=>this.toggleWithName("Throttle Cut")}>Throttle Cut</button>
-          <button id="takeoffButton" onClick={()=>this.toggleWithName("Drive UGV")}>Drive UGV</button>
+          <button id="failsafeButton" onClick={()=>this.toggleWithName("End Mission", this.props.endMission)}>End Mission</button>
+          <button id="takeoffButton" onClick={()=>this.toggleWithName("Takeoff", this.props.droneTakeoff)}>Takeoff</button>
+          <button id="landButton" onClick={()=>this.toggleWithName("Land", this.props.droneLand)}>Land</button>
+          <button id="failsafeButton" onClick={()=>this.toggleWithName("Failsafe Landing", this.props.droneFailsafe)}>Failsafe Landing</button>
+          <button id="throttleCutButton" onClick={()=>this.toggleWithName("Throttle Cut", this.props.droneThrottleCut)}>Throttle Cut</button>
+          <button id="takeoffButton" onClick={()=>this.toggleWithName("Drive UGV", this.props.driveUgv)}>Drive UGV</button>
           <Modal isOpen={this.state.modal} toggle={this.toggle} className={this.props.className}>
           <ModalHeader toggle={this.toggle}>WARNING</ModalHeader>
           <ModalBody>
