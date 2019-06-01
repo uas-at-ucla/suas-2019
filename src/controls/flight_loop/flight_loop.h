@@ -48,11 +48,8 @@ class FlightLoop {
   void RunIteration(::src::controls::Sensors sensors);
 
  private:
-  void DumpProtobufMessages(::src::controls::Sensors &sensors,
-                            ::src::controls::Goal &goal,
-                            ::src::controls::Output &output);
   void LogProtobufMessage(::std::string name,
-                          ::google::protobuf::Message *message);
+                          ::google::protobuf::Message &message);
   void MonitorLoopFrequency(::src::controls::Sensors);
   void EndFlightTimer();
   ::src::controls::Output GenerateDefaultOutput();
@@ -84,6 +81,7 @@ class FlightLoop {
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber sensors_subscriber_;
+  ::ros::Publisher output_publisher_;
 };
 
 } // namespace flight_loop

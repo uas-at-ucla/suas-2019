@@ -13,20 +13,23 @@ FlightLoop::FlightLoop() :
     last_dslr_(0),
     sensors_subscriber_(ros_node_handle_.subscribe(
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
-        &FlightLoop::RunIteration, this)) {}
-void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
-  (void)sensors;
-  ::src::controls::Output output = GenerateDefaultOutput();
+        &FlightLoop::RunIteration, this)),
+    output_publisher_(ros_node_handle_.advertise<::src::controls::Output>(
+        io::kRosOutputTopic, io::kRosMessageQueueSize)) {
 
-  ::std::cout << ::std::fixed << ::std::setprecision(5)
-              << ::lib::phased_loop::GetCurrentTime() << ": "
-              << sensors.battery_voltage() << ::std::endl;
+  ROS_INFO("Flight loop initialized!");
+}
+
+void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
+  ::src::controls::Output output = GenerateDefaultOutput();
 
   // state_machine_.Handle(sensors, goal, output);
   // WriteActuators(sensors, goal, output);
-  // DumpProtobufMessages(sensors, goal, output);
 
-  // return output;
+  LogProtobufMessage("SENSORS", sensors);
+  LogProtobufMessage("OUTPUT", output);
+
+  output_publisher_.publish(output);
 }
 
 void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
@@ -50,6 +53,7 @@ void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
   output.set_flight_time(0);
   output.set_current_command_index(0);
 
+  output.set_send_offboard(false);
   output.set_velocity_x(0);
   output.set_velocity_y(0);
   output.set_velocity_z(0);
@@ -117,21 +121,12 @@ void FlightLoop::WriteActuators(::src::controls::Sensors &sensors,
   // }
 }
 
-void FlightLoop::DumpProtobufMessages(::src::controls::Sensors &sensors,
-                                      ::src::controls::Goal &goal,
-                                      ::src::controls::Output &output) {
-
-  LogProtobufMessage("SENSORS", &sensors);
-  LogProtobufMessage("GOAL", &goal);
-  LogProtobufMessage("OUTPUT", &output);
-}
-
 void FlightLoop::LogProtobufMessage(::std::string name,
-                                    ::google::protobuf::Message *message) {
+                                    ::google::protobuf::Message &message) {
   ::std::ostringstream output;
 
   ::std::string sensors_string;
-  ::google::protobuf::TextFormat::PrintToString(*message, &sensors_string);
+  ::google::protobuf::TextFormat::PrintToString(message, &sensors_string);
 
   ::std::vector<::std::string> sensors_split;
   ::boost::split(sensors_split, sensors_string,
@@ -143,7 +138,7 @@ void FlightLoop::LogProtobufMessage(::std::string name,
     output << name << "... " << field << "\n";
   }
 
-  // LOG_LINE(output.str());
+  ROS_DEBUG_STREAM(output.str());
 }
 
 } // namespace flight_loop

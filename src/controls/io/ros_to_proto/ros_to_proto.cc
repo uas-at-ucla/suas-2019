@@ -59,6 +59,7 @@ RosToProto::RosToProto() :
 
 Sensors RosToProto::GetSensors() {
   Sensors sensors_copy;
+  sensors_copy.set_time(::ros::Time::now().toSec());
 
   // Grab lock to prevent ROS from modifying the shared Sensors object while a
   // copy is performed.

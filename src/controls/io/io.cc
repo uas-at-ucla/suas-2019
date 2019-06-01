@@ -56,6 +56,8 @@ IO::IO() :
 
   // Chirp the alarm when the IO program starts.
   alarm_.AddAlert({kAlarmChirpDuration, 0});
+
+  ROS_INFO("Flight loop initialized!");
 }
 
 void IO::Quit(int signal) {
@@ -149,9 +151,7 @@ void IO::WriterThread() {
 // UAS@UCLA callbacks.
 
 void IO::Output(const ::src::controls::Output output) {
-  ROS_DEBUG_STREAM(
-      "Got output protobuf from flight_loop. vx: " << output.velocity_x());
-
+  (void) output;
   // Only listen to output if safety pilot override is not active.
   bool run_uas_flight_loop = true;
   if (!run_uas_flight_loop) {
