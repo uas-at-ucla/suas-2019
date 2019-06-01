@@ -19,6 +19,7 @@ cc_library(
     'ground_controls.h'
   ],
   deps = [
+    '//src/controls:constants',
     '//src/controls/flight_loop:flight_loop_lib',
     '//src/controls:messages_cpp',
     '//src/controls/io:io_lib',

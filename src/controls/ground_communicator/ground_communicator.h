@@ -8,6 +8,8 @@
 #include "src/controls/io/io.h"
 #include "src/controls/messages.pb.h"
 
+#include "src/controls/constants.h"
+
 namespace src {
 namespace controls {
 namespace ground_communicator {

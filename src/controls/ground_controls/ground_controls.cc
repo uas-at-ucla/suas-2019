@@ -14,13 +14,13 @@ GroundControls::GroundControls(int argc, char **argv) :
     running_(false),
     ros_node_handle_(),
     sensors_subscriber_(ros_node_handle_.subscribe(
-        io::kRosSensorsTopic, io::kRosMessageQueueSize,
+        kRosSensorsTopic, kRosMessageQueueSize,
         &GroundControls::SensorsReceived, this, ros::TransportHints().udp())),
     drone_program_subscriber_(ros_node_handle_.subscribe(
-        kRosDroneProgramTopic, io::kRosMessageQueueSize,
+        kRosDroneProgramTopic, kRosMessageQueueSize,
         &GroundControls::DroneProgramReceived, this)),
     mission_status_subscriber_(ros_node_handle_.subscribe(
-        kRosMissionStatusTopic, io::kRosMessageQueueSize,
+        kRosMissionStatusTopic, kRosMessageQueueSize,
         &GroundControls::MissionStatusReceived, this)),
     drone_program_publisher_(
         ros_node_handle_.advertise<

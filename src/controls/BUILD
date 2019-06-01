@@ -16,3 +16,11 @@ cc_proto_library(
       ":messages",
   ],
 )
+
+cc_library(
+  name = 'constants',
+  visibility = ['//visibility:public'],
+  hdrs = [
+    'constants.h'
+  ],
+)

@@ -42,7 +42,6 @@ class FlightLoopTest : public ::testing::Test {
     sensors_.set_battery_current(0);
     sensors_.set_armed(0);
     sensors_.set_autopilot_state(0);
-    sensors_.set_last_gps(0);
 
     goal_.set_run_mission(false);
     goal_.set_trigger_failsafe(false);

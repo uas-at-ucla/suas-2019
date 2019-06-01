@@ -19,6 +19,7 @@ cc_library(
     'io.h'
   ],
   deps = [
+    '//src/controls:constants',
     '//src/controls:messages_cpp',
     '//src/controls/ground_controls/timeline:timeline_grammar_cc',
     '//src/controls/io/led_strip:led_strip',

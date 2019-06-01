@@ -59,8 +59,6 @@ IO::IO() :
 
   // Chirp the alarm when the IO program starts.
   alarm_.AddAlert({kAlarmChirpDuration, 0});
-
-  ROS_INFO("Flight loop initialized!");
 }
 
 void IO::Quit(int signal) {
@@ -134,8 +132,7 @@ void IO::WriterThread() {
                  << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
                  << "deployment_motor[" << deployment_output.motor << "]"
                  << ::std::endl
-                 << "deployment_latch[" << deployment_output.latch << "]"
-                 << ::std::endl
+                 << "deployment_latch[" << deployment_output.latch << "]" << ::std::endl
                  << "deployment_hotwire[" << deployment_output.hotwire << "]"
                  << ::std::endl
 #ifdef LOG_LED_STRIP
@@ -155,7 +152,9 @@ void IO::WriterThread() {
 // UAS@UCLA callbacks.
 
 void IO::Output(const ::src::controls::Output output) {
-  (void)output;
+  ROS_DEBUG_STREAM(
+      "Got output protobuf from flight_loop. vx: " << output.velocity_x());
+
   // Only listen to output if safety pilot override is not active.
   bool run_uas_flight_loop = true;
   if (!run_uas_flight_loop) {
@@ -321,8 +320,7 @@ void IO::WriteDeployment(::lib::deployment::Output &output) {
 
   // Write latch.
   set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
-                       output.latch ? kDeploymentServoClosed
-                                    : kDeploymentServoOpen);
+                       output.latch ? kDeploymentServoClosed : kDeploymentServoOpen);
 #else
   // Silence unused variable warnings.
   (void)output;

@@ -28,15 +28,11 @@
 #include "src/controls/ground_controls/timeline/ground2drone_visitor/ground2drone_visitor.h"
 #include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 
+#include "src/controls/constants.h"
+
 namespace src {
 namespace controls {
 namespace ground_controls {
-namespace {
-static const int kRosMessageQueueSize = 1;
-static const ::std::string kRosDroneProgramTopic =
-    "/uasatucla/proto/drone_program";
-static const ::std::string kRosMissionStatusTopic = "/uasatucla/mission_status";
-} // namespace
 
 void on_connect();
 void on_fail();

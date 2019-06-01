@@ -67,7 +67,7 @@ class FlightLoop {
 
   // Receive drone program
   void DroneProgramReceived(
-      const ::src::controls::ground_controls::timeline::DroneProgram
+      ::src::controls::ground_controls::timeline::DroneProgram
           drone_program);
 
   // Fields ////////////////////////////////////////////////////////////////////
