@@ -14,14 +14,14 @@ FlightLoop::FlightLoop() :
     sensors_subscriber_(ros_node_handle_.subscribe(
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
         &FlightLoop::RunIteration, this)),
-    output_publisher_(ros_node_handle_.advertise<::src::controls::Output>(
-        io::kRosOutputTopic, io::kRosMessageQueueSize)),
     drone_program_subscriber_(ros_node_handle_.subscribe(
         io::kRosDroneProgramTopic, io::kRosMessageQueueSize,
-        &FlightLoop::DroneProgramReceived, this)) {
+        &FlightLoop::DroneProgramReceived, this)),
+    output_publisher_(ros_node_handle_.advertise<::src::controls::Output>(
+        io::kRosOutputTopic, io::kRosMessageQueueSize)) {
+
   ROS_INFO("Flight loop initialized!");
 }
-
 
 void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
   ::src::controls::Output output = GenerateDefaultOutput();

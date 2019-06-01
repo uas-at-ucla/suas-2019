@@ -97,63 +97,6 @@ void IO::WriterThread() {
         (should_override_alarm_ &&
          last_rc_in_ + kRcInTimeGap > ::ros::Time::now().toSec());
     bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
-<<<<<<< HEAD
-    */
-    bool should_alarm = alarm_.ShouldAlarm();
-    (void)should_alarm;
-
-    bool hotwire_setpoint = false;
-    static bool last_should_alarm = false;
-
-    // If running in a simulator, trigger the arm/takeoff/land sequence after
-    // a certain amount of time.
-#ifndef UAS_AT_UCLA_DEPLOYMENT
-    static double start = ::lib::phased_loop::GetCurrentTime();
-    if (::lib::phased_loop::GetCurrentTime() - start > 5) {
-      should_override_alarm_ = true;
-    }
-#endif
-
-    if (should_override_alarm_) {
-      deployment_servo_setpoint_ = kDeploymentServoOpen;
-      hotwire_setpoint = true;
-
-      if (last_should_alarm != should_override_alarm_) {
-        fly_start_time = ::lib::phased_loop::GetCurrentTime();
-        did_trigger_takeoff = false;
-        did_takeoff = false;
-        did_finish_takeoff = false;
-        did_offboard = false;
-        did_mission = false;
-        did_land = false;
-        last_msg = ::lib::phased_loop::GetCurrentTime();
-      }
-
-      FlyToLocation();
-    } else {
-      if (last_should_alarm != should_override_alarm_) {
-        if (did_offboard) {
-          ::mavros_msgs::SetMode srv_setMode;
-          srv_setMode.request.base_mode = 0;
-          srv_setMode.request.custom_mode = "POSCTL";
-
-          if (!set_mode_service_.call(srv_setMode)) {
-            ROS_ERROR("Failed SetMode");
-          }
-        }
-      }
-
-      deployment_servo_setpoint_ = kDeploymentServoClosed;
-    }
-
-    last_should_alarm = should_override_alarm_;
-
-    (void)gimbal_setpoint_;
-#ifdef UAS_AT_UCLA_DEPLOYMENT
-    // Write out alarm.
-    digitalWrite(kAlarmGPIOPin, should_alarm ? HIGH : LOW);
-=======
->>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
 
     // Calculate deployment output.
     ::lib::deployment::Input deployment_input;
@@ -191,7 +134,8 @@ void IO::WriterThread() {
                  << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
                  << "deployment_motor[" << deployment_output.motor << "]"
                  << ::std::endl
-                 << "deployment_latch[" << deployment_output.latch << "]" << ::std::endl
+                 << "deployment_latch[" << deployment_output.latch << "]"
+                 << ::std::endl
                  << "deployment_hotwire[" << deployment_output.hotwire << "]"
                  << ::std::endl
 #ifdef LOG_LED_STRIP
@@ -211,7 +155,7 @@ void IO::WriterThread() {
 // UAS@UCLA callbacks.
 
 void IO::Output(const ::src::controls::Output output) {
-  (void) output;
+  (void)output;
   // Only listen to output if safety pilot override is not active.
   bool run_uas_flight_loop = true;
   if (!run_uas_flight_loop) {
@@ -275,22 +219,12 @@ void IO::BatteryStatusReceived(
 }
 
 void IO::StateReceived(const ::mavros_msgs::State state) {
-<<<<<<< HEAD
-  px4_mode_ = state.mode;
-
-  if (state.armed != did_arm_) {
-=======
   if (state.armed != last_arm_state_) {
->>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
     ROS_INFO_STREAM("Arming state changed: "
                     << (last_arm_state_ ? "ARMED" : "DISARMED") << " -> "
                     << (state.armed ? "ARMED" : "DISARMED"));
-<<<<<<< HEAD
-    did_arm_ = state.armed;
-=======
 
     last_arm_state_ = state.armed;
->>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
   }
 
   led_strip_.set_armed(state.armed);
@@ -303,7 +237,6 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
   led_strip_.set_last_imu(::ros::Time::now().toSec());
 }
 
-<<<<<<< HEAD
 void IO::DroneProgramReceived(
     const ::src::controls::ground_controls::timeline::DroneProgram
         drone_program) {
@@ -313,82 +246,6 @@ void IO::DroneProgramReceived(
   // ::std::cout << drone_program.DebugString() << "\n";
 }
 
-void IO::FlyToLocation() {
-  if (!did_arm_) {
-    ::std::cout << "arming!" << ::std::endl;
-    ::mavros_msgs::CommandBool srv;
-    srv.request.value = true;
-    if (arm_service_.call(srv)) {
-      ROS_INFO("ARM send ok %d", srv.response.success);
-    } else {
-      ROS_ERROR("Failed arming or disarming");
-    }
-  } else if (!did_trigger_takeoff) {
-    ::std::cout << "taking off!" << ::std::endl;
-    ::mavros_msgs::SetMode srv_setMode;
-    srv_setMode.request.base_mode = 0;
-    srv_setMode.request.custom_mode = "AUTO.TAKEOFF";
-    if (set_mode_service_.call(srv_setMode)) {
-      ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
-    } else {
-      ROS_ERROR("Failed SetMode");
-    }
-    did_trigger_takeoff = true;
-  } else if (!did_takeoff) {
-    if (px4_mode_ == "AUTO.TAKEOFF") {
-      did_takeoff = true;
-    }
-  } else if (!did_finish_takeoff) {
-    if (px4_mode_ == "AUTO.LOITER") {
-      did_finish_takeoff = true;
-    }
-  } else if (!did_offboard) {
-    if (px4_mode_ == "OFFBOARD") {
-      did_offboard = true;
-    } else {
-      // setting setpoints is required before switching to offboard
-      ::std::cout << "setting setpoint!" << ::std::endl;
-      ::mavros_msgs::GlobalPositionTarget target;
-      target.header.stamp = ::ros::Time::now();
-      target.type_mask = ::mavros_msgs::GlobalPositionTarget::IGNORE_VX | ::mavros_msgs::GlobalPositionTarget::IGNORE_VY | ::mavros_msgs::GlobalPositionTarget::IGNORE_VZ | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFX | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFY | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFZ | ::mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE;
-      target.coordinate_frame = ::mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_REL_ALT;
-      target.latitude = 38.145424243481784;
-      target.longitude = -76.43065332806395;
-      target.altitude = 50;
-      target.yaw = 30;
-      global_position_publisher_.publish(target);
-
-      ::std::cout << "setting to offboard!" << ::std::endl;
-      ::mavros_msgs::SetMode srv_setMode;
-      srv_setMode.request.base_mode = 0;
-      srv_setMode.request.custom_mode = "OFFBOARD";
-      if (set_mode_service_.call(srv_setMode)) {
-        ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
-      } else {
-        ROS_ERROR("Failed SetMode");
-      }
-    }
-  } else if (!did_mission) {
-    ::std::cout << "setting setpoint!" << ::std::endl;
-    ::mavros_msgs::GlobalPositionTarget target;
-    target.header.stamp = ::ros::Time::now();
-    target.type_mask = ::mavros_msgs::GlobalPositionTarget::IGNORE_VX | ::mavros_msgs::GlobalPositionTarget::IGNORE_VY | ::mavros_msgs::GlobalPositionTarget::IGNORE_VZ | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFX | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFY | ::mavros_msgs::GlobalPositionTarget::IGNORE_AFZ | ::mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE;
-    target.coordinate_frame = ::mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_REL_ALT;
-    target.latitude = 38.145424243481784;
-    target.longitude = -76.43065332806395;
-    target.altitude = 50;
-    target.yaw = 30;
-    global_position_publisher_.publish(target);
-
-    // did_mission = true; // when done with mission
-  } else { // done with mission
-    ::std::cout << "RTL!" << ::std::endl;
-    ::mavros_msgs::SetMode srv_setMode;
-    srv_setMode.request.base_mode = 0;
-    srv_setMode.request.custom_mode = "AUTO.RTL";
-    if (set_mode_service_.call(srv_setMode)) {
-      ROS_INFO("setmode send ok %d value:", srv_setMode.response.mode_sent);
-=======
 ////////////////////////////////////////////////////////////////////////////////
 // Actuator output write methods. //////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
@@ -464,7 +321,8 @@ void IO::WriteDeployment(::lib::deployment::Output &output) {
 
   // Write latch.
   set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
-                       output.latch ? kDeploymentServoClosed : kDeploymentServoOpen);
+                       output.latch ? kDeploymentServoClosed
+                                    : kDeploymentServoOpen);
 #else
   // Silence unused variable warnings.
   (void)output;
@@ -497,13 +355,9 @@ void IO::PixhawkSendModePosedge(::std::string mode, bool signal) {
 
     if (arm_service_.call(cmd)) {
       ROS_INFO("Arm sent; got success %d", cmd.response.success);
->>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
     } else {
       ROS_ERROR("Arm failed!");
     }
-<<<<<<< HEAD
-    did_land = true; // TODO
-=======
 
     return;
   }
@@ -530,7 +384,6 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
   if (current_time - last_position_setpoint_ <
       1.0 / kPixhawkGlobalSetpointMaxHz) {
     return;
->>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
   }
   last_position_setpoint_ = current_time;
 
