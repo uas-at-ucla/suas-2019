@@ -58,7 +58,7 @@ void Deployment::RunIteration(struct Input &input, struct Output &output) {
       output.latch = false;
 
       // If externally triggered to cut the line, change to that state.
-      if(input.cut) {
+      if (input.cut) {
         next_state = CUT_LINE;
         break;
       }
@@ -76,7 +76,7 @@ void Deployment::RunIteration(struct Input &input, struct Output &output) {
       output.latch = false;
 
       // Return to motor power if the hotwire is not being commanded to turn on.
-      if(!input.cut) {
+      if (!input.cut) {
         next_state = MOTOR_ASSISTED_DEPLOYMENT;
         break;
       }

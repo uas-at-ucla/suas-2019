@@ -40,6 +40,9 @@ IO::IO() :
         kRosStateTopic, kRosMessageQueueSize, &IO::StateReceived, this)),
     imu_subscriber_(ros_node_handle_.subscribe(
         kRosImuTopic, kRosMessageQueueSize, &IO::ImuReceived, this)),
+    drone_program_subscriber_(ros_node_handle_.subscribe(
+        "/uasatucla/proto/drone_program", kRosMessageQueueSize,
+        &IO::DroneProgramReceived, this)),
     set_mode_service_(ros_node_handle_.serviceClient<::mavros_msgs::SetMode>(
         kRosSetModeService)),
     arm_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandBool>(
@@ -56,8 +59,6 @@ IO::IO() :
 
   // Chirp the alarm when the IO program starts.
   alarm_.AddAlert({kAlarmChirpDuration, 0});
-
-  ROS_INFO("Flight loop initialized!");
 }
 
 void IO::Quit(int signal) {
@@ -151,7 +152,9 @@ void IO::WriterThread() {
 // UAS@UCLA callbacks.
 
 void IO::Output(const ::src::controls::Output output) {
-  (void) output;
+  ROS_DEBUG_STREAM(
+      "Got output protobuf from flight_loop. vx: " << output.velocity_x());
+
   // Only listen to output if safety pilot override is not active.
   bool run_uas_flight_loop = true;
   if (!run_uas_flight_loop) {
@@ -231,6 +234,15 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
   (void)imu;
 
   led_strip_.set_last_imu(::ros::Time::now().toSec());
+}
+
+void IO::DroneProgramReceived(
+    const ::src::controls::ground_controls::timeline::DroneProgram
+        drone_program) {
+  ::std::cout << "Executing Drone Program...\n";
+  drone_program_ = drone_program;
+  should_override_alarm_ = true;
+  // ::std::cout << drone_program.DebugString() << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
