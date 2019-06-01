@@ -107,7 +107,7 @@ void IO::WriterThread() {
     WriteDeployment(deployment_output);
 
 #ifndef RASPI_DEPLOYMENT
-    PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 100);
+    // PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 100);
     // PixhawkSetGlobalPositionGoal(38.147483, -76.427778, 100);
 #endif
 
