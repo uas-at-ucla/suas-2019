@@ -31,6 +31,8 @@
 namespace src {
 namespace controls {
 namespace ground_controls {
+<<<<<<< HEAD
+=======
 namespace {
 static const int kRosMessageQueueSize = 1;
 static const ::std::string kRosDroneProgramTopic =
@@ -38,6 +40,7 @@ static const ::std::string kRosDroneProgramTopic =
 static const ::std::string kRosMissionStatusTopic =
     "/uasatucla/mission_status";
 } // namespace
+>>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
 
 void on_connect();
 void on_fail();

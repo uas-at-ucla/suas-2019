@@ -30,6 +30,7 @@
 #include "lib/phased_loop/phased_loop.h"
 #include "src/controls/io/led_strip/led_strip.h"
 #include "src/controls/io/ros_to_proto/ros_to_proto.h"
+#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
 
 // #define LOG_LED_STRIP 0
@@ -129,6 +130,7 @@ class IO {
   void BatteryStatusReceived(const ::sensor_msgs::BatteryState battery_state);
   void StateReceived(const ::mavros_msgs::State state);
   void ImuReceived(const ::sensor_msgs::Imu imu);
+  void DroneProgramReceived(const ::src::controls::ground_controls::timeline::DroneProgram drone_program);
 
   // Actuator setup and write handlers.
   void InitializeActuators();
@@ -152,6 +154,17 @@ class IO {
 
   double deployment_motor_setpoint_;
   double gimbal_setpoint_;
+<<<<<<< HEAD
+  double deployment_servo_setpoint_;
+
+  bool did_arm_;
+  ::std::string px4_mode_;
+
+  ::src::controls::ground_controls::timeline::DroneProgram drone_program_;
+
+  void FlyToLocation();
+=======
+>>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
 
   ::std::atomic<bool> running_;
 
@@ -165,15 +178,27 @@ class IO {
   ::ros::Subscriber battery_status_subscriber_;
   ::ros::Subscriber state_subscriber_;
   ::ros::Subscriber imu_subscriber_;
+  ::ros::Subscriber drone_program_subscriber_;
 
   ::ros::ServiceClient set_mode_service_;
   ::ros::ServiceClient arm_service_;
   ::ros::ServiceClient takeoff_service_;
 
+<<<<<<< HEAD
+  double fly_start_time;
+  bool did_trigger_takeoff;
+  bool did_takeoff;
+  bool did_finish_takeoff;
+  bool did_offboard;
+  bool did_mission;
+  bool did_land;
+  double last_msg;
+=======
   ::std::map<::std::string, bool> last_mode_signals_;
   double last_position_setpoint_;
 
   bool last_arm_state_;
+>>>>>>> 0f122b5e48a9062ce6411648672d69d0a1bb23cb
 
 #ifdef RASPI_DEPLOYMENT
   int pigpio_;

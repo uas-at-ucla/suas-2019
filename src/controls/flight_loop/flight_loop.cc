@@ -15,10 +15,13 @@ FlightLoop::FlightLoop() :
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
         &FlightLoop::RunIteration, this)),
     output_publisher_(ros_node_handle_.advertise<::src::controls::Output>(
-        io::kRosOutputTopic, io::kRosMessageQueueSize)) {
-
+        io::kRosOutputTopic, io::kRosMessageQueueSize)),
+    drone_program_subscriber_(ros_node_handle_.subscribe(
+        io::kRosDroneProgramTopic, io::kRosMessageQueueSize,
+        &FlightLoop::DroneProgramReceived, this)) {
   ROS_INFO("Flight loop initialized!");
 }
+
 
 void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
   ::src::controls::Output output = GenerateDefaultOutput();
@@ -30,6 +33,14 @@ void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
   LogProtobufMessage("OUTPUT", output);
 
   output_publisher_.publish(output);
+}
+
+void FlightLoop::DroneProgramReceived(
+    const ::src::controls::ground_controls::timeline::DroneProgram
+        drone_program) {
+  ::std::cout << "Ground communicator got Drone Program...\n";
+  (void)drone_program;
+  // ::std::cout << drone_program.DebugString() << "\n";
 }
 
 void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
