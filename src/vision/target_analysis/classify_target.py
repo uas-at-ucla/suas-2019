@@ -1,5 +1,6 @@
 import cv2 as cv
-import shapely as shapely
+import shapely
+import shapely.ops
 import shapely.geometry as sg
 import numpy as np
 import matplotlib.pyplot as plt
@@ -43,6 +44,12 @@ def genRegPoly(n, area = 1):
 
     return shapely.affinity.scale(poly, sf, sf)
 
+def moveToOrigin(contour):
+    M = cv.moments(contour)
+    cx = M["m10"] / M["m00"]
+    cy = M["m01"] / M["m00"]
+    return contour - (cx, cy)
+
 # Input: degrees 0-179 on color wheel
 # Output: string indicating which color it is
 
@@ -78,7 +85,7 @@ def classifyColor(hue):
 # uses pyplot to display and show the given contour and the believed shape it matches
 
 def classifyShape(contour):
-    contour = [tuple(point) for point in contour.reshape(-1, 2)]
+    contour = [tuple(point) for point in moveToOrigin(contour).reshape(-1, 2)]
     shapes = []
 
     for sides in range(3, 10):
@@ -87,9 +94,9 @@ def classifyShape(contour):
     # for shape in shapes:
     #     print(shape.name, shape.sides, shape.delSym)
 
-    mPoly = sg.Polygon(sg.MultiPoint(contour).convex_hull)
+    mPoly = sg.Polygon(sg.MultiPoint(contour))
     sf = 1/(mPoly.area**0.5)
-    mPoly = shapely.affinity.scale(mPoly, sf, sf)
+    mPoly = shapely.affinity.scale(mPoly, sf, sf, origin=(0,0))
 
     best, b_shape = mPoly.difference(shapes[0].poly).area, shapes[0]
     for shape in shapes:

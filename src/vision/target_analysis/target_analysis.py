@@ -8,6 +8,9 @@ from debug_output import *
 
 import sys
 
+# TODO: currently hardcoded for testing
+ALTITUDE = 30
+
 # Range threshold that handles cylindrical coordinates
 def inRange_wrapHue(img, lower, upper):
 	thresh = cv.inRange(img, lower, upper)
@@ -21,6 +24,37 @@ def inRange_wrapHue(img, lower, upper):
 		thresh += cv.inRange(img, (0, sat_l, val_l), (hue_u - 180, sat_u, val_u))
 
 	return thresh
+
+# Locate target within binary image
+def find_target(thresh):
+	# TODO: why does this happpen?
+	if not np.count_nonzero(thresh):
+		return None
+
+	# Find biggest contour by pixel area
+	contours, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+	target = max(contours, key=cv.contourArea)
+
+	area_px = cv.contourArea(target)
+	area_gnd = area_px * px_to_gnd(ALTITUDE) ** 2
+
+	# Human-readable logging
+	summary = {
+		'hue': hue,
+		'contours': len(contours),
+		'area_px': area_px,
+		'area_gnd': area_gnd,
+		'bounding_box': cv.boundingRect(target),
+		'contour_detail': len(target)
+	}
+
+	# Filter by contour area, and by contour complexity
+	if not GND_AREA_MIN < area_gnd < GND_AREA_MAX or len(contours) > DETAIL_MAX:
+		print("Rejecting", summary)
+		return None
+
+	print("Accepting", summary)
+	return target
 
 if len(sys.argv) < 2:
 	sys.exit("ERROR: no path given")
@@ -49,35 +83,10 @@ for pos in peaks:
 	thresh = inRange_wrapHue(imgHLS, range_lower(hue), range_upper(hue))
 	showThreshold(thresh)
 
-	# TODO: why does this happpen?
-	if not np.count_nonzero(thresh):
-		continue
-
-	# Find biggest contour by pixel area
-	contours, hierarchy = cv.findContours(thresh, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
-	target = max(contours, key=cv.contourArea)
-
-	area_px = cv.contourArea(target)
-	area_gnd = area_px * px_to_gnd(ALTITUDE) ** 2
-
-	# Human-readable logging
-	summary = {
-		'hue': hue,
-		'contours': len(contours),
-		'area_px': area_px,
-		'area_gnd': area_gnd,
-		'bounding_box': cv.boundingRect(target),
-		'contour_detail': len(target)
-	}
-
-	# Filter by contour area, and by contour complexity
-	if not GND_AREA_MIN < area_gnd < GND_AREA_MAX or len(contours) > DETAIL_MAX:
-		print("Rejecting", summary)
-		continue
-
-	print("Accepting", summary)
-	showContour(img, target)
-	break
+	target = find_target(thresh)
+	if target is not None:
+		showContour(img, target)
+		break
 else:
 	sys.exit("No targets found")
 
