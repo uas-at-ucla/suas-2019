@@ -19,7 +19,7 @@ GroundControls::GroundControls(int argc, char **argv) :
     drone_program_publisher_(
         ros_node_handle_.advertise<
             ::src::controls::ground_controls::timeline::DroneProgram>(
-            kRosDroneProgramTopic, kRosMessageQueueSize)),
+            io::kRosDroneProgramTopic, io::kRosMessageQueueSize)),
     udp_connection_("tcp://127.0.0.1:6005", 1),
     rfd900_connection_("/dev/ttyUSB0", B57600, 0), // TODO
     phased_loop_(1e2),

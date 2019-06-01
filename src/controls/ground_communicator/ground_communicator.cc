@@ -9,7 +9,7 @@ GroundCommunicator::GroundCommunicator() :
         io::kRosSensorsTopic, io::kRosMessageQueueSize,
         &GroundCommunicator::SensorsReceived, this)),
     drone_program_subscriber_(ros_node_handle_.subscribe(
-        ground_controls::kRosDroneProgramTopic, io::kRosMessageQueueSize,
+        io::kRosDroneProgramTopic, io::kRosMessageQueueSize,
         &GroundCommunicator::DroneProgramReceived, this)),
     proto_sender_("tcp://127.0.0.1:6005"),
     rfd900_("/dev/ttyUSB0", B57600, 0) {

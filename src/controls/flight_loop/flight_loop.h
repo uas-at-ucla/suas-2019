@@ -68,6 +68,11 @@ class FlightLoop {
                            ::src::controls::Goal &goal,
                            ::src::controls::Output &output);
 
+  // Receive drone program
+  void DroneProgramReceived(
+    const ::src::controls::ground_controls::timeline::DroneProgram
+        drone_program);
+
   // Fields ////////////////////////////////////////////////////////////////////
   flight_state_machine::FlightStateMachine state_machine_;
 
@@ -84,6 +89,7 @@ class FlightLoop {
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber sensors_subscriber_;
+  ::ros::Subscriber drone_program_subscriber_;
 };
 
 } // namespace flight_loop
