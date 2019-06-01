@@ -5,10 +5,10 @@
 #include <string>
 #include <thread>
 
+#include <GeographicLib/Geoid.hpp>
 #include <linux/limits.h>
 #include <ros/console.h>
 #include <ros/ros.h>
-#include <GeographicLib/Geoid.hpp>
 
 #ifdef RASPI_DEPLOYMENT
 #include <pigpiod_if2.h>
@@ -26,12 +26,13 @@
 #include <sensor_msgs/Imu.h>
 
 #include "lib/alarm/alarm.h"
+#include "lib/deployment/deployment.h"
 #include "lib/phased_loop/phased_loop.h"
 #include "src/controls/io/led_strip/led_strip.h"
 #include "src/controls/io/ros_to_proto/ros_to_proto.h"
 #include "src/controls/messages.pb.h"
 
-#define LOG_LED_STRIP 0
+// #define LOG_LED_STRIP 0
 
 namespace src {
 namespace controls {
@@ -133,13 +134,14 @@ class IO {
   void InitializeActuators();
   void WriteAlarm(bool alarm);
   void WriteGimbal(double pitch);
-  void WriteDeployment(double motor, bool latch, bool hotwire);
+  void WriteDeployment(::lib::deployment::Output &output);
 
   void PixhawkSendModePosedge(::std::string mode, bool signal);
   void PixhawkSetGlobalPositionGoal(double latitude, double longitude,
                                     double altitude);
 
   ::lib::alarm::Alarm alarm_;
+  ::lib::deployment::Deployment deployment_;
   ::src::controls::io::led_strip::LedStrip led_strip_;
 
   ros_to_proto::RosToProto ros_to_proto_;

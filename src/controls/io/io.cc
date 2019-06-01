@@ -14,9 +14,10 @@ void deploymentChannelOneTrigger(int gpio, int level, uint32_t tick) {
 
 IO::IO() :
     alarm_(kWriterPhasedLoopFrequency),
-    next_sensors_write_(::lib::phased_loop::GetCurrentTime()),
+    deployment_(kWriterPhasedLoopFrequency),
+    next_sensors_write_(::ros::Time::now().toSec()),
     should_override_alarm_(false),
-    last_rc_in_(::lib::phased_loop::GetCurrentTime()),
+    last_rc_in_(::ros::Time::now().toSec()),
     deployment_motor_setpoint_(0.0),
     gimbal_setpoint_(0.0),
     running_(true),
@@ -86,25 +87,22 @@ void IO::Quit(int signal) {
 
 void IO::WriterThread() {
   while (running_ && ::ros::ok()) {
-    // Write out the alarm signal.
-    bool should_override_alarm = (should_override_alarm_ &&
-                                  last_rc_in_ + kRcInTimeGap >
-                                      ::lib::phased_loop::GetCurrentTime());
+    // Calculate alarm output.
+    bool should_override_alarm =
+        (should_override_alarm_ &&
+         last_rc_in_ + kRcInTimeGap > ::ros::Time::now().toSec());
     bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
-    bool hotwire_setpoint = false;
-    bool latch = false;
 
-    if (should_override_alarm_) {
-      latch = false;
-      hotwire_setpoint = true;
-    } else {
-      latch = true;
-    }
+    // Calculate deployment output.
+    ::lib::deployment::Input deployment_input;
+    ::lib::deployment::Output deployment_output;
+    deployment_input.direction = 0;
+    deployment_.RunIteration(deployment_input, deployment_output);
 
     // Write out actuators.
     WriteAlarm(should_alarm);
     WriteGimbal(gimbal_setpoint_);
-    WriteDeployment(deployment_motor_setpoint_, latch, hotwire_setpoint);
+    WriteDeployment(deployment_output);
 
 #ifndef RASPI_DEPLOYMENT
     PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 100);
@@ -115,26 +113,29 @@ void IO::WriterThread() {
     led_strip_.Render(false);
 
     // Write out sensors protobuf at a slower rate than the write loop.
-    if (::lib::phased_loop::GetCurrentTime() > next_sensors_write_ &&
+    if (::ros::Time::now().toSec() > next_sensors_write_ &&
         ros_to_proto_.SensorsValid()) {
       sensors_publisher_.publish(ros_to_proto_.GetSensors());
 
       next_sensors_write_ =
-          ::lib::phased_loop::GetCurrentTime() + kSensorsPublisherPeriod;
+          ::ros::Time::now().toSec() + kSensorsPublisherPeriod;
     }
 
     // Log the current GPIO outputs.
-    ROS_DEBUG_STREAM_THROTTLE(0.1, "Writer thread iteration: "
-                     << ::std::endl
-                     << "alarm[" << should_alarm << "]" << ::std::endl
-                     << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
-                     << "deployment_motor[" << deployment_motor_setpoint_ << "]" << ::std::endl
-                     << "deployment_latch[" << latch << "]" << ::std::endl
-                     << "deployment_hotwire[" << hotwire_setpoint << "]" << ::std::endl
+    ROS_DEBUG_STREAM_THROTTLE(
+        0.1, "Writer thread iteration: "
+                 << ::std::endl
+                 << "alarm[" << should_alarm << "]" << ::std::endl
+                 << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
+                 << "deployment_motor[" << deployment_output.motor << "]"
+                 << ::std::endl
+                 << "deployment_latch[" << deployment_output.latch << "]" << ::std::endl
+                 << "deployment_hotwire[" << deployment_output.hotwire << "]"
+                 << ::std::endl
 #ifdef LOG_LED_STRIP
-                     << "led_strip[" << led_strip_.GetStrip() << ::std::endl
+                 << "led_strip[" << led_strip_.GetStrip() << ::std::endl
 #endif
-                     << "]");
+                 << "]");
 
     // Wait until next iteration of loop.
     writer_phased_loop_.sleep();
@@ -177,7 +178,7 @@ void IO::AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence) {
 
 void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   bool new_should_override_alarm = should_override_alarm_;
-  last_rc_in_ = ::lib::phased_loop::GetCurrentTime();
+  last_rc_in_ = ::ros::Time::now().toSec();
 
   // Trigger the alarm if the RC controller override switch was flipped.
   if (rc_in.channels[kAlarmOverrideRcChannel - 1] >
@@ -226,8 +227,10 @@ void IO::StateReceived(const ::mavros_msgs::State state) {
 }
 
 void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
+  // Silence unused variable warnings.
   (void)imu;
-  led_strip_.set_last_imu(::lib::phased_loop::GetCurrentTime());
+
+  led_strip_.set_last_imu(::ros::Time::now().toSec());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -269,8 +272,10 @@ void IO::InitializeActuators() {
 
 void IO::WriteAlarm(bool alarm) {
 #ifdef RASPI_DEPLOYMENT
+  // Write alarm.
   digitalWrite(kAlarmGPIOPin, alarm ? HIGH : LOW);
 #else
+  // Silence unused variable warnings.
   (void)alarm;
 #endif
 }
@@ -280,32 +285,33 @@ void IO::WriteGimbal(double pitch) {
   // Cap pitch range to [-1, 1].
   pitch = ::std::max(::std::min(pitch, 1.0), -1.0);
 
+  // Write gimbal pitch.
   set_servo_pulsewidth(pigpio_, kGimbalGPIOPin, 1500 + pitch * 500);
 #else
+  // Silence unused variable warnings.
   (void)pitch;
 #endif
 }
 
-void IO::WriteDeployment(double motor, bool latch, bool hotwire) {
+void IO::WriteDeployment(::lib::deployment::Output &output) {
 #ifdef RASPI_DEPLOYMENT
   // Cap motor range to [-1, 1].
-  motor = ::std::max(::std::min(motor, 1.0), -1.0);
+  output.motor = ::std::max(::std::min(output.motor, 1.0), -1.0);
 
   // Write motor.
   set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin,
-                    deployment_motor_setpoint_ * (motor >= 0 ? 1 : -1) * 100);
-  gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, motor < 0);
+                    output.motor * (output.motor >= 0 ? 1 : -1) * 100);
+  gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, output.motor < 0);
 
   // Write hotwire.
-  gpio_write(pigpio_, kDeploymentHotwireGPIOPin, hotwire);
+  gpio_write(pigpio_, kDeploymentHotwireGPIOPin, output.hotwire);
 
   // Write latch.
   set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
-                       latch ? kDeploymentServoClosed : kDeploymentServoOpen);
+                       output.latch ? kDeploymentServoClosed : kDeploymentServoOpen);
 #else
-  (void)motor;
-  (void)latch;
-  (void)hotwire;
+  // Silence unused variable warnings.
+  (void)output;
 #endif
 }
 
