@@ -30,6 +30,14 @@ class Communicator {
       alert("FAILED to compile mission!");
     });
 
+    this.socket.on('UPLOADED_DRONE_PROGRAM', (droneProgram) => {
+      this.store.dispatch({ type: 'UPLOADED_DRONE_PROGRAM', payload: droneProgram });
+    });
+
+    this.socket.on('MISSION_STATUS', (status) => {
+      this.store.dispatch({ type: 'MISSION_STATUS', payload: status });
+    });
+
     this.socket.on('INTEROP_DATA', (interopData) => {
       this.store.dispatch({ type: 'INTEROP_DATA', payload: interopData });
     });

@@ -27,6 +27,7 @@ class Telemetry extends Component {
         pitch: rawTelmet["sensors"]["pitch"],
         yaw: rawTelmet["sensors"]["yaw"],
         speed: rawTelmet["sensors"]["gps_ground_speed"] * KNOTS_PER_METER_SECOND,
+        gps_fix: rawTelmet["sensors"]["gps_fix"],
         lat: rawTelmet["sensors"]["latitude"],
         long: rawTelmet["sensors"]["longitude"],
         heading: rawTelmet["sensors"]["heading"],
@@ -70,12 +71,12 @@ class Telemetry extends Component {
         values: [this.telmet.speed.toFixed(3) , " knots"]
       },
       {
-        key: "Position",
-        values: [this.telmet.lat.toFixed(3) , ", " , this.telmet.long.toFixed(3)]
-      },
-      {
         key: "Altitude MSL",
         values: [this.telmet.alt.toFixed(3) , " feet"]
+      },
+      {
+        key: "GPS Fix",
+        values: [this.telmet.gps_fix ? "Yes" : "NO GPS FIX"]
       },
       {
         key: "Satellite Count",

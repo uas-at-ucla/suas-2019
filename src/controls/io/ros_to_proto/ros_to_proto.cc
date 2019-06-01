@@ -86,6 +86,9 @@ void RosToProto::GlobalPositionReceived(
   GotRosMessage(kRosGlobalPositionTopic);
 
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
+
+  sensors_.set_gps_fix(global_position.status.status != ::sensor_msgs::NavSatStatus::STATUS_NO_FIX);
+
   sensors_.set_latitude(global_position.latitude);
   sensors_.set_longitude(global_position.longitude);
   sensors_.set_altitude(global_position.altitude);

@@ -10,6 +10,8 @@ import CommandList from './CommandList';
 const mapStateToProps = state => {
   return { 
     droneProgram: state.mission.droneProgram,
+    missionStatus: state.mission.missionStatus,
+    missionUploaded: state.mission.missionUploaded,
     protoInfo: selector(state).mission.protoInfo
   };
 };
@@ -46,7 +48,7 @@ class MissionPlannerContainer extends Component {
                 className={this.state.activeTab === 'drone' ? "active" : null}
                 onClick={() => this.toggleTab('drone')}
               >
-                Compiled Mission
+                {this.props.missionUploaded ? "Uploaded" : "Compiled"} Mission
               </NavLink>
             </NavItem>
           </Nav>
@@ -54,6 +56,7 @@ class MissionPlannerContainer extends Component {
         </div>
 
         <TabContent activeTab={this.state.activeTab}>
+          <span>Mission Status: {this.props.missionStatus}</span>
           <TabPane tabId="plan">
             <div className="SmallMissionPlanner">
               <MissionPlanner className="SmallMissionPlanner"/>
