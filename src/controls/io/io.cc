@@ -87,20 +87,13 @@ void IO::Quit(int signal) {
 void IO::WriterThread() {
   while (running_ && ::ros::ok()) {
     // Write out the alarm signal.
-    // This was hacked to make the alarm switch trigger deployment!
-    /*
     bool should_override_alarm = (should_override_alarm_ &&
                                   last_rc_in_ + kRcInTimeGap >
                                       ::lib::phased_loop::GetCurrentTime());
     bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
-    */
-
-    bool should_alarm = alarm_.ShouldAlarm();
-    (void)should_alarm;
-
     bool hotwire_setpoint = false;
+    bool latch = false;
 
-    bool latch;
     if (should_override_alarm_) {
       latch = false;
       hotwire_setpoint = true;
@@ -115,6 +108,7 @@ void IO::WriterThread() {
 
 #ifndef RASPI_DEPLOYMENT
     PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 100);
+    // PixhawkSetGlobalPositionGoal(38.147483, -76.427778, 100);
 #endif
 
     // Write output to LED strip.
@@ -130,14 +124,19 @@ void IO::WriterThread() {
     }
 
     // Log the current GPIO outputs.
-    // ROS_DEBUG_STREAM("Writer thread iteration: "
-    //                  << ::std::endl
-    //                  << "alarm[" << should_alarm << "]" << ::std::endl
-    //                  << "led_strip[" << led_strip_.GetStrip() << ::std::endl
-    //                  << "]");
+    ROS_DEBUG_STREAM_THROTTLE(0.1, "Writer thread iteration: "
+                     << ::std::endl
+                     << "alarm[" << should_alarm << "]" << ::std::endl
+                     << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
+                     << "deployment_motor[" << deployment_motor_setpoint_ << "]" << ::std::endl
+                     << "deployment_latch[" << latch << "]" << ::std::endl
+                     << "deployment_hotwire[" << hotwire_setpoint << "]" << ::std::endl
+#ifdef LOG_LED_STRIP
+                     << "led_strip[" << led_strip_.GetStrip() << ::std::endl
+#endif
+                     << "]");
 
     // Wait until next iteration of loop.
-
     writer_phased_loop_.sleep();
   }
 }

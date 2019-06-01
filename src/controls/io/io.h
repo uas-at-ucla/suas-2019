@@ -31,6 +31,8 @@
 #include "src/controls/io/ros_to_proto/ros_to_proto.h"
 #include "src/controls/messages.pb.h"
 
+#define LOG_LED_STRIP 0
+
 namespace src {
 namespace controls {
 namespace io {
