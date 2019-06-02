@@ -131,8 +131,9 @@ DOCKER_BUILD_CMD="set -x; \
   echo STARTED > /tmp/uas_init; \
   sudo -u uas bash -c \" \
   source /home/uas/.bashrc; \
-  /opt/ros/melodic/bin/roscore &> /dev/null; \
-  bash\""
+  export ROS_MASTER_URI=http://192.168.1.20:11311; \
+  export ROS_IP=192.168.1.10; \
+  bazel run //src/controls/ground_controls:ground_controls\""
 
 docker run                          \
   -it                               \
@@ -144,7 +145,7 @@ docker run                          \
   -v ~/.ssh:/home/uas/.ssh          \
   -e DISPLAY=$DISPLAY               \
   -e ROS_MASTER_URI=http://192.168.1.20:11311 \
-  -e ROS_IP=192.168.1.20 \
+  -e ROS_IP=192.168.1.10 \
   -v /tmp/.X11-unix:/tmp/.X11-unix  \
   --privileged                      \
   --dns 8.8.8.8                     \
