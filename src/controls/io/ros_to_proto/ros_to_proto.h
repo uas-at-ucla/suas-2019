@@ -40,7 +40,6 @@ class RosToProto {
   RosToProto();
 
   Sensors GetSensors();
-  void SendOutput(Output output);
   bool SensorsValid();
 
  private:

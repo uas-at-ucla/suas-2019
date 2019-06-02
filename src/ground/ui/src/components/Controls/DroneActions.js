@@ -81,7 +81,7 @@ class DroneActions extends Component {
       <span className="DroneActions">        
         <div className="buttonArray">
           {this.props.missionCompiled ?
-            <button id="runMissionButton" onClick={()=>this.toggleWithName("Upload Mission", this.props.uploadMission)} disabled={this.props.missionUploaded}>Upload Mission</button>
+            <button id="runMissionButton" onClick={()=>this.toggleWithName("Upload Mission", this.props.uploadMission)} /*disabled={this.props.missionUploaded}*/>Upload Mission</button>
           :
             <button id="runMissionButton" onClick={()=>this.toggleWithName("Compile Mission", this.compileMission)} disabled={this.props.missionStatus === 'RUN_MISSION' || this.props.missionStatus === 'PAUSE_MISSION'}>Compile Mission</button>
           }

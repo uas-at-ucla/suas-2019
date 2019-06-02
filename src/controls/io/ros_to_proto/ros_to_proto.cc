@@ -76,16 +76,6 @@ Sensors RosToProto::GetSensors() {
   return sensors_copy;
 }
 
-void RosToProto::SendOutput(Output output) {
-  mavros_msgs::CommandBool arming_cmd;
-  arming_cmd.request.value = true;
-  arming_service_.call(arming_cmd);
-  ::std::cout << "ARM!\n";
-
-  if (output.send_offboard()) {
-  }
-}
-
 void RosToProto::GlobalPositionReceived(
     const ::sensor_msgs::NavSatFix global_position) {
 

@@ -71,10 +71,11 @@ void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
   // Set state to integer representation of the current state of the flight
   // loop.
   output.set_state(0);
+  output.set_mission_state(0);
   output.set_flight_time(0);
   output.set_current_command_index(0);
 
-  output.set_send_offboard(false);
+  output.set_send_setpoint(false);
   output.set_setpoint_latitude(0);
   output.set_setpoint_longitude(0);
   output.set_setpoint_altitude(0);

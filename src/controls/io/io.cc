@@ -148,13 +148,6 @@ void IO::WriterThread() {
     WriteGimbal(gimbal_setpoint_);
     WriteDeployment(deployment_output);
 
-#ifndef RASPI_DEPLOYMENT
-    // PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 100);
-    // PixhawkSetGlobalPositionGoal(38.147483, -76.427778, 100);
-#endif
-    // UCLA Court of Sciences
-    PixhawkSetGlobalPositionGoal(34.174103, -118.482008, 2, -90);
-
     // Write output to LED strip.
     led_strip_.Render(false);
 
@@ -210,7 +203,7 @@ void IO::Output(const ::src::controls::Output output) {
   PixhawkSendModePosedge(kPixhawkArmCommand, output.trigger_arm());
   // PixhawkSendModePosedge(, output.trigger_disarm());
 
-  if (output.send_offboard()) {
+  if (output.send_setpoint()) {
     PixhawkSetGlobalPositionGoal(
         output.setpoint_latitude(), output.setpoint_longitude(),
         output.setpoint_altitude(), output.setpoint_yaw());

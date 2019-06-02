@@ -7,6 +7,7 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -29,12 +30,12 @@ namespace controls {
 namespace flight_loop {
 namespace mission_state_machine {
 namespace {
-static constexpr double kAcceptanceRadius = 10.0; // meters
+static constexpr double kAcceptanceRadius = 4.0; // meters
 } // namespace
 
 enum MissionState {
   TRANSLATE,
-  UGV_RELEASE,
+  UGV_DROP,
   GET_NEXT_CMD,
 };
 
@@ -61,22 +62,20 @@ class TranslateState : public State {
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
   void Reset() override;
+  void SetSetpoints(double latitude, double longitude, double altitude,
+                    double yaw);
+
+ private:
+  double setpoint_latitude_;
+  double setpoint_longitude_;
+  double setpoint_altitude_;
+  double setpoint_yaw_;
 };
 
-class UGVReleaseState : public State {
+class UGVDropState : public State {
  public:
-  UGVReleaseState();
-  ~UGVReleaseState() = default;
-
-  void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output) override;
-  void Reset() override;
-};
-
-class GetNextCmdState : public State {
- public:
-  GetNextCmdState();
-  ~GetNextCmdState() = default;
+  UGVDropState();
+  ~UGVDropState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
@@ -115,6 +114,10 @@ class MissionStateMachine {
   MissionState state_;
   ::std::map<MissionState, State *> state_handlers_;
   UnknownState *unknown_state_;
+
+  ::src::controls::ground_controls::timeline::DroneProgram drone_program_;
+  ::std::mutex drone_program_mutex_;
+  int drone_program_index_;
 };
 
 } // namespace mission_state_machine

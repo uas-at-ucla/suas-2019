@@ -186,6 +186,7 @@ void ArmingState::Handle(::src::controls::Sensors &sensors,
   bool arm_trigger = ::std::fmod(sensors.time() - start_, kTriggerPeriod) >
                      kTriggerPeriod / 2.0;
   output.set_trigger_arm(arm_trigger);
+  output.set_trigger_hold(true);
 }
 
 void ArmingState::Reset() {
@@ -318,33 +319,7 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
     return;
   }
 
-  // if (!sensors.armed()) {
-  //   output.set_state(ARMING);
-  //   return;
-  // }
-
-  // TODO(comran): Do mission.
-
-  // lib::Position3D position = {sensors.latitude(), sensors.longitude(),
-  //                             sensors.relative_altitude()};
-
-  // ::Eigen::Vector3d velocity(sensors.velocity_x(), sensors.velocity_y(),
-  //                            sensors.velocity_z());
-
-  // executor::ExecutorOutput executor_output =
-  //     executor_.Calculate(position, velocity);
-
-  // // last_bomb_drop_ =
-  // //     executor_output.bomb_drop ? sensors.time() : last_bomb_drop_;
-
-  // if (executor_output.alarm) {
-  //   // alarm_.AddAlert({5.0, 0.50});
-  // }
-
-  // output.set_velocity_x(executor_output.flight_velocities.x);
-  // output.set_velocity_y(executor_output.flight_velocities.y);
-  // output.set_velocity_z(executor_output.flight_velocities.z);
-  // output.set_yaw_setpoint(executor_output.yaw);
+  mission_state_machine_.Handle(sensors, goal, output);
 }
 
 void MissionState::Reset() {}

@@ -38,7 +38,7 @@ static const double kAlarmChirpDuration = 0.005;
 
 // ROS topic parameters.
 static const int kRosMessageQueueSize = 1;
-static const double kRosReceiveTolerance = 3;
+static const double kRosReceiveTolerance = 5;
 
 static const ::std::string kRosGimbalTopic = "/uasatucla/actuators/gimbal";
 static const ::std::string kRosDeploymentMotorTopic =

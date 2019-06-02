@@ -39,24 +39,25 @@ message Goal {
 
 message Output {
   required int32 state                 = 1;
-  required double flight_time          = 2;
-  required int32 current_command_index = 3;
-  required bool send_offboard          = 4;
-  required float setpoint_latitude     = 5;
-  required float setpoint_longitude    = 6;
-  required float setpoint_altitude     = 7;
-  required float setpoint_yaw          = 8;
-  required float gimbal_angle          = 9;
-  required bool bomb_drop              = 10;
-  required bool alarm                  = 11;
-  required bool dslr                   = 12;
-  required bool trigger_takeoff        = 13;
-  required bool trigger_hold           = 14;
-  required bool trigger_offboard       = 15;
-  required bool trigger_rtl            = 16;
-  required bool trigger_land           = 17;
-  required bool trigger_arm            = 18;
-  required bool trigger_disarm         = 19;
+  required int32 mission_state         = 2;
+  required double flight_time          = 3;
+  required int32 current_command_index = 4;
+  required bool send_setpoint          = 5;
+  required float setpoint_latitude     = 6;
+  required float setpoint_longitude    = 7;
+  required float setpoint_altitude     = 8;
+  required float setpoint_yaw          = 9;
+  required float gimbal_angle          = 10;
+  required bool bomb_drop              = 11;
+  required bool alarm                  = 12;
+  required bool dslr                   = 13;
+  required bool trigger_takeoff        = 14;
+  required bool trigger_hold           = 15;
+  required bool trigger_offboard       = 16;
+  required bool trigger_rtl            = 17;
+  required bool trigger_land           = 18;
+  required bool trigger_arm            = 19;
+  required bool trigger_disarm         = 20;
 }
 
 message UgvSensors {
