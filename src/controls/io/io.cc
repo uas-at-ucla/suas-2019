@@ -408,15 +408,6 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
   // between WGS84 and AMSL altitudes.
   ::mavros_msgs::GlobalPositionTarget target;
   target.header.stamp = ::ros::Time::now();
-  target.type_mask = ::mavros_msgs::GlobalPositionTarget::IGNORE_VX |
-                     ::mavros_msgs::GlobalPositionTarget::IGNORE_VY |
-                     ::mavros_msgs::GlobalPositionTarget::IGNORE_VZ |
-                     ::mavros_msgs::GlobalPositionTarget::IGNORE_AFX |
-                     ::mavros_msgs::GlobalPositionTarget::IGNORE_AFY |
-                     ::mavros_msgs::GlobalPositionTarget::IGNORE_AFZ |
-                     ::mavros_msgs::GlobalPositionTarget::IGNORE_YAW_RATE;
-  target.coordinate_frame =
-      ::mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_REL_ALT;
   target.latitude = latitude;
   target.longitude = longitude;
   target.altitude = home_altitude + altitude;
