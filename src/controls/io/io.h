@@ -2,9 +2,9 @@
 
 #include <atomic>
 #include <functional>
+#include <math.h>
 #include <string>
 #include <thread>
-#include <math.h>
 
 #include <GeographicLib/Geoid.hpp>
 #include <linux/limits.h>

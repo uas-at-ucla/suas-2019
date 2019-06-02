@@ -60,9 +60,9 @@ IO::IO() :
         kRosStateTopic, kRosMessageQueueSize, &IO::StateReceived, this)),
     imu_subscriber_(ros_node_handle_.subscribe(
         kRosImuTopic, kRosMessageQueueSize, &IO::ImuReceived, this)),
-    drone_program_subscriber_(ros_node_handle_.subscribe(
-        kRosDroneProgramTopic, kRosMessageQueueSize,
-        &IO::DroneProgramReceived, this)),
+    drone_program_subscriber_(
+        ros_node_handle_.subscribe(kRosDroneProgramTopic, kRosMessageQueueSize,
+                                   &IO::DroneProgramReceived, this)),
     set_mode_service_(ros_node_handle_.serviceClient<::mavros_msgs::SetMode>(
         kRosSetModeService)),
     arm_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandBool>(
@@ -196,7 +196,7 @@ void IO::WriterThread() {
 // UAS@UCLA callbacks.
 
 void IO::Output(const ::src::controls::Output output) {
-  (void) output;
+  (void)output;
   // Only listen to output if safety pilot override is not active.
   bool run_uas_flight_loop = true;
   if (!run_uas_flight_loop) {
@@ -233,17 +233,6 @@ void IO::AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence) {
        i += 2) {
     alarm_.AddAlert(
         {alarm_sequence.on_off_cycles(i), alarm_sequence.on_off_cycles(i + 1)});
-  }
-}
-
-void IO::Output(const ::src::controls::Output output) {
-  ROS_DEBUG_STREAM(
-      "Got output protobuf from flight_loop. vx: " << output.velocity_x());
-
-  // Only listen to output if safety pilot override is not active.
-  bool run_uas_flight_loop = true;
-  if (!run_uas_flight_loop) {
-    return;
   }
 }
 
@@ -460,7 +449,7 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
   last_position_setpoint_ = current_time;
 
   // Assert that we have the latest sensors protobuf before continuing.
-  if(!ros_to_proto_.SensorsValid()) {
+  if (!ros_to_proto_.SensorsValid()) {
     ROS_ERROR("Attempted to send global position goal without valid Sensors!");
     return;
   }

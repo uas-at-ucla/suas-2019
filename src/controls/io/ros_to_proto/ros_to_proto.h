@@ -17,44 +17,23 @@
 #include <google/protobuf/text_format.h>
 #include <mavros_msgs/Altitude.h>
 #include <mavros_msgs/CommandBool.h>
+#include <mavros_msgs/HomePosition.h>
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/VFR_HUD.h>
-#include <mavros_msgs/HomePosition.h>
 #include <sensor_msgs/BatteryState.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
 #include <std_msgs/Float64.h>
 
 #include "lib/phased_loop/phased_loop.h"
-#include "src/controls/messages.pb.h"
 #include "src/controls/constants.h"
+#include "src/controls/messages.pb.h"
 
 namespace src {
 namespace controls {
 namespace io {
 namespace ros_to_proto {
-namespace {
-// Tolerance in seconds to check that a ROS packet was received for all topics.
-static const double kRosReceiveTolerance = 3;
-
-static const int kRosMessageQueueSize = 1;
-static const ::std::string kRosGlobalPositionTopic =
-    "/mavros/global_position/global";
-static const ::std::string kRosAltitudeTopic = "/mavros/altitude";
-static const ::std::string kRosCompassHeadingTopic =
-    "/mavros/global_position/compass_hdg";
-static const ::std::string kRosVelocityTopic =
-    "/mavros/local_position/velocity_local"; // Note: this is different from the
-                                             // mavros docs!
-static const ::std::string kRosVfrHudTopic = "/mavros/vfr_hud";
-static const ::std::string kRosDiagnosticsTopic = "/diagnostics";
-static const ::std::string kRosImuDataTopic = "/mavros/imu/data";
-static const ::std::string kRosBatteryStateTopic = "/mavros/battery";
-static const ::std::string kRosStateTopic = "/mavros/state";
-
-static const ::std::string kRosArmingService = "/mavros/cmd/arming";
-} // namespace
 
 class RosToProto {
  public:

@@ -25,10 +25,10 @@ RosToProto::RosToProto() :
         ros_node_handle_.subscribe(kRosDiagnosticsTopic, kRosMessageQueueSize,
                                    &RosToProto::DiagnosticsReceived, this)),
     imu_subscriber_(
-        ros_node_handle_.subscribe(kRosImuDataTopic, kRosMessageQueueSize,
+        ros_node_handle_.subscribe(kRosImuTopic, kRosMessageQueueSize,
                                    &RosToProto::ImuDataReceived, this)),
     battery_state_subscriber_(
-        ros_node_handle_.subscribe(kRosBatteryStateTopic, kRosMessageQueueSize,
+        ros_node_handle_.subscribe(kRosBatteryStatusTopic, kRosMessageQueueSize,
                                    &RosToProto::BatteryStateReceived, this)),
     state_subscriber_(
         ros_node_handle_.subscribe(kRosHomePositionTopic, kRosMessageQueueSize,
@@ -37,7 +37,7 @@ RosToProto::RosToProto() :
         ros_node_handle_.subscribe(kRosStateTopic, kRosMessageQueueSize,
                                    &RosToProto::StateReceived, this)),
     arming_service_(ros_node_handle_.serviceClient<mavros_msgs::CommandBool>(
-        kRosArmingService)) {
+        kRosArmService)) {
 
   // Initialize all last received times for the ros topics to NaN.
   ros_topic_last_received_times_[kRosGlobalPositionTopic] =
@@ -52,11 +52,13 @@ RosToProto::RosToProto() :
       std::numeric_limits<double>::quiet_NaN();
   ros_topic_last_received_times_[kRosDiagnosticsTopic] =
       std::numeric_limits<double>::quiet_NaN();
-  ros_topic_last_received_times_[kRosImuDataTopic] =
+  ros_topic_last_received_times_[kRosImuTopic] =
       std::numeric_limits<double>::quiet_NaN();
-  ros_topic_last_received_times_[kRosBatteryStateTopic] =
+  ros_topic_last_received_times_[kRosBatteryStatusTopic] =
       std::numeric_limits<double>::quiet_NaN();
   ros_topic_last_received_times_[kRosStateTopic] =
+      std::numeric_limits<double>::quiet_NaN();
+  ros_topic_last_received_times_[kRosHomePositionTopic] =
       std::numeric_limits<double>::quiet_NaN();
 }
 
@@ -187,7 +189,7 @@ void RosToProto::DiagnosticsReceived(
 void RosToProto::ImuDataReceived(::sensor_msgs::Imu imu_data) {
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
 
-  GotRosMessage(kRosImuDataTopic);
+  GotRosMessage(kRosImuTopic);
 
   sensors_.set_accelerometer_x(imu_data.linear_acceleration.x);
   sensors_.set_accelerometer_y(imu_data.linear_acceleration.y);
@@ -207,7 +209,7 @@ void RosToProto::ImuDataReceived(::sensor_msgs::Imu imu_data) {
 void RosToProto::BatteryStateReceived(
     ::sensor_msgs::BatteryState battery_state) {
 
-  GotRosMessage(kRosBatteryStateTopic);
+  GotRosMessage(kRosBatteryStatusTopic);
 
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_battery_voltage(battery_state.voltage);
@@ -242,7 +244,8 @@ void RosToProto::StateReceived(::mavros_msgs::State state) {
   sensors_.set_autopilot_state(state.mode);
 }
 
-void RosToProto::HomePositionReceived(const ::mavros_msgs::HomePosition home_position) {
+void RosToProto::HomePositionReceived(
+    const ::mavros_msgs::HomePosition home_position) {
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
 
   GotRosMessage(kRosHomePositionTopic);
@@ -254,7 +257,6 @@ void RosToProto::GotRosMessage(::std::string ros_topic) {
   ros_topic_last_received_times_[ros_topic] =
       ::lib::phased_loop::GetCurrentTime();
 }
-
 
 // from
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles

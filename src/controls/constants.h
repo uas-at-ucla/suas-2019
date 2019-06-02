@@ -18,7 +18,6 @@ static const int kDeploymentLatchServoGPIOPin = 24;
 static const int kDeploymentMotorGPIOPin = 27;
 
 static const int kPpmMiddleSignal = 1500;
-
 static const int kDeploymentServoClosed = 1600;
 static const int kDeploymentServoOpen = 1000;
 
@@ -39,7 +38,13 @@ static const double kAlarmChirpDuration = 0.005;
 
 // ROS topic parameters.
 static const int kRosMessageQueueSize = 1;
+static const double kRosReceiveTolerance = 3;
 
+static const ::std::string kRosGimbalTopic = "/uasatucla/actuators/gimbal";
+static const ::std::string kRosDeploymentMotorTopic =
+    "/uasatucla/actuators/deployment_motor";
+static const ::std::string kRosLatchTopic = "/uasatucla/actuators/latch";
+static const ::std::string kRosHotwireTopic = "/uasatucla/actuators/hotwire";
 static const ::std::string kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
 static const ::std::string kRosSensorsTopic = "/uasatucla/proto/sensors";
 static const ::std::string kRosOutputTopic = "/uasatucla/proto/output";
@@ -53,8 +58,15 @@ static const ::std::string kRosGlobalPositionTopic =
 static const ::std::string kRosSetModeService = "/mavros/set_mode";
 static const ::std::string kRosArmService = "/mavros/cmd/arming";
 static const ::std::string kRosTakeoffService = "/mavros/cmd/takeoff";
-static const ::std::string kRosHomePositionTopic =
-    "/mavros/home_position/home";
+static const ::std::string kRosDiagnosticsTopic = "/diagnostics";
+static const ::std::string kRosVfrHudTopic = "/mavros/vfr_hud";
+static const ::std::string kRosCompassHeadingTopic =
+    "/mavros/global_position/compass_hdg";
+static const ::std::string kRosVelocityTopic =
+    "/mavros/local_position/velocity_local"; // Note: this is different from the
+                                             // mavros docs!
+static const ::std::string kRosAltitudeTopic = "/mavros/altitude";
+static const ::std::string kRosHomePositionTopic = "/mavros/home_position/home";
 
 static const ::std::string kRosDroneProgramTopic =
     "/uasatucla/proto/drone_program";
@@ -85,6 +97,6 @@ static const ::std::string kPixhawkCustomModeTakeoff = "AUTO.TAKEOFF";
 static const ::std::string kPixhawkCustomModeFollowTarget =
     "AUTO.FOLLOW_TARGET";
 static const ::std::string kPixhawkCustomModePrecland = "AUTO.PRECLAND";
-}
-} // controls
-} // src
+} // namespace
+} // namespace controls
+} // namespace src
