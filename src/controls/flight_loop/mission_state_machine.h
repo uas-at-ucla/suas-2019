@@ -118,6 +118,12 @@ class MissionStateMachine {
   ::src::controls::ground_controls::timeline::DroneProgram drone_program_;
   ::std::mutex drone_program_mutex_;
   int drone_program_index_;
+
+  bool setpoint_initialized_;
+  double setpoint_latitude_;
+  double setpoint_longitude_;
+  double setpoint_altitude_;
+  double setpoint_yaw_;
 };
 
 } // namespace mission_state_machine

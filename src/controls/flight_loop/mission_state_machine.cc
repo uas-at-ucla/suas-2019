@@ -8,7 +8,8 @@ namespace mission_state_machine {
 MissionStateMachine::MissionStateMachine() :
     state_(GET_NEXT_CMD),
     unknown_state_(new UnknownState()),
-    drone_program_index_(0) {
+    drone_program_index_(0),
+    setpoint_initialized_(false) {
 
   // Create an instance of all state handlers.
   state_handlers_[TRANSLATE] = new TranslateState();
@@ -30,6 +31,20 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
 
   ROS_DEBUG_STREAM("CURRENT MISSION STATE: " << StateToString(state_));
 
+  // Set initial setpoint.
+  if(!setpoint_initialized_) {
+    setpoint_latitude_ = sensors.latitude();
+    setpoint_longitude_ = sensors.longitude();
+    setpoint_altitude_ = sensors.relative_altitude();
+    setpoint_yaw_ = -90;
+    setpoint_initialized_ = true;
+  }
+
+  output.set_setpoint_latitude(setpoint_latitude_);
+  output.set_setpoint_longitude(setpoint_longitude_);
+  output.set_setpoint_altitude(setpoint_altitude_);
+  output.set_setpoint_yaw(setpoint_yaw_);
+
   // Use same state in next loop iteration, unless it is changed.
   output.set_mission_state(state_);
 
@@ -40,6 +55,15 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
 
   // Transition to next state.
   StateTransition(output);
+
+  // Keep track of any changes to setpoint.
+  setpoint_latitude_ = output.setpoint_latitude();
+  setpoint_longitude_ = output.setpoint_longitude();
+  setpoint_altitude_ = output.setpoint_altitude();
+  setpoint_yaw_ = output.setpoint_yaw();
+
+  output.set_trigger_offboard(true);
+  output.set_send_setpoint(true);
 }
 
 void MissionStateMachine::StateTransition(::src::controls::Output &output) {
@@ -71,7 +95,7 @@ void MissionStateMachine::StateTransition(::src::controls::Output &output) {
             ->SetSetpoints(loaded_command.translate_command().goal().latitude(),
                            loaded_command.translate_command().goal().longitude(),
                            loaded_command.translate_command().goal().altitude(),
-                           90);
+                           -90);
       } else if (loaded_command.has_trigger_bomb_drop_command()) {
         new_state = UGV_DROP;
       }
