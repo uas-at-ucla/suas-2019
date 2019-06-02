@@ -83,6 +83,8 @@ void IO::Quit(int signal) {
   // Sleep a bit so that the outputs are actually written.
   usleep(0.1 * 1e6);
 
+  ::std::cout << "KILL!\n";
+
 #ifdef RASPI_DEPLOYMENT
   pigpio_stop(pigpio_);
 #endif
@@ -242,7 +244,6 @@ void IO::DroneProgramReceived(
   ::std::cout << "Executing Drone Program...\n";
   drone_program_ = drone_program;
   should_override_alarm_ = true;
-  // ::std::cout << drone_program.DebugString() << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
