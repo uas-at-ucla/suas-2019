@@ -21,11 +21,15 @@ IO::IO() :
     deployment_motor_setpoint_(0.0),
     gimbal_setpoint_(0.0),
     running_(true),
+    ros_node_handle_(),
     sensors_publisher_(ros_node_handle_.advertise<::src::controls::Sensors>(
         kRosSensorsTopic, kRosMessageQueueSize)),
     global_position_publisher_(
         ros_node_handle_.advertise<::mavros_msgs::GlobalPositionTarget>(
             kRosGlobalPositionTopic, 10)),
+    take_photo_publisher_(
+        ros_node_handle_.advertise<std_msgs::String>(
+          kRosTakePhotoTopic, kRosMessageQueueSize)),
     output_subscriber_(ros_node_handle_.subscribe(
         kRosOutputTopic, kRosMessageQueueSize, &IO::Output, this)),
     alarm_subscriber_(ros_node_handle_.subscribe(kRosAlarmTriggerTopic,
@@ -106,6 +110,9 @@ void IO::WriterThread() {
     WriteAlarm(should_alarm);
     WriteGimbal(gimbal_setpoint_);
     WriteDeployment(deployment_output);
+
+    // Take photos (test)
+    TakePhotos();
 
 #ifndef RASPI_DEPLOYMENT
     PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 100);
@@ -412,6 +419,16 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
   ROS_DEBUG("Sending global position setpoint: latitude(%f), longitude(%f), "
             "altitude(%f)",
             latitude, longitude, altitude);
+}
+
+///////////////////////////////////////////////////////////////////////////
+// Take photos. ///////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////
+
+void IO::TakePhotos() {
+  std_msgs::String ret;
+  ret.data = "TRUE";
+  take_photo_publisher_.publish(ret);
 }
 
 } // namespace io

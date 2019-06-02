@@ -55,6 +55,7 @@ namespace controls {
   static const ::std::string kRosDroneProgramTopic =
       "/uasatucla/proto/drone_program";
   static const ::std::string kRosMissionStatusTopic = "/uasatucla/mission_status";
+  static const ::std::string kRosTakePhotoTopic = "/uasatucla/camera/take_photo";
 
   // Pixhawk interface parameters.
   static constexpr double kPixhawkGlobalSetpointMaxHz = 10.0;

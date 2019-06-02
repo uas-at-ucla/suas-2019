@@ -33,6 +33,7 @@
 #include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
 
+#include "std_msgs/String.h"
 #include "src/controls/constants.h"
 
 // #define LOG_LED_STRIP 0
@@ -67,6 +68,8 @@ class IO {
   void PixhawkSetGlobalPositionGoal(double latitude, double longitude,
                                     double altitude);
 
+  void TakePhotos();
+
   ::lib::alarm::Alarm alarm_;
   ::lib::deployment::Deployment deployment_;
   ::src::controls::io::led_strip::LedStrip led_strip_;
@@ -93,6 +96,7 @@ class IO {
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Publisher sensors_publisher_;
   ::ros::Publisher global_position_publisher_;
+  ::ros::Publisher take_photo_publisher_;
 
   ::ros::Subscriber output_subscriber_;
   ::ros::Subscriber alarm_subscriber_;
