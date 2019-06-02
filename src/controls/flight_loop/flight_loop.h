@@ -67,8 +67,7 @@ class FlightLoop {
 
   // Receive drone program
   void DroneProgramReceived(
-      ::src::controls::ground_controls::timeline::DroneProgram
-          drone_program);
+      ::src::controls::ground_controls::timeline::DroneProgram drone_program);
 
   // Fields ////////////////////////////////////////////////////////////////////
   flight_state_machine::FlightStateMachine state_machine_;

@@ -24,15 +24,15 @@
 #include <mavros_msgs/State.h>
 #include <sensor_msgs/BatteryState.h>
 #include <sensor_msgs/Imu.h>
-#include <std_msgs/Float32.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 
 #include "lib/alarm/alarm.h"
 #include "lib/deployment/deployment.h"
 #include "lib/phased_loop/phased_loop.h"
+#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/io/led_strip/led_strip.h"
 #include "src/controls/io/ros_to_proto/ros_to_proto.h"
-#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
 
 #include "src/controls/constants.h"
@@ -52,7 +52,8 @@ class IO {
   void WriterThread();
 
   void GimbalSetpoint(const ::std_msgs::Float32 gimbal_setpoint);
-  void DeploymentMotorSetpoint(const ::std_msgs::Float32 deployment_motor_setpoint);
+  void
+  DeploymentMotorSetpoint(const ::std_msgs::Float32 deployment_motor_setpoint);
   void LatchSetpoint(const ::std_msgs::Bool latch_setpoint);
   void HotwireSetpoint(const ::std_msgs::Bool hotwire_setpoint);
   void AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence);
@@ -62,7 +63,9 @@ class IO {
   void BatteryStatusReceived(const ::sensor_msgs::BatteryState battery_state);
   void StateReceived(const ::mavros_msgs::State state);
   void ImuReceived(const ::sensor_msgs::Imu imu);
-  void DroneProgramReceived(const ::src::controls::ground_controls::timeline::DroneProgram drone_program);
+  void DroneProgramReceived(
+      const ::src::controls::ground_controls::timeline::DroneProgram
+          drone_program);
 
   // Actuator setup and write handlers.
   void InitializeActuators();

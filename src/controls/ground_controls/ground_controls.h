@@ -12,9 +12,9 @@
 
 #include <ros/console.h>
 #include <ros/ros.h>
-#include <std_msgs/String.h>
-#include <std_msgs/Float32.h>
 #include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
+#include <std_msgs/String.h>
 
 #include "sio_client.h"
 #include "sio_socket.h"
@@ -43,7 +43,7 @@ class GroundControls {
  public:
   GroundControls(int argc, char **argv);
   void ReadRFD900();
-//   void ReadUDP();
+  //   void ReadUDP();
 
   void OnConnect();
   void OnFail();
@@ -62,7 +62,8 @@ class GroundControls {
                            bool rfd900);
 
   void GimbalSetpoint(const ::std_msgs::Float32 gimbal_setpoint);
-  void DeploymentMotorSetpoint(const ::std_msgs::Float32 deployment_motor_setpoint);
+  void
+  DeploymentMotorSetpoint(const ::std_msgs::Float32 deployment_motor_setpoint);
   void LatchSetpoint(const ::std_msgs::Bool latch_setpoint);
   void HotwireSetpoint(const ::std_msgs::Bool hotwire_setpoint);
 
@@ -82,8 +83,8 @@ class GroundControls {
   ::ros::Subscriber latch_subscriber_;
   ::ros::Subscriber hotwire_subscriber_;
 
-//   ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
-//       udp_connection_;
+  //   ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
+  //       udp_connection_;
   ::lib::serial_device::SerialDevice<::src::controls::UasMessage>
       rfd900_connection_;
 

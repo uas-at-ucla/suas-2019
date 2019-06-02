@@ -43,7 +43,7 @@ int main(int argc, char **argv) {
 
   rfd900.Quit();
   */
-  
+
   ::src::controls::ground_controls::GroundControls ground_controls(argc, argv);
   ::std::thread rfd900_thread(
       &::src::controls::ground_controls::GroundControls::ReadRFD900,
@@ -51,8 +51,9 @@ int main(int argc, char **argv) {
   ::ros::spin();
   ground_controls.running_ = false;
   rfd900_thread.join();
-  
-  // ::src::controls::ground_controls::GroundControls ground_controls(argc, argv);
+
+  // ::src::controls::ground_controls::GroundControls ground_controls(argc,
+  // argv);
   // ::std::thread udp_thread(
   //     &::src::controls::ground_controls::GroundControls::ReadUDP,
   //     &ground_controls);

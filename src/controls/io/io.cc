@@ -29,15 +29,26 @@ IO::IO() :
     global_position_publisher_(
         ros_node_handle_.advertise<::mavros_msgs::GlobalPositionTarget>(
             kRosGlobalPositionTopic, 10)),
-    gimbal_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(kRosGimbalTopic, kRosMessageQueueSize, true)),
-    deployment_motor_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(kRosDeploymentMotorTopic, kRosMessageQueueSize, true)),
-    latch_publisher_(ros_node_handle_.advertise<::std_msgs::Bool>(kRosLatchTopic, kRosMessageQueueSize, true)),
-    hotwire_publisher_(ros_node_handle_.advertise<::std_msgs::Bool>(kRosHotwireTopic, kRosMessageQueueSize, true)),
-    gimbal_subscriber_(ros_node_handle_.subscribe(kRosGimbalTopic, kRosMessageQueueSize, &IO::GimbalSetpoint, this)),
-    deployment_motor_subscriber_(ros_node_handle_.subscribe(kRosDeploymentMotorTopic, kRosMessageQueueSize, &IO::DeploymentMotorSetpoint, this)),
-    latch_subscriber_(ros_node_handle_.subscribe(kRosLatchTopic, kRosMessageQueueSize, &IO::LatchSetpoint, this)),
-    hotwire_subscriber_(ros_node_handle_.subscribe(kRosHotwireTopic, kRosMessageQueueSize, &IO::HotwireSetpoint, this)),
-    alarm_subscriber_(ros_node_handle_.subscribe(kRosAlarmTriggerTopic, kRosMessageQueueSize, &IO::AlarmTriggered, this)),
+    gimbal_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
+        kRosGimbalTopic, kRosMessageQueueSize, true)),
+    deployment_motor_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
+        kRosDeploymentMotorTopic, kRosMessageQueueSize, true)),
+    latch_publisher_(ros_node_handle_.advertise<::std_msgs::Bool>(
+        kRosLatchTopic, kRosMessageQueueSize, true)),
+    hotwire_publisher_(ros_node_handle_.advertise<::std_msgs::Bool>(
+        kRosHotwireTopic, kRosMessageQueueSize, true)),
+    gimbal_subscriber_(ros_node_handle_.subscribe(
+        kRosGimbalTopic, kRosMessageQueueSize, &IO::GimbalSetpoint, this)),
+    deployment_motor_subscriber_(ros_node_handle_.subscribe(
+        kRosDeploymentMotorTopic, kRosMessageQueueSize,
+        &IO::DeploymentMotorSetpoint, this)),
+    latch_subscriber_(ros_node_handle_.subscribe(
+        kRosLatchTopic, kRosMessageQueueSize, &IO::LatchSetpoint, this)),
+    hotwire_subscriber_(ros_node_handle_.subscribe(
+        kRosHotwireTopic, kRosMessageQueueSize, &IO::HotwireSetpoint, this)),
+    alarm_subscriber_(ros_node_handle_.subscribe(kRosAlarmTriggerTopic,
+                                                 kRosMessageQueueSize,
+                                                 &IO::AlarmTriggered, this)),
     output_subscriber_(ros_node_handle_.subscribe(
         kRosOutputTopic, kRosMessageQueueSize, &IO::Output, this)),
     rc_input_subscriber_(ros_node_handle_.subscribe(
@@ -160,7 +171,8 @@ void IO::WriterThread() {
                  << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
                  << "deployment_motor[" << deployment_output.motor << "]"
                  << ::std::endl
-                 << "deployment_latch[" << deployment_output.latch << "]" << ::std::endl
+                 << "deployment_latch[" << deployment_output.latch << "]"
+                 << ::std::endl
                  << "deployment_hotwire[" << deployment_output.hotwire << "]"
                  << ::std::endl
 #ifdef LOG_LED_STRIP
@@ -183,7 +195,8 @@ void IO::GimbalSetpoint(const ::std_msgs::Float32 gimbal_setpoint) {
   gimbal_setpoint_ = gimbal_setpoint.data;
 }
 
-void IO::DeploymentMotorSetpoint(const ::std_msgs::Float32 deployment_motor_setpoint) {
+void IO::DeploymentMotorSetpoint(
+    const ::std_msgs::Float32 deployment_motor_setpoint) {
   deployment_motor_setpoint_ = deployment_motor_setpoint.data;
 }
 
@@ -366,7 +379,8 @@ void IO::WriteDeployment(::lib::deployment::Output &output) {
 
   // Write latch.
   set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
-                       output.latch ? kDeploymentServoClosed : kDeploymentServoOpen);
+                       output.latch ? kDeploymentServoClosed
+                                    : kDeploymentServoOpen);
 #else
   // Silence unused variable warnings.
   (void)output;
