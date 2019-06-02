@@ -28,13 +28,33 @@ GroundControls::GroundControls(int argc, char **argv) :
             kRosDroneProgramTopic, kRosMessageQueueSize)),
     mission_status_publisher_(ros_node_handle_.advertise<::std_msgs::String>(
         kRosMissionStatusTopic, kRosMessageQueueSize)),
-    udp_connection_("tcp://127.0.0.1:6005", 1),
+    gimbal_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
+        kRosGimbalTopic, kRosMessageQueueSize, true)),
+    deployment_motor_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
+        kRosDeploymentMotorTopic, kRosMessageQueueSize, true)),
+    latch_publisher_(ros_node_handle_.advertise<::std_msgs::Bool>(
+        kRosLatchTopic, kRosMessageQueueSize, true)),
+    hotwire_publisher_(ros_node_handle_.advertise<::std_msgs::Bool>(
+        kRosHotwireTopic, kRosMessageQueueSize, true)),
+    gimbal_subscriber_(
+        ros_node_handle_.subscribe(kRosGimbalTopic, kRosMessageQueueSize,
+                                   &GroundControls::GimbalSetpoint, this)),
+    deployment_motor_subscriber_(ros_node_handle_.subscribe(
+        kRosDeploymentMotorTopic, kRosMessageQueueSize,
+        &GroundControls::DeploymentMotorSetpoint, this)),
+    latch_subscriber_(
+        ros_node_handle_.subscribe(kRosLatchTopic, kRosMessageQueueSize,
+                                   &GroundControls::LatchSetpoint, this)),
+    hotwire_subscriber_(
+        ros_node_handle_.subscribe(kRosHotwireTopic, kRosMessageQueueSize,
+                                   &GroundControls::HotwireSetpoint, this)),
+    // udp_connection_("tcp://127.0.0.1:6005", 1),
     rfd900_connection_("/dev/ttyUSB0", B57600, 0), // TODO
     phased_loop_(1e2),
     drone_program_success_(false) {
 
   // Connect proto_receiver_
-  udp_connection_.Connect();
+  // udp_connection_.Connect();
 
   socketio_ground_controls = this;
   client_.set_open_listener(on_connect);
@@ -76,51 +96,42 @@ void GroundControls::ReadRFD900() {
   while (running_) {
     // Get the connection's uas messages
     ::src::controls::UasMessage uas_message1;
-    ::src::controls::UasMessage uas_message2;
     bool rfd900_res = rfd900_connection_.GetLatestProto(uas_message1);
-    bool udp_connection_res =
-        false; // udp_connection_.GetLatestProto(uas_message2);
 
-    // Check for either availability
-    if (!rfd900_res && !udp_connection_res) {
+    if (!rfd900_res) {
+      ::std::cout << "Did not get rfd900 connection" << ::std::endl;
       return;
-    } else if (!rfd900_res && udp_connection_res) {
-      ::std::cout << "Got udp connection and not rfd900" << ::std::endl;
-    } else if (rfd900_res && !udp_connection_res) {
+    } else {
       if (!::ros::master::check()) { // if ros is not available
         SendSensorsToServer(uas_message1.sensors(), true);
       }
-      ::std::cout << "Got rfd900 and not udp connection" << ::std::endl;
-    } else {
-      // TODO: check which one was received earliest
-      ::std::cout << "Got both rfd900 and udp connection" << ::std::endl;
+      ::std::cout << "Got rfd900 connection" << ::std::endl;
     }
 
     phased_loop_.SleepUntilNext();
   }
 }
 
-void GroundControls::ReadUDP() {
-  running_ = true;
+// void GroundControls::ReadUDP() {
+//   running_ = true;
 
-  while (running_) {
-    // Get the connection's uas messages
-    ::src::controls::UasMessage uas_message1;
-    ::src::controls::UasMessage uas_message2;
-    bool udp_res = udp_connection_.GetLatestProto(uas_message1);
+//   while (running_) {
+//     // Get the connection's uas messages
+//     ::src::controls::UasMessage uas_message1;
+//     bool udp_res = udp_connection_.GetLatestProto(uas_message1);
 
-    // Check for either availability
-    if (!udp_res) {
-      ::std::cout << "Did not get upd connection" << ::std::endl;
-      return;
-    } else {
-      // TODO: check which one was received earliest
-      ::std::cout << "Got udp connection" << ::std::endl;
-    }
+//     // Check for either availability
+//     if (!udp_res) {
+//       ::std::cout << "Did not get upd connection" << ::std::endl;
+//       return;
+//     } else {
+//       // TODO: check which one was received earliest
+//       ::std::cout << "Got udp connection" << ::std::endl;
+//     }
 
-    phased_loop_.SleepUntilNext();
-  }
-}
+//     phased_loop_.SleepUntilNext();
+//   }
+// }
 
 void GroundControls::DroneProgramReceived(
     const ::src::controls::ground_controls::timeline::DroneProgram
@@ -129,14 +140,45 @@ void GroundControls::DroneProgramReceived(
   drone_program.SerializeToString(&serialized_drone_program);
   serialized_drone_program =
       ::lib::base64_tools::Encode(serialized_drone_program);
-  client_.socket("ground-controls")
-      ->emit("UPLOADED_DRONE_PROGRAM", serialized_drone_program);
+  if (client_.opened())
+    client_.socket("ground-controls")
+        ->emit("UPLOADED_DRONE_PROGRAM", serialized_drone_program);
 }
 
 void GroundControls::MissionStatusReceived(
     const ::std_msgs::String mission_status) {
-  client_.socket("ground-controls")
-      ->emit("MISSION_STATUS", mission_status.data);
+  if (client_.opened())
+    client_.socket("ground-controls")
+        ->emit("MISSION_STATUS", mission_status.data);
+}
+
+void GroundControls::GimbalSetpoint(const ::std_msgs::Float32 gimbal_setpoint) {
+  if (client_.opened())
+    client_.socket("ground-controls")
+        ->emit("GIMBAL_SETPOINT",
+               ::sio::double_message::create(gimbal_setpoint.data));
+}
+
+void GroundControls::DeploymentMotorSetpoint(
+    const ::std_msgs::Float32 deployment_motor_setpoint) {
+  if (client_.opened())
+    client_.socket("ground-controls")
+        ->emit("DEPLOYMENT_MOTOR_SETPOINT",
+               ::sio::double_message::create(deployment_motor_setpoint.data));
+}
+
+void GroundControls::LatchSetpoint(const ::std_msgs::Bool latch_setpoint) {
+  if (client_.opened())
+    client_.socket("ground-controls")
+        ->emit("LATCH_SETPOINT",
+               ::sio::bool_message::create(latch_setpoint.data));
+}
+
+void GroundControls::HotwireSetpoint(const ::std_msgs::Bool hotwire_setpoint) {
+  if (client_.opened())
+    client_.socket("ground-controls")
+        ->emit("HOTWIRE_SETPOINT",
+               ::sio::bool_message::create(hotwire_setpoint.data));
 }
 
 void GroundControls::OnConnect() {
@@ -179,8 +221,9 @@ void GroundControls::OnConnect() {
                       << "drone program compilation failure: Could not compile "
                          "GroundProgram"
                       << ::std::endl;
-                  client_.socket("ground-controls")
-                      ->emit("MISSION_COMPILE_ERROR");
+                  if (client_.opened())
+                    client_.socket("ground-controls")
+                        ->emit("MISSION_COMPILE_ERROR");
                   return;
                 }
 
@@ -191,8 +234,10 @@ void GroundControls::OnConnect() {
                 drone_program_.SerializeToString(&serialized_drone_program);
                 serialized_drone_program =
                     ::lib::base64_tools::Encode(serialized_drone_program);
-                client_.socket("ground-controls")
-                    ->emit("COMPILED_DRONE_PROGRAM", serialized_drone_program);
+                if (client_.opened())
+                  client_.socket("ground-controls")
+                      ->emit("COMPILED_DRONE_PROGRAM",
+                             serialized_drone_program);
               }));
 
   client_.socket("ground-controls")
@@ -254,6 +299,59 @@ void GroundControls::OnConnect() {
                  ::std_msgs::String mission_status;
                  mission_status.data = "END_MISSION";
                  mission_status_publisher_.publish(mission_status);
+               }));
+
+  client_.socket("ground-controls")
+      ->on("GIMBAL_SETPOINT",
+           ::sio::socket::event_listener_aux(
+               [&](::std::string const &name, ::sio::message::ptr const &data,
+                   bool isAck, ::sio::message::list &ack_resp) {
+                 (void)name;
+                 (void)isAck;
+                 (void)ack_resp;
+                 ::std_msgs::Float32 gimbal_setpoint;
+                 gimbal_setpoint.data = data->get_double();
+                 ::std::cout << "got gimbal setpoint from ground\n";
+                 gimbal_publisher_.publish(gimbal_setpoint);
+               }));
+
+  client_.socket("ground-controls")
+      ->on("DEPLOYMENT_MOTOR_SETPOINT",
+           ::sio::socket::event_listener_aux(
+               [&](::std::string const &name, ::sio::message::ptr const &data,
+                   bool isAck, ::sio::message::list &ack_resp) {
+                 (void)name;
+                 (void)isAck;
+                 (void)ack_resp;
+                 ::std_msgs::Float32 deployment_motor_setpoint;
+                 deployment_motor_setpoint.data = data->get_double();
+                 deployment_motor_publisher_.publish(deployment_motor_setpoint);
+               }));
+
+  client_.socket("ground-controls")
+      ->on("LATCH_SETPOINT",
+           ::sio::socket::event_listener_aux(
+               [&](::std::string const &name, ::sio::message::ptr const &data,
+                   bool isAck, ::sio::message::list &ack_resp) {
+                 (void)name;
+                 (void)isAck;
+                 (void)ack_resp;
+                 ::std_msgs::Bool latch_setpoint;
+                 latch_setpoint.data = data->get_bool();
+                 latch_publisher_.publish(latch_setpoint);
+               }));
+
+  client_.socket("ground-controls")
+      ->on("HOTWIRE_SETPOINT",
+           ::sio::socket::event_listener_aux(
+               [&](::std::string const &name, ::sio::message::ptr const &data,
+                   bool isAck, ::sio::message::list &ack_resp) {
+                 (void)name;
+                 (void)isAck;
+                 (void)ack_resp;
+                 ::std_msgs::Bool hotwire_setpoint;
+                 hotwire_setpoint.data = data->get_bool();
+                 hotwire_publisher_.publish(hotwire_setpoint);
                }));
 }
 

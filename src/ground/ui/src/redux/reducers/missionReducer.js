@@ -66,6 +66,7 @@ export default function reducer(state=initialState, action) {
     case 'COMPILED_DRONE_PROGRAM':
     case 'UPLOADED_DRONE_PROGRAM': {
       let droneProgram = action.payload;
+      if (!droneProgram.commands) droneProgram.commands = [];
       droneProgram.commands.map((command, index) => {
         command.name = Object.keys(command)[0];
         command.type = state.timelineGrammar.DroneCommand.fields[command.name].type;

@@ -12,6 +12,8 @@
 
 #include <ros/console.h>
 #include <ros/ros.h>
+#include <std_msgs/Bool.h>
+#include <std_msgs/Float32.h>
 #include <std_msgs/String.h>
 
 #include "sio_client.h"
@@ -41,7 +43,7 @@ class GroundControls {
  public:
   GroundControls(int argc, char **argv);
   void ReadRFD900();
-  void ReadUDP();
+  //   void ReadUDP();
 
   void OnConnect();
   void OnFail();
@@ -59,6 +61,12 @@ class GroundControls {
   void SendSensorsToServer(const ::src::controls::Sensors &sensors,
                            bool rfd900);
 
+  void GimbalSetpoint(const ::std_msgs::Float32 gimbal_setpoint);
+  void
+  DeploymentMotorSetpoint(const ::std_msgs::Float32 deployment_motor_setpoint);
+  void LatchSetpoint(const ::std_msgs::Bool latch_setpoint);
+  void HotwireSetpoint(const ::std_msgs::Bool hotwire_setpoint);
+
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber sensors_subscriber_;
   ::ros::Subscriber drone_program_subscriber_;
@@ -66,8 +74,17 @@ class GroundControls {
   ::ros::Publisher drone_program_publisher_;
   ::ros::Publisher mission_status_publisher_;
 
-  ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
-      udp_connection_;
+  ::ros::Publisher gimbal_publisher_;
+  ::ros::Publisher deployment_motor_publisher_;
+  ::ros::Publisher latch_publisher_;
+  ::ros::Publisher hotwire_publisher_;
+  ::ros::Subscriber gimbal_subscriber_;
+  ::ros::Subscriber deployment_motor_subscriber_;
+  ::ros::Subscriber latch_subscriber_;
+  ::ros::Subscriber hotwire_subscriber_;
+
+  //   ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
+  //       udp_connection_;
   ::lib::serial_device::SerialDevice<::src::controls::UasMessage>
       rfd900_connection_;
 

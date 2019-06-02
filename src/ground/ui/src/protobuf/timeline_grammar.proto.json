@@ -103,7 +103,6 @@
         "oneof": [
           "nothing_command",
           "sleep_command",
-          "goto_command",
           "trigger_bomb_drop_command",
           "trigger_alarm_command",
           "translate_command"
@@ -118,10 +117,6 @@
       "sleep_command": {
         "type": "SleepCommand",
         "id": 2
-      },
-      "goto_command": {
-        "type": "GotoCommand",
-        "id": 3
       },
       "trigger_bomb_drop_command": {
         "type": "TriggerBombDropCommand",

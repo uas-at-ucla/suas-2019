@@ -20,7 +20,10 @@
 #include "lib/phased_loop/phased_loop.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/proto_comms/proto_comms.h"
+#include "mission_state_machine.h"
+#include "src/controls/constants.h"
 #include "src/controls/ground_controls/timeline/executor/executor.h"
+#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
 
 namespace src {
@@ -28,26 +31,31 @@ namespace controls {
 namespace flight_loop {
 namespace flight_state_machine {
 namespace {
+// Time between sending arm triggers to the flight controller.
+static constexpr double kTriggerPeriod = 5.0;
+
 // Time for propellers to spin up before taking off, in seconds.
-static constexpr double kSpinupTime = 2.0;
+static constexpr double kSpinupTime = 5.0;
 
 // Altitude to reach during takeoff before acknowledging the drone has taken
 // off.
-static constexpr double kTakeoffAltitude = 3.0;
+static constexpr double kMinTakeoffAltitude = 2.0;
+
+static constexpr double kTakenOffWaitTime = 5.0;
+
 } // namespace
 
 enum FlightLoopState {
-  STANDBY,
-  ARMING,
-  ARMED_WAIT_FOR_SPINUP,
-  ARMED,
-  TAKING_OFF,
-  TAKEN_OFF,
-  SAFETY_PILOT_CONTROL,
-  MISSION,
-  LANDING,
-  FAILSAFE,
-  FLIGHT_TERMINATION,
+  STANDBY = 0,
+  ARMING = 1,
+  ARMED_WAIT_FOR_SPINUP = 2,
+  TAKING_OFF = 3,
+  TAKEN_OFF = 4,
+  MISSION = 5,
+  SAFETY_PILOT_CONTROL = 6,
+  LANDING = 7,
+  FAILSAFE = 8,
+  FLIGHT_TERMINATION = 9,
 };
 
 ::std::string StateToString(FlightLoopState state);
@@ -83,6 +91,10 @@ class ArmingState : public State {
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
   void Reset() override;
+
+ private:
+  double start_;
+  bool was_reset_;
 };
 
 class ArmedWaitForSpinupState : public State {
@@ -96,16 +108,7 @@ class ArmedWaitForSpinupState : public State {
 
  private:
   double start_;
-};
-
-class ArmedState : public State {
- public:
-  ArmedState();
-  ~ArmedState() = default;
-
-  void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output) override;
-  void Reset() override;
+  bool was_reset_;
 };
 
 class TakingOffState : public State {
@@ -126,6 +129,10 @@ class TakenOffState : public State {
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
   void Reset() override;
+
+ private:
+  double start_;
+  bool was_reset_;
 };
 
 class SafetyPilotControlState : public State {
@@ -146,9 +153,11 @@ class MissionState : public State {
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
   void Reset() override;
+  void LoadMission(
+      ::src::controls::ground_controls::timeline::DroneProgram drone_program);
 
  private:
-  executor::Executor executor_;
+  mission_state_machine::MissionStateMachine mission_state_machine_;
 };
 
 class LandingState : public State {
@@ -203,6 +212,9 @@ class FlightStateMachine {
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+
+  void LoadMission(
+      ::src::controls::ground_controls::timeline::DroneProgram drone_program);
 
  private:
   State *GetStateHandler(FlightLoopState state);

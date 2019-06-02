@@ -11,21 +11,6 @@ cc_binary(
   ],
 )
 
-cc_binary(
-  # TODO: Use bazel test.
-  # Requires bazel build @PX4_sitl//:jmavsim and bazel build //src/... to be run
-  # beforehand.
-
-  name = 'flight_loop_lib_test',
-  srcs = [
-    'flight_loop_lib_test.cc',
-  ],
-  deps = [
-    ':flight_loop_lib',
-    '@gtest//:gtest',
-  ],
-)
-
 cc_library(
   name = 'flight_loop_lib',
   visibility = ['//visibility:public'],
@@ -36,9 +21,9 @@ cc_library(
     'flight_loop.h',
   ],
   deps = [
+    ':flight_state_machine',
     '//src/controls:constants',
     '//src/controls/ground_controls/timeline/executor:executor',
-    '//src/controls/flight_loop:flight_state_machine',
     '//src/controls:messages_cpp',
     '//src/controls/io:io_lib',
     '//lib/proto_comms:proto_comms',
@@ -63,7 +48,11 @@ cc_library(
     'flight_state_machine.h',
   ],
   deps = [
+    ':mission_state_machine',
+
     '//src/controls:messages_cpp',
+    '//src/controls/ground_controls/timeline:timeline_grammar_cc',
+    '//src/controls:constants',
 
     '//src/controls/ground_controls/timeline/executor:executor',
     '//lib/proto_comms:proto_comms',
@@ -87,9 +76,11 @@ cc_library(
     '//src/controls:messages_cpp',
 
     '//src/controls/ground_controls/timeline/executor:executor',
+    '//src/controls/ground_controls/timeline:timeline_grammar_cc',
     '//lib/proto_comms:proto_comms',
     '//lib/physics_structs:physics_structs',
     '//lib/phased_loop:phased_loop',
+    '//lib/ros:ros',
     '//lib/alarm:alarm',
   ],
 )
