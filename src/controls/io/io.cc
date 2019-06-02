@@ -28,7 +28,7 @@ IO::IO() :
         kRosSensorsTopic, kRosMessageQueueSize)),
     global_position_publisher_(
         ros_node_handle_.advertise<::mavros_msgs::GlobalPositionTarget>(
-            kRosGlobalPositionTopic, 10)),
+            kRosGlobalPositionSetpointTopic, 10)),
     gimbal_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
         kRosGimbalTopic, kRosMessageQueueSize, true)),
     deployment_motor_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(

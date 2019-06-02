@@ -53,8 +53,10 @@ static const ::std::string kRosRcInTopic = "/mavros/rc/in";
 static const ::std::string kRosBatteryStatusTopic = "/mavros/battery";
 static const ::std::string kRosStateTopic = "/mavros/state";
 static const ::std::string kRosImuTopic = "/mavros/imu/data";
-static const ::std::string kRosGlobalPositionTopic =
+static const ::std::string kRosGlobalPositionSetpointTopic =
     "/mavros/setpoint_position/global";
+static const ::std::string kRosGlobalPositionTopic =
+    "/mavros/global_position/global";
 static const ::std::string kRosSetModeService = "/mavros/set_mode";
 static const ::std::string kRosArmService = "/mavros/cmd/arming";
 static const ::std::string kRosTakeoffService = "/mavros/cmd/takeoff";

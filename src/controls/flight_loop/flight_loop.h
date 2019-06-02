@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <mutex>
 #include <string>
 #include <thread>
 
@@ -69,6 +70,8 @@ class FlightLoop {
   void DroneProgramReceived(
       ::src::controls::ground_controls::timeline::DroneProgram drone_program);
 
+  ::src::controls::Goal GetGoal();
+
   // Fields ////////////////////////////////////////////////////////////////////
   flight_state_machine::FlightStateMachine state_machine_;
 
@@ -82,6 +85,9 @@ class FlightLoop {
 
   double last_bomb_drop_;
   double last_dslr_;
+
+  ::src::controls::Goal goal_;
+  ::std::mutex goal_mutex_;
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber sensors_subscriber_;

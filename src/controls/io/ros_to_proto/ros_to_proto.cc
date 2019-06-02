@@ -217,6 +217,12 @@ void RosToProto::BatteryStateReceived(
 }
 
 bool RosToProto::SensorsValid() {
+  // ::std::string sensors_string;
+  // ::google::protobuf::TextFormat::PrintToString(sensors_, &sensors_string);
+  // ::std::cout << sensors_string << ::std::endl;
+
+  sensors_.set_time(::ros::Time::now().toSec());
+
   if (!sensors_.IsInitialized()) { // all required fields are filled
     return false;
   }

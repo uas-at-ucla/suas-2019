@@ -3,7 +3,7 @@ syntax = "proto2";
 package src.controls;
 
 message Sensors {
-  optional double time               = 1;
+  required double time               = 1;
   required bool gps_fix              = 2;  // (http://docs.ros.org/api/sensor_msgs/html/msg/NavSatStatus.html)
   required double latitude           = 3;  // degrees (http://docs.ros.org/api/sensor_msgs/html/msg/NavSatFix.html)
   required double longitude          = 4;  // degrees (link above)
@@ -35,21 +35,6 @@ message Sensors {
 
 message Goal {
   required bool run_mission                                                = 1;
-
-  required bool trigger_failsafe                                           = 2;
-  required bool trigger_throttle_cut                                       = 3;
-
-  required double trigger_takeoff                                          = 4;
-  required double trigger_hold                                             = 5;
-  required double trigger_offboard                                         = 6;
-  required double trigger_rtl                                              = 7;
-  required double trigger_land                                             = 8;
-  required double trigger_arm                                              = 9;
-  required double trigger_disarm                                           = 10;
-
-  required double trigger_alarm                                            = 11;
-  required double trigger_bomb_drop                                        = 12;
-  required double trigger_dslr                                             = 13;
 }
 
 message Output {
