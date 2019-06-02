@@ -129,11 +129,10 @@ DOCKER_BUILD_CMD="set -x; \
   chown uas /home/uas; \
   chown uas /home/uas/.cache; \
   echo STARTED > /tmp/uas_init; \
-  sudo -u uas bash -c \"bazel; \
+  sudo -u uas bash -c \" \
   source /home/uas/.bashrc; \
-  export ROS_MASTER_URI=http://192.168.1.20:11311 \
   /opt/ros/melodic/bin/roscore &> /dev/null; \
-  bazel run //src/controls/ground_controls:ground_controls $1\""
+  bash\""
 
 docker run                          \
   -it                               \
@@ -144,6 +143,8 @@ docker run                          \
   -v $ROOT_PATH:/home/uas/code_env  \
   -v ~/.ssh:/home/uas/.ssh          \
   -e DISPLAY=$DISPLAY               \
+  -e ROS_MASTER_URI=http://192.168.1.20:11311 \
+  -e ROS_IP=192.168.1.20 \
   -v /tmp/.X11-unix:/tmp/.X11-unix  \
   --privileged                      \
   --dns 8.8.8.8                     \
