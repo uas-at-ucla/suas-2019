@@ -33,7 +33,7 @@ namespace {
 static constexpr double kTriggerPeriod = 5.0;
 
 // Time for propellers to spin up before taking off, in seconds.
-static constexpr double kSpinupTime = 2.0;
+static constexpr double kSpinupTime = 5.0;
 
 // Altitude to reach during takeoff before acknowledging the drone has taken
 // off.

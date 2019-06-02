@@ -196,12 +196,19 @@ void IO::WriterThread() {
 // UAS@UCLA callbacks.
 
 void IO::Output(const ::src::controls::Output output) {
-  (void)output;
   // Only listen to output if safety pilot override is not active.
   bool run_uas_flight_loop = true;
   if (!run_uas_flight_loop) {
     return;
   }
+
+  PixhawkSendModePosedge(kPixhawkCustomModeTakeoff, output.trigger_takeoff());
+  PixhawkSendModePosedge(kPixhawkCustomModeLoiter, output.trigger_hold());
+  PixhawkSendModePosedge(kPixhawkCustomModeOffboard, output.trigger_offboard());
+  PixhawkSendModePosedge(kPixhawkCustomModeReturnToLand, output.trigger_rtl());
+  PixhawkSendModePosedge(kPixhawkCustomModeLand, output.trigger_land());
+  PixhawkSendModePosedge(kPixhawkArmCommand, output.trigger_arm());
+  // PixhawkSendModePosedge(, output.trigger_disarm());
 }
 
 void IO::GimbalSetpoint(const ::std_msgs::Float32 gimbal_setpoint) {
