@@ -40,6 +40,9 @@ IO::IO() :
         kRosStateTopic, kRosMessageQueueSize, &IO::StateReceived, this)),
     imu_subscriber_(ros_node_handle_.subscribe(
         kRosImuTopic, kRosMessageQueueSize, &IO::ImuReceived, this)),
+    drone_program_subscriber_(ros_node_handle_.subscribe(
+        "/uasatucla/proto/drone_program", kRosMessageQueueSize,
+        &IO::DroneProgramReceived, this)),
     set_mode_service_(ros_node_handle_.serviceClient<::mavros_msgs::SetMode>(
         kRosSetModeService)),
     arm_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandBool>(
@@ -231,6 +234,15 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
   (void)imu;
 
   led_strip_.set_last_imu(::ros::Time::now().toSec());
+}
+
+void IO::DroneProgramReceived(
+    const ::src::controls::ground_controls::timeline::DroneProgram
+        drone_program) {
+  ::std::cout << "Executing Drone Program...\n";
+  drone_program_ = drone_program;
+  should_override_alarm_ = true;
+  // ::std::cout << drone_program.DebugString() << "\n";
 }
 
 ////////////////////////////////////////////////////////////////////////////////

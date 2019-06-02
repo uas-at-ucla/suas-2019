@@ -486,7 +486,7 @@ def run_controls_simulate(args):
 
     tmux_new_window("ROS")
     tmux_split("horizontal", 2)
-    tmux_cmd(DOCKER_EXEC_SCRIPT + "rostopic echo /mavros/global_position/global")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/flight_loop:flight_loop")
     tmux_move_pane("right")
     tmux_cmd(DOCKER_EXEC_SCRIPT + io_command)
     tmux_split("vertical", 2)

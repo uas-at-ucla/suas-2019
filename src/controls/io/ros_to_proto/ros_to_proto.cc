@@ -59,6 +59,7 @@ RosToProto::RosToProto() :
 
 Sensors RosToProto::GetSensors() {
   Sensors sensors_copy;
+  sensors_copy.set_time(::ros::Time::now().toSec());
 
   // Grab lock to prevent ROS from modifying the shared Sensors object while a
   // copy is performed.
@@ -87,7 +88,8 @@ void RosToProto::GlobalPositionReceived(
 
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
 
-  sensors_.set_gps_fix(global_position.status.status != ::sensor_msgs::NavSatStatus::STATUS_NO_FIX);
+  sensors_.set_gps_fix(global_position.status.status !=
+                       ::sensor_msgs::NavSatStatus::STATUS_NO_FIX);
 
   sensors_.set_latitude(global_position.latitude);
   sensors_.set_longitude(global_position.longitude);

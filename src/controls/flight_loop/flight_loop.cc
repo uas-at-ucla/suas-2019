@@ -11,22 +11,39 @@ FlightLoop::FlightLoop() :
     did_arm_(false),
     last_bomb_drop_(0),
     last_dslr_(0),
+    ros_node_handle_(),
     sensors_subscriber_(ros_node_handle_.subscribe(
-        io::kRosSensorsTopic, io::kRosMessageQueueSize,
-        &FlightLoop::RunIteration, this)) {}
+        kRosSensorsTopic, kRosMessageQueueSize,
+        &FlightLoop::RunIteration, this)),
+    drone_program_subscriber_(ros_node_handle_.subscribe(
+        kRosDroneProgramTopic, kRosMessageQueueSize,
+        &FlightLoop::DroneProgramReceived, this)),
+    output_publisher_(ros_node_handle_.advertise<::src::controls::Output>(
+        kRosOutputTopic, kRosMessageQueueSize)) {
+
+  ROS_INFO("Flight loop initialized!");
+}
+
 void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
-  (void)sensors;
   ::src::controls::Output output = GenerateDefaultOutput();
-
-  ::std::cout << ::std::fixed << ::std::setprecision(5)
-              << ::lib::phased_loop::GetCurrentTime() << ": "
-              << sensors.battery_voltage() << ::std::endl;
-
+  (void)sensors;
   // state_machine_.Handle(sensors, goal, output);
   // WriteActuators(sensors, goal, output);
-  // DumpProtobufMessages(sensors, goal, output);
 
-  // return output;
+  //LogProtobufMessage("SENSORS", sensors);
+  //LogProtobufMessage("OUTPUT", output);
+
+  output_publisher_.publish(output);
+}
+
+void FlightLoop::DroneProgramReceived(
+    ::src::controls::ground_controls::timeline::DroneProgram
+        drone_program) {
+  ::std::cout << "Ground communicator got Drone Program...\n";
+
+  LogProtobufMessage("PROGRAM", drone_program);
+
+  // ::std::cout << drone_program.DebugString() << "\n";
 }
 
 void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
@@ -50,6 +67,7 @@ void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
   output.set_flight_time(0);
   output.set_current_command_index(0);
 
+  output.set_send_offboard(false);
   output.set_velocity_x(0);
   output.set_velocity_y(0);
   output.set_velocity_z(0);
@@ -117,21 +135,12 @@ void FlightLoop::WriteActuators(::src::controls::Sensors &sensors,
   // }
 }
 
-void FlightLoop::DumpProtobufMessages(::src::controls::Sensors &sensors,
-                                      ::src::controls::Goal &goal,
-                                      ::src::controls::Output &output) {
-
-  LogProtobufMessage("SENSORS", &sensors);
-  LogProtobufMessage("GOAL", &goal);
-  LogProtobufMessage("OUTPUT", &output);
-}
-
 void FlightLoop::LogProtobufMessage(::std::string name,
-                                    ::google::protobuf::Message *message) {
+                                    ::google::protobuf::Message &message) {
   ::std::ostringstream output;
 
   ::std::string sensors_string;
-  ::google::protobuf::TextFormat::PrintToString(*message, &sensors_string);
+  ::google::protobuf::TextFormat::PrintToString(message, &sensors_string);
 
   ::std::vector<::std::string> sensors_split;
   ::boost::split(sensors_split, sensors_string,
@@ -143,7 +152,7 @@ void FlightLoop::LogProtobufMessage(::std::string name,
     output << name << "... " << field << "\n";
   }
 
-  // LOG_LINE(output.str());
+  ROS_DEBUG_STREAM(output.str());
 }
 
 } // namespace flight_loop

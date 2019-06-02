@@ -65,6 +65,7 @@ fi
 PLATFORM=$(uname -s)
 DOCKER_RUN_CMD="set -x; \
   echo STARTED > /tmp/uas_init; \
+  getent group $(id -g) || groupadd -g $(id -g) host_group; \
   mkdir -p /tmp/home/uas; \
   usermod -d /tmp/home/uas uas; \
   usermod -u $(id -u) -g $(id -g) uas; \
