@@ -31,6 +31,9 @@ RosToProto::RosToProto() :
         ros_node_handle_.subscribe(kRosBatteryStateTopic, kRosMessageQueueSize,
                                    &RosToProto::BatteryStateReceived, this)),
     state_subscriber_(
+        ros_node_handle_.subscribe(kRosHomePositionTopic, kRosMessageQueueSize,
+                                   &RosToProto::HomePositionReceived, this)),
+    home_position_subscriber_(
         ros_node_handle_.subscribe(kRosStateTopic, kRosMessageQueueSize,
                                    &RosToProto::StateReceived, this)),
     arming_service_(ros_node_handle_.serviceClient<mavros_msgs::CommandBool>(
@@ -239,10 +242,19 @@ void RosToProto::StateReceived(::mavros_msgs::State state) {
   sensors_.set_autopilot_state(state.mode);
 }
 
+void RosToProto::HomePositionReceived(const ::mavros_msgs::HomePosition home_position) {
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
+
+  GotRosMessage(kRosHomePositionTopic);
+
+  sensors_.set_home_altitude(home_position.geo.altitude);
+}
+
 void RosToProto::GotRosMessage(::std::string ros_topic) {
   ros_topic_last_received_times_[ros_topic] =
       ::lib::phased_loop::GetCurrentTime();
 }
+
 
 // from
 // https://en.wikipedia.org/wiki/Conversion_between_quaternions_and_Euler_angles

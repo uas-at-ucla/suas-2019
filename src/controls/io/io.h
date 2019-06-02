@@ -4,6 +4,7 @@
 #include <functional>
 #include <string>
 #include <thread>
+#include <math.h>
 
 #include <GeographicLib/Geoid.hpp>
 #include <linux/limits.h>
@@ -65,7 +66,7 @@ class IO {
 
   void PixhawkSendModePosedge(::std::string mode, bool signal);
   void PixhawkSetGlobalPositionGoal(double latitude, double longitude,
-                                    double altitude);
+                                    double altitude, double yaw);
 
   ::lib::alarm::Alarm alarm_;
   ::lib::deployment::Deployment deployment_;

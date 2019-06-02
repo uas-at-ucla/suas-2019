@@ -41,7 +41,7 @@ IO::IO() :
     imu_subscriber_(ros_node_handle_.subscribe(
         kRosImuTopic, kRosMessageQueueSize, &IO::ImuReceived, this)),
     drone_program_subscriber_(ros_node_handle_.subscribe(
-        "/uasatucla/proto/drone_program", kRosMessageQueueSize,
+        kRosDroneProgramTopic, kRosMessageQueueSize,
         &IO::DroneProgramReceived, this)),
     set_mode_service_(ros_node_handle_.serviceClient<::mavros_msgs::SetMode>(
         kRosSetModeService)),
@@ -111,6 +111,8 @@ void IO::WriterThread() {
     // PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 100);
     // PixhawkSetGlobalPositionGoal(38.147483, -76.427778, 100);
 #endif
+    // UCLA Court of Sciences
+    PixhawkSetGlobalPositionGoal(34.174103, -118.482008, 2, -90);
 
     // Write output to LED strip.
     led_strip_.Render(false);
@@ -152,9 +154,7 @@ void IO::WriterThread() {
 // UAS@UCLA callbacks.
 
 void IO::Output(const ::src::controls::Output output) {
-  ROS_DEBUG_STREAM(
-      "Got output protobuf from flight_loop. vx: " << output.velocity_x());
-
+  (void) output;
   // Only listen to output if safety pilot override is not active.
   bool run_uas_flight_loop = true;
   if (!run_uas_flight_loop) {
@@ -372,9 +372,11 @@ void IO::PixhawkSendModePosedge(::std::string mode, bool signal) {
   }
 }
 
-// Send a global position setpoint to the Pixhawk, up to a maximum rate.
+// Send a global position setpoint to the Pixhawk, up to a maximum rate. Takes
+// in latitude, longitude, altitude (relative to home position), and yaw
+// (in degrees, relative to north CCW).
 void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
-                                      double altitude) {
+                                      double altitude, double yaw) {
 
   double current_time = ::ros::Time::now().toSec();
 
@@ -385,10 +387,22 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
   }
   last_position_setpoint_ = current_time;
 
+  // Assert that we have the latest sensors protobuf before continuing.
+  if(!ros_to_proto_.SensorsValid()) {
+    ROS_ERROR("Attempted to send global position goal without valid Sensors!");
+    return;
+  }
+
+  // Base all altitude setpoints off home altitude.
+  double home_altitude = ros_to_proto_.GetSensors().home_altitude();
+  double yaw_radians = ::std::fmod(yaw + 90.0, 360.0) * M_PI / 180.0;
+
+  /*
   // Find WGS84 altitude to send as global position setpoint.
   // https://real.flightairmap.com/tools/geoid
   static GeographicLib::Geoid geoid_height_convert("egm96-5");
   double geoid_height = geoid_height_convert(latitude, longitude);
+  */
 
   // Send global position setpoint to Pixhawk, using the geoid height to convert
   // between WGS84 and AMSL altitudes.
@@ -405,8 +419,8 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
       ::mavros_msgs::GlobalPositionTarget::FRAME_GLOBAL_REL_ALT;
   target.latitude = latitude;
   target.longitude = longitude;
-  target.altitude = altitude + geoid_height;
-  target.yaw = 0;
+  target.altitude = home_altitude + altitude;
+  target.yaw = yaw_radians;
   global_position_publisher_.publish(target);
 
   ROS_DEBUG("Sending global position setpoint: latitude(%f), longitude(%f), "

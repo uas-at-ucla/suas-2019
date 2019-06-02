@@ -26,7 +26,7 @@ fi
 
 echo "Root path is $ROOT_PATH"
 
-ALTITUDE=0
+ALTITUDE=141.122
 
 # Competition Field
 # LATITUDE=38.147483
@@ -35,6 +35,10 @@ ALTITUDE=0
 # Practice Field
 LATITUDE=34.173103
 LONGITUDE=-118.482008
+
+# Sunken Gardens
+# LATITUDE=34.071680
+# LONGITUDE=-118.440213
 
 docker run \
   -it \

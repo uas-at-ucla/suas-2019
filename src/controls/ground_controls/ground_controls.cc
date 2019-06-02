@@ -87,7 +87,7 @@ void GroundControls::ReadRFD900() {
     } else if (!rfd900_res && udp_connection_res) {
       ::std::cout << "Got udp connection and not rfd900" << ::std::endl;
     } else if (rfd900_res && !udp_connection_res) {
-      if (!::ros::master::check()) { // if ros is not available
+      if (!::ros::master::check()) {
         SendSensorsToServer(uas_message1.sensors(), true);
       }
       ::std::cout << "Got rfd900 and not udp connection" << ::std::endl;

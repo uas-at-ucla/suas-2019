@@ -51,6 +51,8 @@ namespace controls {
   static const ::std::string kRosSetModeService = "/mavros/set_mode";
   static const ::std::string kRosArmService = "/mavros/cmd/arming";
   static const ::std::string kRosTakeoffService = "/mavros/cmd/takeoff";
+  static const ::std::string kRosHomePositionTopic =
+      "/mavros/home_position/home";
 
   static const ::std::string kRosDroneProgramTopic =
       "/uasatucla/proto/drone_program";

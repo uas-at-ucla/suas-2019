@@ -20,6 +20,7 @@
 #include <mavros_msgs/RCIn.h>
 #include <mavros_msgs/State.h>
 #include <mavros_msgs/VFR_HUD.h>
+#include <mavros_msgs/HomePosition.h>
 #include <sensor_msgs/BatteryState.h>
 #include <sensor_msgs/Imu.h>
 #include <sensor_msgs/NavSatFix.h>
@@ -27,6 +28,7 @@
 
 #include "lib/phased_loop/phased_loop.h"
 #include "src/controls/messages.pb.h"
+#include "src/controls/constants.h"
 
 namespace src {
 namespace controls {
@@ -34,7 +36,7 @@ namespace io {
 namespace ros_to_proto {
 namespace {
 // Tolerance in seconds to check that a ROS packet was received for all topics.
-static const double kRosReceiveTolerance = 1.5;
+static const double kRosReceiveTolerance = 3;
 
 static const int kRosMessageQueueSize = 1;
 static const ::std::string kRosGlobalPositionTopic =
@@ -72,6 +74,7 @@ class RosToProto {
   void ImuDataReceived(::sensor_msgs::Imu imu_data);
   void BatteryStateReceived(::sensor_msgs::BatteryState battery_state);
   void StateReceived(::mavros_msgs::State state);
+  void HomePositionReceived(const ::mavros_msgs::HomePosition home_position);
 
   void GotRosMessage(::std::string ros_topic);
 
@@ -90,6 +93,7 @@ class RosToProto {
   ::ros::Subscriber imu_subscriber_;
   ::ros::Subscriber battery_state_subscriber_;
   ::ros::Subscriber state_subscriber_;
+  ::ros::Subscriber home_position_subscriber_;
 
   ::ros::ServiceClient arming_service_;
 };

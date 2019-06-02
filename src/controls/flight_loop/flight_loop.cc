@@ -26,12 +26,11 @@ FlightLoop::FlightLoop() :
 
 void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
   ::src::controls::Output output = GenerateDefaultOutput();
-  (void)sensors;
   // state_machine_.Handle(sensors, goal, output);
-  // WriteActuators(sensors, goal, output);
 
-  //LogProtobufMessage("SENSORS", sensors);
-  //LogProtobufMessage("OUTPUT", output);
+  // WriteActuators(sensors, goal, output);
+  LogProtobufMessage("SENSORS", sensors);
+  LogProtobufMessage("OUTPUT", output);
 
   output_publisher_.publish(output);
 }
