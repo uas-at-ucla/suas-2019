@@ -60,6 +60,12 @@ export default {
       payload: { msg: 'DRIVE_UGV' }
     }
   },
+  sendSetpoint: (actuator, value) => {
+    return {
+      type: 'TRANSMIT',
+      payload: { msg: actuator, data: value }
+    }
+  },
   testTransmit: (data) => {
     return {
       type: 'TRANSMIT',

@@ -12,12 +12,12 @@ FlightLoop::FlightLoop() :
     last_bomb_drop_(0),
     last_dslr_(0),
     ros_node_handle_(),
-    sensors_subscriber_(ros_node_handle_.subscribe(
-        kRosSensorsTopic, kRosMessageQueueSize,
-        &FlightLoop::RunIteration, this)),
-    drone_program_subscriber_(ros_node_handle_.subscribe(
-        kRosDroneProgramTopic, kRosMessageQueueSize,
-        &FlightLoop::DroneProgramReceived, this)),
+    sensors_subscriber_(
+        ros_node_handle_.subscribe(kRosSensorsTopic, kRosMessageQueueSize,
+                                   &FlightLoop::RunIteration, this)),
+    drone_program_subscriber_(
+        ros_node_handle_.subscribe(kRosDroneProgramTopic, kRosMessageQueueSize,
+                                   &FlightLoop::DroneProgramReceived, this)),
     output_publisher_(ros_node_handle_.advertise<::src::controls::Output>(
         kRosOutputTopic, kRosMessageQueueSize)) {
 
@@ -36,8 +36,7 @@ void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
 }
 
 void FlightLoop::DroneProgramReceived(
-    ::src::controls::ground_controls::timeline::DroneProgram
-        drone_program) {
+    ::src::controls::ground_controls::timeline::DroneProgram drone_program) {
   ::std::cout << "Ground communicator got Drone Program...\n";
 
   LogProtobufMessage("PROGRAM", drone_program);

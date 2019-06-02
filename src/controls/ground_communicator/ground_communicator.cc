@@ -6,9 +6,9 @@ namespace ground_communicator {
 
 GroundCommunicator::GroundCommunicator() :
     ros_node_handle_(),
-    sensors_subscriber_(ros_node_handle_.subscribe(
-        kRosSensorsTopic, kRosMessageQueueSize,
-        &GroundCommunicator::SensorsReceived, this)),
+    sensors_subscriber_(
+        ros_node_handle_.subscribe(kRosSensorsTopic, kRosMessageQueueSize,
+                                   &GroundCommunicator::SensorsReceived, this)),
     drone_program_subscriber_(ros_node_handle_.subscribe(
         kRosDroneProgramTopic, kRosMessageQueueSize,
         &GroundCommunicator::DroneProgramReceived, this)),

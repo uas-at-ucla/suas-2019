@@ -18,19 +18,39 @@ IO::IO() :
     next_sensors_write_(::ros::Time::now().toSec()),
     should_override_alarm_(false),
     last_rc_in_(::ros::Time::now().toSec()),
-    deployment_motor_setpoint_(0.0),
     gimbal_setpoint_(0.0),
+    deployment_motor_setpoint_(0.0),
+    latch_setpoint_(true),
+    hotwire_setpoint_(false),
     running_(true),
+    ros_node_handle_(),
     sensors_publisher_(ros_node_handle_.advertise<::src::controls::Sensors>(
         kRosSensorsTopic, kRosMessageQueueSize)),
     global_position_publisher_(
         ros_node_handle_.advertise<::mavros_msgs::GlobalPositionTarget>(
             kRosGlobalPositionTopic, 10)),
-    output_subscriber_(ros_node_handle_.subscribe(
-        kRosOutputTopic, kRosMessageQueueSize, &IO::Output, this)),
+    gimbal_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
+        kRosGimbalTopic, kRosMessageQueueSize, true)),
+    deployment_motor_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
+        kRosDeploymentMotorTopic, kRosMessageQueueSize, true)),
+    latch_publisher_(ros_node_handle_.advertise<::std_msgs::Bool>(
+        kRosLatchTopic, kRosMessageQueueSize, true)),
+    hotwire_publisher_(ros_node_handle_.advertise<::std_msgs::Bool>(
+        kRosHotwireTopic, kRosMessageQueueSize, true)),
+    gimbal_subscriber_(ros_node_handle_.subscribe(
+        kRosGimbalTopic, kRosMessageQueueSize, &IO::GimbalSetpoint, this)),
+    deployment_motor_subscriber_(ros_node_handle_.subscribe(
+        kRosDeploymentMotorTopic, kRosMessageQueueSize,
+        &IO::DeploymentMotorSetpoint, this)),
+    latch_subscriber_(ros_node_handle_.subscribe(
+        kRosLatchTopic, kRosMessageQueueSize, &IO::LatchSetpoint, this)),
+    hotwire_subscriber_(ros_node_handle_.subscribe(
+        kRosHotwireTopic, kRosMessageQueueSize, &IO::HotwireSetpoint, this)),
     alarm_subscriber_(ros_node_handle_.subscribe(kRosAlarmTriggerTopic,
                                                  kRosMessageQueueSize,
                                                  &IO::AlarmTriggered, this)),
+    output_subscriber_(ros_node_handle_.subscribe(
+        kRosOutputTopic, kRosMessageQueueSize, &IO::Output, this)),
     rc_input_subscriber_(ros_node_handle_.subscribe(
         kRosRcInTopic, kRosMessageQueueSize, &IO::RcInReceived, this)),
     battery_status_subscriber_(
@@ -56,6 +76,22 @@ IO::IO() :
 
   // Set up all actuators and send out initial outputs.
   InitializeActuators();
+
+  ::std_msgs::Float32 init_gimbal;
+  init_gimbal.data = gimbal_setpoint_;
+  gimbal_publisher_.publish(init_gimbal);
+
+  ::std_msgs::Float32 init_deployment_motor;
+  init_deployment_motor.data = deployment_motor_setpoint_;
+  deployment_motor_publisher_.publish(init_deployment_motor);
+
+  ::std_msgs::Bool init_latch;
+  init_latch.data = latch_setpoint_;
+  latch_publisher_.publish(init_latch);
+
+  ::std_msgs::Bool init_hotwire;
+  init_hotwire.data = hotwire_setpoint_;
+  hotwire_publisher_.publish(init_hotwire);
 
   // Chirp the alarm when the IO program starts.
   alarm_.AddAlert({kAlarmChirpDuration, 0});
@@ -102,6 +138,9 @@ void IO::WriterThread() {
     ::lib::deployment::Input deployment_input;
     ::lib::deployment::Output deployment_output;
     deployment_input.direction = 0;
+    deployment_output.motor = deployment_motor_setpoint_;
+    deployment_output.latch = latch_setpoint_;
+    deployment_output.hotwire = hotwire_setpoint_;
     deployment_.RunIteration(deployment_input, deployment_output);
 
     // Write out actuators.
@@ -136,7 +175,8 @@ void IO::WriterThread() {
                  << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
                  << "deployment_motor[" << deployment_output.motor << "]"
                  << ::std::endl
-                 << "deployment_latch[" << deployment_output.latch << "]" << ::std::endl
+                 << "deployment_latch[" << deployment_output.latch << "]"
+                 << ::std::endl
                  << "deployment_hotwire[" << deployment_output.hotwire << "]"
                  << ::std::endl
 #ifdef LOG_LED_STRIP
@@ -164,6 +204,23 @@ void IO::Output(const ::src::controls::Output output) {
   }
 }
 
+void IO::GimbalSetpoint(const ::std_msgs::Float32 gimbal_setpoint) {
+  gimbal_setpoint_ = gimbal_setpoint.data;
+}
+
+void IO::DeploymentMotorSetpoint(
+    const ::std_msgs::Float32 deployment_motor_setpoint) {
+  deployment_motor_setpoint_ = deployment_motor_setpoint.data;
+}
+
+void IO::LatchSetpoint(const ::std_msgs::Bool latch_setpoint) {
+  latch_setpoint_ = latch_setpoint.data;
+}
+
+void IO::HotwireSetpoint(const ::std_msgs::Bool hotwire_setpoint) {
+  hotwire_setpoint_ = hotwire_setpoint.data;
+}
+
 void IO::AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence) {
   ROS_DEBUG_STREAM("Alarm triggered via ROS.");
 
@@ -176,6 +233,17 @@ void IO::AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence) {
        i += 2) {
     alarm_.AddAlert(
         {alarm_sequence.on_off_cycles(i), alarm_sequence.on_off_cycles(i + 1)});
+  }
+}
+
+void IO::Output(const ::src::controls::Output output) {
+  ROS_DEBUG_STREAM(
+      "Got output protobuf from flight_loop. vx: " << output.velocity_x());
+
+  // Only listen to output if safety pilot override is not active.
+  bool run_uas_flight_loop = true;
+  if (!run_uas_flight_loop) {
+    return;
   }
 }
 
@@ -194,15 +262,17 @@ void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   }
 
   int deployment_rc_in = rc_in.channels[kDeploymentMotorRcChannel - 1];
+  ::std_msgs::Float32 deployment_motor_setpoint;
   if (deployment_rc_in > 900) {
-    deployment_motor_setpoint_ =
+    deployment_motor_setpoint.data =
         ::std::max(::std::min((deployment_rc_in - 1500) / 500.0, 1.0), -1.0);
-    if (::std::abs(deployment_motor_setpoint_) < 0.1) {
-      deployment_motor_setpoint_ = 0;
+    if (::std::abs(deployment_motor_setpoint.data) < 0.1) {
+      deployment_motor_setpoint.data = 0;
     }
   } else {
-    deployment_motor_setpoint_ = 0;
+    deployment_motor_setpoint.data = 0;
   }
+  deployment_motor_publisher_.publish(deployment_motor_setpoint);
 
   // Record a log message on every edge.
   if (new_should_override_alarm != should_override_alarm_) {
@@ -321,7 +391,8 @@ void IO::WriteDeployment(::lib::deployment::Output &output) {
 
   // Write latch.
   set_servo_pulsewidth(pigpio_, kDeploymentLatchServoGPIOPin,
-                       output.latch ? kDeploymentServoClosed : kDeploymentServoOpen);
+                       output.latch ? kDeploymentServoClosed
+                                    : kDeploymentServoOpen);
 #else
   // Silence unused variable warnings.
   (void)output;

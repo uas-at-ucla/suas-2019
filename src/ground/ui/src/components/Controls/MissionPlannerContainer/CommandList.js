@@ -19,6 +19,7 @@ class CommandList extends Component {
             command={command}
             index={index}
             myIndex={index}
+            mutable={this.props.mutable}
             protoInfo={this.props.protoInfo}
           ></CommandRowElement>
         )}
