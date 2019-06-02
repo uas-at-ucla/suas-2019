@@ -13,6 +13,7 @@
 #include "zmq.hpp"
 #include <boost/algorithm/string.hpp>
 #include <google/protobuf/text_format.h>
+#include <ros/console.h>
 
 #include "lib/alarm/alarm.h"
 #include "lib/mission_manager/mission_commands.pb.h"
@@ -20,6 +21,7 @@
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/proto_comms/proto_comms.h"
 #include "src/controls/ground_controls/timeline/executor/executor.h"
+#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
 
 namespace src {
@@ -27,12 +29,7 @@ namespace controls {
 namespace flight_loop {
 namespace mission_state_machine {
 namespace {
-// Time for propellers to spin up before taking off, in seconds.
-static constexpr double kSpinupTime = 2.0;
-
-// Altitude to reach during takeoff before acknowledging the drone has taken
-// off.
-static constexpr double kTakeoffAltitude = 3.0;
+static constexpr double kAcceptanceRadius = 10.0; // meters
 } // namespace
 
 enum MissionState {
@@ -108,6 +105,9 @@ class MissionStateMachine {
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+
+  void LoadMission(
+      ::src::controls::ground_controls::timeline::DroneProgram drone_program);
 
  private:
   State *GetStateHandler(MissionState state);

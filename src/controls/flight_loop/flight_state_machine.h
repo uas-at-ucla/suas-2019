@@ -20,8 +20,10 @@
 #include "lib/phased_loop/phased_loop.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/proto_comms/proto_comms.h"
+#include "mission_state_machine.h"
 #include "src/controls/constants.h"
 #include "src/controls/ground_controls/timeline/executor/executor.h"
+#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
 
 namespace src {
@@ -151,9 +153,11 @@ class MissionState : public State {
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
   void Reset() override;
+  void LoadMission(
+      ::src::controls::ground_controls::timeline::DroneProgram drone_program);
 
  private:
-  executor::Executor executor_;
+  mission_state_machine::MissionStateMachine mission_state_machine_;
 };
 
 class LandingState : public State {
@@ -208,6 +212,9 @@ class FlightStateMachine {
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
+
+  void LoadMission(
+      ::src::controls::ground_controls::timeline::DroneProgram drone_program);
 
  private:
   State *GetStateHandler(FlightLoopState state);

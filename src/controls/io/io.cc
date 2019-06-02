@@ -209,6 +209,12 @@ void IO::Output(const ::src::controls::Output output) {
   PixhawkSendModePosedge(kPixhawkCustomModeLand, output.trigger_land());
   PixhawkSendModePosedge(kPixhawkArmCommand, output.trigger_arm());
   // PixhawkSendModePosedge(, output.trigger_disarm());
+
+  if (output.send_offboard()) {
+    PixhawkSetGlobalPositionGoal(
+        output.setpoint_latitude(), output.setpoint_longitude(),
+        output.setpoint_altitude(), output.setpoint_yaw());
+  }
 }
 
 void IO::GimbalSetpoint(const ::std_msgs::Float32 gimbal_setpoint) {

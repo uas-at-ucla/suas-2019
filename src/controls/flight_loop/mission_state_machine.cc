@@ -8,12 +8,15 @@ namespace mission_state_machine {
 MissionStateMachine::MissionStateMachine() :
     state_(GET_NEXT_CMD),
     unknown_state_(new UnknownState()) {
-  // state_handlers_[TRANSLATE] = new TranslateState();
-  // state_handlers_[GET_NEXT_CMD] = new GetNextCmdState();
-  // state_handlers_[UGV_RELEASE] = new UGVReleaseState();
+
+  // Create an instance of all state handlers.
+  state_handlers_[TRANSLATE] = new TranslateState();
+  state_handlers_[GET_NEXT_CMD] = new GetNextCmdState();
+  state_handlers_[UGV_RELEASE] = new UGVReleaseState();
 }
 
 MissionStateMachine::~MissionStateMachine() {
+  // Delete all state handler instances.
   for (auto const &state_handler_pair : state_handlers_) {
     delete state_handler_pair.second;
   }
@@ -27,19 +30,11 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
 
   // Use same state in next loop iteration, unless it is changed.
   output.set_state(state_);
-  // LOG_LINE("Running flight loop iteration @ "
-  //         << ::std::fixed << ::std::setw(8) << ::std::setprecision(3)
-  //         << sensors.time() << " with state: " << StateToString(state_));
 
-  // Bypass current state if a safety signal is received.
-  if (SafetyStateOverride(goal, output)) {
-    StateTransition(output);
-  }
-
-  // Route to the correct state.
-  // LOG_LINE("Routing to state: " + StateToString(state_));
+  // Handle current state.
   GetStateHandler(state_)->Handle(sensors, goal, output);
 
+  // Transition to next state.
   StateTransition(output);
 }
 
@@ -47,20 +42,20 @@ void MissionStateMachine::StateTransition(::src::controls::Output &output) {
   MissionState old_state = state_;
   MissionState new_state = static_cast<MissionState>(output.state());
 
-  if (old_state != new_state) {
-    // Handle state transitions.
-    //  LOG_LINE("Switching states: " << StateToString(old_state) << " -> "
-    //                                << StateToString(new_state));
+  // Do nothing if state does not change.
+  if (old_state == new_state) {
+    return;
   }
 
-  state_ = new_state;
-}
+  // Log all state transitions.
+  ROS_INFO("Switching states: %s -> %s", StateToString(old_state).c_str(),
+           StateToString(new_state).c_str());
 
-bool MissionStateMachine::SafetyStateOverride(::src::controls::Goal &goal,
-                                              ::src::controls::Output &output) {
-  (void)goal;
-  (void)output;
-  return false;
+  // Apply the state transition.
+  state_ = new_state;
+
+  // Reset the new state after transition is made.
+  GetStateHandler(state_)->Reset();
 }
 
 State *MissionStateMachine::GetStateHandler(MissionState state) {
@@ -69,6 +64,11 @@ State *MissionStateMachine::GetStateHandler(MissionState state) {
   }
 
   return unknown_state_;
+}
+
+void MissionStateMachine::LoadMission(
+    ::src::controls::ground_controls::timeline::DroneProgram drone_program) {
+  (void)drone_program;
 }
 
 ::std::string StateToString(MissionState state) {
@@ -131,6 +131,8 @@ void UnknownState::Handle(::src::controls::Sensors &sensors,
   (void)sensors;
   (void)goal;
   (void)output;
+
+  ROS_ERROR("UNKNOWN STATE!!!");
 }
 
 void UnknownState::Reset() {}

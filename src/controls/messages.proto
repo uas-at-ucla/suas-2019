@@ -34,51 +34,48 @@ message Sensors {
 }
 
 message Goal {
-  required bool run_mission                                                = 1;
+  required bool run_mission = 1;
 }
 
 message Output {
-  required int32 state                                                     = 1;
-  required double flight_time                                              = 2;
-  required int32 current_command_index                                     = 3;
-
-  required bool send_offboard                                              = 4;
-  required float velocity_x                                                = 5;
-  required float velocity_y                                                = 6;
-  required float velocity_z                                                = 7;
-  required float yaw_setpoint                                              = 8;
-
-  required float gimbal_angle                                              = 9;
-  required bool bomb_drop                                                  = 10;
-  required bool alarm                                                      = 11;
-  required bool dslr                                                       = 12;
-
-  required bool trigger_takeoff                                            = 13;
-  required bool trigger_hold                                               = 14;
-  required bool trigger_offboard                                           = 15;
-  required bool trigger_rtl                                                = 16;
-  required bool trigger_land                                               = 17;
-  required bool trigger_arm                                                = 18;
-  required bool trigger_disarm                                             = 19;
+  required int32 state                 = 1;
+  required double flight_time          = 2;
+  required int32 current_command_index = 3;
+  required bool send_offboard          = 4;
+  required float setpoint_latitude     = 5;
+  required float setpoint_longitude    = 6;
+  required float setpoint_altitude     = 7;
+  required float setpoint_yaw          = 8;
+  required float gimbal_angle          = 9;
+  required bool bomb_drop              = 10;
+  required bool alarm                  = 11;
+  required bool dslr                   = 12;
+  required bool trigger_takeoff        = 13;
+  required bool trigger_hold           = 14;
+  required bool trigger_offboard       = 15;
+  required bool trigger_rtl            = 16;
+  required bool trigger_land           = 17;
+  required bool trigger_arm            = 18;
+  required bool trigger_disarm         = 19;
 }
 
 message UgvSensors {
-  required double time                                                     = 1;
-  required double latitude                                                 = 2;
-  required double longitude                                                = 3;
-  required double altitude                                                 = 4;
+  required double time      = 1;
+  required double latitude  = 2;
+  required double longitude = 3;
+  required double altitude  = 4;
 }
 
 message UasMessage {
-  optional double time                                                     = 1;
+  optional double time = 1;
 
   oneof payload {
-    Sensors sensors                                                        = 2;
-    Goal goal                                                              = 3;
-    Output output                                                          = 4;
+    Sensors sensors    = 2;
+    Goal goal          = 3;
+    Output output      = 4;
   }
 }
 
 message AlarmSequence {
-  repeated float on_off_cycles                                             = 1;
+  repeated float on_off_cycles = 1;
 }

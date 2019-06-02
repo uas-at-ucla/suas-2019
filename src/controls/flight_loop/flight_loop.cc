@@ -51,16 +51,15 @@ void FlightLoop::DroneProgramReceived(
     ::src::controls::ground_controls::timeline::DroneProgram drone_program) {
 
   LogProtobufMessage("DroneProgram", drone_program);
+
+  state_machine_.LoadMission(drone_program);
 }
 
 void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
-  ROS_DEBUG_STREAM("Flight Loop dt: " << ::std::setprecision(14)
-                                      << sensors.time() - last_loop_ - 0.01);
+  double dt = sensors.time() - last_loop_;
 
-  if (sensors.time() - last_loop_ > 0.01 + 0.002) {
-    ROS_DEBUG_STREAM("Flight LOOP RUNNING SLOW: dt: "
-                     << std::setprecision(14)
-                     << sensors.time() - last_loop_ - 0.01);
+  if (dt > 1.0 / kExpectedFlightLoopHz + kFlightLoopTolerancePeriod) {
+    ROS_DEBUG("Flight LOOP RUNNING SLOW: dt: %f", dt);
   }
 
   last_loop_ = sensors.time();
@@ -76,10 +75,10 @@ void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
   output.set_current_command_index(0);
 
   output.set_send_offboard(false);
-  output.set_velocity_x(0);
-  output.set_velocity_y(0);
-  output.set_velocity_z(0);
-  output.set_yaw_setpoint(0);
+  output.set_setpoint_latitude(0);
+  output.set_setpoint_longitude(0);
+  output.set_setpoint_altitude(0);
+  output.set_setpoint_yaw(0);
 
   output.set_gimbal_angle(kDefaultGimbalAngle);
   output.set_bomb_drop(false);

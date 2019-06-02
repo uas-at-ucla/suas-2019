@@ -10,16 +10,15 @@
 #include <string>
 #include <thread>
 
-#include "zmq.hpp"
+// #include "zmq.hpp"
 #include <boost/algorithm/string.hpp>
 #include <google/protobuf/text_format.h>
 #include <ros/ros.h>
 
 #include "flight_state_machine.h"
-
 #include "lib/alarm/alarm.h"
-#include "lib/mission_manager/mission_commands.pb.h"
-#include "lib/physics_structs/physics_structs.h"
+// #include "lib/mission_manager/mission_commands.pb.h"
+// #include "lib/physics_structs/physics_structs.h"
 #include "src/controls/ground_controls/timeline/executor/executor.h"
 #include "src/controls/io/io.h"
 #include "src/controls/messages.pb.h"
@@ -39,6 +38,8 @@ namespace flight_loop {
 
 namespace {
 static constexpr double kDefaultGimbalAngle = 0.15;
+static constexpr double kExpectedFlightLoopHz = 50.0;
+static constexpr double kFlightLoopTolerancePeriod = 0.001;
 } // namespace
 
 class FlightLoop {

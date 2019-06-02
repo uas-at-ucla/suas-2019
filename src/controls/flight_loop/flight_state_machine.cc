@@ -39,7 +39,14 @@ void FlightStateMachine::Handle(::src::controls::Sensors &sensors,
 
   // Handle current state.
   GetStateHandler(state_)->Handle(sensors, goal, output);
+
+  // Transition to next state.
   StateTransition(output);
+}
+
+void FlightStateMachine::LoadMission(
+    ::src::controls::ground_controls::timeline::DroneProgram drone_program) {
+  ((MissionState *)GetStateHandler(MISSION))->LoadMission(drone_program);
 }
 
 void FlightStateMachine::StateTransition(::src::controls::Output &output) {
@@ -342,6 +349,11 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
 
 void MissionState::Reset() {}
 
+void MissionState::LoadMission(
+    ::src::controls::ground_controls::timeline::DroneProgram drone_program) {
+  mission_state_machine_.LoadMission(drone_program);
+}
+
 // SafetyPilotControlState /////////////////////////////////////////////////////
 SafetyPilotControlState::SafetyPilotControlState() {}
 
@@ -409,7 +421,7 @@ void UnknownState::Handle(::src::controls::Sensors &sensors,
   (void)goal;
   (void)output;
 
-  // LOG_LINE("Unknown state!");
+  ROS_ERROR("UNKNOWN STATE!!!");
 }
 
 void UnknownState::Reset() {}
