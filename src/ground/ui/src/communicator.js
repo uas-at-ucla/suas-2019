@@ -18,32 +18,27 @@ class Communicator {
       this.store.dispatch({ type: 'GND_SERVER_DISCONNECTED' });
     });
 
-    this.socket.on('TELEMETRY', (telemetry) => {
-      this.store.dispatch({ type: 'TELEMETRY', payload: telemetry });
-    });
-
-    this.socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
-      this.store.dispatch({ type: 'COMPILED_DRONE_PROGRAM', payload: droneProgram });
-    });
+    let basic_messages = [
+      'TELEMETRY',
+      'COMPILED_DRONE_PROGRAM',
+      'UPLOADED_DRONE_PROGRAM',
+      'MISSION_STATUS',
+      'GIMBAL_SETPOINT',
+      'DEPLOYMENT_MOTOR_SETPOINT',
+      'LATCH_SETPOINT',
+      'HOTWIRE_SETPOINT',
+      'INTEROP_DATA',
+      'PING',
+      'UGV_MESSAGE'
+    ];
+    for (let message of basic_messages) {
+      this.socket.on(message, (data) => {
+        this.store.dispatch({ type: message, payload: data });
+      });
+    }
     
     this.socket.on('MISSION_COMPILE_ERROR', () => {
       alert("FAILED to compile mission!");
-    });
-
-    this.socket.on('UPLOADED_DRONE_PROGRAM', (droneProgram) => {
-      this.store.dispatch({ type: 'UPLOADED_DRONE_PROGRAM', payload: droneProgram });
-    });
-
-    this.socket.on('MISSION_STATUS', (status) => {
-      this.store.dispatch({ type: 'MISSION_STATUS', payload: status });
-    });
-
-    this.socket.on('INTEROP_DATA', (interopData) => {
-      this.store.dispatch({ type: 'INTEROP_DATA', payload: interopData });
-    });
-
-    this.socket.on('PING', (delay) => {
-      this.store.dispatch({ type: 'PING', payload: delay });
     });
 
     this.socket.on('INTEROP_UPLOAD_FAIL', () => {
@@ -53,16 +48,12 @@ class Communicator {
     this.socket.on('INTEROP_UPLOAD_SUCCESS', () => {
       alert("Now able to upload telemetry to interop. :)");
     });
-
-    this.socket.on('UGV_MESSAGE', (msg) => {
-      this.store.dispatch({ type: 'UGV_MESSAGE', payload: msg });
-    });
   }
 
   reduxMiddleware(next) {
     return (action) => {
       if (action.type === 'TRANSMIT') {
-        if (action.payload.data) {
+        if (action.payload.data != null) {
           this.socket.emit(action.payload.msg, action.payload.data);
         } else {
           this.socket.emit(action.payload.msg);

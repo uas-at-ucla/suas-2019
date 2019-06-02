@@ -129,10 +129,6 @@ controls_io.on('connect', (socket) => {
     }
   });
 
-  socket.on('MISSION_COMPILE_ERROR', (droneProgram) => {
-    ui_io.emit('MISSION_COMPILE_ERROR', droneProgram);
-  });
-
   socket.on('UPLOADED_DRONE_PROGRAM', (droneProgram) => {
     console.log("Got acknowledgment that the Drone Program was uploaded")
     if (protobufUtils) {
@@ -140,9 +136,20 @@ controls_io.on('connect', (socket) => {
     }  
   });
 
-  socket.on('MISSION_STATUS', (status) => {
-    ui_io.emit('MISSION_STATUS', status);
-  });
+  let msgs_to_ui = [
+    'MISSION_COMPILE_ERROR', 'MISSION_STATUS',
+    'GIMBAL_SETPOINT',
+    'DEPLOYMENT_MOTOR_SETPOINT',
+    'LATCH_SETPOINT',
+    'HOTWIRE_SETPOINT'
+  ];
+  for (let ui_msg of msgs_to_ui) {
+    let local_ui_msg = ui_msg;
+    socket.on(local_ui_msg, (data) => {
+      console.log("received: " + local_ui_msg + ": " + data);
+      ui_io.emit(local_ui_msg, data);
+    });
+  }
 });
 
 
@@ -183,11 +190,6 @@ ui_io.on('connect', (socket) => {
     console.log("TEST " + data);
   });
 
-  socket.on('CHANGE_DRONE_STATE', (state) => {
-    controls_io.emit('CHANGE_DRONE_STATE', state);
-    console.log("THE DRONE is asked to " + state + ". Hey DRONE, are you listening?");
-  });
-
   socket.on('COMPILE_GROUND_PROGRAM', (commands) => {
     console.log("received ground program from UI");
     if (protobufUtils) {
@@ -199,11 +201,19 @@ ui_io.on('connect', (socket) => {
     }
   });
 
-  for (controls_msg of ['UPLOAD_MISSION', 'RUN_MISSION', 'PAUSE_MISSION', 'END_MISSION']) {
+  let msgs_to_drone = [
+    'UPLOAD_MISSION', 'RUN_MISSION', 'PAUSE_MISSION', 'END_MISSION',
+    'CHANGE_DRONE_STATE', 
+    'GIMBAL_SETPOINT',
+    'DEPLOYMENT_MOTOR_SETPOINT',
+    'LATCH_SETPOINT',
+    'HOTWIRE_SETPOINT'
+  ];
+  for (let controls_msg of msgs_to_drone) {
     let local_controls_msg = controls_msg;
-    socket.on(local_controls_msg, () => {
-      console.log(local_controls_msg);
-      controls_io.emit(local_controls_msg);
+    socket.on(local_controls_msg, (data) => {
+      console.log("sending: " + local_controls_msg + ": " + data);
+      controls_io.emit(local_controls_msg, data);
     });
   }
 

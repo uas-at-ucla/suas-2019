@@ -38,6 +38,10 @@ namespace controls {
   // ROS topic parameters.
   static const int kRosMessageQueueSize = 1;
 
+  static const ::std::string kRosGimbalTopic = "/uasatucla/actuators/gimbal";
+  static const ::std::string kRosDeploymentMotorTopic = "/uasatucla/actuators/deployment_motor";
+  static const ::std::string kRosLatchTopic = "/uasatucla/actuators/latch";
+  static const ::std::string kRosHotwireTopic = "/uasatucla/actuators/hotwire";
   static const ::std::string kRosAlarmTriggerTopic = "/uasatucla/actuators/alarm";
   static const ::std::string kRosSensorsTopic = "/uasatucla/proto/sensors";
   static const ::std::string kRosOutputTopic = "/uasatucla/proto/output";
