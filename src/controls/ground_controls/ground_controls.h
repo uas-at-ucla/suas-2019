@@ -54,6 +54,7 @@ class GroundControls {
 
  private:
   void SensorsReceived(const ::src::controls::Sensors sensors);
+  void OutputReceived(const ::src::controls::Output output);
   void DroneProgramReceived(
       const ::src::controls::ground_controls::timeline::DroneProgram
           drone_program);
@@ -69,6 +70,7 @@ class GroundControls {
 
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber sensors_subscriber_;
+  ::ros::Subscriber output_subscriber_;
   ::ros::Subscriber drone_program_subscriber_;
   ::ros::Subscriber mission_status_subscriber_;
   ::ros::Publisher drone_program_publisher_;

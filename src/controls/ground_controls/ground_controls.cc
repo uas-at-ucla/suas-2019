@@ -16,6 +16,9 @@ GroundControls::GroundControls(int argc, char **argv) :
     sensors_subscriber_(ros_node_handle_.subscribe(
         kRosSensorsTopic, kRosMessageQueueSize,
         &GroundControls::SensorsReceived, this, ros::TransportHints().udp())),
+    output_subscriber_(ros_node_handle_.subscribe(
+        kRosOutputTopic, kRosMessageQueueSize,
+        &GroundControls::OutputReceived, this, ros::TransportHints().udp())),
     drone_program_subscriber_(ros_node_handle_.subscribe(
         kRosDroneProgramTopic, kRosMessageQueueSize,
         &GroundControls::DroneProgramReceived, this)),
@@ -88,6 +91,16 @@ void GroundControls::SendSensorsToServer(
 
 void GroundControls::SensorsReceived(const ::src::controls::Sensors sensors) {
   SendSensorsToServer(sensors, false);
+}
+
+void GroundControls::OutputReceived(const ::src::controls::Output output) {
+  if (output.IsInitialized()) {
+    ::std::string output_serialized;
+    output.SerializeToString(&output_serialized);
+    if (client_.opened()) {
+      client_.socket("ground-controls")->emit("OUTPUT", ::sio::string_message::create(::lib::base64_tools::Encode(output_serialized)));
+    }
+  }
 }
 
 void GroundControls::ReadRFD900() {
