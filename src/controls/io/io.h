@@ -59,7 +59,6 @@ class IO {
   void HotwireSetpoint(const ::std_msgs::Bool hotwire_setpoint);
   void AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence);
 
-  void Output(const ::src::controls::Output output);
   void RcInReceived(const ::mavros_msgs::RCIn rc_in);
   void BatteryStatusReceived(const ::sensor_msgs::BatteryState battery_state);
   void StateReceived(const ::mavros_msgs::State state);
@@ -117,7 +116,6 @@ class IO {
   ::ros::Subscriber hotwire_subscriber_;
   ::ros::Subscriber alarm_subscriber_;
 
-  ::ros::Subscriber output_subscriber_;
   ::ros::Subscriber rc_input_subscriber_;
   ::ros::Subscriber battery_status_subscriber_;
   ::ros::Subscriber state_subscriber_;
