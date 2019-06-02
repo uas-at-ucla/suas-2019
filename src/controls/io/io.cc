@@ -49,8 +49,6 @@ IO::IO() :
     alarm_subscriber_(ros_node_handle_.subscribe(kRosAlarmTriggerTopic,
                                                  kRosMessageQueueSize,
                                                  &IO::AlarmTriggered, this)),
-    output_subscriber_(ros_node_handle_.subscribe(
-        kRosOutputTopic, kRosMessageQueueSize, &IO::Output, this)),
     rc_input_subscriber_(ros_node_handle_.subscribe(
         kRosRcInTopic, kRosMessageQueueSize, &IO::RcInReceived, this)),
     battery_status_subscriber_(
@@ -76,6 +74,7 @@ IO::IO() :
 
   // Set up all actuators and send out initial outputs.
   InitializeActuators();
+  ros_to_proto_.SetRunUasMission(false);
 
   ::std_msgs::Float32 init_gimbal;
   init_gimbal.data = gimbal_setpoint_;
@@ -134,6 +133,13 @@ void IO::WriterThread() {
          last_rc_in_ + kRcInTimeGap > ::ros::Time::now().toSec());
     bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
 
+    // Overrides for simulation.
+    bool deploy = false
+#ifndef RASPI_DEPLOYMENT
+    static double start_time = ::ros::Time::now().toSec();
+    ros_to_proto_.SetRunUasMission(::ros::Time::now().toSec() - start_time > 5);
+#endif
+
     // Calculate deployment output.
     ::lib::deployment::Input deployment_input;
     ::lib::deployment::Output deployment_output;
@@ -160,9 +166,28 @@ void IO::WriterThread() {
           ::ros::Time::now().toSec() + kSensorsPublisherPeriod;
     }
 
+    if(ros_to_proto_.OutputValid() && ros_to_proto_.SensorsValid() && ros_to_proto_.GetSensors().run_uas_mission()) {
+      ::src::controls::Output output = ros_to_proto_.GetOutput();
+      
+      // Only listen to output if safety pilot override is not active.
+      PixhawkSendModePosedge(kPixhawkCustomModeTakeoff, output.trigger_takeoff());
+      PixhawkSendModePosedge(kPixhawkCustomModeLoiter, output.trigger_hold());
+      PixhawkSendModePosedge(kPixhawkCustomModeOffboard, output.trigger_offboard());
+      PixhawkSendModePosedge(kPixhawkCustomModeReturnToLand, output.trigger_rtl());
+      PixhawkSendModePosedge(kPixhawkCustomModeLand, output.trigger_land());
+      PixhawkSendModePosedge(kPixhawkArmCommand, output.trigger_arm());
+      // PixhawkSendModePosedge(, output.trigger_disarm());
+
+      if (output.send_setpoint()) {
+        PixhawkSetGlobalPositionGoal(
+            output.setpoint_latitude(), output.setpoint_longitude(),
+            output.setpoint_altitude(), output.setpoint_yaw());
+      }
+    }
+
     // Log the current GPIO outputs.
     ROS_DEBUG_STREAM_THROTTLE(
-        0.1, "Writer thread iteration: "
+        1.0 / kActuatorLogHz, "Writer thread iteration: "
                  << ::std::endl
                  << "alarm[" << should_alarm << "]" << ::std::endl
                  << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
@@ -187,28 +212,6 @@ void IO::WriterThread() {
 ////////////////////////////////////////////////////////////////////////////////
 
 // UAS@UCLA callbacks.
-
-void IO::Output(const ::src::controls::Output output) {
-  // Only listen to output if safety pilot override is not active.
-  bool run_uas_flight_loop = true;
-  if (!run_uas_flight_loop) {
-    return;
-  }
-
-  PixhawkSendModePosedge(kPixhawkCustomModeTakeoff, output.trigger_takeoff());
-  PixhawkSendModePosedge(kPixhawkCustomModeLoiter, output.trigger_hold());
-  PixhawkSendModePosedge(kPixhawkCustomModeOffboard, output.trigger_offboard());
-  PixhawkSendModePosedge(kPixhawkCustomModeReturnToLand, output.trigger_rtl());
-  PixhawkSendModePosedge(kPixhawkCustomModeLand, output.trigger_land());
-  PixhawkSendModePosedge(kPixhawkArmCommand, output.trigger_arm());
-  // PixhawkSendModePosedge(, output.trigger_disarm());
-
-  if (output.send_setpoint()) {
-    PixhawkSetGlobalPositionGoal(
-        output.setpoint_latitude(), output.setpoint_longitude(),
-        output.setpoint_altitude(), output.setpoint_yaw());
-  }
-}
 
 void IO::GimbalSetpoint(const ::std_msgs::Float32 gimbal_setpoint) {
   gimbal_setpoint_ = gimbal_setpoint.data;
@@ -269,6 +272,15 @@ void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   }
   deployment_motor_publisher_.publish(deployment_motor_setpoint);
 
+  bool uas_mission_run_current = rc_in.channels[kUasMissionRcChannel - 1] > 1700;
+  if(ros_to_proto_.SensorsValid()) {
+    bool uas_mission_run_last = ros_to_proto_.GetSensors().run_uas_mission();
+    if(uas_mission_run_current != uas_mission_run_last) {
+      ROS_INFO("Allow UAS mission changed: %d -> %d", uas_mission_run_last, uas_mission_run_current);
+    }
+  }
+  ros_to_proto_.SetRunUasMission(uas_mission_run_current);
+
   // Record a log message on every edge.
   if (new_should_override_alarm != should_override_alarm_) {
     ROS_INFO_STREAM("Alarm RC override changed: " << should_override_alarm_
@@ -306,7 +318,7 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
 void IO::DroneProgramReceived(
     const ::src::controls::ground_controls::timeline::DroneProgram
         drone_program) {
-  ::std::cout << "Executing Drone Program...\n";
+  ROS_INFO("Received drone program!");
   drone_program_ = drone_program;
   should_override_alarm_ = true;
 }
@@ -481,7 +493,7 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
   target.yaw = yaw_radians;
   global_position_publisher_.publish(target);
 
-  ROS_DEBUG("Sending global position setpoint: latitude(%f), longitude(%f), "
+  ROS_DEBUG_THROTTLE(1.0 / kActuatorLogHz, "Sending global position setpoint: latitude(%f), longitude(%f), "
             "altitude(%f)",
             latitude, longitude, altitude);
 }

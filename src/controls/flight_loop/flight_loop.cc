@@ -7,6 +7,7 @@ namespace flight_loop {
 FlightLoop::FlightLoop() :
     running_(false),
     last_loop_(0),
+    last_proto_log_(0),
     did_alarm_(false),
     did_arm_(false),
     last_bomb_drop_(0),
@@ -30,7 +31,7 @@ FlightLoop::FlightLoop() :
 void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
   // Create a clone of the current goal.
   ::src::controls::Goal goal = GetGoal();
-  goal.set_run_mission(true);
+  goal.set_run_mission(sensors.run_uas_mission());
 
   // Create a default output to return.
   ::src::controls::Output output = GenerateDefaultOutput();
@@ -39,9 +40,12 @@ void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
   state_machine_.Handle(sensors, goal, output);
 
   // Log protobufs.
-  LogProtobufMessage("Sensors", sensors);
-  LogProtobufMessage("Goal", goal);
-  LogProtobufMessage("Output", output);
+  if(sensors.time() > last_proto_log_ + 1.0 / kProtobufLogHz) {
+    LogProtobufMessage("Sensors", sensors);
+    LogProtobufMessage("Goal", goal);
+    LogProtobufMessage("Output", output);
+    last_proto_log_ = sensors.time();
+  }
 
   // Send output protobuf back to IO to handle.
   output_publisher_.publish(output);
@@ -93,6 +97,8 @@ void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
   output.set_trigger_land(0);
   output.set_trigger_arm(0);
   output.set_trigger_disarm(0);
+
+  output.set_deploy(false);
 
   return output;
 }

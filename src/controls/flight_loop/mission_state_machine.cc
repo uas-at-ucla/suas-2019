@@ -9,7 +9,8 @@ MissionStateMachine::MissionStateMachine() :
     state_(GET_NEXT_CMD),
     unknown_state_(new UnknownState()),
     drone_program_index_(0),
-    setpoint_initialized_(false) {
+    setpoint_initialized_(false),
+    new_mission_ready_(false) {
 
   // Create an instance of all state handlers.
   state_handlers_[TRANSLATE] = new TranslateState();
@@ -29,8 +30,6 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
                                  ::src::controls::Goal &goal,
                                  ::src::controls::Output &output) {
 
-  ROS_DEBUG_STREAM("CURRENT MISSION STATE: " << StateToString(state_));
-
   // Set initial setpoint.
   if(!setpoint_initialized_) {
     setpoint_latitude_ = sensors.latitude();
@@ -44,6 +43,13 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
   output.set_setpoint_longitude(setpoint_longitude_);
   output.set_setpoint_altitude(setpoint_altitude_);
   output.set_setpoint_yaw(setpoint_yaw_);
+
+  // If a new mission is available, escape any current state and go to the new
+  // mission.
+  if(new_mission_ready_) {
+    state_ = GET_NEXT_CMD;
+    new_mission_ready_ = false;
+  }
 
   // Use same state in next loop iteration, unless it is changed.
   output.set_mission_state(state_);
@@ -137,6 +143,7 @@ void MissionStateMachine::LoadMission(
   ::std::lock_guard<::std::mutex> lock(drone_program_mutex_);
   drone_program_ = drone_program;
   drone_program_index_ = 0;
+  new_mission_ready_ = true;
 }
 
 ::std::string StateToString(MissionState state) {
@@ -176,7 +183,8 @@ void TranslateState::Handle(::src::controls::Sensors &sensors,
   destination.altitude = setpoint_altitude_;
 
   double distance_from_destination = GetDistance3D(drone, destination);
-  ROS_DEBUG("Distance from dest: %f", distance_from_destination);
+  // ROS_DEBUG("Distance from dest: %f", distance_from_destination);
+
   if(distance_from_destination < kAcceptanceRadius) {
     output.set_mission_state(GET_NEXT_CMD);
   }
@@ -200,7 +208,8 @@ void UGVDropState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Output &output) {
   (void)sensors;
   (void)goal;
-  (void)output;
+
+  output.set_deploy(true);
 }
 
 void UGVDropState::Reset() {}

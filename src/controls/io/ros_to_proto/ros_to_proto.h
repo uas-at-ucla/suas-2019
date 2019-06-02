@@ -41,6 +41,9 @@ class RosToProto {
 
   Sensors GetSensors();
   bool SensorsValid();
+  void SetRunUasMission(bool run);
+  bool OutputValid();
+  ::src::controls::Output GetOutput();
 
  private:
   void GlobalPositionReceived(const ::sensor_msgs::NavSatFix global_position);
@@ -56,8 +59,13 @@ class RosToProto {
 
   void GotRosMessage(::std::string ros_topic);
 
+  void OutputReceived(::src::controls::Output output);
+
   Sensors sensors_;
   ::std::mutex sensors_mutex_;
+
+  Output output_;
+  ::std::mutex output_mutex_;
 
   ::std::map<::std::string, double> ros_topic_last_received_times_;
 
@@ -72,8 +80,11 @@ class RosToProto {
   ::ros::Subscriber battery_state_subscriber_;
   ::ros::Subscriber state_subscriber_;
   ::ros::Subscriber home_position_subscriber_;
-
+  ::ros::Subscriber output_subscriber_;
   ::ros::ServiceClient arming_service_;
+
+  double last_output_;
+
 };
 
 void toEulerAngle(const ::geometry_msgs::Quaternion &q, double &roll,

@@ -36,8 +36,12 @@ RosToProto::RosToProto() :
     home_position_subscriber_(
         ros_node_handle_.subscribe(kRosStateTopic, kRosMessageQueueSize,
                                    &RosToProto::StateReceived, this)),
+    output_subscriber_(
+        ros_node_handle_.subscribe(kRosOutputTopic, kRosMessageQueueSize,
+                                   &RosToProto::OutputReceived, this)),
     arming_service_(ros_node_handle_.serviceClient<mavros_msgs::CommandBool>(
-        kRosArmService)) {
+        kRosArmService)),
+    last_output_(0) {
 
   // Initialize all last received times for the ros topics to NaN.
   ros_topic_last_received_times_[kRosGlobalPositionTopic] =
@@ -68,10 +72,8 @@ Sensors RosToProto::GetSensors() {
 
   // Grab lock to prevent ROS from modifying the shared Sensors object while a
   // copy is performed.
-  {
-    ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
-    sensors_copy.CopyFrom(sensors_);
-  }
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
+  sensors_copy.CopyFrom(sensors_);
 
   return sensors_copy;
 }
@@ -224,6 +226,7 @@ bool RosToProto::SensorsValid() {
            ros_topic_last_received_times_.begin();
        it != ros_topic_last_received_times_.end(); it++) {
     if (it->second < oldest_valid_packet_time) {
+      ROS_DEBUG("Outdated ros topic: %s", it->first.c_str());
       return false;
     }
   }
@@ -252,6 +255,33 @@ void RosToProto::HomePositionReceived(
 void RosToProto::GotRosMessage(::std::string ros_topic) {
   ros_topic_last_received_times_[ros_topic] =
       ::lib::phased_loop::GetCurrentTime();
+}
+
+void RosToProto::SetRunUasMission(bool run) {
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
+  sensors_.set_run_uas_mission(run);
+}
+
+void RosToProto::OutputReceived(::src::controls::Output output) {
+  ::std::lock_guard<::std::mutex> lock(output_mutex_);
+  output_.CopyFrom(output);
+
+  last_output_ = ::ros::Time::now().toSec();
+}
+
+bool RosToProto::OutputValid() {
+  return ::ros::Time::now().toSec() - last_output_ < 0.5;
+}
+
+::src::controls::Output RosToProto::GetOutput() {
+  Output output_copy;
+
+  // Grab lock to prevent ROS from modifying the shared Sensors object while a
+  // copy is performed.
+  ::std::lock_guard<::std::mutex> lock(output_mutex_);
+  output_copy.CopyFrom(output_);
+
+  return output_copy;
 }
 
 // from

@@ -22,6 +22,7 @@ static const int kDeploymentServoClosed = 1600;
 static const int kDeploymentServoOpen = 1000;
 
 // Actuator RC channels.
+static const int kUasMissionRcChannel = 5;
 static const int kAlarmOverrideRcChannel = 7;
 static const int kDeploymentMotorRcChannel = 8;
 static const int kGimbalMotorRcChannel = 9;
@@ -39,6 +40,8 @@ static const double kAlarmChirpDuration = 0.005;
 // ROS topic parameters.
 static const int kRosMessageQueueSize = 1;
 static const double kRosReceiveTolerance = 5;
+
+static constexpr double kActuatorLogHz = 2.0;
 
 static const ::std::string kRosGimbalTopic = "/uasatucla/actuators/gimbal";
 static const ::std::string kRosDeploymentMotorTopic =
