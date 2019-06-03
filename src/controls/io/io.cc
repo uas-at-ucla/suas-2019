@@ -22,6 +22,7 @@ IO::IO() :
     deployment_motor_setpoint_(0.0),
     latch_setpoint_(true),
     hotwire_setpoint_(false),
+    deployment_manual_override_(false),
     running_(true),
     ros_node_handle_(),
     sensors_publisher_(ros_node_handle_.advertise<::src::controls::Sensors>(
@@ -139,11 +140,7 @@ void IO::WriterThread() {
 #ifndef RASPI_DEPLOYMENT
     static double start_time = ::ros::Time::now().toSec();
     ros_to_proto_.SetRunUasMission(::ros::Time::now().toSec() - start_time > 5);
-#endif
-
-    // TODO start ugv command...
-    // TODO ROS subscriber to ugv msg from ground to change input (make two more atomic vars)
-    // TODO (low priority) deployment manual override 
+#endif 
 
     // Calculate deployment output.
     ::lib::deployment::Input deployment_input;
