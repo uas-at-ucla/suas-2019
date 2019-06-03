@@ -124,6 +124,8 @@ class MissionStateMachine {
   double setpoint_longitude_;
   double setpoint_altitude_;
   double setpoint_yaw_;
+
+  bool new_mission_ready_;
 };
 
 } // namespace mission_state_machine

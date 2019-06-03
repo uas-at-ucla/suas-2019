@@ -19,7 +19,9 @@ cc_library(
     'camera_interface.h'
   ],
   deps = [
+    '//src/controls:constants',
     '//lib/dslr_interface:dslr_interface',
     '//lib/ros:ros',
   ],
+  linkopts = ["-pthread"],
 )

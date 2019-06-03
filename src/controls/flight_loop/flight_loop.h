@@ -40,6 +40,7 @@ namespace {
 static constexpr double kDefaultGimbalAngle = 0.15;
 static constexpr double kExpectedFlightLoopHz = 50.0;
 static constexpr double kFlightLoopTolerancePeriod = 0.001;
+static constexpr double kProtobufLogHz = 4;
 } // namespace
 
 class FlightLoop {
@@ -81,6 +82,7 @@ class FlightLoop {
   ::std::chrono::time_point<std::chrono::system_clock> start_;
 
   double last_loop_;
+  double last_proto_log_;
   bool did_alarm_;
   bool did_arm_;
 

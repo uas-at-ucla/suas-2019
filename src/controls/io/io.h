@@ -36,6 +36,7 @@
 #include "src/controls/io/ros_to_proto/ros_to_proto.h"
 #include "src/controls/messages.pb.h"
 
+#include "std_msgs/String.h"
 #include "src/controls/constants.h"
 
 // #define LOG_LED_STRIP 0
@@ -59,7 +60,6 @@ class IO {
   void HotwireSetpoint(const ::std_msgs::Bool hotwire_setpoint);
   void AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence);
 
-  void Output(const ::src::controls::Output output);
   void RcInReceived(const ::mavros_msgs::RCIn rc_in);
   void BatteryStatusReceived(const ::sensor_msgs::BatteryState battery_state);
   void StateReceived(const ::mavros_msgs::State state);
@@ -77,6 +77,8 @@ class IO {
   void PixhawkSendModePosedge(::std::string mode, bool signal);
   void PixhawkSetGlobalPositionGoal(double latitude, double longitude,
                                     double altitude, double yaw);
+
+  void TakePhotos();
 
   ::lib::alarm::Alarm alarm_;
   ::lib::deployment::Deployment deployment_;
@@ -105,6 +107,7 @@ class IO {
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Publisher sensors_publisher_;
   ::ros::Publisher global_position_publisher_;
+  ::ros::Publisher take_photo_publisher_;
 
   ::ros::Publisher gimbal_publisher_;
   ::ros::Publisher deployment_motor_publisher_;
@@ -117,7 +120,6 @@ class IO {
   ::ros::Subscriber hotwire_subscriber_;
   ::ros::Subscriber alarm_subscriber_;
 
-  ::ros::Subscriber output_subscriber_;
   ::ros::Subscriber rc_input_subscriber_;
   ::ros::Subscriber battery_status_subscriber_;
   ::ros::Subscriber state_subscriber_;
