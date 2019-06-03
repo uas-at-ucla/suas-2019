@@ -464,7 +464,7 @@ void IO::PixhawkSendModePosedge(::std::string mode, bool signal) {
 
 // Send a global position setpoint to the Pixhawk, up to a maximum rate. Takes
 // in latitude, longitude, altitude (relative to home position), and yaw
-// (in degrees, relative to north CCW).
+// (in degrees, relative to north CW).
 void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
                                       double altitude, double yaw) {
 
@@ -485,7 +485,7 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
 
   // Base all altitude setpoints off home altitude.
   double home_altitude = ros_to_proto_.GetSensors().home_altitude();
-  double yaw_radians = ::std::fmod(yaw + 90.0, 360.0) * M_PI / 180.0;
+  double yaw_radians = ::std::fmod(yaw - 90.0, 360.0) * -M_PI / 180.0;
 
   /*
   // Find WGS84 altitude to send as global position setpoint.
