@@ -28,15 +28,10 @@ IO::IO() :
         kRosSensorsTopic, kRosMessageQueueSize)),
     global_position_publisher_(
         ros_node_handle_.advertise<::mavros_msgs::GlobalPositionTarget>(
-<<<<<<< HEAD
-            kRosGlobalPositionTopic, 10)),
+            kRosGlobalPositionSetpointTopic, 10)),
     take_photo_publisher_(
         ros_node_handle_.advertise<std_msgs::String>(
           kRosTakePhotoTopic, kRosMessageQueueSize)),
-    output_subscriber_(ros_node_handle_.subscribe(
-        kRosOutputTopic, kRosMessageQueueSize, &IO::Output, this)),
-=======
-            kRosGlobalPositionSetpointTopic, 10)),
     gimbal_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
         kRosGimbalTopic, kRosMessageQueueSize, true)),
     deployment_motor_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
@@ -54,7 +49,6 @@ IO::IO() :
         kRosLatchTopic, kRosMessageQueueSize, &IO::LatchSetpoint, this)),
     hotwire_subscriber_(ros_node_handle_.subscribe(
         kRosHotwireTopic, kRosMessageQueueSize, &IO::HotwireSetpoint, this)),
->>>>>>> 308d3c7bc8a488045ca35db52c6e9786a564100d
     alarm_subscriber_(ros_node_handle_.subscribe(kRosAlarmTriggerTopic,
                                                  kRosMessageQueueSize,
                                                  &IO::AlarmTriggered, this)),
@@ -143,7 +137,6 @@ void IO::WriterThread() {
     bool should_alarm = alarm_.ShouldAlarm() || should_override_alarm;
 
     // Overrides for simulation.
-    bool deploy = false
 #ifndef RASPI_DEPLOYMENT
     static double start_time = ::ros::Time::now().toSec();
     ros_to_proto_.SetRunUasMission(::ros::Time::now().toSec() - start_time > 5);
@@ -163,17 +156,9 @@ void IO::WriterThread() {
     WriteGimbal(gimbal_setpoint_);
     WriteDeployment(deployment_output);
 
-<<<<<<< HEAD
     // Take photos (test)
     TakePhotos();
 
-#ifndef RASPI_DEPLOYMENT
-    PixhawkSetGlobalPositionGoal(34.173103, -118.482108, 100);
-    // PixhawkSetGlobalPositionGoal(38.147483, -76.427778, 100);
-#endif
-
-=======
->>>>>>> 308d3c7bc8a488045ca35db52c6e9786a564100d
     // Write output to LED strip.
     led_strip_.Render(false);
 

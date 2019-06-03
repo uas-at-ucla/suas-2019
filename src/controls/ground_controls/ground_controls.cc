@@ -15,10 +15,10 @@ GroundControls::GroundControls(int argc, char **argv) :
     ros_node_handle_(),
     sensors_subscriber_(ros_node_handle_.subscribe(
         kRosSensorsTopic, kRosMessageQueueSize,
-        &GroundControls::SensorsReceived, this, ros::TransportHints().udp())),
+        &GroundControls::SensorsReceived, this)),
     output_subscriber_(ros_node_handle_.subscribe(
         kRosOutputTopic, kRosMessageQueueSize,
-        &GroundControls::OutputReceived, this, ros::TransportHints().udp())),
+        &GroundControls::OutputReceived, this)),
     drone_program_subscriber_(ros_node_handle_.subscribe(
         kRosDroneProgramTopic, kRosMessageQueueSize,
         &GroundControls::DroneProgramReceived, this)),

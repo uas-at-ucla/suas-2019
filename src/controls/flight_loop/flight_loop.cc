@@ -54,6 +54,7 @@ void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
 void FlightLoop::DroneProgramReceived(
     ::src::controls::ground_controls::timeline::DroneProgram drone_program) {
 
+  ::std::cout << "GOT MISSION!\n";
   LogProtobufMessage("DroneProgram", drone_program);
 
   state_machine_.LoadMission(drone_program);
