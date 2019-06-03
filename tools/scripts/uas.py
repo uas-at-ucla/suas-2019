@@ -497,7 +497,7 @@ def run_controls_simulate(args):
     tmux_split("horizontal", 2)
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_controls:ground_controls")
     tmux_move_pane("right")
-    tmux_cmd("./uas ground run")
+    tmux_cmd("./uas ground run server")
 
     tmux_select_window(2)
 
@@ -559,7 +559,7 @@ def run_ground(arg1, args):
 
     # Run ground.py and pass command line arguments
     run_cmd_exit_failure(GROUND_DOCKER_EXEC_SCRIPT + \
-           "'ssh -o StrictHostKeyChecking=no git@github.com; python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args) + "'")
+           "'ssh -o StrictHostKeyChecking=no git@github.com; sudo python3 ./src/ground/ground.py " + arg1 + " " + " ".join(args.ground_args) + "'")
 
     kill_ground()
 

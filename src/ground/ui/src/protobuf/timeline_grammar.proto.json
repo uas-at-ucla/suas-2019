@@ -1,4 +1,167 @@
 {
+  "GroundProgram": {
+    "fields": {
+      "commands": {
+        "rule": "repeated",
+        "type": "GroundCommand",
+        "id": 1,
+        "options": {
+          "packed": false
+        }
+      },
+      "static_obstacles": {
+        "rule": "repeated",
+        "type": "StaticObstacle",
+        "id": 2,
+        "options": {
+          "packed": false
+        }
+      },
+      "field_boundary": {
+        "rule": "repeated",
+        "type": "Position2D",
+        "id": 3,
+        "options": {
+          "packed": false
+        }
+      }
+    }
+  },
+  "GroundCommand": {
+    "oneofs": {
+      "command": {
+        "oneof": [
+          "waypoint_command",
+          "ugv_drop_command",
+          "survey_command",
+          "off_axis_command",
+          "wait_command"
+        ]
+      }
+    },
+    "fields": {
+      "waypoint_command": {
+        "type": "WaypointCommand",
+        "id": 1
+      },
+      "ugv_drop_command": {
+        "type": "UgvDropCommand",
+        "id": 2
+      },
+      "survey_command": {
+        "type": "SurveyCommand",
+        "id": 3
+      },
+      "off_axis_command": {
+        "type": "OffAxisCommand",
+        "id": 4
+      },
+      "wait_command": {
+        "type": "WaitCommand",
+        "id": 5
+      }
+    }
+  },
+  "UgvDropCommand": {
+    "fields": {
+      "ground_target": {
+        "rule": "required",
+        "type": "Position2D",
+        "id": 1
+      },
+      "drop_height": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "WaitCommand": {
+    "fields": {
+      "time": {
+        "rule": "required",
+        "type": "double",
+        "id": 1
+      }
+    }
+  },
+  "DroneProgram": {
+    "fields": {
+      "commands": {
+        "rule": "repeated",
+        "type": "DroneCommand",
+        "id": 1,
+        "options": {
+          "packed": false
+        }
+      }
+    }
+  },
+  "DroneCommand": {
+    "oneofs": {
+      "command": {
+        "oneof": [
+          "nothing_command",
+          "sleep_command",
+          "goto_command",
+          "goto_raw_command",
+          "trigger_bomb_drop_command",
+          "trigger_alarm_command",
+          "translate_command"
+        ]
+      }
+    },
+    "fields": {
+      "nothing_command": {
+        "type": "NothingCommand",
+        "id": 1
+      },
+      "sleep_command": {
+        "type": "SleepCommand",
+        "id": 2
+      },
+      "goto_command": {
+        "type": "GotoCommand",
+        "id": 3
+      },
+      "goto_raw_command": {
+        "type": "TranslateCommand",
+        "id": 4
+      },
+      "trigger_bomb_drop_command": {
+        "type": "TriggerBombDropCommand",
+        "id": 5
+      },
+      "trigger_alarm_command": {
+        "type": "TriggerAlarmCommand",
+        "id": 6
+      },
+      "translate_command": {
+        "type": "TranslateCommand",
+        "id": 7
+      }
+    }
+  },
+  "TranslateCommand": {
+    "fields": {
+      "goal": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      },
+      "come_to_stop": {
+        "rule": "required",
+        "type": "bool",
+        "id": 2
+      }
+    }
+  },
+  "TriggerBombDropCommand": {
+    "fields": {}
+  },
+  "TriggerAlarmCommand": {
+    "fields": {}
+  },
   "Position2D": {
     "fields": {
       "latitude": {
@@ -32,88 +195,6 @@
       }
     }
   },
-  "StaticObstacle": {
-    "fields": {
-      "location": {
-        "rule": "required",
-        "type": "Position2D",
-        "id": 1
-      },
-      "cylinderRadius": {
-        "rule": "required",
-        "type": "double",
-        "id": 2
-      },
-      "cylinderHeight": {
-        "rule": "required",
-        "type": "double",
-        "id": 3
-      }
-    }
-  },
-  "GroundProgram": {
-    "fields": {
-      "commands": {
-        "rule": "repeated",
-        "type": "GroundCommand",
-        "id": 1,
-        "options": {
-          "packed": false
-        }
-      },
-      "staticObstacles": {
-        "rule": "repeated",
-        "type": "StaticObstacle",
-        "id": 2,
-        "options": {
-          "packed": false
-        }
-      },
-      "fieldBoundary": {
-        "rule": "repeated",
-        "type": "Position2D",
-        "id": 3,
-        "options": {
-          "packed": false
-        }
-      }
-    }
-  },
-  "GroundCommand": {
-    "oneofs": {
-      "command": {
-        "oneof": [
-          "waypointCommand",
-          "ugvDropCommand",
-          "surveyCommand",
-          "offAxisCommand",
-          "waitCommand"
-        ]
-      }
-    },
-    "fields": {
-      "waypointCommand": {
-        "type": "WaypointCommand",
-        "id": 1
-      },
-      "ugvDropCommand": {
-        "type": "UgvDropCommand",
-        "id": 2
-      },
-      "surveyCommand": {
-        "type": "SurveyCommand",
-        "id": 3
-      },
-      "offAxisCommand": {
-        "type": "OffAxisCommand",
-        "id": 4
-      },
-      "waitCommand": {
-        "type": "WaitCommand",
-        "id": 5
-      }
-    }
-  },
   "WaypointCommand": {
     "fields": {
       "goal": {
@@ -123,23 +204,18 @@
       }
     }
   },
-  "UgvDropCommand": {
+  "BombDropCommand": {
     "fields": {
-      "groundTarget": {
+      "drop_zone": {
         "rule": "required",
         "type": "Position2D",
         "id": 1
-      },
-      "dropHeight": {
-        "rule": "required",
-        "type": "double",
-        "id": 2
       }
     }
   },
   "SurveyCommand": {
     "fields": {
-      "surveyPolygon": {
+      "survey_polygon": {
         "rule": "repeated",
         "type": "Position2D",
         "id": 1,
@@ -156,95 +232,15 @@
   },
   "OffAxisCommand": {
     "fields": {
-      "photographerLocation": {
+      "photographer_location": {
         "rule": "required",
         "type": "Position3D",
         "id": 1
       },
-      "subjectLocation": {
+      "subject_location": {
         "rule": "required",
         "type": "Position2D",
         "id": 2
-      }
-    }
-  },
-  "WaitCommand": {
-    "fields": {
-      "time": {
-        "rule": "required",
-        "type": "double",
-        "id": 1
-      }
-    }
-  },
-  "GotoCommand": {
-    "fields": {
-      "goal": {
-        "rule": "required",
-        "type": "Position3D",
-        "id": 1
-      },
-      "comeToStop": {
-        "rule": "required",
-        "type": "bool",
-        "id": 2
-      }
-    }
-  },
-  "DroneProgram": {
-    "fields": {
-      "commands": {
-        "rule": "repeated",
-        "type": "DroneCommand",
-        "id": 1,
-        "options": {
-          "packed": false
-        }
-      }
-    }
-  },
-  "DroneCommand": {
-    "oneofs": {
-      "command": {
-        "oneof": [
-          "nothingCommand",
-          "sleepCommand",
-          "gotoCommand",
-          "gotoRawCommand",
-          "triggerBombDropCommand",
-          "triggerAlarmCommand",
-          "translateCommand"
-        ]
-      }
-    },
-    "fields": {
-      "nothingCommand": {
-        "type": "NothingCommand",
-        "id": 1
-      },
-      "sleepCommand": {
-        "type": "SleepCommand",
-        "id": 2
-      },
-      "gotoCommand": {
-        "type": "GotoCommand",
-        "id": 3
-      },
-      "gotoRawCommand": {
-        "type": "TranslateCommand",
-        "id": 4
-      },
-      "triggerBombDropCommand": {
-        "type": "TriggerBombDropCommand",
-        "id": 5
-      },
-      "triggerAlarmCommand": {
-        "type": "TriggerAlarmCommand",
-        "id": 6
-      },
-      "translateCommand": {
-        "type": "TranslateCommand",
-        "id": 7
       }
     }
   },
@@ -260,24 +256,183 @@
       }
     }
   },
-  "TranslateCommand": {
+  "GotoCommand": {
     "fields": {
       "goal": {
         "rule": "required",
         "type": "Position3D",
         "id": 1
       },
-      "comeToStop": {
+      "come_to_stop": {
         "rule": "required",
         "type": "bool",
         "id": 2
       }
     }
   },
-  "TriggerBombDropCommand": {
-    "fields": {}
+  "GotoRawCommand": {
+    "fields": {
+      "goal": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      },
+      "come_to_stop": {
+        "rule": "required",
+        "type": "bool",
+        "id": 2
+      }
+    }
   },
-  "TriggerAlarmCommand": {
-    "fields": {}
+  "Command": {
+    "oneofs": {
+      "command": {
+        "oneof": [
+          "WaypointCommand",
+          "BombDropCommand",
+          "SurveyCommand",
+          "OffAxisCommand",
+          "NothingCommand",
+          "SleepCommand",
+          "GotoCommand",
+          "GotoRawCommand",
+          "TriggerBombDropCommand",
+          "TriggerAlarmCommand"
+        ]
+      }
+    },
+    "fields": {
+      "sub_mission": {
+        "type": "Mission",
+        "id": 1
+      },
+      "WaypointCommand": {
+        "type": "WaypointCommand",
+        "id": 2
+      },
+      "BombDropCommand": {
+        "type": "BombDropCommand",
+        "id": 3
+      },
+      "SurveyCommand": {
+        "type": "SurveyCommand",
+        "id": 4
+      },
+      "OffAxisCommand": {
+        "type": "OffAxisCommand",
+        "id": 5
+      },
+      "NothingCommand": {
+        "type": "NothingCommand",
+        "id": 6
+      },
+      "SleepCommand": {
+        "type": "SleepCommand",
+        "id": 7
+      },
+      "GotoCommand": {
+        "type": "GotoCommand",
+        "id": 8
+      },
+      "GotoRawCommand": {
+        "type": "GotoRawCommand",
+        "id": 9
+      },
+      "TriggerBombDropCommand": {
+        "type": "TriggerBombDropCommand",
+        "id": 10
+      },
+      "TriggerAlarmCommand": {
+        "type": "TriggerAlarmCommand",
+        "id": 11
+      }
+    }
+  },
+  "Mission": {
+    "fields": {
+      "commands": {
+        "rule": "repeated",
+        "type": "Command",
+        "id": 1,
+        "options": {
+          "packed": false
+        }
+      },
+      "current_command": {
+        "type": "int32",
+        "id": 2,
+        "options": {
+          "default": 0
+        }
+      }
+    }
+  },
+  "StaticObstacle": {
+    "fields": {
+      "location": {
+        "rule": "required",
+        "type": "Position2D",
+        "id": 1
+      },
+      "cylinder_radius": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "MovingObstacle": {
+    "fields": {
+      "point": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      },
+      "sphere_radius": {
+        "rule": "required",
+        "type": "double",
+        "id": 2
+      }
+    }
+  },
+  "Obstacles": {
+    "fields": {
+      "static_obstacles": {
+        "rule": "repeated",
+        "type": "StaticObstacle",
+        "id": 1,
+        "options": {
+          "packed": false
+        }
+      },
+      "moving_obstacles": {
+        "rule": "repeated",
+        "type": "MovingObstacle",
+        "id": 2,
+        "options": {
+          "packed": false
+        }
+      }
+    }
+  },
+  "GroundData": {
+    "oneofs": {
+      "data": {
+        "oneof": [
+          "mission",
+          "obstacles"
+        ]
+      }
+    },
+    "fields": {
+      "mission": {
+        "type": "Mission",
+        "id": 1
+      },
+      "obstacles": {
+        "type": "Obstacles",
+        "id": 2
+      }
+    }
   }
 }

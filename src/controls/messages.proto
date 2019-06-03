@@ -4,29 +4,32 @@ package src.controls;
 
 message Sensors {
   optional double time                                                     = 1;
-  optional double latitude                                                 = 2;
-  optional double longitude                                                = 3;
-  optional float altitude                                                  = 4;
-  optional float relative_altitude                                         = 5;
-  optional float heading                                                   = 6;
-  optional float velocity_x                                                = 7;
-  optional float velocity_y                                                = 8;
-  optional float velocity_z                                                = 9;
-  optional float gps_ground_speed                                          = 10;
-  optional int32 gps_satellite_count                                       = 11;
-  optional int32 gps_eph                                                   = 12;
-  optional int32 gps_epv                                                   = 13;
-  optional float accelerometer_x                                           = 14;
-  optional float accelerometer_y                                           = 15;
-  optional float accelerometer_z                                           = 16;
-  optional float gyro_x                                                    = 17;
-  optional float gyro_y                                                    = 18;
-  optional float gyro_z                                                    = 19;
-  optional float battery_voltage                                           = 20;
-  optional float battery_current                                           = 21;
-  optional bool armed                                                      = 22;
-  optional string autopilot_state                                          = 23;
-  optional double last_gps                                                 = 24;
+  required double latitude                                                 = 2;  // degrees (http://docs.ros.org/api/sensor_msgs/html/msg/NavSatFix.html)
+  required double longitude                                                = 3;  // degrees (link above)
+  required float altitude                                                  = 4;  // meters above MSL (mean sea level) (http://docs.ros.org/api/mavros_msgs/html/msg/Altitude.html)
+  required float relative_altitude                                         = 5;  // meters above home position (link above)
+  required float heading                                                   = 6;  // degrees clockwise from north (http://wiki.ros.org/mavros#mavros.2BAC8-Plugins.global_position)
+  required float gps_ground_speed                                          = 10; // m/s (http://docs.ros.org/api/mavros_msgs/html/msg/VFR_HUD.html)
+  required int32 gps_satellite_count                                       = 11; // (https://mavlink.io/en/messages/common.html#GPS_RAW_INT, https://github.com/mavlink/mavros/blob/a7ef4fc0ec153307cbce3c98a998956c6296b954/mavros/src/plugins/global_position.cpp#L427)
+  required float gps_eph                                                   = 12; // meters (horizontal position uncertainty) (see ros_to_proto.cc for explanation)
+  required float gps_epv                                                   = 13; // meters (vertical position uncertainty) (see ros_to_proto.cc for explanation)
+  required float accelerometer_x                                           = 14; // m/s^2 (http://docs.ros.org/api/sensor_msgs/html/msg/Imu.html)
+  required float accelerometer_y                                           = 15; // m/s^2 (link above)
+  required float accelerometer_z                                           = 16; // m/s^2 (link above)
+  required float gyro_x                                                    = 17; // rad/sec (link above)
+  required float gyro_y                                                    = 18; // rad/sec (link above)
+  required float gyro_z                                                    = 19; // rad/sec (link above)
+  required float roll                                                      = 20; // radians to the right (see ros_to_proto.cc)
+  required float pitch                                                     = 21; // radians downward (see ros_to_proto.cc)
+  required float yaw                                                       = 22; // radians counterclockwise from east (see ros_to_proto.cc)
+  required float battery_voltage                                           = 26; // Volts (http://docs.ros.org/api/sensor_msgs/html/msg/BatteryState.html)
+  required float battery_current                                           = 27; // A (negative when discharging) (link above)
+  required bool armed                                                      = 28; // (http://docs.ros.org/api/mavros_msgs/html/msg/State.html)
+  required string autopilot_state                                          = 29; // (link above)
+  optional float velocity_x                                                = 7;  // m/s (https://mavlink.io/en/messages/common.html#LOCAL_POSITION_NED)
+  optional float velocity_y                                                = 8;  // m/s (link above)
+  optional float velocity_z                                                = 9;  // m/s (link above)
+  optional double last_gps                                                 = 30;
 }
 
 message Goal {

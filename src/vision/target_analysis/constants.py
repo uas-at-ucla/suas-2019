@@ -1,5 +1,5 @@
-# Histogram bin size (must divide 180)
-BIN_SIZE = 4
+# Histogram bin size (must divide 180 and 128)
+BIN_SIZE = 2
 
 # Camera parameters
 IMAGE_WIDTH = 5184
@@ -17,11 +17,8 @@ def px_to_gnd(alt):
 GND_AREA_MIN = 0.25 ** 2
 GND_AREA_MAX = 1.00 ** 2
 
-# TODO: currently hardcoded for testing
-ALTITUDE = 30
-
 # Maximum number of points used to describe contour
-DETAIL_MAX = 1000
+DETAIL_MAX = 200
 
 # Create overlap of one bin size and keep threshold centered on hue
 def range_lower(hue):

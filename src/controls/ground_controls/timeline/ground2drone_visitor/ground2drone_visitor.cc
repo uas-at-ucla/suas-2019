@@ -8,9 +8,8 @@ namespace ground2drone_visitor {
 
 Ground2DroneVisitor::Ground2DroneVisitor() {}
 
-bool Ground2DroneVisitor::Process(GroundProgram *input_program,
-                                  DroneProgram &drone_program) {
-  return Visit(input_program, drone_program);
+DroneProgram Ground2DroneVisitor::Process(GroundProgram *input_program) {
+  return Visit(input_program);
 }
 
 void Ground2DroneVisitor::ConcatenateDroneProgramCommands(
@@ -20,88 +19,90 @@ void Ground2DroneVisitor::ConcatenateDroneProgramCommands(
 }
 
 // Visitors ////////////////////////////////////////////////////////////////////
-bool Ground2DroneVisitor::Visit(GroundProgram *n, DroneProgram &drone_program) {
+DroneProgram Ground2DroneVisitor::Visit(GroundProgram *n) {
+  DroneProgram drone_program;
+
   // Visit all commands.
   for (int i = 0; i < n->commands_size(); i++) {
     GroundCommand *current_command = n->mutable_commands(i);
-    DroneProgram command_program;
-    bool success = Visit(current_command, command_program);
+
+    DroneProgram command_program = Visit(current_command);
     ConcatenateDroneProgramCommands(drone_program, command_program);
-    if (!success) {
-      return false;
-    }
   }
 
-  return true;
+  return drone_program;
 }
 
-bool Ground2DroneVisitor::Visit(GroundCommand *n, DroneProgram &drone_program) {
+DroneProgram Ground2DroneVisitor::Visit(GroundCommand *n) {
+  DroneProgram drone_program;
   DroneProgram command_program;
 
   // Select the specific command that this generic command type encloses, if
   // any.
-  bool success = true;
   if (n->has_waypoint_command()) {
-    success = success && Visit(n->mutable_waypoint_command(), drone_program);
+    command_program = Visit(n->mutable_waypoint_command());
   } else if (n->has_ugv_drop_command()) {
-    success = success && Visit(n->mutable_ugv_drop_command(), drone_program);
+    command_program = Visit(n->mutable_ugv_drop_command());
   } else if (n->has_survey_command()) {
-    success = success && Visit(n->mutable_survey_command(), drone_program);
+    command_program = Visit(n->mutable_survey_command());
   } else if (n->has_off_axis_command()) {
-    success = success && Visit(n->mutable_off_axis_command(), drone_program);
+    command_program = Visit(n->mutable_off_axis_command());
   } else if (n->has_wait_command()) {
-    success = success && Visit(n->mutable_wait_command(), drone_program);
+    command_program = Visit(n->mutable_wait_command());
   }
 
   ConcatenateDroneProgramCommands(drone_program, command_program);
-  return success;
+
+  return drone_program;
 }
 
-bool Ground2DroneVisitor::Visit(WaypointCommand *n,
-                                DroneProgram &drone_program) {
+DroneProgram Ground2DroneVisitor::Visit(WaypointCommand *n) {
+  DroneProgram drone_program;
 
   // Create a GotoCommand to fly to the waypoint while avoiding obstacles on the
   // field.
-  bool success;
   {
     GotoCommand *goto_command = new GotoCommand();
     goto_command->mutable_goal()->CopyFrom(n->goal());
-    DroneProgram goto_command_program;
-    success = Visit(goto_command, goto_command_program);
+    goto_command->set_come_to_stop(false);
+
+    DroneProgram goto_command_program = Visit(goto_command);
     ConcatenateDroneProgramCommands(drone_program, goto_command_program);
   }
 
-  return success;
+  return drone_program;
 }
 
-bool Ground2DroneVisitor::Visit(UgvDropCommand *n,
-                                DroneProgram &drone_program) {
+DroneProgram Ground2DroneVisitor::Visit(UgvDropCommand *n) {
+  DroneProgram drone_program;
 
   // TODO(Comran): Implement
   (void)n;
-  (void)drone_program;
-  return true;
+
+  return drone_program;
 }
 
-bool Ground2DroneVisitor::Visit(SurveyCommand *n, DroneProgram &drone_program) {
+DroneProgram Ground2DroneVisitor::Visit(SurveyCommand *n) {
+  DroneProgram drone_program;
 
   // TODO(Weber): Implement
   (void)n;
-  (void)drone_program;
 
-  return true;
+  return drone_program;
 }
 
-bool Ground2DroneVisitor::Visit(OffAxisCommand *n,
-                                DroneProgram &drone_program) {
+DroneProgram Ground2DroneVisitor::Visit(OffAxisCommand *n) {
+  DroneProgram drone_program;
+
   // TODO(Comran): Implement
   (void)n;
-  (void)drone_program;
 
-  return true;
+  return drone_program;
 }
 
-bool Ground2DroneVisitor::Visit(WaitCommand *n, DroneProgram &drone_program) {
+DroneProgram Ground2DroneVisitor::Visit(WaitCommand *n) {
+  DroneProgram drone_program;
+
   {
     DroneCommand *sleep_cmd = new DroneCommand();
     SleepCommand *sleep = sleep_cmd->mutable_sleep_command();
@@ -109,10 +110,11 @@ bool Ground2DroneVisitor::Visit(WaitCommand *n, DroneProgram &drone_program) {
     drone_program.mutable_commands()->AddAllocated(sleep_cmd);
   }
 
-  return true;
+  return drone_program;
 }
 
-bool Ground2DroneVisitor::Visit(GotoCommand *n, DroneProgram &drone_program) {
+DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
+  DroneProgram drone_program;
 
   // Go to a certain location on the field while avoiding obstacles by
   // calculating a safe path to travel and commanding the drone to follow this
@@ -125,10 +127,11 @@ bool Ground2DroneVisitor::Visit(GotoCommand *n, DroneProgram &drone_program) {
     DroneCommand *translate_cmd = new DroneCommand();
     TranslateCommand *translate = translate_cmd->mutable_translate_command();
     translate->set_allocated_goal(n->mutable_goal());
+    translate->set_come_to_stop(false);
     drone_program.mutable_commands()->AddAllocated(translate_cmd);
   }
 
-  return true;
+  return drone_program;
 }
 
 } // namespace ground2drone_visitor

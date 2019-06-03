@@ -1,24 +1,28 @@
 // Run this file with `node test.js testName` or `npm test testName`
 
+//TODO test image upload
+
 const tests = {
   interop: () => {
-    const loadInteropClient = require('./interop_client/interop_client');
-    loadInteropClient("localhost", 8000, "testadmin", "testpass")
+    const loadInteropClient = require('./src/interop_client');
+    loadInteropClient("134.209.2.203:8000", "testuser", "testpass")
       .then(interopClient => {
-        interopClient.getMissions().then(missions => {
+        interopClient.getMission(2).then(missions => {
           console.log(JSON.stringify(missions, null, 2));
           console.log();
 
           // Object Detection, Classification, and Localization
           let testOdlc = {
-            "type": "standard",
+            "mission": 2,
+            "type": "STANDARD",
             "latitude": 38.1478,
             "longitude": -76.4275,
-            "orientation": "n",
-            "shape": "star",
-            "background_color": "orange",
+            "orientation": "N",
+            "shape": "RECTANGLE",
+            "shapeColor": "RED",
             "alphanumeric": "C",
-            "alphanumeric_color": "black"
+            "alphanumericColor": "WHITE",
+            "autonomous": false
           }
   
           interopClient.postObjectDetails(testOdlc).then(odlc => {
@@ -28,13 +32,16 @@ const tests = {
             interopClient.postTelemetry({
               latitude: 38.149,
               longitude: -76.432,
-              altitude_msl: 100,
-              uas_heading: 90
+              altitude: 100,
+              heading: 90
             }).then(message => {
-              console.log(message)
+              console.log(message);
+              console.log("Test complete");
             }).catch(error => {
               console.log(error);
             });
+          }).catch(error => {
+            console.log(error);
           });
         }).catch(error => {
           console.log(error);

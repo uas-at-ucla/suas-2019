@@ -4,18 +4,21 @@ import { createMessage } from 'protobuf/timelineGrammarUtil';
 export default {
   centerMapOnCommand: (cmd, protoInfo) => {
     for (let locationField of protoInfo.locationFields) {
-      let location = cmd[cmd.type][locationField];
-      return {
-        type: 'CENTER_ON_COMMAND',
-        payload: {
-          id: cmd.id,
-          pos: {
-            lat: location.latitude,
-            lng: location.longitude
+      let location = cmd[cmd.name][locationField];
+      if (location) {
+        return {
+          type: 'CENTER_ON_COMMAND',
+          payload: {
+            id: cmd.id,
+            pos: {
+              lat: location.latitude,
+              lng: location.longitude
+            }
           }
         }
       }
     }
+    return { type: "NONE" };
   },
   commandStopAnimation: (cmd) => {
     return {
@@ -23,16 +26,16 @@ export default {
       payload: { id: cmd.id }
     }
   },
-  addCommand: (type, options, protoInfo) => {
+  addCommand: (name, options, protoInfo) => {
     return {
       type: 'ADD_COMMAND',
-      payload: createCommand(type, options, protoInfo)
+      payload: createCommand(name, options, protoInfo)
     }
   },
   addWaypointCommand: (options, protoInfo) => {
     return {
       type: 'ADD_COMMAND',
-      payload: createCommand('WaypointCommand', options, protoInfo)
+      payload: createCommand('waypoint_command', options, protoInfo)
     }
   },
   deleteCommand: (index) => {
@@ -50,13 +53,13 @@ export default {
       }
     }
   },
-  changeCommandType: (index, oldCommand, newType, protoInfo) => {
-    setLocationFields(oldCommand[oldCommand.type], protoInfo);
+  changeCommandType: (index, oldCommand, newName, protoInfo) => {
+    setLocationFields(oldCommand[oldCommand.name], protoInfo);
     return {
       type: 'CHANGE_COMMAND_TYPE',
       payload: {
         index: index,
-        newCommand: createCommand(newType, oldCommand[oldCommand.type], protoInfo)
+        newCommand: createCommand(newName, oldCommand[oldCommand.name], protoInfo)
       }
     }
   },
@@ -88,10 +91,12 @@ export default {
   }
 }
 
-function createCommand(type, options, protoInfo) {
+function createCommand(name, options, protoInfo) {
   let command = {};
-  command[type] = createMissionObject(type, options, protoInfo);
+  let type = protoInfo.timelineGrammar.GroundCommand.fields[name].type;
+  command[name] = createMissionObject(type, options, protoInfo);
   command.type = type;             // not part of protobuf, but helpful info
+  command.name = name;             // not part of protobuf, but helpful info
   command.id = shortid.generate(); // not part of protobuf, but helpful info
   createMessage('GroundCommand', command); // Verify that object correctly represents protobuf
   return command;

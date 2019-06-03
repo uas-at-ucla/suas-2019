@@ -6,43 +6,43 @@ import AttitudeIndicator from './AttitudeIndicator/AttitudeIndicator';
 import Altimeter from './Altimeter/Altimeter';
 import Readout from './Readout';
 
+const FEET_PER_METER = 3.28084;
+const KNOTS_PER_METER_SECOND = 1.94384;
 
 const mapStateToProps = state => {
   return {
     telemetry: state.telemetry,
-    ping: state.telemetry.ping
   };
 };
 
 class Telemetry extends Component {
-  constructor(props) {
-    super(props);
-
-    this.update(JSON.parse(JSON.stringify(this.props.telemetry.data)));
-  }
-
-
-  update(rawTelmet) {
+  update() {
+    let rawTelmet = this.props.telemetry.droneTelemetry;
+    let pingDelay = this.props.telemetry.pingDelay;
     if (rawTelmet != null) {
       this.telmet = {
-        navX: rawTelmet["telemetry"]["sensors"]["gyroX"],
-        navY: rawTelmet["telemetry"]["sensors"]["gyroY"],
-        navZ: rawTelmet["telemetry"]["sensors"]["gyroZ"],
-        speed: 0,
-        lat: rawTelmet["telemetry"]["sensors"]["latitude"],
-        long: rawTelmet["telemetry"]["sensors"]["longitude"],
-        heading: 0,
-        alt: rawTelmet["telemetry"]["sensors"]["relativeAltitude"],
-        satCount: rawTelmet["telemetry"]["sensors"]["gpsSatelliteCount"],
+        pingDelay: pingDelay,
+        autopilotState: rawTelmet["sensors"]["autopilot_state"],
+        roll: rawTelmet["sensors"]["roll"],
+        pitch: rawTelmet["sensors"]["pitch"],
+        yaw: rawTelmet["sensors"]["yaw"],
+        speed: rawTelmet["sensors"]["gps_ground_speed"] * KNOTS_PER_METER_SECOND,
+        lat: rawTelmet["sensors"]["latitude"],
+        long: rawTelmet["sensors"]["longitude"],
+        heading: rawTelmet["sensors"]["heading"],
+        alt: rawTelmet["sensors"]["altitude"] * FEET_PER_METER,
+        satCount: rawTelmet["sensors"]["gps_satellite_count"],
         gpsHdop: 0,
         gpsVdop: 0,
       }
     }
     else {
       this.telmet = {
-        navX: 0,
-        navY: 0,
-        navZ: 0,
+        pingDelay: null,
+        autopilotState: null,
+        roll: 0,
+        pitch: 0,
+        yaw: Math.PI/2,
         speed: 0,
         lat: 0,
         long: 0,
@@ -55,20 +55,27 @@ class Telemetry extends Component {
     }
   }
 
-
   readoutData() {
     return [
       {
-        key: "Speed",
-        values: [this.telmet.speed.toFixed(3) , " mph"]
+        key: "Ping",
+        values: this.telmet.pingDelay != null ? [this.telmet.pingDelay, " ms"] : ["Not Connected"]
+      },
+      {
+        key: "State",
+        values: [this.telmet.autopilotState]
+      },
+      {
+        key: "Ground Speed",
+        values: [this.telmet.speed.toFixed(3) , " knots"]
       },
       {
         key: "Position",
         values: [this.telmet.lat.toFixed(3) , ", " , this.telmet.long.toFixed(3)]
       },
       {
-        key: "Altitude",
-        values: [this.telmet.alt.toFixed(3) , " meters"]
+        key: "Altitude MSL",
+        values: [this.telmet.alt.toFixed(3) , " feet"]
       },
       {
         key: "Satellite Count",
@@ -77,11 +84,8 @@ class Telemetry extends Component {
     ];
   }
 
-
   render() {
-    let telmet = JSON.parse(JSON.stringify(this.props.telemetry.data));
-
-    this.update(telmet);
+    this.update();
 
     // console.log(telmet);
     // console.log(this.readoutData());
