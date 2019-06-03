@@ -35,7 +35,7 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
     setpoint_latitude_ = sensors.latitude();
     setpoint_longitude_ = sensors.longitude();
     setpoint_altitude_ = sensors.relative_altitude();
-    setpoint_yaw_ = 720;
+    setpoint_yaw_ = sensors.heading();
     setpoint_initialized_ = true;
   }
 
