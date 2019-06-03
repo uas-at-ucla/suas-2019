@@ -30,16 +30,40 @@ export default {
       }
     }
   },
+  uploadMission: () => {
+    return {
+      type: 'TRANSMIT',
+      payload: {msg: 'UPLOAD_MISSION'}
+    }
+  },
   runMission: () => {
     return {
       type: 'TRANSMIT',
       payload: {msg: 'RUN_MISSION'}
     }
   },
+  pauseMission: () => {
+    return {
+      type: 'TRANSMIT',
+      payload: {msg: 'PAUSE_MISSION'}
+    }
+  },
+  endMission: () => {
+    return {
+      type: 'TRANSMIT',
+      payload: {msg: 'END_MISSION'}
+    }
+  },
   driveUgv: () => {
     return {
       type: 'TRANSMIT',
       payload: { msg: 'DRIVE_UGV' }
+    }
+  },
+  sendSetpoint: (actuator, value) => {
+    return {
+      type: 'TRANSMIT',
+      payload: { msg: actuator, data: value }
     }
   },
   testTransmit: (data) => {

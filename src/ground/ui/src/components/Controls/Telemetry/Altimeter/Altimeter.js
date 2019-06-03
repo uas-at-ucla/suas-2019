@@ -17,16 +17,16 @@ const mapStateToProps = state => {
 class Altimeter extends Component {
   render() {
     let rel_altitude = 0;
-    let ground_alt = 0;
+    let home_alt = 0;
     if (this.props.telemetry) {
       rel_altitude = this.props.telemetry.sensors.relative_altitude * FEET_PER_METER;
       let msl_altitude = this.props.telemetry.sensors.altitude * FEET_PER_METER;
-      ground_alt = msl_altitude - rel_altitude;
+      home_alt = msl_altitude - rel_altitude;
     }
     let percentage = (rel_altitude / MAX_ALT) * 100;
 
-    let min = this.props.interopData ? this.props.mainFlyZone.altitudeMin - ground_alt : 0;
-    let max = this.props.interopData ? this.props.mainFlyZone.altitudeMax - ground_alt : 0;
+    let min = this.props.interopData ? this.props.mainFlyZone.altitudeMin - home_alt : 0;
+    let max = this.props.interopData ? this.props.mainFlyZone.altitudeMax - home_alt : 0;
     if (max > MAX_ALT) max = MAX_ALT;    
 
     return (
@@ -34,7 +34,7 @@ class Altimeter extends Component {
         <div className="progress-bars">
           <div className="progress-bar">
             <div className={`filler ${rel_altitude < min ? "too-low" : rel_altitude > max ? "too-high" : "default"}`} style={{ height: `${percentage > 0 ? percentage : 0}%` }}>
-              {rel_altitude.toFixed(0)} ft
+              {rel_altitude.toFixed(0)} ft rel
             </div>
           </div>
           <div className="progress-bar">

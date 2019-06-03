@@ -6,9 +6,10 @@ try {
   ping = require("net-ping"); //might fail since it needs to be compiled specifically on each platform
 } catch(e) {
   console.log(e);
-  console.log("Can't load net-ping. It either did not install succesfully, or it may be installed for the wrong platform. Uninstall it with:");
+  console.log("Can't load net-ping. It either did not install succesfully, or it may be installed for the wrong platform. Uninstall and reinstall on the desired platform with:");
   console.log("    cd src/ground/server");
-  console.log("    npm uninstall net-ping\n");
+  console.log("    npm uninstall net-ping --no-save");
+  console.log("    npm install net-ping\n");
 }
 
 const loadProtobufUtils = require('./src/protobuf_utils');
@@ -107,7 +108,6 @@ controls_io.on('connect', (socket) => {
   console.log("ground_controls connected");
   function onSensors(sensors) {
     if (protobufUtils) {
-      //TODO receive and cache other data to send along with sensors
       telemetry.sensors = protobufUtils.decodeSensors(sensors);
       if (interopClient) {
         interopClient.newTelemetry(telemetry);
@@ -116,11 +116,11 @@ controls_io.on('connect', (socket) => {
   }
 
   socket.on('SENSORS', (sensors) => {
-    onSensors(sensors, config.droneSensorsFrequency);
+    onSensors(sensors);
   });
 
   socket.on('SENSORS_RFD900', (sensors) => {
-    onSensors(sensors, config.droneSensorsFreqRFD900);
+    onSensors(sensors);
   });
 
   socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
@@ -129,9 +129,27 @@ controls_io.on('connect', (socket) => {
     }
   });
 
-  socket.on('MISSION_COMPILE_ERROR', (droneProgram) => {
-    ui_io.emit('MISSION_COMPILE_ERROR', droneProgram);
+  socket.on('UPLOADED_DRONE_PROGRAM', (droneProgram) => {
+    console.log("Got acknowledgment that the Drone Program was uploaded")
+    if (protobufUtils) {
+      ui_io.emit('UPLOADED_DRONE_PROGRAM', protobufUtils.decodeDroneProgam(droneProgram));
+    }  
   });
+
+  let msgs_to_ui = [
+    'MISSION_COMPILE_ERROR', 'MISSION_STATUS',
+    'GIMBAL_SETPOINT',
+    'DEPLOYMENT_MOTOR_SETPOINT',
+    'LATCH_SETPOINT',
+    'HOTWIRE_SETPOINT'
+  ];
+  for (let ui_msg of msgs_to_ui) {
+    let local_ui_msg = ui_msg;
+    socket.on(local_ui_msg, (data) => {
+      console.log("received: " + local_ui_msg + ": " + data);
+      ui_io.emit(local_ui_msg, data);
+    });
+  }
 });
 
 
@@ -172,11 +190,6 @@ ui_io.on('connect', (socket) => {
     console.log("TEST " + data);
   });
 
-  socket.on('CHANGE_DRONE_STATE', (state) => {
-    controls_io.emit('CHANGE_DRONE_STATE', state);
-    console.log("THE DRONE is asked to " + state + ". Hey DRONE, are you listening?");
-  });
-
   socket.on('COMPILE_GROUND_PROGRAM', (commands) => {
     console.log("received ground program from UI");
     if (protobufUtils) {
@@ -188,10 +201,21 @@ ui_io.on('connect', (socket) => {
     }
   });
 
-  socket.on('RUN_MISSION', (pos) => {
-    console.log("Running mission!");
-    controls_io.emit('RUN_MISSION', pos);
-  });
+  let msgs_to_drone = [
+    'UPLOAD_MISSION', 'RUN_MISSION', 'PAUSE_MISSION', 'END_MISSION',
+    'CHANGE_DRONE_STATE', 
+    'GIMBAL_SETPOINT',
+    'DEPLOYMENT_MOTOR_SETPOINT',
+    'LATCH_SETPOINT',
+    'HOTWIRE_SETPOINT'
+  ];
+  for (let controls_msg of msgs_to_drone) {
+    let local_controls_msg = controls_msg;
+    socket.on(local_controls_msg, (data) => {
+      console.log("sending: " + local_controls_msg + ": " + data);
+      controls_io.emit(local_controls_msg, data);
+    });
+  }
 
   socket.on('CONNECT_TO_INTEROP', (cred) => {
     console.log('CONNECT TO INTEROP');

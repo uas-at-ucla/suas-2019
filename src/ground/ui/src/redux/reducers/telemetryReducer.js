@@ -1,11 +1,17 @@
-// import dotProp from 'dot-prop-immutable';
+import dotProp from 'dot-prop-immutable';
 
 const initialState = {
   droneTelemetry: null,
   playback: false,
   pingDelay: null,
   mapCenter: { lat: 38.147483, lng: -76.427778 },
-  ugvStatus: null
+  ugvStatus: null,
+  setpoints: {
+    gimbal: null,
+    deployment: null,
+    latch: null,
+    hotwire: null,
+  }
 };
 
 export default function reducer(state=initialState, action) {
@@ -25,6 +31,18 @@ export default function reducer(state=initialState, action) {
     }
     case 'PLAYBACK': {
       return {...state, droneTelemetry: action.payload};
+    }
+    case 'GIMBAL_SETPOINT': {
+      return dotProp.set(state, `setpoints.gimbal`, action.payload);
+    }
+    case 'DEPLOYMENT_MOTOR_SETPOINT': {
+      return dotProp.set(state, `setpoints.deployment`, action.payload);
+    }
+    case 'LATCH_SETPOINT': {
+      return dotProp.set(state, `setpoints.latch`, action.payload);
+    }
+    case 'HOTWIRE_SETPOINT': {
+      return dotProp.set(state, `setpoints.hotwire`, action.payload);
     }
     case 'CENTER_ON_DRONE': {
       if (state.droneTelemetry) {

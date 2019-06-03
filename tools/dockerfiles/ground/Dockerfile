@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y gnupg
 RUN apt-get update && apt-get install -y build-essential
 RUN apt-get update && apt-get install -y git
 RUN apt-get update && apt-get install -y sudo
+RUN apt-get update && apt-get install -y iputils-ping
 
 # ROS
 # RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu stretch main" > /etc/apt/sources.list.d/ros-latest.list'

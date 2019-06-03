@@ -11,6 +11,9 @@ namespace controls {
 namespace ground_controls {
 namespace timeline {
 namespace ground2drone_visitor {
+namespace {
+static constexpr double kFeetPerMeter = 3.28084;
+}
 
 class Ground2DroneVisitor {
  public:

@@ -26,7 +26,7 @@ new_git_repository(
 git_repository(
   name = 'mavros_msgs',
   remote = 'https://github.com/uas-at-ucla/mavros_msgs.git',
-  commit = '12a3dc130769c43a1b449128da19f8cfe6a7823e',
+  commit = '06ed539e9422a8ddf877daa066842303a1b9591f',
 )
 
 git_repository(

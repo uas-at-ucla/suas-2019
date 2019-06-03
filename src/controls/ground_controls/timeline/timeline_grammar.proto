@@ -50,8 +50,6 @@ message DroneCommand {
   oneof command {
     lib.mission_manager.NothingCommand           nothing_command                                = 1;
     lib.mission_manager.SleepCommand             sleep_command                                  = 2;
-    lib.mission_manager.GotoCommand              goto_command                                   = 3;
-    TranslateCommand         goto_raw_command                               = 4;
     TriggerBombDropCommand   trigger_bomb_drop_command                      = 5;
     TriggerAlarmCommand      trigger_alarm_command                          = 6;
     TranslateCommand         translate_command                              = 7;

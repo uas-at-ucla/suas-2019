@@ -1,25 +1,78 @@
 import React, { Component } from 'react';
-import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
+import { connect } from 'react-redux';
 
+import { selector } from 'redux/store';
 import './MissionPlannerContainer.css';
 import MissionPlanner from './MissionPlanner';
+import CommandList from './CommandList';
+
+const mapStateToProps = state => {
+  return { 
+    droneProgram: state.mission.droneProgram,
+    missionStatus: state.mission.missionStatus,
+    missionUploaded: state.mission.missionUploaded,
+    protoInfo: selector(state).mission.protoInfo
+  };
+};
 
 class MissionPlannerContainer extends Component {
   state = {
-    expand: false
+    expand: false,
+    activeTab: 'plan'
+  }
+
+  toggleTab = (tab) => {
+    if (this.state.activeTab !== tab) {
+      this.setState({
+        activeTab: tab
+      });
+    }
   }
 
   render() {
     return (
       <div className="MissionPlannerContainer">
+        <div className="missionPlannerHeader">
+          <Nav tabs>
+            <NavItem>
+              <NavLink
+                className={this.state.activeTab === 'plan' ? "active" : null}
+                onClick={() => this.toggleTab('plan')}
+              >
+                Plan
+              </NavLink>
+            </NavItem>
+            <NavItem>
+              <NavLink
+                className={this.state.activeTab === 'drone' ? "active" : null}
+                onClick={() => this.toggleTab('drone')}
+              >
+                {this.props.missionUploaded ? "Uploaded" : "Compiled"} Mission
+              </NavLink>
+            </NavItem>
+          </Nav>
+          <i onClick={this.expand} className="fa fa-expand fa-lg"></i>
+        </div>
 
-        <div className="missionPlannerHeader"> 
-          <span><b>Mission Planner</b></span>
-          <i onClick={this.expand} className="fa fa-expand"></i>
-        </div>
-        <div className="SmallMissionPlanner">
-          <MissionPlanner className="SmallMissionPlanner"/>
-        </div>
+        <TabContent activeTab={this.state.activeTab}>
+          <span>Mission Status: {this.props.missionStatus}</span>
+          <TabPane tabId="plan">
+            <div className="SmallMissionPlanner">
+              <MissionPlanner className="SmallMissionPlanner"/>
+            </div>
+          </TabPane>
+          <TabPane tabId="drone">
+            <div className="SmallMissionPlanner">
+              <CommandList 
+                commands={this.props.droneProgram ? this.props.droneProgram.commands : []}
+                className="SmallMissionPlanner"
+                protoInfo={this.props.protoInfo}
+                commandChangers={{centerMapOnCommand: ()=>{/*TODO*/}}}
+              />
+            </div>
+          </TabPane>
+        </TabContent>
         
         <Modal isOpen={this.state.expand} toggle={this.close} className="MissionPlannerModal">
           <ModalHeader toggle={this.close}>Mission Planner</ModalHeader>
@@ -39,4 +92,4 @@ class MissionPlannerContainer extends Component {
   close = () => this.setState({expand: false});
 }
 
-export default MissionPlannerContainer;
+export default connect(mapStateToProps)(MissionPlannerContainer);

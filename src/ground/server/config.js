@@ -1,5 +1,5 @@
 module.exports = {
   verbose: false,
-  testing: true,
-  useFakeDrone: true
+  testing: false,
+  useFakeDrone: false
 }

@@ -54,6 +54,7 @@
   position: absolute;
   height: 100%;
   width: 100%;
+  padding-bottom: 10px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -66,6 +67,16 @@
 
 .map-infobox {
   color: black;
+}
+
+.DroneActions .row+.row {
+  margin-top: 5px;
+}
+
+.DroneActions input::-webkit-inner-spin-button, 
+.DroneActions input::-webkit-outer-spin-button { 
+  -webkit-appearance: none;
+  margin: 0;
 }
 
 .buttonArray
@@ -91,12 +102,6 @@
 {
   margin-left: 10px;
 }
-
-.buttonArray > button:hover
-{
-  cursor: pointer;
-}
-
 
 #runMissionButton
 {
@@ -160,4 +165,10 @@
 {
   color: #c61515;
   border-color: #c61515;
+}
+
+.buttonArray > button:disabled
+{
+  color: dimgray !important;
+  border-color: dimgray !important;
 }
