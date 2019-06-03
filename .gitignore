@@ -37,3 +37,6 @@ core
 /tools/cache/
 /external/downloaded
 /output
+
+/src/vision/models/*
+/src/vision/localizer/built_graph/yolo-auvsi.pb
