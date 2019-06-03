@@ -27,6 +27,7 @@
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/String.h>
 
 #include "lib/alarm/alarm.h"
 #include "lib/deployment/deployment.h"
@@ -94,6 +95,7 @@ class IO {
   ::std::atomic<double> deployment_motor_setpoint_;
   ::std::atomic<bool> latch_setpoint_;
   ::std::atomic<bool> hotwire_setpoint_;
+  ::std::atomic<bool> deployment_manual_override_;
 
   bool did_arm_;
   ::std::string px4_mode_;

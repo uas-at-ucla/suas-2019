@@ -141,14 +141,38 @@ void IO::WriterThread() {
     ros_to_proto_.SetRunUasMission(::ros::Time::now().toSec() - start_time > 5);
 #endif
 
+    // TODO start ugv command...
+    // TODO ROS subscriber to ugv msg from ground to change input (make two more atomic vars)
+    // TODO (low priority) deployment manual override 
+
     // Calculate deployment output.
     ::lib::deployment::Input deployment_input;
     ::lib::deployment::Output deployment_output;
     deployment_input.direction = 0;
-    deployment_output.motor = deployment_motor_setpoint_;
-    deployment_output.latch = latch_setpoint_;
-    deployment_output.hotwire = hotwire_setpoint_;
     deployment_.RunIteration(deployment_input, deployment_output);
+
+    if (deployment_manual_override_) {
+      deployment_output.motor = deployment_motor_setpoint_;
+      deployment_output.latch = latch_setpoint_;
+      deployment_output.hotwire = hotwire_setpoint_;
+    } else  {
+      // update ROS messages with output from deployment state machine 
+      if (deployment_output.motor != deployment_motor_setpoint_) {
+        ::std_msgs::Float32 deployment_motor_setpoint;
+        deployment_motor_setpoint.data = deployment_output.motor;
+        deployment_motor_publisher_.publish(deployment_motor_setpoint);
+      }
+      if (deployment_output.latch != latch_setpoint_) {
+        ::std_msgs::Bool latch_setpoint;
+        latch_setpoint.data = deployment_output.latch;
+        latch_publisher_.publish(latch_setpoint);
+      }
+      if (deployment_output.hotwire != hotwire_setpoint_) {
+        ::std_msgs::Bool hotwire_setpoint;
+        hotwire_setpoint.data = deployment_output.hotwire;
+        hotwire_publisher_.publish(hotwire_setpoint);
+      }
+    }
 
     // Write out actuators.
     WriteAlarm(should_alarm);
@@ -269,17 +293,19 @@ void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   }
 
   int deployment_rc_in = rc_in.channels[kDeploymentMotorRcChannel - 1];
-  ::std_msgs::Float32 deployment_motor_setpoint;
   if (deployment_rc_in > 900) {
+    ::std_msgs::Float32 deployment_motor_setpoint;
     deployment_motor_setpoint.data =
         ::std::max(::std::min((deployment_rc_in - 1500) / 500.0, 1.0), -1.0);
     if (::std::abs(deployment_motor_setpoint.data) < 0.1) {
       deployment_motor_setpoint.data = 0;
     }
-  } else {
+    deployment_motor_publisher_.publish(deployment_motor_setpoint);
+    deployment_manual_override_ = true; // if we override deployment with rc, set this to true to allow manual input from groundstation
+  } /*else {
     deployment_motor_setpoint.data = 0;
-  }
-  deployment_motor_publisher_.publish(deployment_motor_setpoint);
+  }*/
+  
 
   bool uas_mission_run_current =
       rc_in.channels[kUasMissionRcChannel - 1] > 1700;
