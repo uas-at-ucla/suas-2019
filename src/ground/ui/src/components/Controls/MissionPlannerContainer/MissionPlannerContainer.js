@@ -10,9 +10,10 @@ import CommandList from './CommandList';
 const mapStateToProps = state => {
   return { 
     droneProgram: state.mission.droneProgram,
-    missionStatus: state.mission.missionStatus,
+    // missionStatus: state.mission.missionStatus,
     missionUploaded: state.mission.missionUploaded,
-    dropReady: state.telemetry.droneTelemetry ? state.telemetry.dronTelemetry.output.deploy : null,
+    dropReady: state.telemetry.droneTelemetry ? state.telemetry.droneTelemetry.output.deploy : null,
+    lastDroppyCommand: state.mission.lastDroppyCommand,
     protoInfo: selector(state).mission.protoInfo
   };
 };
@@ -57,7 +58,7 @@ class MissionPlannerContainer extends Component {
         </div>
 
         <TabContent activeTab={this.state.activeTab}>
-          <span>Ready to Drop: {this.props.dropReady != null ? (this.props.dropReady ? "YES" : "NO") : "UNKNOWN"}</span>
+          <span>Drop Status: {this.props.lastDroppyCommand != null ? this.props.lastDroppyCommand : this.props.dropReady != null ? (this.props.dropReady ? "READY TO DROP" : "NOT READY") : "NONE"}</span>
           {/* <span>Mission Status: {this.props.missionStatus}</span> */}
           <TabPane tabId="plan">
             <div className="SmallMissionPlanner">

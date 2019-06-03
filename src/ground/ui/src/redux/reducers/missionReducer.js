@@ -9,7 +9,8 @@ const initialState = {
   droneProgram: null,
   missionCompiled: false,
   missionUploaded: false,
-  missionStatus: "NONE",
+  // missionStatus: "NONE",
+  lastDroppyCommand: null,
   interopData: null
 };
 
@@ -85,8 +86,11 @@ export default function reducer(state=initialState, action) {
       }
       return newState;
     }
-    case 'MISSION_STATUS': {
-      return dotProp.set(state, `missionStatus`, action.payload);
+    // case 'MISSION_STATUS': {
+    //   return dotProp.set(state, `missionStatus`, action.payload);
+    // }
+    case 'DROPPY_COMMAND_RECEIVED': {
+      return dotProp.set(state, `lastDroppyCommand`, action.payload);
     }
     default: {
       return state;

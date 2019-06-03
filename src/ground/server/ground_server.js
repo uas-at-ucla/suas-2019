@@ -147,7 +147,8 @@ controls_io.on('connect', (socket) => {
     'GIMBAL_SETPOINT',
     'DEPLOYMENT_MOTOR_SETPOINT',
     'LATCH_SETPOINT',
-    'HOTWIRE_SETPOINT'
+    'HOTWIRE_SETPOINT',
+    'DROPPY_COMMAND_RECEIVED'
   ];
   for (let ui_msg of msgs_to_ui) {
     let local_ui_msg = ui_msg;

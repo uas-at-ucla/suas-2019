@@ -23,6 +23,8 @@ IO::IO() :
     latch_setpoint_(true),
     hotwire_setpoint_(false),
     deployment_manual_override_(false),
+    deployment_motor_direction_(0),
+    cut_line_(false),
     running_(true),
     ros_node_handle_(),
     sensors_publisher_(ros_node_handle_.advertise<::src::controls::Sensors>(
@@ -61,9 +63,12 @@ IO::IO() :
         kRosStateTopic, kRosMessageQueueSize, &IO::StateReceived, this)),
     imu_subscriber_(ros_node_handle_.subscribe(
         kRosImuTopic, kRosMessageQueueSize, &IO::ImuReceived, this)),
-    drone_program_subscriber_(
-        ros_node_handle_.subscribe(kRosDroneProgramTopic, kRosMessageQueueSize,
-                                   &IO::DroneProgramReceived, this)),
+    // drone_program_subscriber_(
+    //     ros_node_handle_.subscribe(kRosDroneProgramTopic, kRosMessageQueueSize,
+    //                                &IO::DroneProgramReceived, this)),
+    droppy_command_subscriber_(ros_node_handle_.subscribe(
+        kRosMissionStatusTopic, kRosMessageQueueSize,
+        &GroundControls::DroppyCommandReceived, this)),
     set_mode_service_(ros_node_handle_.serviceClient<::mavros_msgs::SetMode>(
         kRosSetModeService)),
     arm_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandBool>(
@@ -140,12 +145,13 @@ void IO::WriterThread() {
 #ifndef RASPI_DEPLOYMENT
     static double start_time = ::ros::Time::now().toSec();
     ros_to_proto_.SetRunUasMission(::ros::Time::now().toSec() - start_time > 5);
-#endif 
+#endif
 
     // Calculate deployment output.
     ::lib::deployment::Input deployment_input;
     ::lib::deployment::Output deployment_output;
-    deployment_input.direction = 0;
+    deployment_input.direction = deployment_motor_direction_;
+    deployment_input.cut = cut_line_;
     deployment_.RunIteration(deployment_input, deployment_output);
 
     if (deployment_manual_override_) {
@@ -349,12 +355,21 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
   led_strip_.set_last_imu(::ros::Time::now().toSec());
 }
 
-void IO::DroneProgramReceived(
-    const ::src::controls::ground_controls::timeline::DroneProgram
-        drone_program) {
-  ROS_INFO("Received drone program!");
-  drone_program_ = drone_program;
-  should_override_alarm_ = true;
+// void IO::DroneProgramReceived(
+//     const ::src::controls::ground_controls::timeline::DroneProgram
+//         drone_program) {
+//   ROS_INFO("Received drone program!");
+//   drone_program_ = drone_program;
+//   should_override_alarm_ = true;
+// }
+
+void IO::DroppyCommandReceived(const ::std_msgs::String droppy_command) {
+  if (droppy_command.data == "START_DROP") {
+    deployment_motor_direction = 1; // lower ugv TODO check sign
+  } else if (droppy_command.data == "CUT_LINE") {
+    deployment_motor_direction = 0;
+    cut_line_ = true;
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
