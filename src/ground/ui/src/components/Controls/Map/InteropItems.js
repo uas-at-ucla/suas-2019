@@ -12,13 +12,16 @@ import person from './icons/Person-Icon.png'
 import bomb from './icons/bomb_drop.png'
 import blueMarker from './icons/blue_marker.png'
 
+const FEET_PER_METER = 3.28084;
 
 const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
     interopData: state.mission.interopData,
     protoInfo: derivedData.mission.protoInfo,
-    mainFlyZone: derivedData.mission.mainFlyZone
+    mainFlyZone: derivedData.mission.mainFlyZone,
+    defaultAltitude: state.mission.defaultAltitude,
+    homeAltitude: state.telemetry.droneTelemetry ? state.telemetry.droneTelemetry.sensors.home_altitude : null
   };
 };
 
@@ -41,6 +44,12 @@ class InteropItems extends Component {
       if (!this.props.mainFlyZone.isClockwise) {
         boundaryCoordinates.reverse();
       }
+
+      var flyZonePolygons = this.props.interopData.mission.flyZones.map((flyZone) => {
+        return flyZone.boundaryPoints.map((coord) => {
+          return {lat: coord.latitude, lng: coord.longitude};
+        });
+      });
 
       var searchCenterLat = 0;
       var searchCenterLng = 0;
@@ -118,7 +127,7 @@ class InteropItems extends Component {
           </MapElementWithInfo>
 
           <Polygon
-            paths={[boxCoordinates, boundaryCoordinates]} strokeOpacity={0.8} strokeWeight={2} 
+            paths={[boxCoordinates, boundaryCoordinates]} 
             options={{
               strokeColor: '#FF0000',
               fillColor: '#FF0000',
@@ -126,36 +135,52 @@ class InteropItems extends Component {
               strokeWeight: 1,
               fillOpacity: 0.5
             }}
-          /> 
+          />
 
-          <MapElementWithInfo
+          {flyZonePolygons.map((path) => 
+            <Polygon 
+              path={path}
+              defaultOptions={{
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.8,
+                strokeWeight: 1.5,
+                fillOpacity: 0,
+                clickable: false
+              }}
+            />
+          )}
+
+          <Polygon path={searchGridPoints} defaultOptions={{clickable: false}} />
+          {/* Use this version if SurveyCommand is supported: */}
+          {/* <MapElementWithInfo
             Element={Polygon} name="search" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
-            path={searchGridPoints} strokeOpacity={0.5} strokeWeight={2}
+            path={searchGridPoints}
             infoPosition={{lat: searchCenterLat, lng: searchCenterLng}}
           >
             <div>Search Area</div>
             <Button size="sm" onClick={() => this.addWaypointCommand(searchCenterLat, searchCenterLng)}>
               Add to Mission
             </Button>
-          </MapElementWithInfo>
+          </MapElementWithInfo> */}
 
           {this.props.interopData.mission.stationaryObstacles.map((obstacle, index) => 
             <MapElementWithInfo
               key={index}
               Element={Circle} name={`obstacle-${index}`} isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
-              options={{
+              defaultOptions={{
                 strokeColor: '#FF0000',
                 strokeOpacity: 0.8,
                 strokeWeight: 2,
                 fillColor: '#FF0000',
                 fillOpacity: 0.5,
               }} 
-              radius={obstacle.radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}
+              radius={obstacle.radius/FEET_PER_METER} center={{lat: obstacle.latitude, lng: obstacle.longitude}}
               infoPosition={{lat: obstacle.latitude, lng: obstacle.longitude}}
             >
-              Obstacle {"("+obstacle.latitude + " " + obstacle.longitude + ")"}
+              Obstacle {"("+obstacle.latitude + ", " + obstacle.longitude + ")"}
               <br/>
-              {"Height:" + obstacle.height + " Radius: " + obstacle.radius} 
+              {"Height: " + obstacle.height + " ft AMSL"}<br/>
+              {"Radius: " + obstacle.radius + " ft"} 
             </MapElementWithInfo>
           )}
 
@@ -170,7 +195,13 @@ class InteropItems extends Component {
                 anchor: {x: 12.5, y: 12.5}
               }}
             >
-              TODO
+              <div>
+                Waypoint {index+1}<br/>
+                {coord.altitude} ft AMSL {this.props.homeAltitude != null ? "("+(coord.altitude - this.props.homeAltitude*FEET_PER_METER)+") ft rel" : null}
+              </div>
+              <Button size="sm" onClick={() => this.addWaypointCommand(coord.latitude, coord.longitude, coord.altitude)}>
+                Add to Mission
+              </Button>
             </MapElementWithInfo>
           )}
         </span> : null }
@@ -178,20 +209,12 @@ class InteropItems extends Component {
     );
   }
 
-  deleteCommand = (event) => {
-    this.props.deleteCommand(event.target.dataset.index);
-  }
-
-  mapDblClick = (event) => {
-    this.addWaypointCommand(event.latLng.lat(), event.latLng.lng());
-  }
-
-  addWaypointCommand = (lat, lng) => {
+  addWaypointCommand = (lat, lng, alt) => {
     let defaultWaypointCommand = {
       goal: {
         latitude: lat,
         longitude: lng,
-        altitude: 100
+        altitude: alt ? alt : this.props.defaultAltitude
       }
     }
     this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);

@@ -12,6 +12,7 @@ const mapStateToProps = state => {
     droneProgram: state.mission.droneProgram,
     missionStatus: state.mission.missionStatus,
     missionUploaded: state.mission.missionUploaded,
+    dropReady: state.telemetry.droneTelemetry ? state.telemetry.dronTelemetry.output.deploy : null,
     protoInfo: selector(state).mission.protoInfo
   };
 };
@@ -56,7 +57,8 @@ class MissionPlannerContainer extends Component {
         </div>
 
         <TabContent activeTab={this.state.activeTab}>
-          <span>Mission Status: {this.props.missionStatus}</span>
+          <span>Ready to Drop: {this.props.dropReady != null ? (this.props.dropReady ? "YES" : "NO") : "UNKNOWN"}</span>
+          {/* <span>Mission Status: {this.props.missionStatus}</span> */}
           <TabPane tabId="plan">
             <div className="SmallMissionPlanner">
               <MissionPlanner className="SmallMissionPlanner"/>

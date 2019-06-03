@@ -25,6 +25,7 @@ message GroundProgram {
 message GroundCommand {
   oneof command {
     lib.mission_manager.WaypointCommand          waypoint_command                              = 1;
+    lib.mission_manager.FlyThroughCommand        fly_through_command                           = 6;
     UgvDropCommand           ugv_drop_command                                = 2;
     lib.mission_manager.SurveyCommand            survey_command                                = 3;
     lib.mission_manager.OffAxisCommand           off_axis_command                              = 4;
@@ -33,8 +34,7 @@ message GroundCommand {
 }
 
 message UgvDropCommand {
-  required lib.mission_manager.Position2D        ground_target                                 = 1;
-  required double            drop_height                                   = 2;
+  required lib.mission_manager.Position3D        goal                      = 1;
 }
 
 message WaitCommand {

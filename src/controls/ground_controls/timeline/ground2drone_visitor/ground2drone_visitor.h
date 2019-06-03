@@ -27,6 +27,7 @@ class Ground2DroneVisitor {
   // Drone language visitors.
   DroneProgram Visit(GroundProgram *n);
   DroneProgram Visit(GroundCommand *n);
+  DroneProgram Visit(FlyThroughCommand *n);
   DroneProgram Visit(WaypointCommand *n);
   DroneProgram Visit(UgvDropCommand *n);
   DroneProgram Visit(SurveyCommand *n);

@@ -123,6 +123,12 @@ controls_io.on('connect', (socket) => {
     onSensors(sensors);
   });
 
+  socket.on('OUTPUT', (output) => {
+    if (protobufUtils) {
+      telemetry.output = protobufUtils.decodeOutput(output);
+    }
+  });
+
   socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
     if (protobufUtils) {
       ui_io.emit('COMPILED_DRONE_PROGRAM', protobufUtils.decodeDroneProgam(droneProgram));
@@ -207,7 +213,8 @@ ui_io.on('connect', (socket) => {
     'GIMBAL_SETPOINT',
     'DEPLOYMENT_MOTOR_SETPOINT',
     'LATCH_SETPOINT',
-    'HOTWIRE_SETPOINT'
+    'HOTWIRE_SETPOINT',
+    'CHANGE_DROPPY_STATE'
   ];
   for (let controls_msg of msgs_to_drone) {
     let local_controls_msg = controls_msg;

@@ -5,7 +5,6 @@ const DroneStates = {
   FAILSAFE: 'FAILSAFE',
   THROTTLE_CUT: 'THROTTLE_CUT'
 }
-
 function changeDroneState(droneState) {
   return {
     type: 'TRANSMIT',
@@ -16,11 +15,27 @@ function changeDroneState(droneState) {
   }
 }
 
+const DroppyStates = {
+  START_DROP: 'START_DROP',
+  CUT_WIRE: 'CUT_WIRE'
+}
+function changeDroppyState(droppyState) {
+  return {
+    type: 'TRANSMIT',
+    payload: {
+      msg: 'CHANGE_DROPPY_STATE',
+      data: droppyState
+    }
+  }
+}
+
 export default {
   droneTakeoff: () => changeDroneState(DroneStates.TAKEOFF),
   droneLand: () => changeDroneState(DroneStates.LAND),
   droneFailsafe: () => changeDroneState(DroneStates.FAILSAFE),
   droneThrottleCut: () => changeDroneState(DroneStates.THROTTLE_CUT),
+  droppyStart: () => changeDroppyState(DroppyStates.START_DROP),
+  droppyCut: () => changeDroppyState(DroppyStates.CUT_WIRE),
   compileMission: (commands) => {
     return {
       type: 'TRANSMIT',
@@ -58,6 +73,12 @@ export default {
     return {
       type: 'TRANSMIT',
       payload: { msg: 'DRIVE_UGV' }
+    }
+  },
+  disableUgv: () => {
+    return {
+      type: 'TRANSMIT',
+      payload: { msg: 'DISABLE_UGV' }
     }
   },
   sendSetpoint: (actuator, value) => {

@@ -22,7 +22,7 @@ class Telemetry extends Component {
     if (rawTelmet != null) {
       this.telmet = {
         pingDelay: pingDelay,
-        autopilotState: rawTelmet["sensors"]["autopilot_state"],
+        autopilotState: rawTelmet["sensors"]["armed"] ? rawTelmet["sensors"]["autopilot_state"] : "Disarmed",
         roll: rawTelmet["sensors"]["roll"],
         pitch: rawTelmet["sensors"]["pitch"],
         yaw: rawTelmet["sensors"]["yaw"],

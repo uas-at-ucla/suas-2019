@@ -4,6 +4,7 @@ import { arrayMove } from 'react-sortable-hoc';
 const initialState = {
   timelineGrammar: null,
   commands: [],
+  defaultAltitude: 100,
   commandAnimate: {},
   droneProgram: null,
   missionCompiled: false,
@@ -43,6 +44,9 @@ export default function reducer(state=initialState, action) {
     case 'CHANGE_COMMAND_FIELD': {
       let newState = dotProp.set(state, `commands.${action.payload.dotProp}`, action.payload.newValue);
       newState.missionCompiled = false;
+      if (action.payload.dotProp.endsWith('altitude')) {
+        newState.defaultAltitude = action.payload.newValue;
+      }
       return newState;
     }
     case 'ADD_REPEATED_FIELD': {

@@ -56,7 +56,7 @@ DroneProgram Ground2DroneVisitor::Visit(GroundCommand *n) {
   return drone_program;
 }
 
-DroneProgram Ground2DroneVisitor::Visit(WaypointCommand *n) {
+DroneProgram Ground2DroneVisitor::Visit(FlyThroughCommand *n) {
   DroneProgram drone_program;
 
   // Create a GotoCommand to fly to the waypoint while avoiding obstacles on the
@@ -75,15 +75,32 @@ DroneProgram Ground2DroneVisitor::Visit(WaypointCommand *n) {
   return drone_program;
 }
 
+DroneProgram Ground2DroneVisitor::Visit(WaypointCommand *n) {
+  DroneProgram drone_program;
+
+  // Create a GotoCommand to fly to the waypoint while avoiding obstacles on the
+  // field.
+  {
+    GotoCommand *goto_command = new GotoCommand();
+    goto_command->mutable_goal()->CopyFrom(n->goal());
+    goto_command->set_come_to_stop(true);
+    goto_command->mutable_goal()->set_altitude(goto_command->goal().altitude() / kFeetPerMeter);
+
+    DroneProgram goto_command_program = Visit(goto_command);
+    ConcatenateDroneProgramCommands(drone_program, goto_command_program);
+  }
+
+  return drone_program;
+}
+
 DroneProgram Ground2DroneVisitor::Visit(UgvDropCommand *n) {
   DroneProgram drone_program;
 
   {
     GotoCommand *goto_command = new GotoCommand();
-    goto_command->mutable_goal()->set_latitude(n->ground_target().latitude());
-    goto_command->mutable_goal()->set_longitude(n->ground_target().longitude());
-    goto_command->mutable_goal()->set_altitude(n->drop_height() /
-                                               kFeetPerMeter);
+    goto_command->mutable_goal()->set_latitude(n->goal().latitude());
+    goto_command->mutable_goal()->set_longitude(n->goal().longitude());
+    goto_command->mutable_goal()->set_altitude(n->goal().altitude() / kFeetPerMeter);
     goto_command->set_come_to_stop(true);
 
     DroneProgram goto_command_program = Visit(goto_command);

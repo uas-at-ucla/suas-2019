@@ -16,6 +16,7 @@ const mapStateToProps = state => {
     missionCompiled: state.mission.missionCompiled,
     missionUploaded: state.mission.missionUploaded,
     missionStatus: state.mission.missionStatus,
+    dropReady: state.telemetry.droneTelemetry ? state.telemetry.dronTelemetry.output.deploy : null,
     setpoints: state.telemetry.setpoints
   }; 
 };
@@ -85,19 +86,23 @@ class DroneActions extends Component {
           :
             <button id="runMissionButton" onClick={()=>this.toggleWithName("Compile Mission", this.compileMission)} disabled={this.props.missionStatus === 'RUN_MISSION' || this.props.missionStatus === 'PAUSE_MISSION'}>Compile Mission</button>
           }
-          {this.props.missionStatus === 'RUN_MISSION' ? 
+          {/* {this.props.missionStatus === 'RUN_MISSION' ? 
             <button id="takeoffButton" onClick={()=>this.toggleWithName("Pause Mission", this.props.pauseMission)}>Pause Mission</button>
           : this.props.missionUploaded || this.props.missionStatus === 'PAUSE_MISSION' ?
             <button id="runMissionButton" onClick={()=>this.toggleWithName("Run Mission", this.props.runMission)}>Run Mission</button> 
           :
             <button id="runMissionButton" disabled>Run Mission</button>
-          }
-          <button id="failsafeButton" onClick={()=>this.toggleWithName("End Mission", this.props.endMission)}>End Mission</button>
-          <button id="takeoffButton" onClick={()=>this.toggleWithName("Takeoff", this.props.droneTakeoff)}>Takeoff</button>
-          <button id="landButton" onClick={()=>this.toggleWithName("Land", this.props.droneLand)}>Land</button>
-          <button id="failsafeButton" onClick={()=>this.toggleWithName("Failsafe Landing", this.props.droneFailsafe)}>Failsafe Landing</button>
-          <button id="throttleCutButton" onClick={()=>this.toggleWithName("Throttle Cut", this.props.droneThrottleCut)}>Throttle Cut</button>
-          <button id="takeoffButton" onClick={()=>this.toggleWithName("Drive UGV", this.props.driveUgv)}>Drive UGV</button>
+          } */}
+          {/* <button id="failsafeButton" onClick={()=>this.toggleWithName("End Mission", this.props.endMission)}>End Mission</button> */}
+          <button id="landButton" disabled={!this.props.dropReady} onClick={()=>this.toggleWithName("Start UGV Drop", this.props.droppyStart)}>Start Drop</button>
+          <button id="takeoffButton" onClick={()=>this.toggleWithName("Cut Wire & Drive", this.props.droppyCut)}>{"Cut Wire & Drive"}</button>
+
+          {/* <button id="takeoffButton" onClick={()=>this.toggleWithName("Takeoff", this.props.droneTakeoff)}>Takeoff</button> */}
+          {/* <button id="landButton" onClick={()=>this.toggleWithName("Land", this.props.droneLand)}>Land</button> */}
+          {/* <button id="failsafeButton" onClick={()=>this.toggleWithName("Failsafe Landing", this.props.droneFailsafe)}>Failsafe Landing</button> */}
+          {/* <button id="throttleCutButton" onClick={()=>this.toggleWithName("Throttle Cut", this.props.droneThrottleCut)}>Throttle Cut</button> */}
+          <button id="failsafeButton" onClick={()=>this.toggleWithName("Drive UGV", this.props.driveUgv)}>Drive UGV</button>
+          <button id="throttleCutButton" onClick={()=>this.toggleWithName("Disable UGV", this.props.disableUgv)}>Disable UGV</button>
           <button id="landButton" onClick={this.toggleSetpoints}>Setpoints</button>
           <Modal isOpen={this.state.modal} toggle={this.toggle} className="DroneActions">
           <ModalHeader toggle={this.toggle}>WARNING</ModalHeader>
@@ -111,7 +116,7 @@ class DroneActions extends Component {
         </Modal>
 
         <Modal isOpen={this.state.setpointModal} toggle={this.toggleSetpoints} className="DroneActions">
-          <ModalHeader toggle={this.toggleSetpoints}>Setpoints</ModalHeader>
+          <ModalHeader toggle={this.toggleSetpoints}>Setpoint Override</ModalHeader>
           <ModalBody>
             <Container>
               <Row>
