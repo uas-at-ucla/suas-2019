@@ -10,9 +10,8 @@ CameraInterface::CameraInterface() :
     take_photo_subscriber_(ros_node_handle_.subscribe(
         kRosTakePhotoTopic, kRosMessageQueueSize,
         &CameraInterface::ImageCaptureRequested, this)),
-        photo_thread_(&CameraInterface::PhotoThread, this),
-        photo_phased_loop_(kWriterPhasedLoopFrequency) 
-        {}
+    photo_thread_(&CameraInterface::PhotoThread, this),
+    photo_phased_loop_(kWriterPhasedLoopFrequency) {}
 
 void CameraInterface::ImageCaptureRequested(const std_msgs::String &ret) {
   (void)ret;

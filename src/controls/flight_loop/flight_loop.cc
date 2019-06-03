@@ -40,7 +40,7 @@ void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
   state_machine_.Handle(sensors, goal, output);
 
   // Log protobufs.
-  if(sensors.time() > last_proto_log_ + 1.0 / kProtobufLogHz) {
+  if (sensors.time() > last_proto_log_ + 1.0 / kProtobufLogHz) {
     LogProtobufMessage("Sensors", sensors);
     LogProtobufMessage("Goal", goal);
     LogProtobufMessage("Output", output);

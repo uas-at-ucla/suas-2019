@@ -29,9 +29,8 @@ IO::IO() :
     global_position_publisher_(
         ros_node_handle_.advertise<::mavros_msgs::GlobalPositionTarget>(
             kRosGlobalPositionSetpointTopic, 10)),
-    take_photo_publisher_(
-        ros_node_handle_.advertise<std_msgs::String>(
-          kRosTakePhotoTopic, kRosMessageQueueSize)),
+    take_photo_publisher_(ros_node_handle_.advertise<std_msgs::String>(
+        kRosTakePhotoTopic, kRosMessageQueueSize)),
     gimbal_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
         kRosGimbalTopic, kRosMessageQueueSize, true)),
     deployment_motor_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
@@ -171,14 +170,18 @@ void IO::WriterThread() {
           ::ros::Time::now().toSec() + kSensorsPublisherPeriod;
     }
 
-    if(ros_to_proto_.OutputValid() && ros_to_proto_.SensorsValid() && ros_to_proto_.GetSensors().run_uas_mission()) {
+    if (ros_to_proto_.OutputValid() && ros_to_proto_.SensorsValid() &&
+        ros_to_proto_.GetSensors().run_uas_mission()) {
       ::src::controls::Output output = ros_to_proto_.GetOutput();
-      
+
       // Only listen to output if safety pilot override is not active.
-      PixhawkSendModePosedge(kPixhawkCustomModeTakeoff, output.trigger_takeoff());
+      PixhawkSendModePosedge(kPixhawkCustomModeTakeoff,
+                             output.trigger_takeoff());
       PixhawkSendModePosedge(kPixhawkCustomModeLoiter, output.trigger_hold());
-      PixhawkSendModePosedge(kPixhawkCustomModeOffboard, output.trigger_offboard());
-      PixhawkSendModePosedge(kPixhawkCustomModeReturnToLand, output.trigger_rtl());
+      PixhawkSendModePosedge(kPixhawkCustomModeOffboard,
+                             output.trigger_offboard());
+      PixhawkSendModePosedge(kPixhawkCustomModeReturnToLand,
+                             output.trigger_rtl());
       PixhawkSendModePosedge(kPixhawkCustomModeLand, output.trigger_land());
       PixhawkSendModePosedge(kPixhawkArmCommand, output.trigger_arm());
       // PixhawkSendModePosedge(, output.trigger_disarm());
@@ -192,20 +195,21 @@ void IO::WriterThread() {
 
     // Log the current GPIO outputs.
     ROS_DEBUG_STREAM_THROTTLE(
-        1.0 / kActuatorLogHz, "Writer thread iteration: "
-                 << ::std::endl
-                 << "alarm[" << should_alarm << "]" << ::std::endl
-                 << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
-                 << "deployment_motor[" << deployment_output.motor << "]"
-                 << ::std::endl
-                 << "deployment_latch[" << deployment_output.latch << "]"
-                 << ::std::endl
-                 << "deployment_hotwire[" << deployment_output.hotwire << "]"
-                 << ::std::endl
+        1.0 / kActuatorLogHz,
+        "Writer thread iteration: "
+            << ::std::endl
+            << "alarm[" << should_alarm << "]" << ::std::endl
+            << "gimbal[" << gimbal_setpoint_ << "]" << ::std::endl
+            << "deployment_motor[" << deployment_output.motor << "]"
+            << ::std::endl
+            << "deployment_latch[" << deployment_output.latch << "]"
+            << ::std::endl
+            << "deployment_hotwire[" << deployment_output.hotwire << "]"
+            << ::std::endl
 #ifdef LOG_LED_STRIP
-                 << "led_strip[" << led_strip_.GetStrip() << ::std::endl
+            << "led_strip[" << led_strip_.GetStrip() << ::std::endl
 #endif
-                 << "]");
+            << "]");
 
     // Wait until next iteration of loop.
     writer_phased_loop_.sleep();
@@ -277,11 +281,13 @@ void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   }
   deployment_motor_publisher_.publish(deployment_motor_setpoint);
 
-  bool uas_mission_run_current = rc_in.channels[kUasMissionRcChannel - 1] > 1700;
-  if(ros_to_proto_.SensorsValid()) {
+  bool uas_mission_run_current =
+      rc_in.channels[kUasMissionRcChannel - 1] > 1700;
+  if (ros_to_proto_.SensorsValid()) {
     bool uas_mission_run_last = ros_to_proto_.GetSensors().run_uas_mission();
-    if(uas_mission_run_current != uas_mission_run_last) {
-      ROS_INFO("Allow UAS mission changed: %d -> %d", uas_mission_run_last, uas_mission_run_current);
+    if (uas_mission_run_current != uas_mission_run_last) {
+      ROS_INFO("Allow UAS mission changed: %d -> %d", uas_mission_run_last,
+               uas_mission_run_current);
     }
   }
   ros_to_proto_.SetRunUasMission(uas_mission_run_current);
@@ -498,9 +504,11 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
   target.yaw = yaw_radians;
   global_position_publisher_.publish(target);
 
-  ROS_DEBUG_THROTTLE(1.0 / kActuatorLogHz, "Sending global position setpoint: latitude(%f), longitude(%f), "
-            "altitude(%f)",
-            latitude, longitude, altitude);
+  ROS_DEBUG_THROTTLE(
+      1.0 / kActuatorLogHz,
+      "Sending global position setpoint: latitude(%f), longitude(%f), "
+      "altitude(%f)",
+      latitude, longitude, altitude);
 }
 
 ///////////////////////////////////////////////////////////////////////////

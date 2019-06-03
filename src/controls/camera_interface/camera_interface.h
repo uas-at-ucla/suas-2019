@@ -1,13 +1,13 @@
 #pragma once
 
-#include <thread>
 #include <atomic>
 #include <functional>
+#include <thread>
 
-#include "ros/ros.h"
-#include "std_msgs/String.h"
 #include "lib/dslr_interface/dslr_interface.h"
+#include "ros/ros.h"
 #include "src/controls/constants.h"
+#include "std_msgs/String.h"
 
 namespace src {
 namespace controls {

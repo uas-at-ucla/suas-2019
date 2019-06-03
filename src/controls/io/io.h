@@ -36,8 +36,8 @@
 #include "src/controls/io/ros_to_proto/ros_to_proto.h"
 #include "src/controls/messages.pb.h"
 
-#include "std_msgs/String.h"
 #include "src/controls/constants.h"
+#include "std_msgs/String.h"
 
 // #define LOG_LED_STRIP 0
 

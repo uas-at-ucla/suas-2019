@@ -84,7 +84,6 @@ class RosToProto {
   ::ros::ServiceClient arming_service_;
 
   double last_output_;
-
 };
 
 void toEulerAngle(const ::geometry_msgs::Quaternion &q, double &roll,

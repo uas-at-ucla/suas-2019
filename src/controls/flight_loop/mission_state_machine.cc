@@ -31,7 +31,7 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
                                  ::src::controls::Output &output) {
 
   // Set initial setpoint.
-  if(!setpoint_initialized_) {
+  if (!setpoint_initialized_) {
     setpoint_latitude_ = sensors.latitude();
     setpoint_longitude_ = sensors.longitude();
     setpoint_altitude_ = sensors.relative_altitude();
@@ -46,7 +46,7 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
 
   // If a new mission is available, escape any current state and go to the new
   // mission.
-  if(new_mission_ready_) {
+  if (new_mission_ready_) {
     state_ = GET_NEXT_CMD;
     new_mission_ready_ = false;
   }
@@ -98,10 +98,10 @@ void MissionStateMachine::StateTransition(::src::controls::Output &output) {
       if (loaded_command.has_translate_command()) {
         new_state = TRANSLATE;
         ((TranslateState *)GetStateHandler(TRANSLATE))
-            ->SetSetpoints(loaded_command.translate_command().goal().latitude(),
-                           loaded_command.translate_command().goal().longitude(),
-                           loaded_command.translate_command().goal().altitude(),
-                           -90);
+            ->SetSetpoints(
+                loaded_command.translate_command().goal().latitude(),
+                loaded_command.translate_command().goal().longitude(),
+                loaded_command.translate_command().goal().altitude(), -90);
       } else if (loaded_command.has_trigger_bomb_drop_command()) {
         new_state = UGV_DROP;
       }
@@ -185,7 +185,7 @@ void TranslateState::Handle(::src::controls::Sensors &sensors,
   double distance_from_destination = GetDistance3D(drone, destination);
   // ROS_DEBUG("Distance from dest: %f", distance_from_destination);
 
-  if(distance_from_destination < kAcceptanceRadius) {
+  if (distance_from_destination < kAcceptanceRadius) {
     output.set_mission_state(GET_NEXT_CMD);
   }
 }

@@ -13,12 +13,12 @@ void on_fail() { socketio_ground_controls->OnFail(); }
 GroundControls::GroundControls(int argc, char **argv) :
     running_(false),
     ros_node_handle_(),
-    sensors_subscriber_(ros_node_handle_.subscribe(
-        kRosSensorsTopic, kRosMessageQueueSize,
-        &GroundControls::SensorsReceived, this)),
-    output_subscriber_(ros_node_handle_.subscribe(
-        kRosOutputTopic, kRosMessageQueueSize,
-        &GroundControls::OutputReceived, this)),
+    sensors_subscriber_(
+        ros_node_handle_.subscribe(kRosSensorsTopic, kRosMessageQueueSize,
+                                   &GroundControls::SensorsReceived, this)),
+    output_subscriber_(
+        ros_node_handle_.subscribe(kRosOutputTopic, kRosMessageQueueSize,
+                                   &GroundControls::OutputReceived, this)),
     drone_program_subscriber_(ros_node_handle_.subscribe(
         kRosDroneProgramTopic, kRosMessageQueueSize,
         &GroundControls::DroneProgramReceived, this)),
@@ -98,7 +98,9 @@ void GroundControls::OutputReceived(const ::src::controls::Output output) {
     ::std::string output_serialized;
     output.SerializeToString(&output_serialized);
     if (client_.opened()) {
-      client_.socket("ground-controls")->emit("OUTPUT", ::sio::string_message::create(::lib::base64_tools::Encode(output_serialized)));
+      client_.socket("ground-controls")
+          ->emit("OUTPUT", ::sio::string_message::create(
+                               ::lib::base64_tools::Encode(output_serialized)));
     }
   }
 }

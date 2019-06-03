@@ -1,6 +1,7 @@
 #include "camera_interface.h"
 
-static ::src::controls::io::camera_interface::CameraInterface *camera_interface = nullptr;
+static ::src::controls::io::camera_interface::CameraInterface
+    *camera_interface = nullptr;
 
 extern "C" void signal_handler(int signum) {
   ::std::cout << "GOT SIGNAL!" << ::std::endl;
@@ -22,7 +23,8 @@ int main(int argc, char **argv) {
   ::ros::init(argc, argv, "uasatucla_camera_interface");
   ::ros::start();
 
-  camera_interface = new ::src::controls::io::camera_interface::CameraInterface();
+  camera_interface =
+      new ::src::controls::io::camera_interface::CameraInterface();
 
   ::ros::spin();
 }
