@@ -161,7 +161,7 @@ void IO::WriterThread() {
       deployment_output.hotwire = hotwire_setpoint_;
     } else {
       // update ROS messages with output from deployment state machine
-      if (deployment_output.motor != deployment_motor_setpoint_) {
+      if (abs(deployment_output.motor - deployment_motor_setpoint_) > 0.001) {
         ::std_msgs::Float32 deployment_motor_setpoint;
         deployment_motor_setpoint.data = deployment_output.motor;
         deployment_motor_publisher_.publish(deployment_motor_setpoint);
@@ -367,8 +367,10 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
 
 void IO::DroppyCommandReceived(const ::std_msgs::String droppy_command) {
   if (droppy_command.data == "START_DROP") {
-    deployment_motor_direction_ = 1; // lower ugv TODO check sign
+    ::std::cout << "Initiating UGV Drop\n";
+    deployment_motor_direction_ = 1; // lower ugv
   } else if (droppy_command.data == "CUT_LINE") {
+    ::std::cout << "Cutting Fishing Line...\n";
     deployment_motor_direction_ = 0;
     cut_line_ = true;
   }

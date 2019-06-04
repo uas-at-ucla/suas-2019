@@ -114,7 +114,7 @@ class ProtobufUtils {
   }
 
   static decode(Type, message) {
-    return Type.decode(ProtobufUtils.decodeBase64(message));
+    return Type.toObject(Type.decode(ProtobufUtils.decodeBase64(message)));
   }
 
   static encode(Type, message) {

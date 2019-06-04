@@ -39,7 +39,9 @@ DroneProgram Ground2DroneVisitor::Visit(GroundCommand *n) {
 
   // Select the specific command that this generic command type encloses, if
   // any.
-  if (n->has_waypoint_command()) {
+  if (n->has_fly_through_command()) {
+    command_program = Visit(n->mutable_fly_through_command());
+  } else if (n->has_waypoint_command()) {
     command_program = Visit(n->mutable_waypoint_command());
   } else if (n->has_ugv_drop_command()) {
     command_program = Visit(n->mutable_ugv_drop_command());

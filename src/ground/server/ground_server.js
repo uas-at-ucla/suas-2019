@@ -12,12 +12,14 @@ try {
   console.log("    npm install net-ping\n");
 }
 
+const inDockerContainer = fs.existsSync("/.dockerenv");
+
 const loadProtobufUtils = require('./src/protobuf_utils');
 const loadInteropClient = require('./src/interop_client');
 const config = require('./config');
 
 const server_port = 8081;
-var droneIP = config.testing ? "192.168.3.20" : "192.168.1.20";
+var droneIP = inDockerContainer ? "192.168.3.20" : "192.168.1.20";
 const pingInterval = 1000 //ms
 const uiSendFrequency = 5; //Hz
 const trackySendFrequency = 5; //Hz
@@ -51,7 +53,7 @@ if (config.testing) {
   // try our test server
   connectToInterop("134.209.2.203:8000", "testuser", "testpass", 2)
     .catch(error => {
-      if (fs.existsSync("/.dockerenv")) { // If inside Docker container
+      if (inDockerContainer) {
         connectToInterop("192.168.3.30:80", "testuser", "testpass", 2);
       } else {
         connectToInterop("localhost:8000", "testuser", "testpass", 2);
@@ -268,7 +270,7 @@ if (ping) {
       if (error) {
         ui_io.emit('PING', null);
         if (error instanceof ping.RequestTimedOutError)
-          console.log(droneIP + ": Not alive");
+          if (config.verbose) console.log(droneIP + ": Not alive");
         else
           console.log(droneIP + ": " + error.toString());
       } else {

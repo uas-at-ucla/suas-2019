@@ -19,14 +19,14 @@ class GroundCommunicator {
   GroundCommunicator();
 
   void SensorsReceived(const ::src::controls::Sensors sensors);
-  void DroneProgramReceived(
-      const ::src::controls::ground_controls::timeline::DroneProgram
-          drone_program);
+  // void DroneProgramReceived(
+  //     const ::src::controls::ground_controls::timeline::DroneProgram
+  //         drone_program);
 
  private:
   ::ros::NodeHandle ros_node_handle_;
   ::ros::Subscriber sensors_subscriber_;
-  ::ros::Subscriber drone_program_subscriber_;
+  // ::ros::Subscriber drone_program_subscriber_;
 
   ::lib::proto_comms::ProtoSender<::src::controls::UasMessage> proto_sender_;
 
