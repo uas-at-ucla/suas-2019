@@ -84,7 +84,8 @@ DroneProgram Ground2DroneVisitor::Visit(WaypointCommand *n) {
     GotoCommand *goto_command = new GotoCommand();
     goto_command->mutable_goal()->CopyFrom(n->goal());
     goto_command->set_come_to_stop(true);
-    goto_command->mutable_goal()->set_altitude(goto_command->goal().altitude() / kFeetPerMeter);
+    goto_command->mutable_goal()->set_altitude(goto_command->goal().altitude() /
+                                               kFeetPerMeter);
 
     DroneProgram goto_command_program = Visit(goto_command);
     ConcatenateDroneProgramCommands(drone_program, goto_command_program);
@@ -100,7 +101,8 @@ DroneProgram Ground2DroneVisitor::Visit(UgvDropCommand *n) {
     GotoCommand *goto_command = new GotoCommand();
     goto_command->mutable_goal()->set_latitude(n->goal().latitude());
     goto_command->mutable_goal()->set_longitude(n->goal().longitude());
-    goto_command->mutable_goal()->set_altitude(n->goal().altitude() / kFeetPerMeter);
+    goto_command->mutable_goal()->set_altitude(n->goal().altitude() /
+                                               kFeetPerMeter);
     goto_command->set_come_to_stop(true);
 
     DroneProgram goto_command_program = Visit(goto_command);

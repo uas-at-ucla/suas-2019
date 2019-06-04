@@ -70,7 +70,6 @@ class IO {
   //         drone_program);
   void DroppyCommandReceived(const ::std_msgs::String droppy_command);
 
-
   // Actuator setup and write handlers.
   void InitializeActuators();
   void WriteAlarm(bool alarm);

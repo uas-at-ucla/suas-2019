@@ -64,11 +64,12 @@ IO::IO() :
     imu_subscriber_(ros_node_handle_.subscribe(
         kRosImuTopic, kRosMessageQueueSize, &IO::ImuReceived, this)),
     // drone_program_subscriber_(
-    //     ros_node_handle_.subscribe(kRosDroneProgramTopic, kRosMessageQueueSize,
+    //     ros_node_handle_.subscribe(kRosDroneProgramTopic,
+    //     kRosMessageQueueSize,
     //                                &IO::DroneProgramReceived, this)),
-    droppy_command_subscriber_(ros_node_handle_.subscribe(
-        kRosMissionStatusTopic, kRosMessageQueueSize,
-        &GroundControls::DroppyCommandReceived, this)),
+    droppy_command_subscriber_(
+        ros_node_handle_.subscribe(kRosMissionStatusTopic, kRosMessageQueueSize,
+                                   &IO::DroppyCommandReceived, this)),
     set_mode_service_(ros_node_handle_.serviceClient<::mavros_msgs::SetMode>(
         kRosSetModeService)),
     arm_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandBool>(
@@ -158,8 +159,8 @@ void IO::WriterThread() {
       deployment_output.motor = deployment_motor_setpoint_;
       deployment_output.latch = latch_setpoint_;
       deployment_output.hotwire = hotwire_setpoint_;
-    } else  {
-      // update ROS messages with output from deployment state machine 
+    } else {
+      // update ROS messages with output from deployment state machine
       if (deployment_output.motor != deployment_motor_setpoint_) {
         ::std_msgs::Float32 deployment_motor_setpoint;
         deployment_motor_setpoint.data = deployment_output.motor;
@@ -304,11 +305,12 @@ void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
       deployment_motor_setpoint.data = 0;
     }
     deployment_motor_publisher_.publish(deployment_motor_setpoint);
-    deployment_manual_override_ = true; // if we override deployment with rc, set this to true to allow manual input from groundstation
-  } /*else {
-    deployment_motor_setpoint.data = 0;
-  }*/
-  
+    deployment_manual_override_ =
+        true; // if we override deployment with rc, set this to true to allow
+              // manual input from groundstation
+  }           /*else {
+              deployment_motor_setpoint.data = 0;
+            }*/
 
   bool uas_mission_run_current =
       rc_in.channels[kUasMissionRcChannel - 1] > 1700;
@@ -365,9 +367,9 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
 
 void IO::DroppyCommandReceived(const ::std_msgs::String droppy_command) {
   if (droppy_command.data == "START_DROP") {
-    deployment_motor_direction = 1; // lower ugv TODO check sign
+    deployment_motor_direction_ = 1; // lower ugv TODO check sign
   } else if (droppy_command.data == "CUT_LINE") {
-    deployment_motor_direction = 0;
+    deployment_motor_direction_ = 0;
     cut_line_ = true;
   }
 }
