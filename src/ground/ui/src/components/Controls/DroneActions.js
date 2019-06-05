@@ -142,6 +142,15 @@ class DroneActions extends Component {
                 <Col><Input name='hotwire' type="checkbox" checked={this.state.setpointInputs.hotwire} onChange={this.booleanSetpointChanged}/></Col>
                 <Col><Button name='hotwire' color="primary" onClick={this.sendSetpoint}>Send!</Button></Col>
               </Row>
+              <br/>
+              <Row>
+                <Col>
+                  <span>Deployment Commands:</span>
+                  <Button color="warning" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyUp}>Up</Button>
+                  <Button color="success" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyDown}>Down</Button>
+                  <Button color="danger" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyStop}>Stop</Button>
+                </Col>
+              </Row>
             </Container>
           </ModalBody>
           <ModalFooter>

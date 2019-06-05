@@ -16,6 +16,9 @@ const initialState = {
 
 export default function reducer(state=initialState, action) {
   switch (action.type) {
+    case 'RESET_REDUX_STATE': {
+      return {...initialState, timelineGrammar: state.timelineGrammar}
+    }
     case 'TIMELINE_PROTO_LOADED': {
       return dotProp.set(state, `timelineGrammar`, action.payload);
     }

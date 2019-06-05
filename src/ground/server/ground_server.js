@@ -25,6 +25,10 @@ const pingInterval = 1000 //ms
 const uiSendFrequency = 5; //Hz
 const trackySendFrequency = 5; //Hz
 var telemetry = {};
+var flightControllerState = null;
+var droneArmed = null;
+var droppyReady = false;
+var droveUgv = false;
 var drone_connected = false;
 
 const ugvWaitTimeAfterCut = 10000; // ms TODO decide this
@@ -36,7 +40,7 @@ const io = socketIOServer(server_port);
 const ui_io = io.of('/ui');
 const controls_io = io.of('/ground-controls');
 const ugv_io = io.of('/ugv');
-const tracky_io = io.of('/tracky');
+// const tracky_io = io.of('/tracky');
 const button_panel_io = io.of('/button-panel');
 const fake_drone_io = io.of('/fake-drone');
 
@@ -93,15 +97,15 @@ function connectToInterop(ip, username, password, missionId) {
 /**************************
  * ANTENNA TRACKER
  **************************/
-const trackySendInterval = 1000 / trackySendFrequency;
-setInterval(() => {
-  if (telemetry.sensors) {
-    tracky_io.emit('DRONE_POS', telemetry.sensors);
-  }
-}, trackySendInterval);
-tracky_io.on('connect', (socket) => {
-  console.log("Antenna tracker connected!");
-});
+// const trackySendInterval = 1000 / trackySendFrequency;
+// setInterval(() => {
+//   if (telemetry.sensors) {
+//     tracky_io.emit('DRONE_POS', telemetry.sensors);
+//   }
+// }, trackySendInterval);
+// tracky_io.on('connect', (socket) => {
+//   console.log("Antenna tracker connected!");
+// });
 
 
 /**************************
@@ -117,6 +121,15 @@ controls_io.on('connect', (socket) => {
       if (interopClient) {
         interopClient.newTelemetry(telemetry);
       }
+      if (telemetry.sensors.autopilot_state !== flightControllerState || telemetry.sensors.armed !== droneArmed) {
+        flightControllerState = telemetry.sensors.autopilot_state;
+        droneArmed = telemetry.sensors.armed;
+        if (telemetry.sensors.armed) {  
+          button_panel_io.emit('DRONE_STATE', flightControllerState);
+        } else {
+          button_panel_io.emit('DRONE_STATE', "DISARMED");
+        }
+      }
     }
   }
 
@@ -131,6 +144,10 @@ controls_io.on('connect', (socket) => {
   socket.on('OUTPUT', (output) => {
     if (protobufUtils) {
       telemetry.output = protobufUtils.decodeOutput(output);
+      if (telemetry.output.deploy && !droppyReady) {
+        droppyReady = true;
+        button_panel_io.emit('DROPPY_READY');
+      }
     }
   });
 
@@ -161,14 +178,23 @@ controls_io.on('connect', (socket) => {
       console.log("received: " + local_ui_msg + ": " + data);
       ui_io.emit(local_ui_msg, data);
 
-      if (local_ui_msg === 'DROPPY_COMMAND_RECEIVED' && data === 'CUT_LINE') {
+      if (local_ui_msg === 'DROPPY_COMMAND_RECEIVED' && data === 'CUT_LINE' && !droveUgv) {
+        droveUgv = true;
         setTimeout(() => {
           console.log("Driving the UGV!");
           ugv_io.emit('DRIVE_TO_TARGET');
         }, ugvWaitTimeAfterCut);
       }
+
+      if (local_ui_msg === 'DROPPY_COMMAND_RECEIVED') {
+        button_panel_io.emit('DROPPY_COMMAND_RECEIVED', data);
+      }
     });
   }
+
+  socket.on('disconnect', () => {
+    console.log("ground_controls disconnected");
+  });
 });
 
 
@@ -182,6 +208,26 @@ ugv_io.on('connect', (socket) => {
   socket.on('UGV_MESSAGE', (msg) => {
     if (config.verbose) console.log(msg);
     ui_io.emit('UGV_MESSAGE', msg);
+  });
+
+  socket.on('disconnect', () => {
+    console.log("UGV controls disconnected");
+  });
+});
+
+
+/**************************
+ * BUTTON PANEL SOCKET
+ **************************/
+button_panel_io.on('connect', (socket) => {
+  console.log("button panel connected!");
+  
+  socket.on('CHANGE_DROPPY_STATE', (state) => {
+    controls_io.emit('CHANGE_DROPPY_STATE', state);
+  });
+
+  socket.on('disconnect', () => {
+    console.log("button panel disconnected");
   });
 });
 
@@ -241,7 +287,7 @@ ui_io.on('connect', (socket) => {
 
   socket.on('CONFIGURE_TRACKY_POS', (pos) => {
     console.log("Sending Tracky its estimated position");
-    tracky_io.emit('CONFIGURE_POS', pos);
+    // tracky_io.emit('CONFIGURE_POS', pos);
   });
 
   socket.on('SET_UGV_TARGET', (pos) => {
@@ -257,6 +303,10 @@ ui_io.on('connect', (socket) => {
   socket.on('DISABLE_UGV', () => {
     console.log("Disabling the UGV");
     ugv_io.emit('DISABLE');
+  });
+
+  socket.on('disconnect', () => {
+    console.log("ui disconnected");
   });
 });
 
@@ -316,6 +366,10 @@ fake_drone_io.on('connect', (socket) => {
         interopClient.newTelemetry(telemetry);
       }
     }
+  });
+
+  socket.on('disconnect', () => {
+    console.log("fake drone disconnected");
   });
 });
 

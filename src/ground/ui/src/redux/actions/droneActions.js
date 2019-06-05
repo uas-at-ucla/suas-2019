@@ -17,7 +17,10 @@ function changeDroneState(droneState) {
 
 const DroppyStates = {
   START_DROP: 'START_DROP',
-  CUT_LINE: 'CUT_LINE'
+  CUT_LINE: 'CUT_LINE',
+  MOTOR_UP: 'MOTOR_UP',
+  MOTOR_DOWN: 'MOTOR_DOWN',
+  MOTOR_STOP: 'MOTOR_STOP'
 }
 function changeDroppyState(droppyState) {
   return {
@@ -36,6 +39,9 @@ export default {
   droneThrottleCut: () => changeDroneState(DroneStates.THROTTLE_CUT),
   droppyStart: () => changeDroppyState(DroppyStates.START_DROP),
   droppyCut: () => changeDroppyState(DroppyStates.CUT_LINE),
+  droppyUp: () => changeDroppyState(DroppyStates.MOTOR_UP),
+  droppyDown: () => changeDroppyState(DroppyStates.MOTOR_DOWN),
+  droppyStop: () => changeDroppyState(DroppyStates.MOTOR_STOP),
   compileMission: (commands) => {
     return {
       type: 'TRANSMIT',

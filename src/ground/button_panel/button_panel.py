@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Run on RPi boot: https://www.raspberrypi.org/forums/viewtopic.php?t=172607
+# Run on RPi boot: https://www.raspberrypi.org/documentation/linux/usage/rc-local.md
 
 # IMPORTANT: Enable I2C on the RPi using `sudo raspi-config` -> Interfacing Options
 # See for LCD (Arduino) examples https://github.com/sparkfun/OpenLCD/tree/2829d059a7a7dc137ab48a64771079831a65c3bd/firmware/Examples
@@ -157,11 +157,13 @@ def receiveDroneState(message):
     pi.i2c_write_byte(I2C_BUS, 188 + round(B*29)) # blue
     
 
-delay = 0.5
+delay = 0.25
 
 readyToDrop = False
 dropping = False
 cut = False
+
+readyToDrop = True #TODO testing
 
 def setReadyToDrop():
     global readyToDrop

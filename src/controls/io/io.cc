@@ -373,6 +373,15 @@ void IO::DroppyCommandReceived(const ::std_msgs::String droppy_command) {
     ::std::cout << "Cutting Fishing Line...\n";
     deployment_motor_direction_ = 0;
     cut_line_ = true;
+  } else if (droppy_command.data == "MOTOR_UP") {
+    ::std::cout << "Raising UGV\n";
+    deployment_motor_direction_ = -1;
+  } else if (droppy_command.data == "MOTOR_DOWN") {
+    ::std::cout << "Lowering UGV\n";
+    deployment_motor_direction_ = 1;
+  } else if (droppy_command.data == "MOTOR_STOP") {
+    ::std::cout << "Stop lowering UGV\n";
+    deployment_motor_direction_ = 0;
   }
 }
 
