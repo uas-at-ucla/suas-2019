@@ -1,0 +1,115 @@
+{
+  "ip": "134.209.2.203:8000",
+  "mission": {
+    "id": 2,
+    "flyZones": [
+      {
+        "altitudeMin": 0,
+        "altitudeMax": 750,
+        "boundaryPoints": [
+          {
+            "latitude": 34.1740366127272,
+            "longitude": -118.481801727824
+          },
+          {
+            "latitude": 34.1736993109933,
+            "longitude": -118.48175881248
+          },
+          {
+            "latitude": 34.1730247034811,
+            "longitude": -118.482209423594
+          },
+          {
+            "latitude": 34.1712671480583,
+            "longitude": -118.47791788917
+          },
+          {
+            "latitude": 34.1718530039327,
+            "longitude": -118.476308563762
+          },
+          {
+            "latitude": 34.1751195197079,
+            "longitude": -118.477531651072
+          }
+        ],
+        "isClockwise": false
+      }
+    ],
+    "waypoints": [
+      {
+        "latitude": 34.1727223937838,
+        "longitude": -118.480946269836,
+        "altitude": 150
+      },
+      {
+        "latitude": 34.1732727338677,
+        "longitude": -118.48047420105,
+        "altitude": 200
+      },
+      {
+        "latitude": 34.1732904867139,
+        "longitude": -118.478199687805,
+        "altitude": 200
+      },
+      {
+        "latitude": 34.1731662167122,
+        "longitude": -118.477405753937,
+        "altitude": 200
+      },
+      {
+        "latitude": 34.1724205928592,
+        "longitude": -118.477577415314,
+        "altitude": 200
+      },
+      {
+        "latitude": 34.1718702472184,
+        "longitude": -118.478457179871,
+        "altitude": 250
+      }
+    ],
+    "searchGridPoints": [
+      {
+        "latitude": 34.1740893609268,
+        "longitude": -118.480731693115
+      },
+      {
+        "latitude": 34.1735212733744,
+        "longitude": -118.480366912689
+      },
+      {
+        "latitude": 34.1734325093489,
+        "longitude": -118.477298465576
+      },
+      {
+        "latitude": 34.1745331766663,
+        "longitude": -118.477706161346
+      }
+    ],
+    "offAxisOdlcPos": {
+      "latitude": 34.1737703219967,
+      "longitude": -118.475360363875
+    },
+    "emergentLastKnownPos": {
+      "latitude": 34.1731154785563,
+      "longitude": -118.481216684882
+    },
+    "airDropPos": {
+      "latitude": 34.1723077185993,
+      "longitude": -118.477236286703
+    },
+    "stationaryObstacles": [
+      {
+        "latitude": 34.1748172175147,
+        "longitude": -118.477684703674,
+        "radius": 30,
+        "height": 100
+      },
+      {
+        "latitude": 34.1747796812899,
+        "longitude": -118.48062618357,
+        "radius": 80,
+        "height": 400
+      }
+    ]
+  }
+}
