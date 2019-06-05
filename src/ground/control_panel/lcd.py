@@ -21,29 +21,193 @@ pi.i2c_write_byte(1, 0) # max contrast
 
 pi.i2c_write_device(h, b"UAS at UCLA!!!  UAS at UCLA!!!")
 
-H = 0
-S = 1
-V = 1
 
-while True:
-    R,G,B = colorsys.hsv_to_rgb(H,S,V)
 
-    # Unfortunately, the LCD prints an annoying message every time you change the backlight color/brightness.
-    # This would be easy to remove if we could reprogram it (see top of file).
+# while True:
+#     R,G,B = colorsys.hsv_to_rgb(H,S,V)
 
-    pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
-    pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
+#     # Unfortunately, the LCD prints an annoying message every time you change the backlight color/brightness.
+#     # This would be easy to remove if we could reprogram it (see top of file).
 
-    pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
-    pi.i2c_write_byte(1, 158 + round(G*29)) # green
+#     pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+#     pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
 
-    pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
-    pi.i2c_write_byte(1, 188 + round(B*29)) # blue
+#     pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+#     pi.i2c_write_byte(1, 158 + round(G*29)) # green
 
-    H = H + 0.1
-    if (H >= 1):
-        H = 0
+#     pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+#     pi.i2c_write_byte(1, 188 + round(B*29)) # blue
 
-    time.sleep(3)
+#     H = H + 0.1
+#     if (H >= 1):
+#         H = 0
+
+#     time.sleep(3)
 
 pi.i2c_close(h)
+
+def receiveDroneStateCallback(message):
+    H = 0.0
+    S = 1
+    V = 1
+    
+    pi = pigpio.pi()
+    h = pi.i2c_open(1, LCD_I2C_ADDRESS) # open device at address 0x72 on bus 1
+
+    pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+    pi.i2c_write_byte(1, 0x2D) # Send clear display command
+
+    pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+    pi.i2c_write_byte(1, 0x18) # contrast command
+    pi.i2c_write_byte(1, 0) # max contrast
+
+    if message == "DISARMED":
+        H = 108.0 / 360.0
+        R,G,B = colorsys.hsv_to_rgb(H,S,V)
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 158 + round(G*29)) # green
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 188 + round(B*29)) # blue
+
+        pi.i2c_write_device(h, b"DISARMED")
+
+    elif message == "AUTO.LOITER":
+        H = 60.0 / 360.0
+
+        R,G,B = colorsys.hsv_to_rgb(H,S,V)
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 158 + round(G*29)) # green
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 188 + round(B*29)) # blue
+
+        pi.i2c_write_device(h, b"AUTO.LOITER")
+
+
+    elif message == "AUTO.TAKEOFF":
+        H = 190.0 / 360.0
+
+        R,G,B = colorsys.hsv_to_rgb(H,S,V)
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 158 + round(G*29)) # green
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 188 + round(B*29)) # blue
+
+        pi.i2c_write_device(h, b"AUTO.TAKEOFF")
+
+
+    elif message == "AUTO.LAND":
+        H = 255.0 / 360.0
+
+        R,G,B = colorsys.hsv_to_rgb(H,S,V)
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 158 + round(G*29)) # green
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 188 + round(B*29)) # blue
+
+        pi.i2c_write_device(h, b"AUTO.LAND")
+
+
+    elif message == "OFFBOARD":
+        H = 26.0 / 360.0
+
+        R,G,B = colorsys.hsv_to_rgb(H,S,V)
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 158 + round(G*29)) # green
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 188 + round(B*29)) # blue
+
+        pi.i2c_write_device(h, b"OFFBOARD")
+
+
+    elif message == "MANUAL":
+        H = 276.0 / 360.0
+
+        R,G,B = colorsys.hsv_to_rgb(H,S,V)
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 158 + round(G*29)) # green
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 188 + round(B*29)) # blue
+
+        pi.i2c_write_device(h, b"MANUAL")
+
+
+    elif message == "STABALIZED":
+        H = 170.0 / 360.0
+
+        R,G,B = colorsys.hsv_to_rgb(H,S,V)
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 158 + round(G*29)) # green
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 188 + round(B*29)) # blue
+
+        pi.i2c_write_device(h, b"STABALIZED")
+
+
+    elif message == "POSCTL":
+        H = 224.0 / 360.0
+
+        R,G,B = colorsys.hsv_to_rgb(H,S,V)
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 158 + round(G*29)) # green
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 188 + round(B*29)) # blue
+
+        pi.i2c_write_device(h, b"POSCTL")
+        
+    else:
+        H = 0.0 / 360.0
+
+        R,G,B = colorsys.hsv_to_rgb(H,S,V)
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 128 + round(R*29)) #  white/red
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 158 + round(G*29)) # green
+
+        pi.i2c_write_byte(1, 0x7C) # Put LCD into setting mode
+        pi.i2c_write_byte(1, 188 + round(B*29)) # blue
+        pi.i2c_write_device(h, b"INVALID MESSAGE")
+    
+
+
