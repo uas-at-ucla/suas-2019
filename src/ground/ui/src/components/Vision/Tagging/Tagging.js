@@ -5,7 +5,7 @@ import ReactCrop from 'react-easy-crop';
 import { Button, Modal } from 'reactstrap';
 import * as path from 'path';
 
-import testImage from './testImages/18mmZoom.JPG';
+import testImage from './testImages/pexels-photo-236047.jpeg';
 
 const ListItem = ({ value, onClick }) => (
   <li onClick={onClick}>{value}</li>

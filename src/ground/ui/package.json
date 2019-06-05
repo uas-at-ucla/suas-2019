@@ -6,6 +6,8 @@
   "homepage": "./",
   "dependencies": {
     "electron-is-dev": "^1.0.1",
+    "react-easy-crop": "^1.12.0",
+    "react-select": "^3.0.4",
     "react-websocket": "^2.0.1"
   },
   "devDependencies": {
