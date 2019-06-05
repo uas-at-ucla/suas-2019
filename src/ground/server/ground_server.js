@@ -37,6 +37,7 @@ const ui_io = io.of('/ui');
 const controls_io = io.of('/ground-controls');
 const ugv_io = io.of('/ugv');
 const tracky_io = io.of('/tracky');
+const button_panel_io = io.of('/button-panel');
 const fake_drone_io = io.of('/fake-drone');
 
 // For decoding and encoding drone messages
