@@ -25,7 +25,7 @@ def inRange_wrapHue(img, lower, upper):
     return thresh
 
 # Locate target within binary image
-def find_target(thresh, debug=True):
+def find_target(thresh, hue, debug=True):
     # TODO: why does this happpen?
     if not np.count_nonzero(thresh):
         return None
@@ -56,7 +56,7 @@ def find_target(thresh, debug=True):
     return target
 
 def analyze_one_image(img_dir, img_id, out_dir, display=True, debug=True):
-    img_path = os.path.join(img_dir, '%03d.jpg'%img_id)
+    img_path = os.path.join(img_dir, ('%0' + str(N_DIGITS) + 'd.jpg')%img_id)
     if debug:
         print(img_path)
     img = cv.imread(img_path)
@@ -81,7 +81,7 @@ def analyze_one_image(img_dir, img_id, out_dir, display=True, debug=True):
         thresh = inRange_wrapHue(imgHLS, range_lower(hue), range_upper(hue))
         showThreshold(img_id, thresh, out_dir=out_dir)
         
-        target = find_target(thresh, debug=debug)
+        target = find_target(thresh, hue, debug=debug)
         if target is not None:
             showContour(img_id, img, target, out_dir=out_dir, display=display)
             break

@@ -20,6 +20,9 @@ GND_AREA_MAX = 1.00 ** 2
 # Maximum number of points used to describe contour
 DETAIL_MAX = 200
 
+# Number of digits in the image filepaths
+N_DIGITS = 5
+
 # Create overlap of one bin size and keep threshold centered on hue
 def range_lower(hue):
     return (hue - BIN_SIZE, 0, 32)

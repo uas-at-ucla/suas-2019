@@ -86,10 +86,18 @@ def classifyShape(contour, display=False):
     sf = 1/(mPoly.area**0.5)
     mPoly = shapely.affinity.scale(mPoly, sf, sf, origin=(0,0))
 
-    best, b_shape = mPoly.difference(shapes[0].poly).area, shapes[0]
+    try:
+        best, b_shape = mPoly.difference(shapes[0].poly).area, shapes[0]
+    except shapely.errors.TopologicalError as err:
+        print('Bad countour: {0}'.format(err))
+        return 'Indeterminate'
     for shape in shapes:
         for i in range(1, int(360/shape.delSym) + 1):
-            diff = mPoly.difference(shapely.affinity.rotate(shape.poly, i)).area
+            try:
+                diff = mPoly.difference(shapely.affinity.rotate(shape.poly, i)).area
+            except shapely.errors.TopologicalError as err:
+                print('Bad countour: {0}'.format(err))
+                return 'Indeterminate'
             if diff < best:
                 best, b_shape = diff, shape
 
