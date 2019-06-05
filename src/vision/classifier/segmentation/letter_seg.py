@@ -15,8 +15,12 @@ def letter_seg(path):
 
     #use k-means to convert image to 2 colors
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-    K = 2
+    K = 4
     ret,label,center=cv2.kmeans(Z,K,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+    for x in label[:,0].reshape(IMG_SIZE, IMG_SIZE):
+        for y in x:
+            print(y, end=' ')
+        print('', end='\n')
     center = np.uint8(center)
     res = center[label.flatten()]
     res2 = res.reshape((img.shape))

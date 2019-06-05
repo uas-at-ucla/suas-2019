@@ -9,8 +9,12 @@ N_TEST = 1
 
 print(os.getcwd())
 
-train_dir = '../targets/output/train2/'
-test_dir = '../targets/output/test2/'
+train_dir = 'data/train_many'
+test_dir = 'data/test_many'
+# train_dir = '../kmeans_color_identifier/images/train_many'
+# test_dir = '../kmeans_color_identifier/images/test_many'
+# train_dir = '../targets/output/train2/'
+# test_dir = '../targets/output/test2/'
 
 def get_train_and_test(feature, n_train, n_test):
     (x_train, y_train) = ic.process_data(train_dir, n_train, feature)
@@ -96,7 +100,7 @@ def eval_models(i=1):
     eval_letter_model(i)
 
 if __name__=='__main__':
-    train_alt_letter_model()
-    # train_letter_model(10)
+    # train_alt_letter_model()
+    train_letter_model(10)
     # eval_models(1)
 

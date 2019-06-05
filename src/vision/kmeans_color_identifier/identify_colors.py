@@ -31,7 +31,8 @@ def extract_target(image):
     bgdModel = np.zeros((1,65), np.float64)
     fgdModel = np.zeros((1,65), np.float64)
     h, w = image.shape[:2]    
-    rect = (10, 10, w-60, h-60)
+    rect = (10, 10, w-15, h-15)
+    # rect = (10, 10, w-60, h-60)
 
     cv2.grabCut(image, mask, rect, bgdModel, fgdModel, 5, cv2.GC_INIT_WITH_RECT)
     applied_mask = np.where((mask == 2) | (mask == 0), 0, 1).astype('uint8')

@@ -12,5 +12,6 @@ def test_all_in_dir(dir, out_dir, display=True):
             mask_image(filename, out_dir=out_dir, display=display)
 
 if __name__ == '__main__':
-    test_all_in_dir('images/test2/', 'output/test2/', False)
+    # test_all_in_dir('images/test2/', 'output/test2/', False)
+    test_all_in_dir('images/train_many/', 'output/train_many/', False)
 

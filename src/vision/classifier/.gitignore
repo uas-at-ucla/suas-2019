@@ -4,3 +4,4 @@ shape_model.hdf5
 models/
 .ipynb_checkpoints/
 seg/
+data/
