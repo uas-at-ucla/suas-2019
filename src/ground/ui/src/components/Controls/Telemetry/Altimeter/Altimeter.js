@@ -17,16 +17,18 @@ const mapStateToProps = state => {
 class Altimeter extends Component {
   render() {
     let rel_altitude = 0;
+    if (this.props.telemetry) {
+      rel_altitude = this.props.telemetry.sensors.relative_altitude * FEET_PER_METER;
+    }
+    let percentage = (rel_altitude / MAX_ALT) * 100;
+
     let min = 0;
     let max = Infinity;
     if (this.props.telemetry && this.props.interopData) {
-      rel_altitude = this.props.telemetry.sensors.relative_altitude * FEET_PER_METER;
       let home_alt = this.props.telemetry.sensors.home_altitude * FEET_PER_METER;
       min = this.props.mainFlyZone.altitudeMin - home_alt;
       max = this.props.mainFlyZone.altitudeMax - home_alt;
     }
-    let percentage = (rel_altitude / MAX_ALT) * 100;
-
     if (max > MAX_ALT) max = MAX_ALT;   
 
     return (

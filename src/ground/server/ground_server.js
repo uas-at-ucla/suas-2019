@@ -19,13 +19,15 @@ const loadInteropClient = require('./src/interop_client');
 const config = require('./config');
 
 const server_port = 8081;
+
 var droneIP = inDockerContainer ? "192.168.3.20" : "192.168.1.20";
 const pingInterval = 1000 //ms
 const uiSendFrequency = 5; //Hz
 const trackySendFrequency = 5; //Hz
 var telemetry = {};
-
 var drone_connected = false;
+
+const ugvWaitTimeAfterCut = 10000; // ms TODO decide this
 
 // create server
 const io = socketIOServer(server_port);
@@ -157,6 +159,13 @@ controls_io.on('connect', (socket) => {
     socket.on(local_ui_msg, (data) => {
       console.log("received: " + local_ui_msg + ": " + data);
       ui_io.emit(local_ui_msg, data);
+
+      if (local_ui_msg === 'DROPPY_COMMAND_RECEIVED' && data === 'CUT_LINE') {
+        setTimeout(() => {
+          console.log("Driving the UGV!");
+          ugv_io.emit('DRIVE_TO_TARGET');
+        }, ugvWaitTimeAfterCut);
+      }
     });
   }
 });
@@ -170,11 +179,8 @@ ugv_io.on('connect', (socket) => {
   socket.emit('SET_TARGET', {lat: 38.14617, lng: -76.42642}); // Official competition destination
 
   socket.on('UGV_MESSAGE', (msg) => {
-    if (protobufUtils) {
-      msg = protobufUtils.decodeUGV_Message(msg);
-      console.log(msg);
-      ui_io.emit('UGV_MESSAGE', msg);
-    }
+    if (config.verbose) console.log(msg);
+    ui_io.emit('UGV_MESSAGE', msg);
   });
 });
 
@@ -244,7 +250,12 @@ ui_io.on('connect', (socket) => {
 
   socket.on('DRIVE_UGV', () => {
     console.log("Driving the UGV!");
-    ugv_io.emit('DRIVE_TO_TARGET'); // TODO automatically send to UGV when it hits the ground
+    ugv_io.emit('DRIVE_TO_TARGET');
+  });
+
+  socket.on('DISABLE_UGV', () => {
+    console.log("Disabling the UGV");
+    ugv_io.emit('DISABLE');
   });
 });
 
