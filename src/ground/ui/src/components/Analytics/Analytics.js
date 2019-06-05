@@ -17,11 +17,13 @@ const mapStateToProps = state => {
     telemetry: state.telemetry.droneTelemetry,
     playback: state.telemetry.playback,
     interopData: state.mission.interopData,
+    recording: state.telemetry.recording,
+    telemetryData: state.telemetry.telemetryData,
   };
 }
 
 var loadedTelemetry;
-var telemetryData = [];
+//var telemetryData = [];
 //var recording = false;
 //var usingLoaded = false;
 //var isPaused = false;
@@ -35,13 +37,15 @@ const mapDispatchToProps = {
   },
   loadInteropData: function(data) {
     return {type: 'INTEROP_DATA', payload: data}
+  },
+  toggleRecording: function() {
+    return {type: 'TOGGLE_RECORD'}
   }
 }; //TODO Make action for recording telemetry, and action for starting playback
 
 
 class Analytics extends Component {
   state = {
-    recording: false,
     usingLoaded: false,
     isPaused: false
   }
@@ -52,11 +56,11 @@ class Analytics extends Component {
     this.fileInput = React.createRef();
   }
 
-  componentDidUpdate(prevProps) {
-    if (this.state.recording && prevProps.telemetry !== this.props.telemetry) {
-      telemetryData.push(this.props.telemetry)
-    }
-  }
+  // componentDidUpdate(prevProps) {
+  //   if (this.props.recording && prevProps.telemetry !== this.props.telemetry) {
+  //     telemetryData.push(this.props.telemetry)
+  //   }
+  // }
   render () {
     return (  
       <Container className="Analytics">
@@ -73,12 +77,12 @@ class Analytics extends Component {
 
           <Row>
             <Col>
-            <Button size="lg" color={this.state.recording ? "danger" : "secondary"} onClick={this.toggleRecord}> 
-              {this.state.recording ? "Save" : "Record"}
+            <Button size="lg" color={this.props.recording ? "danger" : "secondary"} onClick={this.toggleRecord}> 
+              {this.props.recording ? "Save" : "Record"}
             </Button>
             </Col>
           </Row>
-          <Row><Col>Telemetry States Recorded: <b>{telemetryData.length}</b></Col></Row>
+          <Row><Col>Telemetry States Recorded: <b>{this.props.telemetryData.length}</b></Col></Row>
           
 
           <br />
@@ -145,20 +149,20 @@ class Analytics extends Component {
   }
 
   downloadTelemetry() {
-    downloadToBrowser("telemetry.json", JSON.stringify(telemetryData,null,2));
+    downloadToBrowser("telemetry.json", JSON.stringify(this.props.telemetryData,null,2));
   }
 
   toggleRecord = () => {
     
-    if (this.state.recording){
+    if (this.props.recording){
       this.downloadTelemetry();
       var i
-      var l = telemetryData.length
+      var l = this.props.telemetryData.length
       for (i = 0; i < l; i++){
-        telemetryData.pop()
+        this.props.telemetryData.pop()
       }
     }
-    this.setState({recording: !(this.state.recording)});
+    this.props.toggleRecording();
   }
 
   handleSubmit(event) {

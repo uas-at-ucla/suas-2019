@@ -3,6 +3,8 @@
 const initialState = {
   droneTelemetry: null,
   playback: false,
+  recording: false,
+  telemetryData: [],
   pingDelay: null,
   mapCenter: { lat: 38.147483, lng: -76.427778 }
 };
@@ -14,13 +16,21 @@ export default function reducer(state=initialState, action) {
     }
     case 'TELEMETRY': {
       if (!state.playback) {
-        return {...state, droneTelemetry: action.payload};
+        let newState = {...state, droneTelemetry: action.payload};
+        // if recording add to list
+        if (state.recording) {
+          newState.telemetryData.push(action.payload)
+        }
+        return newState;
       } else {
         return state;
       }
     }
     case 'TOGGLE_PLAYBACK': {
       return {...state, playback: !state.playback};
+    }
+    case 'TOGGLE_RECORD': {
+      return {...state, recording: !state.recording}
     }
     case 'PLAYBACK': {
       return {...state, droneTelemetry: action.payload};

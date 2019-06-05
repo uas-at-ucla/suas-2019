@@ -88,6 +88,8 @@ class MissionPlanner extends Component {
         longitude: long,
       }
     }
+
+    // google maps javascript api closest line
     this.props.addCommand("off_axis_command", off_axis_command, this.props.protoInfo)
 
   }
