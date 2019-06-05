@@ -5,7 +5,12 @@ services:
     image: visiondb:latest
     command: pipenv run python manage.py runserver 0.0.0.0:8000
     volumes:
-      - vision_db:/uas/data
+      - type: volume
+        source: vision_db
+        target: /uas/data
+      - type: bind
+        source: ./static
+        target: /uas/static
     ports:
       - 8000:8000
     depends_on:

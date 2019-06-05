@@ -6,6 +6,7 @@ import GoogleMap from '../../utils/GoogleMap/GoogleMap';
 import HeatmapLayer from "react-google-maps/lib/components/visualization/HeatmapLayer";
 import './Map.css';
 import { Link } from "react-router-dom";
+import Websocket from 'react-websocket';
 
 const google = window.google;
 
@@ -14,6 +15,7 @@ class Map extends Component {
     super();
 
     this.state = {
+      images: [],
       markers: [
         {
           position: {
@@ -230,6 +232,44 @@ class Map extends Component {
     }
   }
 
+  handleImageData(data) {
+    let newItem = JSON.parse(data);
+    if (!newItem.id) { return; } // Not an update to an image (e.g. "connection successful to db")
+    this.setState(state => {
+      var imgFound = false;
+      // Update image if it was already in the state
+      var images = state.images.map((img) => {
+        if (img.id === newItem.id) {
+          imgFound = true;
+          return newItem;
+        } else {
+          return img;
+        }
+      });
+      // Add image to state if it is a new image
+      if (!imgFound) {
+        images = state.images.concat(newItem);
+      }
+      return {
+        images,
+      };
+    });
+  }
+
+  componentDidMount() {
+    // Fetch images from db
+    fetch("http://localhost:8000/api/data?format=json")
+      .then(response => response.json())
+      .then(
+        (data) => {
+          this.setState({ images: data });
+        },
+        (error) => {
+          alert(error);
+        }
+      )
+  }
+
   render() {
     let customMarkers;
     if (this.state.markers) {
@@ -251,6 +291,8 @@ class Map extends Component {
         {/* <div className="tagging">Tagging</div>
         <div className="pipeline">Pipeline</div> */}
         <div className="Map">
+          <Websocket url='ws://localhost:8000/ws/image-updates/'
+              onMessage={this.handleImageData.bind(this)}/>
           <GoogleMap
             defaultZoom={16}
             defaultCenter={{lat: 37.782551, lng: - 122.445368}}
