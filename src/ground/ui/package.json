@@ -5,7 +5,8 @@
   "main": "electron.js",
   "homepage": "./",
   "dependencies": {
-    "electron-is-dev": "^1.0.1"
+    "electron-is-dev": "^1.0.1",
+    "react-websocket": "^2.0.1"
   },
   "devDependencies": {
     "bootstrap": "^4.1.2",
