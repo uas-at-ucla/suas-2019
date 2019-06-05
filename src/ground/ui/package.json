@@ -8,7 +8,8 @@
     "@material-ui/core": "^4.0.1",
     "@material-ui/icons": "^4.0.1",
     "electron-is-dev": "^1.0.1",
-    "react-easy-crop": "^1.12.0"
+    "react-easy-crop": "^1.12.0",
+    "react-scrollable-list": "^1.2.0"
   },
   "devDependencies": {
     "@grpc/proto-loader": "^0.4.0",

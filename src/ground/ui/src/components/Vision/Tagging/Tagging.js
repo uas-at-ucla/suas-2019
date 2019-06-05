@@ -2,10 +2,28 @@ import React, { Component } from 'react';
 import Select from 'react-select';
 import './Tagging.css';
 import ReactCrop from 'react-easy-crop';
-// import 'react-image-crop/dist/ReactCrop.css';
 import { Button, Modal } from 'reactstrap';
+import * as path from 'path';
 
 import testImage from './testImages/18mmZoom.JPG';
+
+const ListItem = ({ value, onClick }) => (
+  <li onClick={onClick}>{value}</li>
+);
+
+const List = ({ items, onItemClick }) => (
+  (items != null) ? (
+    <ul>
+      {
+        items.map((item, i) => <ListItem key={i} value={item} onClick={onItemClick} />)
+      }
+    </ul>) : null
+);
+
+const electron = window.require('electron');
+const fs = electron.remote.require('fs');
+const imagePath = "../ui/src/components/Vision/Tagging/testImages/";
+let images = fs.readdirSync(imagePath);
 
 class Tagging extends Component {
   constructor(props) {
@@ -31,7 +49,8 @@ class Tagging extends Component {
       zoom: 1,
       aspect: 4 / 3,
       displayCropper: false,
-      croppedAreaPixels: null,
+      croppedAreaPixels: null, //result from image crop
+      imageList: images,
     };
     this.handleSubmit = this.handleSubmit.bind(this);
     this.handleChange = this.handleChange.bind(this);
@@ -63,24 +82,15 @@ class Tagging extends Component {
       }
     });
   }
-
-  // handleOnCropChange = (crop) => {
-  //   // console.log("crop", crop);
-  //   this.setState({ crop: crop });
-  // }
-
-  // onCropComplete = (crop, pixels) => {
-  // }
-
   handleRestore = () => {
     this.setState({
       displayImage: this.state.selectedImage,
-      croppedImage: this.state.selectedImage,
+      croppedImage: null,
       zoom: 1,
     });
   }
 
-  handleCropClose() {
+  handleCropComplete() {
     // let crop = this.state.crop;
     // let croppedImg = this.getCroppedImg(this.refImageCrop, crop);
     // console.log("width", croppedImg.width);
@@ -133,13 +143,28 @@ class Tagging extends Component {
   }
 
   onCropComplete = (croppedArea, croppedAreaPixels) => {
-    this.setState({croppedAreaPixels: croppedAreaPixels});
+    this.setState({ croppedAreaPixels: croppedAreaPixels });
     console.log("croppedAreaPixels", croppedAreaPixels);
     // this.setState({crop: croppedArea});
   }
 
   onZoomChange = zoom => {
     this.setState({ zoom })
+  }
+
+  handleListClick = (e) => {
+    let imageP = imagePath + e.target.innerHTML;
+    fs.readFile(imageP, (err, data) => {
+      if (err) {
+        console.error(err)
+        return
+      }
+      let extensionName = path.extname(imageP);
+      let base64Image = new Buffer(data, 'binary').toString('base64');
+      let imgSrcString = `data:image/${extensionName.split('.').pop()};base64,${base64Image}`;
+      this.setState({ selectedImage: imgSrcString });
+      this.setState({ displayImage: imgSrcString });
+    })
   }
 
   render() {
@@ -179,23 +204,23 @@ class Tagging extends Component {
             {this.state.displayCropper ?
               <div>
                 <Button variant="primary" primary={true} onClick={this.handleRestore}>Restore</Button>
-                <Button variant="primary" primary={true} keyboardFocused={true} onClick={this.handleCropClose} >Crop</Button>
+                <Button variant="primary" primary={true} keyboardFocused={true} onClick={this.handleCropComplete} >Crop</Button>
               </div> : null}
 
           </div>
 
         </form>
 
+        <div className="imageList">
+          <div className="scroller">
+            <List items={this.state.imageList} onItemClick={this.handleListClick} />
+          </div>
+        </div>
+
         <div className="imageButton">
           <Button variant="primary" onClick={this.handleOpen}>Toggle image cropper</Button>
           {this.state.displayCropper ?
             <div className="imageCrop">
-              {/* <ReactCrop
-                src={this.state.displayImage}
-                crop={this.state.crop}
-                // onImageLoaded={this.onImageLoaded}
-                onComplete={this.onCropComplete}
-                onChange={this.handleOnCropChange} /> */}
               <ReactCrop
                 image={this.state.displayImage}
                 crop={this.state.crop}
