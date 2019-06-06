@@ -6,9 +6,11 @@ namespace ground_controls {
 namespace timeline {
 namespace ground2drone_visitor {
 
-Ground2DroneVisitor::Ground2DroneVisitor() {}
+Ground2DroneVisitor::Ground2DroneVisitor() : 
+  ground_program_(nullptr), current_position_(nullptr) {}
 
 DroneProgram Ground2DroneVisitor::Process(GroundProgram *input_program) {
+  ground_program_ = input_program;
   return Visit(input_program);
 }
 
@@ -159,17 +161,42 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
   // calculating a safe path to travel and commanding the drone to follow this
   // path using TranslateCommand.
 
-  // TODO(RyanT): Add obstacle avoidance calculations here. Currently, this
-  // flies
-  // directly to the goal.
-  {
+  ::lib::Position3D end = {n->goal().latitude(),
+                    n->goal().longitude(),
+                    n->goal().altitude()};
+
+  ::std::vector<::lib::Position3D> avoidance_path;
+  
+  if(!current_position_) {
+    avoidance_path.push_back(end);
+  } else {
+    avoidance_path = rrt_avoidance_.Process(*current_position_, end, *ground_program_);
+    delete current_position_;
+  }
+
+  // Add the path for avoiding obstacles as a list of raw goto commands,
+  // which will not undergo additional lower-level rrt calculations by the
+  // preprocessor.
+  for (::lib::Position3D goto_step : avoidance_path) {
     DroneCommand *translate_cmd = new DroneCommand();
     TranslateCommand *translate = translate_cmd->mutable_translate_command();
-    translate->set_allocated_goal(n->mutable_goal());
+
+    ::lib::mission_manager::Position3D *goto_raw_goal =
+        new ::lib::mission_manager::Position3D();
+    goto_raw_goal->set_latitude(goto_step.latitude);
+    goto_raw_goal->set_longitude(goto_step.longitude);
+    goto_raw_goal->set_altitude(goto_step.altitude);
+
+    translate->set_allocated_goal(goto_raw_goal);
     translate->set_come_to_stop(false);
+
     drone_program.mutable_commands()->AddAllocated(translate_cmd);
   }
 
+  // Set current position to last command's end
+  current_position_ = new ::lib::Position3D(end);
+
+  // Return drone program
   return drone_program;
 }
 

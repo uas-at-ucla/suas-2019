@@ -1,5 +1,6 @@
 #pragma once
 
+#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/rrt_avoidance/2dplane/2dplane.hpp"
@@ -15,7 +16,7 @@ class RRTAvoidance {
   RRTAvoidance();
   ::std::vector<Position3D>
   Process(Position3D start, Position3D end,
-          ::lib::mission_manager::Obstacles obstacles);
+          ::src::controls::ground_controls::timeline::GroundProgram ground_program);
 
  private:
   ::std::shared_ptr<GridStateSpace> state_space_;
