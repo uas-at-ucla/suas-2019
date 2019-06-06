@@ -22,6 +22,9 @@ IO::IO() :
     deployment_motor_setpoint_(0.0),
     latch_setpoint_(true),
     hotwire_setpoint_(false),
+    deployment_manual_override_(false),
+    deployment_motor_direction_(0),
+    cut_line_(false),
     running_(true),
     ros_node_handle_(),
     sensors_publisher_(ros_node_handle_.advertise<::src::controls::Sensors>(
@@ -60,9 +63,13 @@ IO::IO() :
         kRosStateTopic, kRosMessageQueueSize, &IO::StateReceived, this)),
     imu_subscriber_(ros_node_handle_.subscribe(
         kRosImuTopic, kRosMessageQueueSize, &IO::ImuReceived, this)),
-    drone_program_subscriber_(
-        ros_node_handle_.subscribe(kRosDroneProgramTopic, kRosMessageQueueSize,
-                                   &IO::DroneProgramReceived, this)),
+    // drone_program_subscriber_(
+    //     ros_node_handle_.subscribe(kRosDroneProgramTopic,
+    //     kRosMessageQueueSize,
+    //                                &IO::DroneProgramReceived, this)),
+    droppy_command_subscriber_(
+        ros_node_handle_.subscribe(kRosMissionStatusTopic, kRosMessageQueueSize,
+                                   &IO::DroppyCommandReceived, this)),
     set_mode_service_(ros_node_handle_.serviceClient<::mavros_msgs::SetMode>(
         kRosSetModeService)),
     arm_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandBool>(
@@ -144,11 +151,33 @@ void IO::WriterThread() {
     // Calculate deployment output.
     ::lib::deployment::Input deployment_input;
     ::lib::deployment::Output deployment_output;
-    deployment_input.direction = 0;
-    deployment_output.motor = deployment_motor_setpoint_;
-    deployment_output.latch = latch_setpoint_;
-    deployment_output.hotwire = hotwire_setpoint_;
+    deployment_input.direction = deployment_motor_direction_;
+    deployment_input.cut = cut_line_;
     deployment_.RunIteration(deployment_input, deployment_output);
+
+    // if (deployment_manual_override_) {
+    //   deployment_output.motor = deployment_motor_setpoint_;
+    //   deployment_output.latch = latch_setpoint_;
+    //   deployment_output.hotwire = hotwire_setpoint_;
+    // } else {
+    //   // update ROS messages with output from deployment state machine
+    //   if (abs(deployment_output.motor - deployment_motor_setpoint_) > 0.001)
+    //   {
+    //     ::std_msgs::Float32 deployment_motor_setpoint;
+    //     deployment_motor_setpoint.data = deployment_output.motor;
+    //     deployment_motor_publisher_.publish(deployment_motor_setpoint);
+    //   }
+    //   if (deployment_output.latch != latch_setpoint_) {
+    //     ::std_msgs::Bool latch_setpoint;
+    //     latch_setpoint.data = deployment_output.latch;
+    //     latch_publisher_.publish(latch_setpoint);
+    //   }
+    //   if (deployment_output.hotwire != hotwire_setpoint_) {
+    //     ::std_msgs::Bool hotwire_setpoint;
+    //     hotwire_setpoint.data = deployment_output.hotwire;
+    //     hotwire_publisher_.publish(hotwire_setpoint);
+    //   }
+    // }
 
     // Write out actuators.
     WriteAlarm(should_alarm);
@@ -269,17 +298,20 @@ void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   }
 
   int deployment_rc_in = rc_in.channels[kDeploymentMotorRcChannel - 1];
-  ::std_msgs::Float32 deployment_motor_setpoint;
   if (deployment_rc_in > 900) {
+    ::std_msgs::Float32 deployment_motor_setpoint;
     deployment_motor_setpoint.data =
         ::std::max(::std::min((deployment_rc_in - 1500) / 500.0, 1.0), -1.0);
     if (::std::abs(deployment_motor_setpoint.data) < 0.1) {
       deployment_motor_setpoint.data = 0;
     }
-  } else {
-    deployment_motor_setpoint.data = 0;
-  }
-  deployment_motor_publisher_.publish(deployment_motor_setpoint);
+    deployment_motor_publisher_.publish(deployment_motor_setpoint);
+    deployment_manual_override_ =
+        true; // if we override deployment with rc, set this to true to allow
+              // manual input from groundstation
+  }           /*else {
+              deployment_motor_setpoint.data = 0;
+            }*/
 
   bool uas_mission_run_current =
       rc_in.channels[kUasMissionRcChannel - 1] > 1700;
@@ -326,12 +358,36 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
   led_strip_.set_last_imu(::ros::Time::now().toSec());
 }
 
-void IO::DroneProgramReceived(
-    const ::src::controls::ground_controls::timeline::DroneProgram
-        drone_program) {
-  ROS_INFO("Received drone program!");
-  drone_program_ = drone_program;
-  should_override_alarm_ = true;
+// void IO::DroneProgramReceived(
+//     const ::src::controls::ground_controls::timeline::DroneProgram
+//         drone_program) {
+//   ROS_INFO("Received drone program!");
+//   drone_program_ = drone_program;
+//   should_override_alarm_ = true;
+// }
+
+void IO::DroppyCommandReceived(const ::std_msgs::String droppy_command) {
+  if (droppy_command.data == "START_DROP") {
+    ROS_INFO_THROTTLE(1, "Initiating UGV Drop");
+    deployment_motor_direction_ = 1;
+  } else if (droppy_command.data == "CUT_LINE") {
+    ROS_INFO_THROTTLE(1, "Cutting Fishing Line");
+    deployment_motor_direction_ = 0;
+    cut_line_ = true;
+  } else if (droppy_command.data == "MOTOR_UP") {
+    ROS_INFO_THROTTLE(1, "Raising UGV");
+    deployment_motor_direction_ = -1;
+  } else if (droppy_command.data == "MOTOR_DOWN") {
+    ROS_INFO_THROTTLE(1, "Lowering UGV");
+    deployment_motor_direction_ = 1;
+  } else if (droppy_command.data == "MOTOR_STOP") {
+    ROS_INFO_THROTTLE(1, "Stop lowering UGV");
+    deployment_motor_direction_ = 0;
+  } else if (droppy_command.data == "CANCEL_DROP") {
+    ROS_INFO_THROTTLE(1, "Cancel drop");
+    deployment_motor_direction_ = 0;
+    // TODO trigger mission to move on to the next command
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -402,7 +458,7 @@ void IO::WriteDeployment(::lib::deployment::Output &output) {
   // Write motor.
   set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin,
                     output.motor * (output.motor >= 0 ? 1 : -1) * 100);
-  gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, output.motor < 0);
+  gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, output.motor > 0);
 
   // Write hotwire.
   gpio_write(pigpio_, kDeploymentHotwireGPIOPin, output.hotwire);
@@ -464,7 +520,7 @@ void IO::PixhawkSendModePosedge(::std::string mode, bool signal) {
 
 // Send a global position setpoint to the Pixhawk, up to a maximum rate. Takes
 // in latitude, longitude, altitude (relative to home position), and yaw
-// (in degrees, relative to north CCW).
+// (in degrees, relative to north CW).
 void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
                                       double altitude, double yaw) {
 
@@ -485,7 +541,7 @@ void IO::PixhawkSetGlobalPositionGoal(double latitude, double longitude,
 
   // Base all altitude setpoints off home altitude.
   double home_altitude = ros_to_proto_.GetSensors().home_altitude();
-  double yaw_radians = ::std::fmod(yaw + 90.0, 360.0) * M_PI / 180.0;
+  double yaw_radians = ::std::fmod(yaw - 90.0, 360.0) * -M_PI / 180.0;
 
   /*
   // Find WGS84 altitude to send as global position setpoint.

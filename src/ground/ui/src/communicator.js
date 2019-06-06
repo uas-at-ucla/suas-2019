@@ -29,7 +29,8 @@ class Communicator {
       'HOTWIRE_SETPOINT',
       'INTEROP_DATA',
       'PING',
-      'UGV_MESSAGE'
+      'UGV_MESSAGE',
+      'DROPPY_COMMAND_RECEIVED'
     ];
     for (let message of basic_messages) {
       this.socket.on(message, (data) => {

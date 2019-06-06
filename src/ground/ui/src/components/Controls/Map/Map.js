@@ -7,12 +7,13 @@ import missionActions from 'redux/actions/missionActions';
 import { selector } from 'redux/store';
 import GoogleMap from 'components/utils/GoogleMap/GoogleMap';
 import InteropItems from './InteropItems';
-import DroneMarker from './DroneMarker';
+import VehicleMarkers from './VehicleMarkers'
 
 const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
     commandAnimate: state.mission.commandAnimate,
+    defaultAltitude: state.mission.defaultAltitude,
     mapCenter: state.telemetry.mapCenter,
     commandPoints: derivedData.mission.commandPoints,
     droneProgramPath: derivedData.mission.droneProgramPath,
@@ -61,7 +62,7 @@ class Map extends Component {
           onClick ={this.onMapClick}
           onDblClick={this.mapDblClick}
         >
-          <DroneMarker/>
+          <VehicleMarkers/>
           <InteropItems isOpen={this.state.isOpen} toggleOpen={this.toggleOpen} />
 
           {this.props.commandPoints.map((commandPoint, index) => 
@@ -128,16 +129,16 @@ class Map extends Component {
   }
 
   mapDblClick = (event) => {
-    this.addWaypointCommand(event.latLng.lat(), event.latLng.lng());
+    this.addFlyThroughCommand(event.latLng.lat(), event.latLng.lng());
   }
 
-  addWaypointCommand = (lat, lng) => {
+  addFlyThroughCommand = (lat, lng) => {
     let defaultWaypointCommand = { goal: {
       latitude: lat,
       longitude: lng,
-      altitude: 100
+      altitude: this.props.defaultAltitude
     }}
-    this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
+    this.props.addFlyThroughCommand(defaultWaypointCommand, this.props.protoInfo);
   }
 }
 

@@ -2,6 +2,7 @@
 
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
+#include "lib/rrt_avoidance/rrt_avoidance.h"
 
 // using protobuf messages defined in this namespace
 using namespace lib::mission_manager;
@@ -27,6 +28,7 @@ class Ground2DroneVisitor {
   // Drone language visitors.
   DroneProgram Visit(GroundProgram *n);
   DroneProgram Visit(GroundCommand *n);
+  DroneProgram Visit(FlyThroughCommand *n);
   DroneProgram Visit(WaypointCommand *n);
   DroneProgram Visit(UgvDropCommand *n);
   DroneProgram Visit(SurveyCommand *n);
@@ -35,6 +37,11 @@ class Ground2DroneVisitor {
 
   // Intermediate language visitors.
   DroneProgram Visit(GotoCommand *n);
+
+  // Avoidance stuff
+  GroundProgram *ground_program_;
+  ::lib::Position3D *current_position_;
+  ::lib::rrt_avoidance::RRTAvoidance rrt_avoidance_;
 };
 
 } // namespace ground2drone_visitor
