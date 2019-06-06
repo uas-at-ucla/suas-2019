@@ -98,6 +98,7 @@ class DroneActions extends Component {
           } */}
           {/* <button id="failsafeButton" onClick={()=>this.toggleWithName("End Mission", this.props.endMission)}>End Mission</button> */}
           <button id="landButton" disabled={disableBtns && !this.props.dropReady} onClick={()=>this.toggleWithName("Start UGV Drop", this.props.droppyStart)}>Start Drop</button>
+          <button id="throttleCutButton" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={()=>this.toggleWithName("Cancel Drop", this.props.droppyCancel)}>{"Cancel Drop"}</button>
           <button id="takeoffButton" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={()=>this.toggleWithName("Cut Wire & Drive", this.props.droppyCut)}>{"Cut Wire & Drive"}</button>
 
           {/* <button id="takeoffButton" onClick={()=>this.toggleWithName("Takeoff", this.props.droneTakeoff)}>Takeoff</button> */}

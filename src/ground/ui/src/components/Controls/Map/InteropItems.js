@@ -10,6 +10,7 @@ import MapElementWithInfo from 'components/utils/MapElementWithInfo';
 import camera from './icons/camera.png'
 import person from './icons/Person-Icon.png'
 import bomb from './icons/bomb_drop.png'
+import wheel from './icons/wheel.png'
 import blueMarker from './icons/blue_marker.png'
 
 const FEET_PER_METER = 3.28084;
@@ -18,6 +19,7 @@ const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
     interopData: state.mission.interopData,
+    ugvDestination: state.mission.ugvDestination,
     protoInfo: derivedData.mission.protoInfo,
     mainFlyZone: derivedData.mission.mainFlyZone,
     defaultAltitude: state.mission.defaultAltitude,
@@ -80,6 +82,19 @@ class InteropItems extends Component {
 
     return (
       <span>
+        <MapElementWithInfo
+          Element={Marker} name="ugvDest" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
+          position={this.props.ugvDestination}
+          icon={{
+            url: wheel,
+            scaledSize: {width: 25, height: 25},
+            anchor: {x: 12.5, y: 12.5}
+          }}
+        >
+          <div>UGV Destionation</div>
+          <div>{this.props.ugvDestination.lat}, {this.props.ugvDestination.lng}</div>
+        </MapElementWithInfo>
+
         {this.props.interopData ? <span>
           <MapElementWithInfo
             Element={Marker} name="airDropPosition" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}

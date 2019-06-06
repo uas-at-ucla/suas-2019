@@ -20,7 +20,8 @@ const DroppyStates = {
   CUT_LINE: 'CUT_LINE',
   MOTOR_UP: 'MOTOR_UP',
   MOTOR_DOWN: 'MOTOR_DOWN',
-  MOTOR_STOP: 'MOTOR_STOP'
+  MOTOR_STOP: 'MOTOR_STOP',
+  CANCEL_DROP: 'CANCEL_DROP'
 }
 function changeDroppyState(droppyState) {
   return {
@@ -42,6 +43,7 @@ export default {
   droppyUp: () => changeDroppyState(DroppyStates.MOTOR_UP),
   droppyDown: () => changeDroppyState(DroppyStates.MOTOR_DOWN),
   droppyStop: () => changeDroppyState(DroppyStates.MOTOR_STOP),
+  droppyCancel: () => changeDroppyState(DroppyStates.CANCEL_DROP),
   compileMission: (commands) => {
     return {
       type: 'TRANSMIT',

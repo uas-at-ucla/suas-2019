@@ -86,6 +86,9 @@ export default function reducer(state=initialState, action) {
       };
     }
     case 'UGV_MESSAGE': {
+      if (action.payload.status === undefined) {
+        return state;
+      }
       return {...state, ugvStatus: action.payload.status};
     }
     default: {

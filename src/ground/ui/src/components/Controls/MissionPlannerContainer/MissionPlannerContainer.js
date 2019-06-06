@@ -14,6 +14,7 @@ const mapStateToProps = state => {
     missionUploaded: state.mission.missionUploaded,
     dropReady: state.telemetry.droneTelemetry ? state.telemetry.droneTelemetry.output.deploy : null,
     lastDroppyCommand: state.mission.lastDroppyCommand,
+    ugvStatus: state.telemetry.ugvStatus,
     protoInfo: selector(state).mission.protoInfo
   };
 };
@@ -58,7 +59,8 @@ class MissionPlannerContainer extends Component {
         </div>
 
         <TabContent activeTab={this.state.activeTab}>
-          <span>Drop Status: {this.props.lastDroppyCommand != null ? this.props.lastDroppyCommand : this.props.dropReady != null ? (this.props.dropReady ? "READY TO DROP" : "NOT READY") : "NONE"}</span>
+          <div>Drop Status: {this.props.lastDroppyCommand != null ? this.props.lastDroppyCommand : this.props.dropReady != null ? (this.props.dropReady ? "READY TO DROP" : "NOT READY") : "NONE"}</div>
+          <div>UGV is Still? {this.props.ugvStatus ? this.props.ugvStatus.is_still != null ? (this.props.ugvStatus.is_still ? "YES" : "NO") : "UNKNOWN" : "UNKNOWN"}</div>
           {/* <span>Mission Status: {this.props.missionStatus}</span> */}
           <TabPane tabId="plan">
             <div className="SmallMissionPlanner">

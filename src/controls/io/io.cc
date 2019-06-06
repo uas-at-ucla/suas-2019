@@ -382,6 +382,10 @@ void IO::DroppyCommandReceived(const ::std_msgs::String droppy_command) {
   } else if (droppy_command.data == "MOTOR_STOP") {
     ::std::cout << "Stop lowering UGV\n";
     deployment_motor_direction_ = 0;
+  } else if (droppy_command.data == "CANCEL_DROP") {
+    ::std::cout << "Canceling Drop\n";
+    deployment_motor_direction_ = 0;
+    // TODO trigger mission to move on to the next command
   }
 }
 

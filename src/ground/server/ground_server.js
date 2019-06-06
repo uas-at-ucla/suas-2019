@@ -27,11 +27,19 @@ const trackySendFrequency = 5; //Hz
 var telemetry = {};
 var flightControllerState = null;
 var droneArmed = null;
-var droppyReady = false;
-var droveUgv = false;
 var drone_connected = false;
 
-const ugvWaitTimeAfterCut = 10000; // ms TODO decide this
+//TODO decide these
+const ugvWaitAfterUnlatchTime = 15000; //ms
+const ugvStillTimeThreshold = 5000; //ms
+const ugvWaitTimeAfterCut = 10000; // ms
+var droppyReady = false;
+var dropping = false;
+var ugvUnlatchTime = 0;
+var ugvIsStill = false;
+var ugvBecameStillTime = 0;
+var droveUgv = false;
+
 
 // create server
 const io = socketIOServer(server_port);
@@ -178,15 +186,18 @@ controls_io.on('connect', (socket) => {
       console.log("received: " + local_ui_msg + ": " + data);
       ui_io.emit(local_ui_msg, data);
 
-      if (local_ui_msg === 'DROPPY_COMMAND_RECEIVED' && data === 'CUT_LINE' && !droveUgv) {
-        droveUgv = true;
-        setTimeout(() => {
-          console.log("Driving the UGV!");
-          ugv_io.emit('DRIVE_TO_TARGET');
-        }, ugvWaitTimeAfterCut);
-      }
-
       if (local_ui_msg === 'DROPPY_COMMAND_RECEIVED') {
+        if (data === 'CUT_LINE' && !droveUgv) {
+          droveUgv = true;
+          setTimeout(() => {
+            console.log("Driving the UGV!");
+            ugv_io.emit('DRIVE_TO_TARGET');
+          }, ugvWaitTimeAfterCut);
+        } else if (data === 'START_DROP') {
+          dropping = true;
+          ugvUnlatchTime = Date.now();
+        }
+
         button_panel_io.emit('DROPPY_COMMAND_RECEIVED', data);
       }
     });
@@ -208,6 +219,21 @@ ugv_io.on('connect', (socket) => {
   socket.on('UGV_MESSAGE', (msg) => {
     if (config.verbose) console.log(msg);
     ui_io.emit('UGV_MESSAGE', msg);
+
+    if (msg.status && msg.status.is_still != null) {
+      let currentTime = Date.now();
+      if (currentTime - ugvUnlatchTime > ugvWaitAfterUnlatchTime) {
+        if (dropping && !ugvIsStill && msg.status.is_still) {
+          ugvIsStill = true;
+          ugvBecameStillTime = currentTime;
+        } else if (dropping && msg.status.is_still && (currentTime - ugvBecameStillTime > ugvStillTimeThreshold)) {
+          console.log("I think I should cut the fishing line!");
+          // controls_io.emit('CHANGE_DROPPY_STATE', 'CUT_LINE'); // TODO should we actually do this?
+        } else if (dropping && ugvIsStill && !msg.status.is_still) {
+          ugvIsStill = false;
+        }
+      }
+    }
   });
 
   socket.on('disconnect', () => {

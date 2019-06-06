@@ -7,7 +7,7 @@ import missionActions from 'redux/actions/missionActions';
 import { selector } from 'redux/store';
 import GoogleMap from 'components/utils/GoogleMap/GoogleMap';
 import InteropItems from './InteropItems';
-import DroneMarker from './DroneMarker';
+import VehicleMarkers from './VehicleMarkers'
 
 const mapStateToProps = state => {
   let derivedData = selector(state);
@@ -62,7 +62,7 @@ class Map extends Component {
           onClick ={this.onMapClick}
           onDblClick={this.mapDblClick}
         >
-          <DroneMarker/>
+          <VehicleMarkers/>
           <InteropItems isOpen={this.state.isOpen} toggleOpen={this.toggleOpen} />
 
           {this.props.commandPoints.map((commandPoint, index) => 

@@ -11,7 +11,8 @@ const initialState = {
   missionUploaded: false,
   // missionStatus: "NONE",
   lastDroppyCommand: null,
-  interopData: null
+  interopData: null,
+  ugvDestination: {lat: 38.14617, lng: -76.42642} // Official competition location
 };
 
 export default function reducer(state=initialState, action) {
