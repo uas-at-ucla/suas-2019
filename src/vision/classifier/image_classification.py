@@ -101,7 +101,8 @@ def process_data(data_dir, n_images, feature="", old=False):
     y_train = labels[0:n_images, label_col[feature]]
     for i in range(n_images):
         path = os.path.join(data_dir, '%05d.jpg'%i)
-        x_train[i] = img_func[feature](path)[0,:]
+        img_func[feature](path)[0,:]
+        # x_train[i] = img_func[feature](path)[0,:]
     y_train = to_categorical(y_train, label_size[feature])
     return x_train, y_train
 

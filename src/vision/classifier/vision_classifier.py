@@ -40,7 +40,7 @@ def shape_img(path):
 
 def letter_img(path):
     img = ls.letter_seg(path)
-    img = cv2.resize(img, dsize=(32, 32), interpolation=cv2.INTER_LINEAR)
+    # img = cv2.resize(img, dsize=(32, 32), interpolation=cv2.INTER_LINEAR)
     img = np.expand_dims(img, axis=2) 
     img = np.expand_dims(img, axis=0)
 
