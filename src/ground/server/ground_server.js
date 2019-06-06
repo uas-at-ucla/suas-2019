@@ -132,7 +132,7 @@ controls_io.on('connect', (socket) => {
       if (telemetry.sensors.autopilot_state !== flightControllerState || telemetry.sensors.armed !== droneArmed) {
         flightControllerState = telemetry.sensors.autopilot_state;
         droneArmed = telemetry.sensors.armed;
-        if (telemetry.sensors.armed) {  
+        if (telemetry.sensors.armed) {
           button_panel_io.emit('DRONE_STATE', flightControllerState);
         } else {
           button_panel_io.emit('DRONE_STATE', "DISARMED");
@@ -161,7 +161,10 @@ controls_io.on('connect', (socket) => {
 
   socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
     if (protobufUtils) {
-      ui_io.emit('COMPILED_DRONE_PROGRAM', protobufUtils.decodeDroneProgam(droneProgram));
+      droneProgram = protobufUtils.decodeDroneProgam(droneProgram);
+      console.log(droneProgram)
+      console.log("Received drone program^");
+      ui_io.emit('COMPILED_DRONE_PROGRAM', droneProgram);
     }
   });
 
@@ -228,7 +231,7 @@ ugv_io.on('connect', (socket) => {
           ugvBecameStillTime = currentTime;
         } else if (dropping && msg.status.is_still && (currentTime - ugvBecameStillTime > ugvStillTimeThreshold)) {
           console.log("I think I should cut the fishing line!");
-          // controls_io.emit('CHANGE_DROPPY_STATE', 'CUT_LINE'); // TODO should we actually do this?
+          // controls_io.emit('CHANGE_DROPPY_STATE', 'CUT_LINE'); // TODO should we actually do
         } else if (dropping && ugvIsStill && !msg.status.is_still) {
           ugvIsStill = false;
         }
