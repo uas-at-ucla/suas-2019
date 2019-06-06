@@ -14,6 +14,34 @@ mkdir -p tools/cache/checksums
 CHECKSUM=$(md5sum tools/dockerfiles/controls/Dockerfile)
 MATCH=0
 
+CONTAINER_NAME=uas-at-ucla_ground-controls
+
+function get_running_container {
+  echo $(docker ps                                                             \
+    --filter name=$CONTAINER_NAME                                              \
+    --filter status=running                                                    \
+    --format "{{.ID}}"                                                         \
+    --latest                                                                   \
+  )
+}
+
+function interrupt_exec {
+  docker kill $CONTAINER_NAME > /dev/null 2>&1
+
+  RUNNING_DOCKER_CONTAINER=$(get_running_container)
+  while [ ! -z $RUNNING_DOCKER_CONTAINER ]
+  do
+    docker kill $CONTAINER_NAME > /dev/null 2>&1
+
+    RUNNING_DOCKER_CONTAINER=$(get_running_container)
+    sleep 0.5
+  done
+
+  exit
+}
+
+trap interrupt_exec INT
+
 if [ -f tools/cache/checksums/controls_dockerfile.md5 ]
 then
   LAST_CHECKSUM=$(cat tools/cache/checksums/controls_dockerfile.md5)
@@ -133,22 +161,40 @@ DOCKER_BUILD_CMD="set -x; \
   source /home/uas/.bashrc; \
   export ROS_MASTER_URI=http://192.168.1.20:11311; \
   export ROS_IP=192.168.1.10; \
+  env; \
   bazel run //src/controls/ground_controls:ground_controls\""
 
-docker run                          \
-  -it                               \
-  --rm                              \
-  --cap-add=SYS_PTRACE              \
-  --security-opt seccomp=unconfined \
-  --network host                    \
-  -v $ROOT_PATH:/home/uas/code_env  \
-  -v ~/.ssh:/home/uas/.ssh          \
-  -e DISPLAY=$DISPLAY               \
+docker run                                    \
+  -t                                          \
+  --rm                                        \
+  --cap-add=SYS_PTRACE                        \
+  --security-opt seccomp=unconfined           \
+  --network host                              \
+  -v $ROOT_PATH:/home/uas/code_env            \
+  -v ~/.ssh:/home/uas/.ssh                    \
+  -e DISPLAY=$DISPLAY                         \
   -e ROS_MASTER_URI=http://192.168.1.20:11311 \
-  -e ROS_IP=192.168.1.10 \
-  -v /tmp/.X11-unix:/tmp/.X11-unix  \
-  --privileged                      \
-  --dns 8.8.8.8                     \
-  --name uas-at-ucla_ground-controls\
-  uas-at-ucla_controls              \
+  -e ROS_IP=192.168.1.10                      \
+  -v /tmp/.X11-unix:/tmp/.X11-unix            \
+  --privileged                                \
+  --dns 8.8.8.8                               \
+  --name uas-at-ucla_ground-controls          \
+  uas-at-ucla_controls                        \
   bash -c "$DOCKER_BUILD_CMD"
+
+# Wait for V-REP container to initialize.
+unset RUNNING_DOCKER_CONTAINERS
+while [ -z $RUNNING_DOCKER_CONTAINER ]
+do
+  RUNNING_DOCKER_CONTAINER=$(get_running_vrep_container)
+  sleep 0.25
+done
+
+echo "Started docker container"
+
+# Wait for V-REP container to exit.
+while [ ! -z $RUNNING_VREP_DOCKER_CONTAINER ]
+do
+  RUNNING_DOCKER_CONTAINER=$(get_running_vrep_container)
+  sleep 0.5
+done
