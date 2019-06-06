@@ -27,6 +27,7 @@
 #include <sensor_msgs/Imu.h>
 #include <std_msgs/Bool.h>
 #include <std_msgs/Float32.h>
+#include <std_msgs/String.h>
 
 #include "lib/alarm/alarm.h"
 #include "lib/deployment/deployment.h"
@@ -64,9 +65,10 @@ class IO {
   void BatteryStatusReceived(const ::sensor_msgs::BatteryState battery_state);
   void StateReceived(const ::mavros_msgs::State state);
   void ImuReceived(const ::sensor_msgs::Imu imu);
-  void DroneProgramReceived(
-      const ::src::controls::ground_controls::timeline::DroneProgram
-          drone_program);
+  // void DroneProgramReceived(
+  //     const ::src::controls::ground_controls::timeline::DroneProgram
+  //         drone_program);
+  void DroppyCommandReceived(const ::std_msgs::String droppy_command);
 
   // Actuator setup and write handlers.
   void InitializeActuators();
@@ -94,11 +96,14 @@ class IO {
   ::std::atomic<double> deployment_motor_setpoint_;
   ::std::atomic<bool> latch_setpoint_;
   ::std::atomic<bool> hotwire_setpoint_;
+  ::std::atomic<bool> deployment_manual_override_;
+  ::std::atomic<int> deployment_motor_direction_;
+  ::std::atomic<bool> cut_line_;
 
   bool did_arm_;
   ::std::string px4_mode_;
 
-  ::src::controls::ground_controls::timeline::DroneProgram drone_program_;
+  // ::src::controls::ground_controls::timeline::DroneProgram drone_program_;
 
   void FlyToLocation();
 
@@ -124,7 +129,8 @@ class IO {
   ::ros::Subscriber battery_status_subscriber_;
   ::ros::Subscriber state_subscriber_;
   ::ros::Subscriber imu_subscriber_;
-  ::ros::Subscriber drone_program_subscriber_;
+  // ::ros::Subscriber drone_program_subscriber_;
+  ::ros::Subscriber droppy_command_subscriber_;
 
   ::ros::ServiceClient set_mode_service_;
   ::ros::ServiceClient arm_service_;

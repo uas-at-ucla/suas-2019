@@ -18,6 +18,10 @@ message WaypointCommand {
   required Position3D goal = 1;
 }
 
+message FlyThroughCommand {
+  required Position3D goal = 1;
+}
+
 message BombDropCommand {
   required Position2D drop_zone = 1;
 }

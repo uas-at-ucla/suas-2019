@@ -4,16 +4,22 @@ import { arrayMove } from 'react-sortable-hoc';
 const initialState = {
   timelineGrammar: null,
   commands: [],
+  defaultAltitude: 100,
   commandAnimate: {},
   droneProgram: null,
   missionCompiled: false,
   missionUploaded: false,
-  missionStatus: "NONE",
-  interopData: null
+  // missionStatus: "NONE",
+  lastDroppyCommand: null,
+  interopData: null,
+  ugvDestination: {lat: 38.14617, lng: -76.42642} // Official competition location
 };
 
 export default function reducer(state=initialState, action) {
   switch (action.type) {
+    case 'RESET_REDUX_STATE': {
+      return {...initialState, timelineGrammar: state.timelineGrammar}
+    }
     case 'TIMELINE_PROTO_LOADED': {
       return dotProp.set(state, `timelineGrammar`, action.payload);
     }
@@ -43,6 +49,9 @@ export default function reducer(state=initialState, action) {
     case 'CHANGE_COMMAND_FIELD': {
       let newState = dotProp.set(state, `commands.${action.payload.dotProp}`, action.payload.newValue);
       newState.missionCompiled = false;
+      if (action.payload.dotProp.endsWith('altitude')) {
+        newState.defaultAltitude = action.payload.newValue;
+      }
       return newState;
     }
     case 'ADD_REPEATED_FIELD': {
@@ -81,8 +90,11 @@ export default function reducer(state=initialState, action) {
       }
       return newState;
     }
-    case 'MISSION_STATUS': {
-      return dotProp.set(state, `missionStatus`, action.payload);
+    // case 'MISSION_STATUS': {
+    //   return dotProp.set(state, `missionStatus`, action.payload);
+    // }
+    case 'DROPPY_COMMAND_RECEIVED': {
+      return dotProp.set(state, `lastDroppyCommand`, action.payload);
     }
     default: {
       return state;

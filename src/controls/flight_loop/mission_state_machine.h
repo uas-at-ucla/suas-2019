@@ -34,9 +34,9 @@ static constexpr double kAcceptanceRadius = 4.0; // meters
 } // namespace
 
 enum MissionState {
-  TRANSLATE,
-  UGV_DROP,
-  GET_NEXT_CMD,
+  GET_NEXT_CMD = 0,
+  TRANSLATE = 1,
+  UGV_DROP = 2,
 };
 
 ::std::string StateToString(MissionState state);
@@ -62,14 +62,12 @@ class TranslateState : public State {
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
   void Reset() override;
-  void SetSetpoints(double latitude, double longitude, double altitude,
-                    double yaw);
+  void SetSetpoints(double latitude, double longitude, double altitude);
 
  private:
   double setpoint_latitude_;
   double setpoint_longitude_;
   double setpoint_altitude_;
-  double setpoint_yaw_;
 };
 
 class UGVDropState : public State {

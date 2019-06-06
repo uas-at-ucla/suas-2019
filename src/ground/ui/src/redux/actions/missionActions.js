@@ -38,6 +38,12 @@ export default {
       payload: createCommand('waypoint_command', options, protoInfo)
     }
   },
+  addFlyThroughCommand: (options, protoInfo) => {
+    return {
+      type: 'ADD_COMMAND',
+      payload: createCommand('fly_through_command', options, protoInfo)
+    }
+  },
   deleteCommand: (index) => {
     return {
       type: 'DELETE_COMMAND',

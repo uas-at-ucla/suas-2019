@@ -22,14 +22,14 @@ GroundControls::GroundControls(int argc, char **argv) :
     drone_program_subscriber_(ros_node_handle_.subscribe(
         kRosDroneProgramTopic, kRosMessageQueueSize,
         &GroundControls::DroneProgramReceived, this)),
-    mission_status_subscriber_(ros_node_handle_.subscribe(
-        kRosMissionStatusTopic, kRosMessageQueueSize,
-        &GroundControls::MissionStatusReceived, this)),
     drone_program_publisher_(
         ros_node_handle_.advertise<
             ::src::controls::ground_controls::timeline::DroneProgram>(
             kRosDroneProgramTopic, kRosMessageQueueSize)),
-    mission_status_publisher_(ros_node_handle_.advertise<::std_msgs::String>(
+    droppy_command_subscriber_(ros_node_handle_.subscribe(
+        kRosMissionStatusTopic, kRosMessageQueueSize,
+        &GroundControls::DroppyCommandReceived, this)),
+    droppy_command_publisher_(ros_node_handle_.advertise<::std_msgs::String>(
         kRosMissionStatusTopic, kRosMessageQueueSize)),
     gimbal_publisher_(ros_node_handle_.advertise<::std_msgs::Float32>(
         kRosGimbalTopic, kRosMessageQueueSize, true)),
@@ -160,11 +160,11 @@ void GroundControls::DroneProgramReceived(
         ->emit("UPLOADED_DRONE_PROGRAM", serialized_drone_program);
 }
 
-void GroundControls::MissionStatusReceived(
-    const ::std_msgs::String mission_status) {
+void GroundControls::DroppyCommandReceived(
+    const ::std_msgs::String droppy_command) {
   if (client_.opened())
     client_.socket("ground-controls")
-        ->emit("MISSION_STATUS", mission_status.data);
+        ->emit("DROPPY_COMMAND_RECEIVED", droppy_command.data);
 }
 
 void GroundControls::GimbalSetpoint(const ::std_msgs::Float32 gimbal_setpoint) {
@@ -275,45 +275,16 @@ void GroundControls::OnConnect() {
                }));
 
   client_.socket("ground-controls")
-      ->on("RUN_MISSION",
+      ->on("CHANGE_DROPPY_STATE",
            ::sio::socket::event_listener_aux(
                [&](::std::string const &name, ::sio::message::ptr const &data,
                    bool isAck, ::sio::message::list &ack_resp) {
                  (void)name;
-                 (void)data;
                  (void)isAck;
                  (void)ack_resp;
-                 ::std_msgs::String mission_status;
-                 mission_status.data = "RUN_MISSION";
-                 mission_status_publisher_.publish(mission_status);
-               }));
-
-  client_.socket("ground-controls")
-      ->on("PAUSE_MISSION",
-           ::sio::socket::event_listener_aux(
-               [&](::std::string const &name, ::sio::message::ptr const &data,
-                   bool isAck, ::sio::message::list &ack_resp) {
-                 (void)name;
-                 (void)data;
-                 (void)isAck;
-                 (void)ack_resp;
-                 ::std_msgs::String mission_status;
-                 mission_status.data = "PAUSE_MISSION";
-                 mission_status_publisher_.publish(mission_status);
-               }));
-
-  client_.socket("ground-controls")
-      ->on("END_MISSION",
-           ::sio::socket::event_listener_aux(
-               [&](::std::string const &name, ::sio::message::ptr const &data,
-                   bool isAck, ::sio::message::list &ack_resp) {
-                 (void)name;
-                 (void)data;
-                 (void)isAck;
-                 (void)ack_resp;
-                 ::std_msgs::String mission_status;
-                 mission_status.data = "END_MISSION";
-                 mission_status_publisher_.publish(mission_status);
+                 ::std_msgs::String droppy_command;
+                 droppy_command.data = data->get_string();
+                 droppy_command_publisher_.publish(droppy_command);
                }));
 
   client_.socket("ground-controls")

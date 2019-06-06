@@ -47,5 +47,9 @@ export default {
 
   logReduxState: function() {
     return { type: 'LOG_REDUX_STATE' };
+  },
+
+  resetReduxState: function() {
+    return { type: 'RESET_REDUX_STATE' };
   }
 };

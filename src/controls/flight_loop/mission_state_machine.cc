@@ -35,7 +35,7 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
     setpoint_latitude_ = sensors.latitude();
     setpoint_longitude_ = sensors.longitude();
     setpoint_altitude_ = sensors.relative_altitude();
-    setpoint_yaw_ = 90;
+    setpoint_yaw_ = sensors.heading();
     setpoint_initialized_ = true;
   }
 
@@ -101,7 +101,7 @@ void MissionStateMachine::StateTransition(::src::controls::Output &output) {
             ->SetSetpoints(
                 loaded_command.translate_command().goal().latitude(),
                 loaded_command.translate_command().goal().longitude(),
-                loaded_command.translate_command().goal().altitude(), -90);
+                loaded_command.translate_command().goal().altitude());
       } else if (loaded_command.has_trigger_bomb_drop_command()) {
         new_state = UGV_DROP;
       }
@@ -148,12 +148,12 @@ void MissionStateMachine::LoadMission(
 
 ::std::string StateToString(MissionState state) {
   switch (state) {
+    case GET_NEXT_CMD:
+      return "GET_NEXT_CMD";
     case TRANSLATE:
       return "TRANSLATE";
     case UGV_DROP:
       return "UGV_DROP";
-    case GET_NEXT_CMD:
-      return "GET_NEXT_CMD";
   }
   return "UNKNOWN";
 }
@@ -171,7 +171,6 @@ void TranslateState::Handle(::src::controls::Sensors &sensors,
   output.set_setpoint_latitude(setpoint_latitude_);
   output.set_setpoint_longitude(setpoint_longitude_);
   output.set_setpoint_altitude(setpoint_altitude_);
-  output.set_setpoint_yaw(setpoint_yaw_);
 
   // Check if acceptance radius has been met.
   ::lib::Position3D drone, destination;
@@ -193,11 +192,10 @@ void TranslateState::Handle(::src::controls::Sensors &sensors,
 void TranslateState::Reset() {}
 
 void TranslateState::SetSetpoints(double latitude, double longitude,
-                                  double altitude, double yaw) {
+                                  double altitude) {
   setpoint_latitude_ = latitude;
   setpoint_longitude_ = longitude;
   setpoint_altitude_ = altitude;
-  setpoint_yaw_ = yaw;
 }
 
 // UGVDropState ////////////////////////////////////////////////////////////////

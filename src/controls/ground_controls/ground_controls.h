@@ -58,7 +58,7 @@ class GroundControls {
   void DroneProgramReceived(
       const ::src::controls::ground_controls::timeline::DroneProgram
           drone_program);
-  void MissionStatusReceived(const ::std_msgs::String mission_status);
+  void DroppyCommandReceived(const ::std_msgs::String droppy_command);
   void SendSensorsToServer(const ::src::controls::Sensors &sensors,
                            bool rfd900);
 
@@ -72,9 +72,9 @@ class GroundControls {
   ::ros::Subscriber sensors_subscriber_;
   ::ros::Subscriber output_subscriber_;
   ::ros::Subscriber drone_program_subscriber_;
-  ::ros::Subscriber mission_status_subscriber_;
   ::ros::Publisher drone_program_publisher_;
-  ::ros::Publisher mission_status_publisher_;
+  ::ros::Subscriber droppy_command_subscriber_;
+  ::ros::Publisher droppy_command_publisher_;
 
   ::ros::Publisher gimbal_publisher_;
   ::ros::Publisher deployment_motor_publisher_;
