@@ -145,7 +145,8 @@ TEST(RRTAvoidance, DodgeObstacles) {
     // //      0});
 
     // //      double projFactor =
-    // //          (AC.at(0) * AB.at(0) + AC.at(1) * AB.at(1)) / (magAB * magAB);
+    // //          (AC.at(0) * AB.at(0) + AC.at(1) * AB.at(1)) / (magAB *
+    // magAB);
     // //      ::std::vector<double> AD;
     // //      AD.push_back(projFactor * AB.at(0));
     // //      AD.push_back(projFactor * AB.at(1));

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "lib/mission_manager/mission_commands.pb.h"
-#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "lib/rrt_avoidance/rrt_avoidance.h"
+#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 
 // using protobuf messages defined in this namespace
 using namespace lib::mission_manager;

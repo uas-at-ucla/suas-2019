@@ -6,8 +6,9 @@ namespace ground_controls {
 namespace timeline {
 namespace ground2drone_visitor {
 
-Ground2DroneVisitor::Ground2DroneVisitor() : 
-  ground_program_(nullptr), current_position_(nullptr) {}
+Ground2DroneVisitor::Ground2DroneVisitor() :
+    ground_program_(nullptr),
+    current_position_(nullptr) {}
 
 DroneProgram Ground2DroneVisitor::Process(GroundProgram *input_program) {
   ground_program_ = input_program;
@@ -161,16 +162,16 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
   // calculating a safe path to travel and commanding the drone to follow this
   // path using TranslateCommand.
 
-  ::lib::Position3D end = {n->goal().latitude(),
-                    n->goal().longitude(),
-                    n->goal().altitude()};
+  ::lib::Position3D end = {n->goal().latitude(), n->goal().longitude(),
+                           n->goal().altitude()};
 
   ::std::vector<::lib::Position3D> avoidance_path;
-  
-  if(!current_position_) {
+
+  if (!current_position_) {
     avoidance_path.push_back(end);
   } else {
-    avoidance_path = rrt_avoidance_.Process(*current_position_, end, *ground_program_);
+    avoidance_path =
+        rrt_avoidance_.Process(*current_position_, end, *ground_program_);
     delete current_position_;
   }
 
