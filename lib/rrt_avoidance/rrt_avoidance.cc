@@ -42,7 +42,7 @@ RRTAvoidance::RRTAvoidance() :
   for (int i = 2; i < rows; i++) {
     m(i, 0) = ground_program.static_obstacles(i - 2).location().latitude();
     m(i, 1) = ground_program.static_obstacles(i - 2).location().longitude();
-    m(i, 2) = ground_program.static_obstacles(i - 2).cylinder_radius() * 1.3;
+    m(i, 2) = ground_program.static_obstacles(i - 2).cylinder_radius() * 0.3548;
 
     double lat_diff = m(i, 0) - m(0, 0);
     double long_diff = m(i, 1) - m(0, 1);

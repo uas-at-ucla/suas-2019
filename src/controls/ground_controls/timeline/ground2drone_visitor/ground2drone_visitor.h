@@ -1,5 +1,7 @@
 #pragma once
 
+#include <algorithm>
+
 #include "lib/mission_manager/mission_commands.pb.h"
 #include "lib/rrt_avoidance/rrt_avoidance.h"
 #include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
