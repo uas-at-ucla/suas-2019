@@ -12,6 +12,9 @@ Ground2DroneVisitor::Ground2DroneVisitor() :
 
 DroneProgram Ground2DroneVisitor::Process(GroundProgram *input_program) {
   ground_program_ = input_program;
+
+  current_position_ = nullptr;
+
   return Visit(input_program);
 }
 
@@ -187,7 +190,7 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
     ::std::cout << "GOTO: " << goto_step.latitude << " " << goto_step.longitude << ::std::endl;
     goto_raw_goal->set_latitude(goto_step.latitude);
     goto_raw_goal->set_longitude(goto_step.longitude);
-    goto_raw_goal->set_altitude(goto_step.altitude);
+    goto_raw_goal->set_altitude(n->goal().altitude());
 
     translate->set_allocated_goal(goto_raw_goal);
     translate->set_come_to_stop(false);
