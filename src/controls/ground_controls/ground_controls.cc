@@ -51,13 +51,11 @@ GroundControls::GroundControls(int argc, char **argv) :
     hotwire_subscriber_(
         ros_node_handle_.subscribe(kRosHotwireTopic, kRosMessageQueueSize,
                                    &GroundControls::HotwireSetpoint, this)),
-    // udp_connection_("tcp://127.0.0.1:6005", 1),
-    rfd900_connection_("/dev/ttyUSB0", B57600, 0), // TODO
+    rfd900_connection_("/dev/ttyUSB1", B57600, 0), // TODO
     phased_loop_(1e2),
     drone_program_success_(false) {
 
   // Connect proto_receiver_
-  // udp_connection_.Connect();
 
   socketio_ground_controls = this;
   client_.set_open_listener(on_connect);
@@ -90,7 +88,8 @@ void GroundControls::SendSensorsToServer(
 }
 
 void GroundControls::SensorsReceived(const ::src::controls::Sensors sensors) {
-  SendSensorsToServer(sensors, false);
+  (void)sensors;
+  // SendSensorsToServer(sensors, false);
 }
 
 void GroundControls::OutputReceived(const ::src::controls::Output output) {
@@ -113,40 +112,18 @@ void GroundControls::ReadRFD900() {
     ::src::controls::UasMessage uas_message1;
     bool rfd900_res = rfd900_connection_.GetLatestProto(uas_message1);
 
-    if (!rfd900_res) {
-      ::std::cout << "Did not get rfd900 connection" << ::std::endl;
-      return;
-    } else {
-      if (!::ros::master::check()) { // if ros is not available
-        SendSensorsToServer(uas_message1.sensors(), true);
-      }
-      ::std::cout << "Got rfd900 connection" << ::std::endl;
+    if (rfd900_res) {
+      ROS_INFO("Got RFD900: lat(%f) lng(%f) alt(%f) hdg(%f)",
+               uas_message1.sensors().latitude(),
+               uas_message1.sensors().longitude(),
+               uas_message1.sensors().relative_altitude(),
+               uas_message1.sensors().heading());
+      SendSensorsToServer(uas_message1.sensors(), true);
     }
 
     phased_loop_.SleepUntilNext();
   }
 }
-
-// void GroundControls::ReadUDP() {
-//   running_ = true;
-
-//   while (running_) {
-//     // Get the connection's uas messages
-//     ::src::controls::UasMessage uas_message1;
-//     bool udp_res = udp_connection_.GetLatestProto(uas_message1);
-
-//     // Check for either availability
-//     if (!udp_res) {
-//       ::std::cout << "Did not get upd connection" << ::std::endl;
-//       return;
-//     } else {
-//       // TODO: check which one was received earliest
-//       ::std::cout << "Got udp connection" << ::std::endl;
-//     }
-
-//     phased_loop_.SleepUntilNext();
-//   }
-// }
 
 void GroundControls::DroneProgramReceived(
     const ::src::controls::ground_controls::timeline::DroneProgram
