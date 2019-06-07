@@ -181,22 +181,22 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
   // Add the path for avoiding obstacles as a list of raw goto commands,
   // which will not undergo additional lower-level rrt calculations by the
   // preprocessor.
-  for (::lib::Position3D goto_step : avoidance_path) {
-    DroneCommand *translate_cmd = new DroneCommand();
-    TranslateCommand *translate = translate_cmd->mutable_translate_command();
+  // for (::lib::Position3D goto_step : avoidance_path) {
+  //   DroneCommand *translate_cmd = new DroneCommand();
+  //   TranslateCommand *translate = translate_cmd->mutable_translate_command();
 
-    ::lib::mission_manager::Position3D *goto_raw_goal =
-        new ::lib::mission_manager::Position3D();
-    ::std::cout << "GOTO: " << goto_step.latitude << " " << goto_step.longitude << ::std::endl;
-    goto_raw_goal->set_latitude(goto_step.latitude);
-    goto_raw_goal->set_longitude(goto_step.longitude);
-    goto_raw_goal->set_altitude(n->goal().altitude());
+  //   ::lib::mission_manager::Position3D *goto_raw_goal =
+  //       new ::lib::mission_manager::Position3D();
+  //   ::std::cout << "GOTO: " << goto_step.latitude << " " << goto_step.longitude << ::std::endl;
+  //   goto_raw_goal->set_latitude(goto_step.latitude);
+  //   goto_raw_goal->set_longitude(goto_step.longitude);
+  //   goto_raw_goal->set_altitude(n->goal().altitude());
 
-    translate->set_allocated_goal(goto_raw_goal);
-    translate->set_come_to_stop(false);
+  //   translate->set_allocated_goal(goto_raw_goal);
+  //   translate->set_come_to_stop(false);
 
-    drone_program.mutable_commands()->AddAllocated(translate_cmd);
-  }
+  //   drone_program.mutable_commands()->AddAllocated(translate_cmd);
+  // }
 
   // Set current position to last command's end
   current_position_ = new ::lib::Position3D(end);

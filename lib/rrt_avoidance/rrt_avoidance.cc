@@ -4,6 +4,7 @@ namespace lib {
 namespace rrt_avoidance {
 
 const int kDimension = 50;
+const double kRadiusSlack = 0.45;
 
 RRTAvoidance::RRTAvoidance() :
     state_space_(::std::make_shared<GridStateSpace>(kDimension, kDimension,
@@ -20,6 +21,8 @@ RRTAvoidance::RRTAvoidance() :
 ::std::vector<Position3D> RRTAvoidance::Process(
     Position3D start, Position3D end,
     ::src::controls::ground_controls::timeline::GroundProgram ground_program) {
+  ::std::cout << "START RRT\n";
+
   if (start.latitude == end.latitude && start.longitude == end.longitude) {
     return ::std::vector<Position3D>();
   }
@@ -42,7 +45,7 @@ RRTAvoidance::RRTAvoidance() :
   for (int i = 2; i < rows; i++) {
     m(i, 0) = ground_program.static_obstacles(i - 2).location().latitude();
     m(i, 1) = ground_program.static_obstacles(i - 2).location().longitude();
-    m(i, 2) = ground_program.static_obstacles(i - 2).cylinder_radius() * 0.3548;
+    m(i, 2) = ground_program.static_obstacles(i - 2).cylinder_radius() * (0.3048 + kRadiusSlack);
 
     double lat_diff = m(i, 0) - m(0, 0);
     double long_diff = m(i, 1) - m(0, 1);
@@ -130,8 +133,24 @@ RRTAvoidance::RRTAvoidance() :
   birrt_.set_start_state(position);
   birrt_.set_goal_state(goal);
 
+  ::std::cout << "position: " << position[0] << ", " << position[1] << ::std::endl;
+  ::std::cout << "goal: " << goal[0] << ", " << goal[1] << ::std::endl;
+
+  ::std::cout << "START RRT!\n";
   int num_iterations = birrt_.Run();
+  ::std::cout << "FINISHED RRT!\n";
+
   ::std::vector<::Eigen::Vector2d> path = birrt_.GetPath();
+
+  // If a path wasn't found, just fly directly to the waypoint.
+  ::std::vector<Position3D> final_path;
+  ::std::cout << "PATH SIZE: " << final_path.size() << ::std::endl;
+  if(path.size() < 1) {
+    final_path.push_back(end);
+    birrt_.Reset();
+    return final_path;
+  }
+
   ::std::vector<::Eigen::Vector2d> smooth_path(path);
   SmoothPath<::Eigen::Vector2d>(smooth_path, *state_space_);
 
@@ -146,8 +165,6 @@ RRTAvoidance::RRTAvoidance() :
     smooth_y.push_back(smooth_path[i][1]);
   }
 
-  //::std::cout << m_rrt_path << ::std::endl;
-
   // Apply inverse operations to get back to original coordinates.
   m_rrt_path -= m_shift.block<1, 2>(0, 0).replicate(smooth_path.size(), 1);
   m_rrt_path /= scale;
@@ -155,7 +172,6 @@ RRTAvoidance::RRTAvoidance() :
   m_rrt_path *= reflection_m.block<2, 2>(0, 0);
   m_rrt_path += m_trans.block<1, 2>(0, 0).replicate(smooth_path.size(), 1);
 
-  ::std::vector<Position3D> final_path;
   for (size_t i = 0; i < smooth_path.size(); i++) {
     Position3D waypoint = {m_rrt_path(i, 0), m_rrt_path(i, 1), 0};
     final_path.push_back(waypoint);
