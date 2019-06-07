@@ -17,9 +17,9 @@ RRTAvoidance::RRTAvoidance() :
   birrt_.set_max_step_size(15.0);
 }
 
-::std::vector<Position3D>
-RRTAvoidance::Process(Position3D start, Position3D end,
-                      ::src::controls::ground_controls::timeline::GroundProgram ground_program) {
+::std::vector<Position3D> RRTAvoidance::Process(
+    Position3D start, Position3D end,
+    ::src::controls::ground_controls::timeline::GroundProgram ground_program) {
   if (start.latitude == end.latitude && start.longitude == end.longitude) {
     return ::std::vector<Position3D>();
   }

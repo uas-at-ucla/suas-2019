@@ -23,7 +23,6 @@ cc_library(
   deps = [
     ':flight_state_machine',
     '//src/controls:constants',
-    '//src/controls/ground_controls/timeline/executor:executor',
     '//src/controls:messages_cpp',
     '//src/controls/io:io_lib',
     '//lib/proto_comms:proto_comms',
@@ -54,7 +53,6 @@ cc_library(
     '//src/controls/ground_controls/timeline:timeline_grammar_cc',
     '//src/controls:constants',
 
-    '//src/controls/ground_controls/timeline/executor:executor',
     '//lib/proto_comms:proto_comms',
     '//lib/physics_structs:physics_structs',
     '//lib/phased_loop:phased_loop',
@@ -75,7 +73,6 @@ cc_library(
   deps = [
     '//src/controls:messages_cpp',
 
-    '//src/controls/ground_controls/timeline/executor:executor',
     '//src/controls/ground_controls/timeline:timeline_grammar_cc',
     '//lib/proto_comms:proto_comms',
     '//lib/physics_structs:physics_structs',

@@ -22,7 +22,6 @@
 #include "lib/proto_comms/proto_comms.h"
 #include "mission_state_machine.h"
 #include "src/controls/constants.h"
-#include "src/controls/ground_controls/timeline/executor/executor.h"
 #include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
 

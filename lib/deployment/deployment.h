@@ -8,6 +8,7 @@ namespace {
 static constexpr double kWaitTimeBeforeUnlatch = 0;
 static constexpr double kWaitTimeAfterUnlatch = 3;
 static constexpr double kWaitTimeAfterHitGround = 3;
+static constexpr double kMaxHotwireTime = 10;
 
 static constexpr double kDefaultMotorOutput = 0;
 static constexpr bool kDefaultLatchOutput = true;

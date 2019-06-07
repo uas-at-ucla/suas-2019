@@ -155,28 +155,29 @@ void IO::WriterThread() {
     deployment_input.cut = cut_line_;
     deployment_.RunIteration(deployment_input, deployment_output);
 
-    if (deployment_manual_override_) {
-      deployment_output.motor = deployment_motor_setpoint_;
-      deployment_output.latch = latch_setpoint_;
-      deployment_output.hotwire = hotwire_setpoint_;
-    } else {
-      // update ROS messages with output from deployment state machine
-      if (abs(deployment_output.motor - deployment_motor_setpoint_) > 0.001) {
-        ::std_msgs::Float32 deployment_motor_setpoint;
-        deployment_motor_setpoint.data = deployment_output.motor;
-        deployment_motor_publisher_.publish(deployment_motor_setpoint);
-      }
-      if (deployment_output.latch != latch_setpoint_) {
-        ::std_msgs::Bool latch_setpoint;
-        latch_setpoint.data = deployment_output.latch;
-        latch_publisher_.publish(latch_setpoint);
-      }
-      if (deployment_output.hotwire != hotwire_setpoint_) {
-        ::std_msgs::Bool hotwire_setpoint;
-        hotwire_setpoint.data = deployment_output.hotwire;
-        hotwire_publisher_.publish(hotwire_setpoint);
-      }
-    }
+    // if (deployment_manual_override_) {
+    //   deployment_output.motor = deployment_motor_setpoint_;
+    //   deployment_output.latch = latch_setpoint_;
+    //   deployment_output.hotwire = hotwire_setpoint_;
+    // } else {
+    //   // update ROS messages with output from deployment state machine
+    //   if (abs(deployment_output.motor - deployment_motor_setpoint_) > 0.001)
+    //   {
+    //     ::std_msgs::Float32 deployment_motor_setpoint;
+    //     deployment_motor_setpoint.data = deployment_output.motor;
+    //     deployment_motor_publisher_.publish(deployment_motor_setpoint);
+    //   }
+    //   if (deployment_output.latch != latch_setpoint_) {
+    //     ::std_msgs::Bool latch_setpoint;
+    //     latch_setpoint.data = deployment_output.latch;
+    //     latch_publisher_.publish(latch_setpoint);
+    //   }
+    //   if (deployment_output.hotwire != hotwire_setpoint_) {
+    //     ::std_msgs::Bool hotwire_setpoint;
+    //     hotwire_setpoint.data = deployment_output.hotwire;
+    //     hotwire_publisher_.publish(hotwire_setpoint);
+    //   }
+    // }
 
     // Write out actuators.
     WriteAlarm(should_alarm);
@@ -367,23 +368,23 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
 
 void IO::DroppyCommandReceived(const ::std_msgs::String droppy_command) {
   if (droppy_command.data == "START_DROP") {
-    ::std::cout << "Initiating UGV Drop\n";
-    deployment_motor_direction_ = 1; // lower ugv
+    ROS_INFO_THROTTLE(1, "Initiating UGV Drop");
+    deployment_motor_direction_ = 1;
   } else if (droppy_command.data == "CUT_LINE") {
-    ::std::cout << "Cutting Fishing Line...\n";
+    ROS_INFO_THROTTLE(1, "Cutting Fishing Line");
     deployment_motor_direction_ = 0;
     cut_line_ = true;
   } else if (droppy_command.data == "MOTOR_UP") {
-    ::std::cout << "Raising UGV\n";
+    ROS_INFO_THROTTLE(1, "Raising UGV");
     deployment_motor_direction_ = -1;
   } else if (droppy_command.data == "MOTOR_DOWN") {
-    ::std::cout << "Lowering UGV\n";
+    ROS_INFO_THROTTLE(1, "Lowering UGV");
     deployment_motor_direction_ = 1;
   } else if (droppy_command.data == "MOTOR_STOP") {
-    ::std::cout << "Stop lowering UGV\n";
+    ROS_INFO_THROTTLE(1, "Stop lowering UGV");
     deployment_motor_direction_ = 0;
   } else if (droppy_command.data == "CANCEL_DROP") {
-    ::std::cout << "Canceling Drop\n";
+    ROS_INFO_THROTTLE(1, "Cancel drop");
     deployment_motor_direction_ = 0;
     // TODO trigger mission to move on to the next command
   }
@@ -457,7 +458,7 @@ void IO::WriteDeployment(::lib::deployment::Output &output) {
   // Write motor.
   set_PWM_dutycycle(pigpio_, kDeploymentMotorGPIOPin,
                     output.motor * (output.motor >= 0 ? 1 : -1) * 100);
-  gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, output.motor < 0);
+  gpio_write(pigpio_, kDeploymentMotorReverseGPIOPin, output.motor > 0);
 
   // Write hotwire.
   gpio_write(pigpio_, kDeploymentHotwireGPIOPin, output.hotwire);

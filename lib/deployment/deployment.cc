@@ -82,7 +82,9 @@ void Deployment::RunIteration(struct Input &input, struct Output &output) {
       }
 
       // Write out hotwire.
-      output.hotwire = true;
+      output.hotwire = !TimerComplete(kMaxHotwireTime);
+
+      TickTimer();
   }
 
   // Handle any changes in state.
