@@ -17,8 +17,6 @@ FlightStateMachine::FlightStateMachine() :
   state_handlers_[TAKEN_OFF] = new TakenOffState();
   state_handlers_[SAFETY_PILOT_CONTROL] = new SafetyPilotControlState();
   state_handlers_[MISSION] = new MissionState();
-  state_handlers_[FAILSAFE] = new FailsafeState();
-  state_handlers_[FLIGHT_TERMINATION] = new FlightTerminationState();
 }
 
 FlightStateMachine::~FlightStateMachine() {
@@ -70,27 +68,6 @@ void FlightStateMachine::StateTransition(::src::controls::Output &output) {
   GetStateHandler(state_)->Reset();
 }
 
-bool FlightStateMachine::SafetyStateOverride(::src::controls::Goal &goal,
-                                             ::src::controls::Output &output) {
-  (void)goal;
-  (void)output;
-  // Prioritize the throttle cut check, so that the drone always cuts throttle
-  // instead of following any failsafe commands.
-  // if (goal.trigger_throttle_cut()) {
-  //   // EndFlightTimer();
-  //   output.set_state(FLIGHT_TERMINATION);
-  //   return true;
-  // }
-
-  // if (goal.trigger_failsafe()) {
-  //   // EndFlightTimer();
-  //   output.set_state(FAILSAFE);
-  //   return true;
-  // }
-
-  return false;
-}
-
 State *FlightStateMachine::GetStateHandler(FlightLoopState state) {
   if (state_handlers_.count(state)) {
     return state_handlers_[state];
@@ -117,10 +94,6 @@ State *FlightStateMachine::GetStateHandler(FlightLoopState state) {
       return "MISSION";
     case LANDING:
       return "LANDING";
-    case FAILSAFE:
-      return "FAILSAFE";
-    case FLIGHT_TERMINATION:
-      return "FLIGHT_TERMINATION";
   }
 
   return "UNKNOWN";
@@ -272,15 +245,19 @@ TakenOffState::TakenOffState() : start_(0), was_reset_(true) {}
 void TakenOffState::Handle(::src::controls::Sensors &sensors,
                            ::src::controls::Goal &goal,
                            ::src::controls::Output &output) {
+
+  // If we no longer want to run a mission, attempt to land.
   if (!goal.run_mission()) {
     output.set_state(LANDING);
     return;
   }
 
-  // if (!sensors.armed()) {
-  //   output.set_state(ARMING);
-  //   return;
-  // }
+  // If we somehow got disarmed after taking off (not sure how that'd happen),
+  // try to go through the arming proceedure again.
+  if (!sensors.armed()) {
+    output.set_state(ARMING);
+    return;
+  }
 
   // Take off again if we drop below minimum altitude.
   if (sensors.relative_altitude() < kMinTakeoffAltitude) {
@@ -335,9 +312,19 @@ SafetyPilotControlState::SafetyPilotControlState() {}
 void SafetyPilotControlState::Handle(::src::controls::Sensors &sensors,
                                      ::src::controls::Goal &goal,
                                      ::src::controls::Output &output) {
-  (void)sensors;
-  (void)goal;
-  (void)output;
+  // If UAS mission mode is requested again, return to that state if altitude
+  // is above takeoff threshold.
+  if (goal.run_mission() &&
+      sensors.relative_altitude() >= kMinTakeoffAltitude) {
+    output.set_state(MISSION);
+    return;
+  }
+
+  // If drone was manually disarmed, go back to standby.
+  if (!sensors.armed()) {
+    output.set_state(STANDBY);
+    return;
+  }
 }
 
 void SafetyPilotControlState::Reset() {}
@@ -359,32 +346,6 @@ void LandingState::Handle(::src::controls::Sensors &sensors,
 }
 
 void LandingState::Reset() {}
-
-// FailsafeState ///////////////////////////////////////////////////////////////
-FailsafeState::FailsafeState() {}
-
-void FailsafeState::Handle(::src::controls::Sensors &sensors,
-                           ::src::controls::Goal &goal,
-                           ::src::controls::Output &output) {
-  (void)sensors;
-  (void)goal;
-  (void)output;
-}
-
-void FailsafeState::Reset() {}
-
-// FlightTerminationState //////////////////////////////////////////////////////
-FlightTerminationState::FlightTerminationState() {}
-
-void FlightTerminationState::Handle(::src::controls::Sensors &sensors,
-                                    ::src::controls::Goal &goal,
-                                    ::src::controls::Output &output) {
-  (void)sensors;
-  (void)goal;
-  (void)output;
-}
-
-void FlightTerminationState::Reset() {}
 
 // UnknownState ////////////////////////////////////////////////////////////////
 UnknownState::UnknownState() {}
