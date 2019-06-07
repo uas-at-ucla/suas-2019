@@ -170,13 +170,8 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
   if (!current_position_) {
     avoidance_path.push_back(end);
   } else {
-<<<<<<< HEAD
-    avoidance_path = rrt_avoidance_.Process(*current_position_, end, *ground_program_);
-    //::std::reverse(avoidance_path.begin(), avoidance_path.end());
-=======
     avoidance_path =
         rrt_avoidance_.Process(*current_position_, end, *ground_program_);
->>>>>>> 1264d94ea70ff200913b3cabd4da421e96a5a960
     delete current_position_;
   }
 
