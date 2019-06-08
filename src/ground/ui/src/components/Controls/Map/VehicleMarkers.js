@@ -2,9 +2,12 @@ import React, { Component } from 'react';
 import { Marker, Circle } from 'react-google-maps';
 import { connect } from 'react-redux';
 
+import rover from './icons/rover.png';
+
 const mapStateToProps = state => {
   return {
     telemetry: state.telemetry.droneTelemetry,
+    ugvStatus: state.telemetry.ugvStatus
   };
 };
 
@@ -27,6 +30,7 @@ class DroneMarker extends Component {
             />
             <Marker
               position={pos}
+              draggable={true}
               icon={{
                 path: window.google ? window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW : null,
                 strokeColor: '#FFFFFF',
@@ -41,6 +45,17 @@ class DroneMarker extends Component {
             >
             </Marker>
           </span>
+        : null}
+
+        {this.props.ugvStatus && this.props.ugvStatus.location ?
+          <Marker
+            position={{lat: this.props.ugvStatus.location.latitude, lng: this.props.ugvStatus.location.longitude}}
+            icon={{
+              url: rover,
+              scaledSize: {width: 25, height: 25},
+              anchor: {x: 12.5, y: 12.5}
+            }}
+          />
         : null}
       </span>
     );

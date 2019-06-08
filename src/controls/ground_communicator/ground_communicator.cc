@@ -5,12 +5,13 @@ namespace controls {
 namespace ground_communicator {
 
 GroundCommunicator::GroundCommunicator() :
-    sensors_subscriber_(ros_node_handle_.subscribe(
-        io::kRosSensorsTopic, io::kRosMessageQueueSize,
-        &GroundCommunicator::SensorsReceived, this)),
-    drone_program_subscriber_(ros_node_handle_.subscribe(
-        ground_controls::kRosDroneProgramTopic, io::kRosMessageQueueSize,
-        &GroundCommunicator::DroneProgramReceived, this)),
+    ros_node_handle_(),
+    sensors_subscriber_(
+        ros_node_handle_.subscribe(kRosSensorsTopic, kRosMessageQueueSize,
+                                   &GroundCommunicator::SensorsReceived, this)),
+    // drone_program_subscriber_(ros_node_handle_.subscribe(
+    //     kRosDroneProgramTopic, kRosMessageQueueSize,
+    //     &GroundCommunicator::DroneProgramReceived, this)),
     proto_sender_("tcp://127.0.0.1:6005"),
     rfd900_("/dev/ttyUSB0", B57600, 0) {
 
@@ -41,13 +42,13 @@ void GroundCommunicator::SensorsReceived(
   }
 }
 
-void GroundCommunicator::DroneProgramReceived(
-    const ::src::controls::ground_controls::timeline::DroneProgram
-        drone_program) {
-  (void)drone_program;
-  ::std::cout << "Executing Drone Program...\n";
-  // ::std::cout << drone_program.DebugString() << "\n";
-}
+// void GroundCommunicator::DroneProgramReceived(
+//     const ::src::controls::ground_controls::timeline::DroneProgram
+//         drone_program) {
+//   (void)drone_program;
+//   ::std::cout << "Uploaded Drone Program.\n";
+//   // ::std::cout << drone_program.DebugString() << "\n";
+// }
 
 } // namespace ground_communicator
 } // namespace controls

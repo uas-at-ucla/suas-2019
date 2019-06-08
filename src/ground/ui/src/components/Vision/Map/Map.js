@@ -50,7 +50,7 @@ class Map extends Component {
         'rgba(255, 0, 0, 1)'
       ],
       hmRadius:70, hmOpacity:1, hmdissipating:true, hmHeatmapOn:true,
-      heatMapOpen:true
+      heatMapOpen:true,
     }
     
     setTimeout(() => 
@@ -274,6 +274,17 @@ class Map extends Component {
             </HeatmapLayer>
           </GoogleMap>
         </div>
+        {/* <div className="ImageCrop">
+          <Cropper
+            image={this.state.cropValues.image}
+            crop={this.state.cropValues.crop}
+            zoom={this.state.cropValues.zoom}
+            aspect={this.state.cropValues.aspect}
+            onCropChange={this.onCropChange}
+            onCropComplete={this.onCropComplete}
+            onZoomChange={this.onZoomChange}
+          />
+        </div> */}
       </div>
     );
   }

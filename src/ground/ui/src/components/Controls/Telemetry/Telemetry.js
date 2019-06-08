@@ -22,11 +22,12 @@ class Telemetry extends Component {
     if (rawTelmet != null) {
       this.telmet = {
         pingDelay: pingDelay,
-        autopilotState: rawTelmet["sensors"]["autopilot_state"],
+        autopilotState: rawTelmet["sensors"]["armed"] ? rawTelmet["sensors"]["autopilot_state"] : "Disarmed",
         roll: rawTelmet["sensors"]["roll"],
         pitch: rawTelmet["sensors"]["pitch"],
         yaw: rawTelmet["sensors"]["yaw"],
         speed: rawTelmet["sensors"]["gps_ground_speed"] * KNOTS_PER_METER_SECOND,
+        gps_fix: rawTelmet["sensors"]["gps_fix"],
         lat: rawTelmet["sensors"]["latitude"],
         long: rawTelmet["sensors"]["longitude"],
         heading: rawTelmet["sensors"]["heading"],
@@ -70,12 +71,12 @@ class Telemetry extends Component {
         values: [this.telmet.speed.toFixed(3) , " knots"]
       },
       {
-        key: "Position",
-        values: [this.telmet.lat.toFixed(3) , ", " , this.telmet.long.toFixed(3)]
-      },
-      {
         key: "Altitude MSL",
         values: [this.telmet.alt.toFixed(3) , " feet"]
+      },
+      {
+        key: "GPS Fix",
+        values: [this.telmet.gps_fix ? "Yes" : "NO GPS FIX"]
       },
       {
         key: "Satellite Count",

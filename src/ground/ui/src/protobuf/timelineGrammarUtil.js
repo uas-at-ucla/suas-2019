@@ -1,6 +1,7 @@
 const electronRequire = window.require;
 const protobuf = electronRequire ? electronRequire('protobufjs') : null;
 const fs = electronRequire ? electronRequire('fs') : null;
+const isDev = electronRequire ? electronRequire('electron-is-dev') : null;
 // Fix import statement in .proto file:
 if (electronRequire) protobuf.Root.prototype.resolvePath = (origin, target) => {
   return target;
@@ -11,8 +12,23 @@ if (electronRequire) protobuf.Root.prototype.resolvePath = (origin, target) => {
 var root = new protobuf.Root();
 var packageNames = [];
 
+function loadRootFromJson(dispatch) {
+  let jsonDescriptor = require("./timeline_grammar.proto.json");
+  // Send to Redux store
+  dispatch({
+    type: 'TIMELINE_PROTO_LOADED',
+    payload: jsonDescriptor
+  });
+  return protobuf.Root.fromJSON({nested: jsonDescriptor});
+}
+
 export default function loadTimelineGrammar(dispatch) {
   if (!electronRequire) {
+    return;
+  }
+
+  if (!isDev) { // in packaged app, which should have an updated timeline_grammar.proto.json
+    root = loadRootFromJson(dispatch);
     return;
   }
 
@@ -47,13 +63,8 @@ export default function loadTimelineGrammar(dispatch) {
 
     console.log(timelineGrammar);
     // update timeline_grammar.proto.json when protobuf format has changed
-    if (fs) fs.writeFile("src/protobuf/timeline_grammar.proto.json", JSON.stringify(timelineGrammar, null, 2), (err) => {});
-
-    // Send to Redux store
-    dispatch({
-      type: 'TIMELINE_PROTO_LOADED',
-      payload: timelineGrammar
-    });
+    fs.writeFile("src/protobuf/timeline_grammar.proto.json", JSON.stringify(timelineGrammar, null, 2), (err) => {});
+    root = loadRootFromJson(dispatch); // Load the proto root from the json file. We'll do this in the packaged app where the original .proto isn't available, so we'll do it here too for consistency.
   });
 }
 
@@ -62,19 +73,10 @@ export function createMessage(type, payload) {
     return null;
   }
 
-  for (let packageName of packageNames) {
-    let messageType;
-    try {
-      messageType = root.lookupType(packageName + type);
-    } catch {
-      continue;
-    }
-    var errMsg = messageType.verify(payload);
-    if (errMsg)
-      throw Error(errMsg);
-  
-    return messageType.create(payload);
-  }
+  let messageType = root.lookupType(type);
+  let errMsg = messageType.verify(payload);
+  if (errMsg)
+    throw Error("Type " + type + " not supported!");
 
-  throw Error("Type " + type + " not supported!");
+  return messageType.create(payload);
 }

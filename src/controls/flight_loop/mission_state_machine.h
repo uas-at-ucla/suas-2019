@@ -7,12 +7,14 @@
 #include <iostream>
 #include <limits>
 #include <map>
+#include <mutex>
 #include <string>
 #include <thread>
 
 #include "zmq.hpp"
 #include <boost/algorithm/string.hpp>
 #include <google/protobuf/text_format.h>
+#include <ros/console.h>
 
 #include "lib/alarm/alarm.h"
 #include "lib/mission_manager/mission_commands.pb.h"
@@ -20,6 +22,7 @@
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/proto_comms/proto_comms.h"
 #include "src/controls/ground_controls/timeline/executor/executor.h"
+#include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
 
 namespace src {
@@ -27,18 +30,13 @@ namespace controls {
 namespace flight_loop {
 namespace mission_state_machine {
 namespace {
-// Time for propellers to spin up before taking off, in seconds.
-static constexpr double kSpinupTime = 2.0;
-
-// Altitude to reach during takeoff before acknowledging the drone has taken
-// off.
-static constexpr double kTakeoffAltitude = 3.0;
+static constexpr double kAcceptanceRadius = 4.0; // meters
 } // namespace
 
 enum MissionState {
-  TRANSLATE,
-  UGV_RELEASE,
-  GET_NEXT_CMD,
+  GET_NEXT_CMD = 0,
+  TRANSLATE = 1,
+  UGV_DROP = 2,
 };
 
 ::std::string StateToString(MissionState state);
@@ -64,22 +62,18 @@ class TranslateState : public State {
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
   void Reset() override;
+  void SetSetpoints(double latitude, double longitude, double altitude);
+
+ private:
+  double setpoint_latitude_;
+  double setpoint_longitude_;
+  double setpoint_altitude_;
 };
 
-class UGVReleaseState : public State {
+class UGVDropState : public State {
  public:
-  UGVReleaseState();
-  ~UGVReleaseState() = default;
-
-  void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output) override;
-  void Reset() override;
-};
-
-class GetNextCmdState : public State {
- public:
-  GetNextCmdState();
-  ~GetNextCmdState() = default;
+  UGVDropState();
+  ~UGVDropState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
@@ -109,12 +103,27 @@ class MissionStateMachine {
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
 
+  void LoadMission(
+      ::src::controls::ground_controls::timeline::DroneProgram drone_program);
+
  private:
   State *GetStateHandler(MissionState state);
 
   MissionState state_;
   ::std::map<MissionState, State *> state_handlers_;
   UnknownState *unknown_state_;
+
+  ::src::controls::ground_controls::timeline::DroneProgram drone_program_;
+  ::std::mutex drone_program_mutex_;
+  int drone_program_index_;
+
+  bool setpoint_initialized_;
+  double setpoint_latitude_;
+  double setpoint_longitude_;
+  double setpoint_altitude_;
+  double setpoint_yaw_;
+
+  bool new_mission_ready_;
 };
 
 } // namespace mission_state_machine

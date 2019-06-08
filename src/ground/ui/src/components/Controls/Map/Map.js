@@ -7,14 +7,16 @@ import missionActions from 'redux/actions/missionActions';
 import { selector } from 'redux/store';
 import GoogleMap from 'components/utils/GoogleMap/GoogleMap';
 import InteropItems from './InteropItems';
-import DroneMarker from './DroneMarker';
+import VehicleMarkers from './VehicleMarkers'
 
 const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
     commandAnimate: state.mission.commandAnimate,
+    defaultAltitude: state.mission.defaultAltitude,
     mapCenter: state.telemetry.mapCenter,
     commandPoints: derivedData.mission.commandPoints,
+    droneProgramPath: derivedData.mission.droneProgramPath,
     protoInfo: derivedData.mission.protoInfo
   };
 };
@@ -60,12 +62,13 @@ class Map extends Component {
           onClick ={this.onMapClick}
           onDblClick={this.mapDblClick}
         >
-          <DroneMarker/>
+          <VehicleMarkers/>
           <InteropItems isOpen={this.state.isOpen} toggleOpen={this.toggleOpen} />
 
           {this.props.commandPoints.map((commandPoint, index) => 
             commandPoint ?
               <Marker
+              draggable={true}
                 {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.toggleOpen(commandPoint.id)}
                 animation={(this.props.commandAnimate[commandPoint.id] && window.google) ? window.google.maps.Animation.BOUNCE : null}
               >
@@ -79,7 +82,7 @@ class Map extends Component {
                      {commandPoint.infobox.content}
                     </div>
                    
-                    <Button onClick={this.deleteCommand} data-index={index}>
+                    <Button onClick={this.deleteCommand} data-index={index} color="danger">
                       <i className="fa fa-trash" style={{pointerEvents: "none"}}></i>
                     </Button>
                   </div>
@@ -88,19 +91,34 @@ class Map extends Component {
 
             : null
           )}
-                <Polyline
-                 path = {commandPointPolyCoords} strokeOpacity= {1} strokeWeight= {5} 
-                 options = {{
-                  icons: window.google ? [{
-                    icon: {
-                      path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
-                      strokeColor: '#000000'
-                    },
-                    offset: '100%',
-                    repeat: '200px'
-                  }] : null
-                }}
-                />
+          <Polyline
+            path = {commandPointPolyCoords} strokeOpacity= {1} strokeWeight= {5} 
+            options = {{
+              icons: window.google ? [{
+                icon: {
+                  path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                  strokeColor: '#000000'
+                },
+                offset: '100%',
+                repeat: '200px'
+              }] : null
+            }}
+          />
+
+          <Polyline
+            path={this.props.droneProgramPath} strokeOpacity={1} strokeWeight={5} 
+            options = {{
+              strokeColor: '#3355EE',
+              icons: window.google ? [{
+                icon: {
+                  path: window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW,
+                  strokeColor: '#3355EE'
+                },
+                offset: '100%',
+                repeat: '200px'
+              }] : null
+            }}
+          />
         </GoogleMap>
       </div>
     );
@@ -111,16 +129,16 @@ class Map extends Component {
   }
 
   mapDblClick = (event) => {
-    this.addWaypointCommand(event.latLng.lat(), event.latLng.lng());
+    this.addFlyThroughCommand(event.latLng.lat(), event.latLng.lng());
   }
 
-  addWaypointCommand = (lat, lng) => {
+  addFlyThroughCommand = (lat, lng) => {
     let defaultWaypointCommand = { goal: {
       latitude: lat,
       longitude: lng,
-      altitude: 100
+      altitude: this.props.defaultAltitude
     }}
-    this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
+    this.props.addFlyThroughCommand(defaultWaypointCommand, this.props.protoInfo);
   }
 }
 

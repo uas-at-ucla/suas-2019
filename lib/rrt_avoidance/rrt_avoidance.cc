@@ -19,14 +19,14 @@ RRTAvoidance::RRTAvoidance() :
 
 ::std::vector<Position3D>
 RRTAvoidance::Process(Position3D start, Position3D end,
-                      ::lib::mission_manager::Obstacles obstacles) {
+                      ::src::controls::ground_controls::timeline::GroundProgram ground_program) {
   if (start.latitude == end.latitude && start.longitude == end.longitude) {
     return ::std::vector<Position3D>();
   }
 
   birrt_.Reset();
 
-  int rows = 2 + obstacles.static_obstacles_size();
+  int rows = 2 + ground_program.static_obstacles_size();
 
   ::Eigen::MatrixXd m(rows, 3);
 
@@ -40,9 +40,9 @@ RRTAvoidance::Process(Position3D start, Position3D end,
   m(1, 1) = end.longitude;
   m(1, 2) = 0;
   for (int i = 2; i < rows; i++) {
-    m(i, 0) = obstacles.static_obstacles(i - 2).location().latitude();
-    m(i, 1) = obstacles.static_obstacles(i - 2).location().longitude();
-    m(i, 2) = obstacles.static_obstacles(i - 2).cylinder_radius() * 1.3;
+    m(i, 0) = ground_program.static_obstacles(i - 2).location().latitude();
+    m(i, 1) = ground_program.static_obstacles(i - 2).location().longitude();
+    m(i, 2) = ground_program.static_obstacles(i - 2).cylinder_radius() * 1.3;
 
     double lat_diff = m(i, 0) - m(0, 0);
     double long_diff = m(i, 1) - m(0, 1);

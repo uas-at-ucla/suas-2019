@@ -10,6 +10,7 @@ cc_library(
   ]),
   deps = [
     ':rrt_avoidance_tools',
+    '//src/controls/ground_controls/timeline:timeline_grammar_cc',
     '//lib/mission_manager:mission_commands_cpp',
 
     '@eigen',

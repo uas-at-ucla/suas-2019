@@ -32,6 +32,7 @@
       "command": {
         "oneof": [
           "waypoint_command",
+          "fly_through_command",
           "ugv_drop_command",
           "survey_command",
           "off_axis_command",
@@ -43,6 +44,10 @@
       "waypoint_command": {
         "type": "WaypointCommand",
         "id": 1
+      },
+      "fly_through_command": {
+        "type": "FlyThroughCommand",
+        "id": 6
       },
       "ugv_drop_command": {
         "type": "UgvDropCommand",
@@ -64,15 +69,10 @@
   },
   "UgvDropCommand": {
     "fields": {
-      "ground_target": {
+      "goal": {
         "rule": "required",
-        "type": "Position2D",
+        "type": "Position3D",
         "id": 1
-      },
-      "drop_height": {
-        "rule": "required",
-        "type": "double",
-        "id": 2
       }
     }
   },
@@ -103,8 +103,6 @@
         "oneof": [
           "nothing_command",
           "sleep_command",
-          "goto_command",
-          "goto_raw_command",
           "trigger_bomb_drop_command",
           "trigger_alarm_command",
           "translate_command"
@@ -119,14 +117,6 @@
       "sleep_command": {
         "type": "SleepCommand",
         "id": 2
-      },
-      "goto_command": {
-        "type": "GotoCommand",
-        "id": 3
-      },
-      "goto_raw_command": {
-        "type": "TranslateCommand",
-        "id": 4
       },
       "trigger_bomb_drop_command": {
         "type": "TriggerBombDropCommand",
@@ -196,6 +186,15 @@
     }
   },
   "WaypointCommand": {
+    "fields": {
+      "goal": {
+        "rule": "required",
+        "type": "Position3D",
+        "id": 1
+      }
+    }
+  },
+  "FlyThroughCommand": {
     "fields": {
       "goal": {
         "rule": "required",
