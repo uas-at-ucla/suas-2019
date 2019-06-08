@@ -136,18 +136,6 @@ void DSLRInterface::RunIteration() {
         exit(0);
       }
 
-      long latitude, longitude; // don't know where to get these
-
-      char fname[80];
-      sprintf(fname, "/home/pi/pictures/%d.json", current_time)
-      ::std::ofstream tagfile (fname);
-
-      // Write coordinates to the log file
-      tagfile << "{\"time\": " << current_time << ", ";
-      tagfile << "\"latitude\": " << latitude << ", ";
-      tagfile << "\"longitude\": " << longitude << "}";
-      tagfile.close();
-
       next_state = DOWNLOAD_PHOTOS;
       break;
 
