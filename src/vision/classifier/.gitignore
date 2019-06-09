@@ -1,0 +1,5 @@
+models/
+data/
+.ipynb_checkpoints
+seg/
+*.hdf5

@@ -2,9 +2,11 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <fstream>
 #include <iostream>
 #include <mutex>
 #include <signal.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
