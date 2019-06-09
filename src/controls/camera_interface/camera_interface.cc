@@ -26,6 +26,7 @@ void CameraInterface::SensorsReceived(::src::controls::Sensors sensors) {
   if (current_time < last_tag_write_ + 1.0 / kCameraTagWriteHz) {
     return;
   }
+
   last_tag_write_ = current_time;
 
   // Write out the tag data.
@@ -36,12 +37,14 @@ void CameraInterface::SensorsReceived(::src::controls::Sensors sensors) {
 void CameraInterface::WriteTag(double latitude, double longitude,
                                double altitude, double heading) {
   // Write coordinates to the log file
-  long timestamp = ::std::chrono::duration_cast<::std::chrono::milliseconds>(
+  double timestamp = ::std::chrono::duration_cast<::std::chrono::milliseconds>(
                        ::std::chrono::system_clock::now().time_since_epoch())
-                       .count();
+                       .count() / 1000.0;
 
   tag_file_ << timestamp << "," << latitude << "," << longitude << ","
             << altitude << "," << heading << ::std::endl;
+
+  tag_file_.flush();
 }
 
 } // namespace camera_interface

@@ -311,11 +311,6 @@ def run_vision(args):
     run_cmd_exit_failure(VISION_DOCKER_RUN_SCRIPT + " ".join(args.vision_args))
 
 
-def run_deploy(args):
-    processes.spawn_process("python lib/scripts/deploy.py")
-    processes.wait_for_complete()
-
-
 def run_install(args=None):
     run_and_die_if_error("bash ./tools/scripts/install.sh")
 
@@ -386,6 +381,10 @@ def run_controls_deploy(args=None):
 
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + CONTROLS_DEPLOY_SCRIPT \
             + "src/controls/ground_communicator/ground_communicator ground_communicator")
+
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + CONTROLS_DEPLOY_SCRIPT \
+            + "src/controls/camera_interface/camera_interface camera_interface")
+
 
 def run_controls_rqt(args=None):
     shutdown_functions.append(kill_controls_rqt)
@@ -493,9 +492,11 @@ def run_simulate(args):
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/flight_loop:flight_loop")
     tmux_move_pane("right")
     tmux_cmd(DOCKER_EXEC_SCRIPT + io_command)
-    tmux_split("vertical", 2)
+    tmux_split("vertical", 3)
     tmux_move_pane("down")
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_communicator:ground_communicator")
+    tmux_move_pane("down")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/camera_interface:camera_interface")
 
     tmux_new_window("GROUND")
     tmux_split("horizontal", 2)
