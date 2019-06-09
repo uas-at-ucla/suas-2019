@@ -38,8 +38,9 @@ void CameraInterface::WriteTag(double latitude, double longitude,
                                double altitude, double heading) {
   // Write coordinates to the log file
   double timestamp = ::std::chrono::duration_cast<::std::chrono::milliseconds>(
-                       ::std::chrono::system_clock::now().time_since_epoch())
-                       .count() / 1000.0;
+                         ::std::chrono::system_clock::now().time_since_epoch())
+                         .count() /
+                     1000.0;
 
   tag_file_ << timestamp << "," << latitude << "," << longitude << ","
             << altitude << "," << heading << ::std::endl;

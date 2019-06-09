@@ -101,6 +101,14 @@ DroneProgram Ground2DroneVisitor::Visit(WaypointCommand *n) {
     ConcatenateDroneProgramCommands(drone_program, goto_command_program);
   }
 
+  // Wait a bit after reaching this waypoint.
+  {
+    DroneCommand *sleep_cmd = new DroneCommand();
+    sleep_cmd->mutable_sleep_command();
+    sleep_cmd->mutable_sleep_command()->set_time(10);
+    drone_program.mutable_commands()->AddAllocated(sleep_cmd);
+  }
+
   return drone_program;
 }
 
@@ -165,15 +173,12 @@ DroneProgram Ground2DroneVisitor::Visit(LandAtLocationCommand *n) {
 
   // Create a GotoCommand to fly to the waypoint while avoiding obstacles on the
   // field.
+  // TODO(comran): Make this use a waypoint command.
   {
-    GotoCommand *goto_command = new GotoCommand();
-    goto_command->mutable_goal()->CopyFrom(n->goal());
-    goto_command->set_come_to_stop(true);
-    goto_command->mutable_goal()->set_altitude(goto_command->goal().altitude() /
-                                               kFeetPerMeter);
-
-    DroneProgram goto_command_program = Visit(goto_command);
-    ConcatenateDroneProgramCommands(drone_program, goto_command_program);
+    WaypointCommand *waypoint_command = new WaypointCommand();
+    waypoint_command->mutable_goal()->CopyFrom(n->goal());
+    DroneProgram waypoint_command_program = Visit(waypoint_command);
+    ConcatenateDroneProgramCommands(drone_program, waypoint_command_program);
   }
 
   // Land after reaching this waypoint.
