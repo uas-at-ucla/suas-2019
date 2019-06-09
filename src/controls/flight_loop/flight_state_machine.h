@@ -197,6 +197,7 @@ class FlightStateMachine {
   FlightLoopState state_;
   ::std::map<FlightLoopState, State *> state_handlers_;
   UnknownState *unknown_state_;
+  bool mission_commanded_land_;
 };
 
 } // namespace flight_state_machine

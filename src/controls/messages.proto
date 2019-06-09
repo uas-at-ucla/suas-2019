@@ -60,6 +60,7 @@ message Output {
   required bool trigger_arm            = 19;
   required bool trigger_disarm         = 20;
   required bool deploy                 = 21;
+  required bool mission_commanded_land = 22;
 }
 
 message UgvSensors {

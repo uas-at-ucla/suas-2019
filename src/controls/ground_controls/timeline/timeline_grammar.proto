@@ -14,9 +14,9 @@ import "lib/mission_manager/mission_commands.proto";
 // commands to execute and characteristics of the field, as received by the
 // interop server.
 message GroundProgram {
-  repeated GroundCommand     commands                                                          = 1;
-  repeated lib.mission_manager.StaticObstacle    static_obstacles                              = 2;
-  repeated lib.mission_manager.Position2D        field_boundary                                = 3;
+  repeated GroundCommand commands                                 = 1;
+  repeated lib.mission_manager.StaticObstacle    static_obstacles = 2;
+  repeated lib.mission_manager.Position2D        field_boundary   = 3;
 }
 
 // GroundCommand wraps all of the valid commands that are possible for ground
@@ -24,43 +24,51 @@ message GroundProgram {
 // so whichever one is set will determine the type of this command.
 message GroundCommand {
   oneof command {
-    lib.mission_manager.WaypointCommand          waypoint_command                              = 1;
-    lib.mission_manager.FlyThroughCommand        fly_through_command                           = 6;
-    UgvDropCommand           ugv_drop_command                                = 2;
-    lib.mission_manager.SurveyCommand            survey_command                                = 3;
-    lib.mission_manager.OffAxisCommand           off_axis_command                              = 4;
-    WaitCommand              wait_command                                  = 5;
+    lib.mission_manager.WaypointCommand waypoint_command      = 1;
+    lib.mission_manager.FlyThroughCommand fly_through_command = 2;
+    UgvDropCommand ugv_drop_command                           = 3;
+    lib.mission_manager.SurveyCommand survey_command          = 4;
+    lib.mission_manager.OffAxisCommand off_axis_command       = 5;
+    WaitCommand wait_command                                  = 6;
+    LandAtLocationCommand land_at_location_command            = 7;
   }
 }
 
 message UgvDropCommand {
-  required lib.mission_manager.Position3D        goal                      = 1;
+  required lib.mission_manager.Position3D goal = 1;
 }
 
 message WaitCommand {
-  required double            time                                          = 1;
+  required double time = 1;
+}
+
+message LandAtLocationCommand {
+  required lib.mission_manager.Position3D goal = 1;
 }
 
 // Drone language //////////////////////////////////////////////////////////////
 message DroneProgram {
-  repeated DroneCommand      commands                                      = 1;
+  repeated DroneCommand commands = 1;
 }
 
 message DroneCommand {
   oneof command {
-    lib.mission_manager.NothingCommand           nothing_command                                = 1;
-    lib.mission_manager.SleepCommand             sleep_command                                  = 2;
-    TriggerBombDropCommand   trigger_bomb_drop_command                      = 5;
-    TriggerAlarmCommand      trigger_alarm_command                          = 6;
-    TranslateCommand         translate_command                              = 7;
+    lib.mission_manager.NothingCommand nothing_command           = 1;
+    lib.mission_manager.SleepCommand sleep_command               = 2;
+    TriggerBombDropCommand trigger_bomb_drop_command             = 3;
+    TriggerAlarmCommand trigger_alarm_command                    = 4;
+    TranslateCommand translate_command                           = 5;
+    LandCommand land_command                                     = 6;
   }
 }
 
 message TranslateCommand {
-  required lib.mission_manager.Position3D        goal                                          = 1;
-  required bool              come_to_stop                                  = 2;
+  required lib.mission_manager.Position3D goal = 1;
+  required bool come_to_stop                   = 2;
 }
 
 message TriggerBombDropCommand {}
 
 message TriggerAlarmCommand {}
+
+message LandCommand {}

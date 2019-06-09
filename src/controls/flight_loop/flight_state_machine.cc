@@ -7,7 +7,8 @@ namespace flight_state_machine {
 
 FlightStateMachine::FlightStateMachine() :
     state_(STANDBY),
-    unknown_state_(new UnknownState()) {
+    unknown_state_(new UnknownState()),
+    mission_commanded_land_(false) {
 
   // Create an instance of all state handlers.
   state_handlers_[STANDBY] = new StandbyState();
@@ -17,6 +18,7 @@ FlightStateMachine::FlightStateMachine() :
   state_handlers_[TAKEN_OFF] = new TakenOffState();
   state_handlers_[SAFETY_PILOT_CONTROL] = new SafetyPilotControlState();
   state_handlers_[MISSION] = new MissionState();
+  state_handlers_[LANDING] = new LandingState();
 }
 
 FlightStateMachine::~FlightStateMachine() {
@@ -32,6 +34,11 @@ void FlightStateMachine::Handle(::src::controls::Sensors &sensors,
                                 ::src::controls::Goal &goal,
                                 ::src::controls::Output &output) {
 
+  // Don't run a mission if the current mission told the drone to land.
+  if(mission_commanded_land_) {
+    goal.set_run_mission(false);
+  }
+
   // Use same state in next loop iteration, unless it is changed.
   output.set_state(state_);
 
@@ -44,7 +51,11 @@ void FlightStateMachine::Handle(::src::controls::Sensors &sensors,
 
 void FlightStateMachine::LoadMission(
     ::src::controls::ground_controls::timeline::DroneProgram drone_program) {
+
   ((MissionState *)GetStateHandler(MISSION))->LoadMission(drone_program);
+
+  // Reset any landed state commanded by the last mission.
+  mission_commanded_land_ = false;
 }
 
 void FlightStateMachine::StateTransition(::src::controls::Output &output) {
@@ -66,6 +77,11 @@ void FlightStateMachine::StateTransition(::src::controls::Output &output) {
 
   // Reset the new state after transition is made.
   GetStateHandler(state_)->Reset();
+
+  // Record whether mission commanded the land state.
+  if(output.mission_commanded_land()) {
+    mission_commanded_land_ = true;
+  }
 }
 
 State *FlightStateMachine::GetStateHandler(FlightLoopState state) {
@@ -78,21 +94,21 @@ State *FlightStateMachine::GetStateHandler(FlightLoopState state) {
 
 ::std::string StateToString(FlightLoopState state) {
   switch (state) {
-    case STANDBY:
+    case FlightLoopState::STANDBY:
       return "STANDBY";
-    case ARMING:
+    case FlightLoopState::ARMING:
       return "ARMING";
-    case ARMED_WAIT_FOR_SPINUP:
+    case FlightLoopState::ARMED_WAIT_FOR_SPINUP:
       return "ARMED_WAIT_FOR_SPINUP";
-    case TAKING_OFF:
+    case FlightLoopState::TAKING_OFF:
       return "TAKING_OFF";
-    case TAKEN_OFF:
+    case FlightLoopState::TAKEN_OFF:
       return "TAKEN_OFF";
-    case SAFETY_PILOT_CONTROL:
+    case FlightLoopState::SAFETY_PILOT_CONTROL:
       return "SAFETY_PILOT_CONTROL";
-    case MISSION:
+    case FlightLoopState::MISSION:
       return "MISSION";
-    case LANDING:
+    case FlightLoopState::LANDING:
       return "LANDING";
   }
 
@@ -115,12 +131,12 @@ void StandbyState::Handle(::src::controls::Sensors &sensors,
   if (sensors.armed()) {
     ROS_INFO("Pixhawk is already armed; switching to ArmedWaitForSpinupState "
              "state.");
-    output.set_state(ARMED_WAIT_FOR_SPINUP);
+    output.set_state(FlightLoopState::ARMED_WAIT_FOR_SPINUP);
     return;
   }
 
   ROS_INFO("Run mission requested and not armed; attempting to arm.");
-  output.set_state(ARMING);
+  output.set_state(FlightLoopState::ARMING);
 }
 
 void StandbyState::Reset() {}
@@ -137,17 +153,17 @@ void ArmingState::Handle(::src::controls::Sensors &sensors,
   // TODO(comran): Check if we have GPS.
 
   if (!goal.run_mission()) {
-    output.set_state(STANDBY);
+    output.set_state(FlightLoopState::STANDBY);
     return;
   }
 
   if (sensors.armed() && sensors.relative_altitude() > kMinTakeoffAltitude) {
-    output.set_state(TAKEN_OFF);
+    output.set_state(FlightLoopState::TAKEN_OFF);
     return;
   }
 
   if (sensors.armed()) {
-    output.set_state(ARMED_WAIT_FOR_SPINUP);
+    output.set_state(FlightLoopState::ARMED_WAIT_FOR_SPINUP);
     return;
   }
 
@@ -176,17 +192,17 @@ void ArmedWaitForSpinupState::Handle(::src::controls::Sensors &sensors,
                                      ::src::controls::Goal &goal,
                                      ::src::controls::Output &output) {
   if (!goal.run_mission()) {
-    output.set_state(LANDING);
+    output.set_state(FlightLoopState::LANDING);
     return;
   }
 
   if (!sensors.armed()) {
-    output.set_state(ARMING);
+    output.set_state(FlightLoopState::ARMING);
     return;
   }
 
   if (sensors.armed() && sensors.relative_altitude() > kMinTakeoffAltitude) {
-    output.set_state(TAKEN_OFF);
+    output.set_state(FlightLoopState::TAKEN_OFF);
     return;
   }
 
@@ -198,7 +214,7 @@ void ArmedWaitForSpinupState::Handle(::src::controls::Sensors &sensors,
 
   // Wait a bit for the propellers to spin up while armed.
   if (sensors.time() - start_ > kSpinupTime) {
-    output.set_state(TAKING_OFF);
+    output.set_state(FlightLoopState::TAKING_OFF);
   }
 }
 
@@ -214,13 +230,13 @@ void TakingOffState::Handle(::src::controls::Sensors &sensors,
                             ::src::controls::Goal &goal,
                             ::src::controls::Output &output) {
   if (!goal.run_mission()) {
-    output.set_state(LANDING);
+    output.set_state(FlightLoopState::LANDING);
     return;
   }
 
   // Arm the drone before performing a takeoff.
   if (!sensors.armed()) {
-    output.set_state(ARMING);
+    output.set_state(FlightLoopState::ARMING);
     return;
   }
 
@@ -228,7 +244,7 @@ void TakingOffState::Handle(::src::controls::Sensors &sensors,
   // state.
   if (sensors.autopilot_state() == kPixhawkCustomModeLoiter &&
       sensors.relative_altitude() > kMinTakeoffAltitude) {
-    output.set_state(TAKEN_OFF);
+    output.set_state(FlightLoopState::TAKEN_OFF);
     return;
   }
 
@@ -248,20 +264,20 @@ void TakenOffState::Handle(::src::controls::Sensors &sensors,
 
   // If we no longer want to run a mission, attempt to land.
   if (!goal.run_mission()) {
-    output.set_state(LANDING);
+    output.set_state(FlightLoopState::LANDING);
     return;
   }
 
   // If we somehow got disarmed after taking off (not sure how that'd happen),
   // try to go through the arming proceedure again.
   if (!sensors.armed()) {
-    output.set_state(ARMING);
+    output.set_state(FlightLoopState::ARMING);
     return;
   }
 
   // Take off again if we drop below minimum altitude.
   if (sensors.relative_altitude() < kMinTakeoffAltitude) {
-    output.set_state(TAKING_OFF);
+    output.set_state(FlightLoopState::TAKING_OFF);
     return;
   }
 
@@ -273,7 +289,7 @@ void TakenOffState::Handle(::src::controls::Sensors &sensors,
 
   // Wait a bit in taken off state before continuing to mission.
   if (sensors.time() - start_ > kTakenOffWaitTime) {
-    output.set_state(MISSION);
+    output.set_state(FlightLoopState::MISSION);
   }
 }
 
@@ -292,17 +308,23 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
   (void)sensors;
 
   if (!goal.run_mission()) {
-    output.set_state(SAFETY_PILOT_CONTROL);
+    output.set_state(FlightLoopState::SAFETY_PILOT_CONTROL);
     return;
   }
 
   mission_state_machine_.Handle(sensors, goal, output);
+
+  if(output.mission_commanded_land()) {
+    output.set_state(FlightLoopState::LANDING);
+  }
 }
 
 void MissionState::Reset() {}
 
 void MissionState::LoadMission(
     ::src::controls::ground_controls::timeline::DroneProgram drone_program) {
+
+  // Load the new mission into the mission state machine.
   mission_state_machine_.LoadMission(drone_program);
 }
 

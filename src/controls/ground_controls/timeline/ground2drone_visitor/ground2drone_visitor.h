@@ -36,6 +36,7 @@ class Ground2DroneVisitor {
   DroneProgram Visit(SurveyCommand *n);
   DroneProgram Visit(OffAxisCommand *n);
   DroneProgram Visit(WaitCommand *n);
+  DroneProgram Visit(LandAtLocationCommand *n);
 
   // Intermediate language visitors.
   DroneProgram Visit(GotoCommand *n);

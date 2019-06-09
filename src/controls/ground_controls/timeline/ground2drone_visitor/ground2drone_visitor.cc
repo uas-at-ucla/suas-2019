@@ -57,6 +57,8 @@ DroneProgram Ground2DroneVisitor::Visit(GroundCommand *n) {
     command_program = Visit(n->mutable_off_axis_command());
   } else if (n->has_wait_command()) {
     command_program = Visit(n->mutable_wait_command());
+  } else if (n->has_land_at_location_command()) {
+    command_program = Visit(n->mutable_land_at_location_command());
   }
 
   ConcatenateDroneProgramCommands(drone_program, command_program);
@@ -158,13 +160,38 @@ DroneProgram Ground2DroneVisitor::Visit(WaitCommand *n) {
   return drone_program;
 }
 
+DroneProgram Ground2DroneVisitor::Visit(LandAtLocationCommand *n) {
+  DroneProgram drone_program;
+
+  // Create a GotoCommand to fly to the waypoint while avoiding obstacles on the
+  // field.
+  {
+    GotoCommand *goto_command = new GotoCommand();
+    goto_command->mutable_goal()->CopyFrom(n->goal());
+    goto_command->set_come_to_stop(true);
+    goto_command->mutable_goal()->set_altitude(goto_command->goal().altitude() /
+                                               kFeetPerMeter);
+
+    DroneProgram goto_command_program = Visit(goto_command);
+    ConcatenateDroneProgramCommands(drone_program, goto_command_program);
+  }
+
+  // Land after reaching this waypoint.
+  {
+    DroneCommand *land_cmd = new DroneCommand();
+    land_cmd->mutable_land_command();
+    drone_program.mutable_commands()->AddAllocated(land_cmd);
+  }
+
+  return drone_program;
+}
+
 DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
   DroneProgram drone_program;
 
   // Go to a certain location on the field while avoiding obstacles by
   // calculating a safe path to travel and commanding the drone to follow this
   // path using TranslateCommand.
-
   ::lib::Position3D end = {n->goal().latitude(), n->goal().longitude(),
                            n->goal().altitude()};
 

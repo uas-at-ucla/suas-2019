@@ -36,6 +36,7 @@ enum MissionState {
   GET_NEXT_CMD = 0,
   TRANSLATE = 1,
   UGV_DROP = 2,
+  LAND = 3,
 };
 
 ::std::string StateToString(MissionState state);
@@ -73,6 +74,16 @@ class UGVDropState : public State {
  public:
   UGVDropState();
   ~UGVDropState() = default;
+
+  void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
+              ::src::controls::Output &output) override;
+  void Reset() override;
+};
+
+class LandState : public State {
+ public:
+  LandState();
+  ~LandState() = default;
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;

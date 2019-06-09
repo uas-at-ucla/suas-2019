@@ -55,8 +55,6 @@ GroundControls::GroundControls(int argc, char **argv) :
     phased_loop_(1e2),
     drone_program_success_(false) {
 
-  // Connect proto_receiver_
-
   socketio_ground_controls = this;
   client_.set_open_listener(on_connect);
   client_.set_fail_listener(on_fail);
@@ -89,7 +87,7 @@ void GroundControls::SendSensorsToServer(
 
 void GroundControls::SensorsReceived(const ::src::controls::Sensors sensors) {
   (void)sensors;
-  // SendSensorsToServer(sensors, false);
+  SendSensorsToServer(sensors, false);
 }
 
 void GroundControls::OutputReceived(const ::src::controls::Output output) {

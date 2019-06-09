@@ -39,3 +39,4 @@ core
 /tools/cache/
 /external/downloaded
 /output
+/src/ground/ui/src/protobuf/timeline_grammar.proto.json

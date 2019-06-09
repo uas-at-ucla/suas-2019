@@ -13,8 +13,9 @@ MissionStateMachine::MissionStateMachine() :
     new_mission_ready_(false) {
 
   // Create an instance of all state handlers.
-  state_handlers_[TRANSLATE] = new TranslateState();
-  state_handlers_[UGV_DROP] = new UGVDropState();
+  state_handlers_[MissionState::TRANSLATE] = new TranslateState();
+  state_handlers_[MissionState::UGV_DROP] = new UGVDropState();
+  state_handlers_[MissionState::LAND] = new LandState();
 }
 
 MissionStateMachine::~MissionStateMachine() {
@@ -94,23 +95,27 @@ void MissionStateMachine::StateTransition(::src::controls::Output &output) {
     if (drone_program_.commands_size() > drone_program_index_) {
       ground_controls::timeline::DroneCommand loaded_command =
           drone_program_.commands(drone_program_index_);
+
       ROS_DEBUG_STREAM("COMMAND: " << loaded_command.has_translate_command());
+
       if (loaded_command.has_translate_command()) {
-        new_state = TRANSLATE;
-        ((TranslateState *)GetStateHandler(TRANSLATE))
+        new_state = MissionState::TRANSLATE;
+        ((TranslateState *)GetStateHandler(MissionState::TRANSLATE))
             ->SetSetpoints(
                 loaded_command.translate_command().goal().latitude(),
                 loaded_command.translate_command().goal().longitude(),
                 loaded_command.translate_command().goal().altitude());
       } else if (loaded_command.has_trigger_bomb_drop_command()) {
-        new_state = UGV_DROP;
+        new_state = MissionState::UGV_DROP;
+      } else if (loaded_command.has_land_command()) {
+        new_state = MissionState::LAND;
       }
 
       drone_program_index_++;
     } else {
       // Empty drone program, so try to load the next available command until
       // one is available.
-      new_state = GET_NEXT_CMD;
+      new_state = MissionState::GET_NEXT_CMD;
     }
   }
 
@@ -154,6 +159,8 @@ void MissionStateMachine::LoadMission(
       return "TRANSLATE";
     case UGV_DROP:
       return "UGV_DROP";
+    case LAND:
+      return "LAND";
   }
   return "UNKNOWN";
 }
@@ -211,6 +218,21 @@ void UGVDropState::Handle(::src::controls::Sensors &sensors,
 }
 
 void UGVDropState::Reset() {}
+
+// LandState ///////////////////////////////////////////////////////////////////
+LandState::LandState() {}
+
+void LandState::Handle(::src::controls::Sensors &sensors,
+                       ::src::controls::Goal &goal,
+                       ::src::controls::Output &output) {
+  (void)sensors;
+  (void)goal;
+  (void)output;
+
+  output.set_mission_commanded_land(true);
+}
+
+void LandState::Reset() {}
 
 // UGVReleaseState /////////////////////////////////////////////////////////////
 UnknownState::UnknownState() {}
