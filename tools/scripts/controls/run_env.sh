@@ -156,6 +156,10 @@ docker run                          \
   -e DISPLAY=$DISPLAY               \
   -v /tmp/.X11-unix:/tmp/.X11-unix  \
   --privileged                      \
+  -v /dev:/dev                      \
+  --device=/dev/ttyUSB0             \
+  --device=/dev/ttyUSB1             \
+  --device=/dev/ttyUSB2             \
   --dns 8.8.8.8                     \
   --name uas-at-ucla_controls       \
   uas-at-ucla_controls              \

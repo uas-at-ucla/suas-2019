@@ -167,8 +167,6 @@ template <typename T> class SerialDevice {
     // Generate a message line using a custom encoding scheme.
     ::std::string encoded_message = GenerateEncodedMessage(data);
 
-    // ::std::cout << "writing " << encoded_message << ::std::endl;
-
     // Put string data into a vector.
     ::std::vector<char> v(encoded_message.begin(), encoded_message.end());
 

@@ -43,7 +43,6 @@ class GroundControls {
  public:
   GroundControls(int argc, char **argv);
   void ReadRFD900();
-  //   void ReadUDP();
 
   void OnConnect();
   void OnFail();
@@ -85,12 +84,9 @@ class GroundControls {
   ::ros::Subscriber latch_subscriber_;
   ::ros::Subscriber hotwire_subscriber_;
 
-  //   ::lib::proto_comms::ProtoReceiver<::src::controls::UasMessage>
-  //       udp_connection_;
   ::lib::serial_device::SerialDevice<::src::controls::UasMessage>
       rfd900_connection_;
 
-  // ::ros::Rate loop(50);
   ::sio::client client_;
 
   ::lib::phased_loop::PhasedLoop phased_loop_;

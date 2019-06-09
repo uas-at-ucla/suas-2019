@@ -13,6 +13,9 @@
 namespace src {
 namespace controls {
 namespace ground_communicator {
+namespace {
+static const int kRfd900SendRate = 4;
+}
 
 class GroundCommunicator {
  public:
@@ -28,9 +31,9 @@ class GroundCommunicator {
   ::ros::Subscriber sensors_subscriber_;
   // ::ros::Subscriber drone_program_subscriber_;
 
-  ::lib::proto_comms::ProtoSender<::src::controls::UasMessage> proto_sender_;
-
   ::lib::serial_device::SerialDevice<::src::controls::UasMessage> rfd900_;
+
+  double next_rfd900_write_;
 };
 
 } // namespace ground_communicator

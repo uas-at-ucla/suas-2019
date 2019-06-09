@@ -22,7 +22,6 @@
 #include "lib/proto_comms/proto_comms.h"
 #include "mission_state_machine.h"
 #include "src/controls/constants.h"
-#include "src/controls/ground_controls/timeline/executor/executor.h"
 #include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
 
@@ -54,8 +53,6 @@ enum FlightLoopState {
   MISSION = 5,
   SAFETY_PILOT_CONTROL = 6,
   LANDING = 7,
-  FAILSAFE = 8,
-  FLIGHT_TERMINATION = 9,
 };
 
 ::std::string StateToString(FlightLoopState state);
@@ -170,26 +167,6 @@ class LandingState : public State {
   void Reset() override;
 };
 
-class FailsafeState : public State {
- public:
-  FailsafeState();
-  ~FailsafeState() = default;
-
-  void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output) override;
-  void Reset() override;
-};
-
-class FlightTerminationState : public State {
- public:
-  FlightTerminationState();
-  ~FlightTerminationState() = default;
-
-  void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
-              ::src::controls::Output &output) override;
-  void Reset() override;
-};
-
 class UnknownState : public State {
  public:
   UnknownState();
@@ -207,8 +184,6 @@ class FlightStateMachine {
   ~FlightStateMachine();
 
   void StateTransition(::src::controls::Output &output);
-  bool SafetyStateOverride(::src::controls::Goal &goal,
-                           ::src::controls::Output &output);
 
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output);
@@ -222,6 +197,7 @@ class FlightStateMachine {
   FlightLoopState state_;
   ::std::map<FlightLoopState, State *> state_handlers_;
   UnknownState *unknown_state_;
+  bool mission_commanded_land_;
 };
 
 } // namespace flight_state_machine

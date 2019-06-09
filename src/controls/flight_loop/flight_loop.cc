@@ -101,6 +101,8 @@ void FlightLoop::MonitorLoopFrequency(::src::controls::Sensors sensors) {
 
   output.set_deploy(false);
 
+  output.set_mission_commanded_land(false);
+
   return output;
 }
 

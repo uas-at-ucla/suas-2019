@@ -8,10 +8,6 @@ int main(int argc, char **argv) {
   ::ros::init(argc, argv, "uasatucla_ground_controls");
   ::ros::start();
 
-  // Serial device test
-  ::lib::serial_device::SerialDevice<::src::controls::UasMessage> rfd900(
-      "/dev/ttyUSB0", B57600, 0);
-
   ::src::controls::ground_controls::GroundControls ground_controls(argc, argv);
   ::std::thread rfd900_thread(
       &::src::controls::ground_controls::GroundControls::ReadRFD900,

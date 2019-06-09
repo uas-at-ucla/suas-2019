@@ -21,7 +21,6 @@
 #include "lib/phased_loop/phased_loop.h"
 #include "lib/physics_structs/physics_structs.h"
 #include "lib/proto_comms/proto_comms.h"
-#include "src/controls/ground_controls/timeline/executor/executor.h"
 #include "src/controls/ground_controls/timeline/timeline_grammar.pb.h"
 #include "src/controls/messages.pb.h"
 
@@ -37,6 +36,8 @@ enum MissionState {
   GET_NEXT_CMD = 0,
   TRANSLATE = 1,
   UGV_DROP = 2,
+  LAND = 3,
+  SLEEP = 4,
 };
 
 ::std::string StateToString(MissionState state);
@@ -78,6 +79,33 @@ class UGVDropState : public State {
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
   void Reset() override;
+};
+
+class LandState : public State {
+ public:
+  LandState();
+  ~LandState() = default;
+
+  void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
+              ::src::controls::Output &output) override;
+  void Reset() override;
+};
+
+class SleepState : public State {
+ public:
+  SleepState();
+  ~SleepState() = default;
+
+  void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
+              ::src::controls::Output &output) override;
+  void Reset() override;
+
+  void SetSleepPeriod(double sleep_period);
+
+ private:
+  double start_;
+  bool was_reset_;
+  double sleep_period_;
 };
 
 class UnknownState : public State {

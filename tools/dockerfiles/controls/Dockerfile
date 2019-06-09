@@ -153,7 +153,7 @@ RUN dpkg -i bazel_0.23.2-linux-x86_64.deb
 # ROS dependencies.
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu stretch main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
-RUN apt-get update && apt-get install -y ros-melodic-ros-base ros-melodic-mavros
+RUN apt-get update && apt-get install -y --allow-unauthenticated ros-melodic-ros-base ros-melodic-mavros
 
 RUN printf "source /opt/ros/melodic/setup.bash" > /home/uas/.bashrc
 

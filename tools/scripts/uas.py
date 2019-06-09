@@ -311,11 +311,6 @@ def run_vision(args):
     run_cmd_exit_failure(VISION_DOCKER_RUN_SCRIPT + " ".join(args.vision_args))
 
 
-def run_deploy(args):
-    processes.spawn_process("python lib/scripts/deploy.py")
-    processes.wait_for_complete()
-
-
 def run_install(args=None):
     run_and_die_if_error("bash ./tools/scripts/install.sh")
 
@@ -387,6 +382,10 @@ def run_controls_deploy(args=None):
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + CONTROLS_DEPLOY_SCRIPT \
             + "src/controls/ground_communicator/ground_communicator ground_communicator")
 
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + CONTROLS_DEPLOY_SCRIPT \
+            + "src/controls/camera_interface/camera_interface camera_interface")
+
+
 def run_controls_rqt(args=None):
     shutdown_functions.append(kill_controls_rqt)
 
@@ -435,7 +434,7 @@ def run_controls_sitl(args):
         sys.exit(1)
 
 
-def run_controls_simulate(args):
+def run_simulate(args):
     shutdown_functions.append(kill_processes_in_uas_env_container)
     shutdown_functions.append(kill_simulator)
     shutdown_functions.append(kill_tmux_session_uas_env)
@@ -446,7 +445,7 @@ def run_controls_simulate(args):
     # Make sure the simulator is not already running.
     if processes.spawn_process_wait_for_code( \
             "tmux has-session -t uas_env > /dev/null 2>&1") == 0:
-        print_update("UAS simulation is already running!", \
+        print_update("UAS tmux env is already running something!", \
                 msg_type="FAILURE")
         sys.exit(1)
 
@@ -493,9 +492,11 @@ def run_controls_simulate(args):
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/flight_loop:flight_loop")
     tmux_move_pane("right")
     tmux_cmd(DOCKER_EXEC_SCRIPT + io_command)
-    tmux_split("vertical", 2)
+    tmux_split("vertical", 3)
     tmux_move_pane("down")
     tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_communicator:ground_communicator")
+    tmux_move_pane("down")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/camera_interface:camera_interface")
 
     tmux_new_window("GROUND")
     tmux_split("horizontal", 2)
@@ -516,6 +517,62 @@ def run_controls_simulate(args):
         if processes.spawn_process_wait_for_code( \
             "tmux has-session -t uas_env > /dev/null 2>&1") == 1:
             print_update("Tmux session closed, killing simulator...", "FAILURE")
+            # Session exited.
+            signal_received(2, 0)
+
+        time.sleep(1)
+
+
+def run_production(args):
+    shutdown_functions.append(kill_processes_in_uas_env_container)
+    shutdown_functions.append(kill_tmux_session_uas_env)
+    shutdown_functions.append(kill_ground)
+
+    run_controls_docker_start(None, show_complete=False)
+
+    # Make sure the simulator is not already running.
+    if processes.spawn_process_wait_for_code( \
+            "tmux has-session -t uas_env > /dev/null 2>&1") == 0:
+        print_update("UAS tmux env is already running something!", \
+                msg_type="FAILURE")
+        sys.exit(1)
+
+    run_cmd_exit_failure("tmux kill-session " \
+            "-t uas_env " \
+            "> /dev/null 2>&1 || true")
+
+    kill_running_simulators()
+
+    # Build the docker image for our PX4 simulator environment.
+    print_update("Building UAS@UCLA software env docker...")
+
+    # Set up tmux panes.
+    run_cmd_exit_failure("tmux start-server")
+
+    run_cmd_exit_failure("tmux " \
+            "-2 " \
+            "new-session " \
+            "-d " \
+            "-s " \
+            "uas_env")
+
+    tmux_rename_pane("GROUND")
+    tmux_split("horizontal", 2)
+    tmux_split("vertical", 2)
+    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_controls:ground_controls 192.168.3.10")
+    tmux_move_pane("down")
+    tmux_cmd("./src/ground/ground.py run ui")
+    tmux_move_pane("right")
+    tmux_cmd("./uas ground run server")
+
+    print_update("\n\nProduction groundstation running! \n" \
+            "Run \"tmux a -t uas_env\" in another bash window to see everything working. Use `Ctrl-B n` to cycle between windows.", \
+            msg_type="SUCCESS")
+
+    while True:
+        if processes.spawn_process_wait_for_code( \
+            "tmux has-session -t uas_env > /dev/null 2>&1") == 1:
+            print_update("Tmux session closed, killing production...", "FAILURE")
             # Session exited.
             signal_received(2, 0)
 
@@ -749,6 +806,13 @@ if __name__ == '__main__':
     interop_parser = subparsers.add_parser('interop')
     interop_parser.set_defaults(func=run_interop)
 
+    simulate_parser = subparsers.add_parser('simulate')
+    simulate_parser.add_argument('--lite', action='store_true')
+    simulate_parser.set_defaults(func=run_simulate)
+
+    production_parser = subparsers.add_parser('production')
+    production_parser.set_defaults(func=run_production)
+
     controls_parser = subparsers.add_parser('controls')
     controls_subparsers = controls_parser.add_subparsers()
     controls_docker_parser = controls_subparsers.add_parser('docker')
@@ -763,9 +827,6 @@ if __name__ == '__main__':
     controls_docker_shell.set_defaults(func=run_controls_docker_shell)
     controls_sitl_parser = controls_subparsers.add_parser('sitl')
     controls_sitl_parser.set_defaults(func=run_controls_sitl)
-    controls_simulate_parser = controls_subparsers.add_parser('simulate')
-    controls_simulate_parser.add_argument('--lite', action='store_true')
-    controls_simulate_parser.set_defaults(func=run_controls_simulate)
     controls_build_parser = controls_subparsers.add_parser('build')
     controls_build_parser.set_defaults(func=run_controls_build)
     controls_deploy_parser = controls_subparsers.add_parser('deploy')

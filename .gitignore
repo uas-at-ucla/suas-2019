@@ -29,6 +29,8 @@ core
 /src/vision/shape_classifier/darkflow/sample_img
 /src/vision/shape_classifier/darkflow/summary
 /src/vision/shape_classifier/darkflow/built_graph
+/src/vision/models/*
+/src/vision/localizer/built_graph/yolo-auvsi.pb
 
 /src/ground/client/build_commit.txt
 /src/ground/client/build
@@ -37,3 +39,4 @@ core
 /tools/cache/
 /external/downloaded
 /output
+/src/ground/ui/src/protobuf/timeline_grammar.proto.json

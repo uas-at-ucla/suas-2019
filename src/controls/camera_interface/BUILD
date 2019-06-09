@@ -5,7 +5,7 @@ cc_binary(
     'camera_interface_main.cc'
   ],
   deps = [
-    ":camera_interface_lib"
+    ':camera_interface_lib',
   ],
 )
 
@@ -16,12 +16,12 @@ cc_library(
     'camera_interface.cc'
   ],
   hdrs = [
-    'camera_interface.h'
+    'camera_interface.h',
   ],
   deps = [
     '//src/controls:constants',
-    '//lib/dslr_interface:dslr_interface',
+    '//src/controls:messages_cpp',
     '//lib/ros:ros',
+    "@sensor_msgs//:sensor_msgs",
   ],
-  linkopts = ["-pthread"],
 )

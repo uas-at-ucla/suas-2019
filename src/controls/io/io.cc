@@ -213,7 +213,6 @@ void IO::WriterThread() {
                              output.trigger_rtl());
       PixhawkSendModePosedge(kPixhawkCustomModeLand, output.trigger_land());
       PixhawkSendModePosedge(kPixhawkArmCommand, output.trigger_arm());
-      // PixhawkSendModePosedge(, output.trigger_disarm());
 
       if (output.send_setpoint()) {
         PixhawkSetGlobalPositionGoal(

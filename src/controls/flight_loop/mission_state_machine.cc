@@ -13,8 +13,10 @@ MissionStateMachine::MissionStateMachine() :
     new_mission_ready_(false) {
 
   // Create an instance of all state handlers.
-  state_handlers_[TRANSLATE] = new TranslateState();
-  state_handlers_[UGV_DROP] = new UGVDropState();
+  state_handlers_[MissionState::TRANSLATE] = new TranslateState();
+  state_handlers_[MissionState::UGV_DROP] = new UGVDropState();
+  state_handlers_[MissionState::LAND] = new LandState();
+  state_handlers_[MissionState::SLEEP] = new SleepState();
 }
 
 MissionStateMachine::~MissionStateMachine() {
@@ -94,23 +96,31 @@ void MissionStateMachine::StateTransition(::src::controls::Output &output) {
     if (drone_program_.commands_size() > drone_program_index_) {
       ground_controls::timeline::DroneCommand loaded_command =
           drone_program_.commands(drone_program_index_);
+
       ROS_DEBUG_STREAM("COMMAND: " << loaded_command.has_translate_command());
+
       if (loaded_command.has_translate_command()) {
-        new_state = TRANSLATE;
-        ((TranslateState *)GetStateHandler(TRANSLATE))
+        new_state = MissionState::TRANSLATE;
+        ((TranslateState *)GetStateHandler(MissionState::TRANSLATE))
             ->SetSetpoints(
                 loaded_command.translate_command().goal().latitude(),
                 loaded_command.translate_command().goal().longitude(),
                 loaded_command.translate_command().goal().altitude());
       } else if (loaded_command.has_trigger_bomb_drop_command()) {
-        new_state = UGV_DROP;
+        new_state = MissionState::UGV_DROP;
+      } else if (loaded_command.has_land_command()) {
+        new_state = MissionState::LAND;
+      } else if (loaded_command.has_sleep_command()) {
+        ((SleepState *)GetStateHandler(MissionState::SLEEP))
+            ->SetSleepPeriod(loaded_command.sleep_command().time());
+        new_state = MissionState::SLEEP;
       }
 
       drone_program_index_++;
     } else {
       // Empty drone program, so try to load the next available command until
       // one is available.
-      new_state = GET_NEXT_CMD;
+      new_state = MissionState::GET_NEXT_CMD;
     }
   }
 
@@ -154,6 +164,10 @@ void MissionStateMachine::LoadMission(
       return "TRANSLATE";
     case UGV_DROP:
       return "UGV_DROP";
+    case LAND:
+      return "LAND";
+    case SLEEP:
+      return "SLEEP";
   }
   return "UNKNOWN";
 }
@@ -212,7 +226,52 @@ void UGVDropState::Handle(::src::controls::Sensors &sensors,
 
 void UGVDropState::Reset() {}
 
-// UGVReleaseState /////////////////////////////////////////////////////////////
+// LandState ///////////////////////////////////////////////////////////////////
+LandState::LandState() {}
+
+void LandState::Handle(::src::controls::Sensors &sensors,
+                       ::src::controls::Goal &goal,
+                       ::src::controls::Output &output) {
+  (void)sensors;
+  (void)goal;
+  (void)output;
+
+  output.set_mission_commanded_land(true);
+}
+
+void LandState::Reset() {}
+
+// SleepState //////////////////////////////////////////////////////////////////
+SleepState::SleepState() : start_(0), was_reset_(true), sleep_period_(0) {}
+
+void SleepState::Handle(::src::controls::Sensors &sensors,
+                        ::src::controls::Goal &goal,
+                        ::src::controls::Output &output) {
+  (void)goal;
+
+  // Record start time, if it is not already set.
+  if (was_reset_) {
+    start_ = sensors.time();
+    was_reset_ = false;
+  }
+
+  // Check whether we have slept for the desired amount of time.
+  if (sensors.time() - start_ > sleep_period_) {
+    output.set_mission_state(GET_NEXT_CMD);
+  }
+}
+
+void SleepState::Reset() {
+  // Reset timer state.
+  start_ = 0;
+  was_reset_ = true;
+}
+
+void SleepState::SetSleepPeriod(double sleep_period) {
+  sleep_period_ = sleep_period;
+}
+
+// UnknownState ////////////////////////////////////////////////////////////////
 UnknownState::UnknownState() {}
 
 void UnknownState::Handle(::src::controls::Sensors &sensors,

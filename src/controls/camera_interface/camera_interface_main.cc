@@ -1,10 +1,9 @@
 #include "camera_interface.h"
 
-static ::src::controls::io::camera_interface::CameraInterface
-    *camera_interface = nullptr;
-
+::src::controls::camera_interface::CameraInterface *camera_interface;
 extern "C" void signal_handler(int signum) {
-  ::std::cout << "GOT SIGNAL!" << ::std::endl;
+  (void)signum;
+
   if (camera_interface != nullptr) {
     camera_interface->Quit(signum);
   }
@@ -14,17 +13,24 @@ extern "C" void signal_handler(int signum) {
 }
 
 int main(int argc, char **argv) {
-  // Signal handlers
+  // Register ROS process.
+  ::ros::init(argc, argv, "uasatucla_camera_interface",
+              ::ros::init_options::NoSigintHandler);
+
+  // Create signal handlers.
   signal(SIGQUIT, signal_handler);
   signal(SIGINT, signal_handler);
   signal(SIGTERM, signal_handler);
   signal(SIGHUP, signal_handler);
 
-  ::ros::init(argc, argv, "uasatucla_camera_interface");
+  // Start ROS threads.
   ::ros::start();
 
-  camera_interface =
-      new ::src::controls::io::camera_interface::CameraInterface();
+  // Initialize CameraInterface.
+  camera_interface = new ::src::controls::camera_interface::CameraInterface();
 
+  // Spin forever.
   ::ros::spin();
+
+  return 0;
 }
