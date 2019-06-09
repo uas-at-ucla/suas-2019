@@ -2,37 +2,48 @@
 
 namespace src {
 namespace controls {
-namespace io {
 namespace camera_interface {
 
 CameraInterface::CameraInterface() :
-    ros_node_handle_(),
-    take_photo_subscriber_(ros_node_handle_.subscribe(
-        kRosTakePhotoTopic, kRosMessageQueueSize,
-        &CameraInterface::ImageCaptureRequested, this)),
-    photo_thread_(&CameraInterface::PhotoThread, this),
-    photo_phased_loop_(kWriterPhasedLoopFrequency) {}
-
-void CameraInterface::ImageCaptureRequested(const std_msgs::String &ret) {
-  (void)ret;
-  dslr_.TakePhotos();
-}
-
-void CameraInterface::PhotoThread() {
-  while (running_ && ::ros::ok()) {
-    dslr_.RunIteration();
-    ::ros::spinOnce();
-    photo_phased_loop_.sleep();
-  }
+    tag_file_(kCameraInterfaceTagFile,
+              ::std::ofstream::out | ::std::ofstream::app),
+    last_tag_write_(0),
+    sensors_subscriber_(
+        ros_node_handle_.subscribe(kRosSensorsTopic, kRosMessageQueueSize,
+                                   &CameraInterface::SensorsReceived, this)) {
+  tag_file_.precision(17);
 }
 
 void CameraInterface::Quit(int signal) {
   (void)signal;
-  running_ = false;
-  photo_thread_.join();
+
+  tag_file_.close();
+}
+
+void CameraInterface::SensorsReceived(::src::controls::Sensors sensors) {
+  // Limit rate at which we write sensors to file.
+  double current_time = ::ros::Time::now().toSec();
+  if (current_time < last_tag_write_ + 1.0 / kCameraTagWriteHz) {
+    return;
+  }
+  last_tag_write_ = current_time;
+
+  // Write out the tag data.
+  WriteTag(sensors.latitude(), sensors.longitude(), sensors.relative_altitude(),
+           sensors.heading());
+}
+
+void CameraInterface::WriteTag(double latitude, double longitude,
+                               double altitude, double heading) {
+  // Write coordinates to the log file
+  long timestamp = ::std::chrono::duration_cast<::std::chrono::milliseconds>(
+                       ::std::chrono::system_clock::now().time_since_epoch())
+                       .count();
+
+  tag_file_ << timestamp << "," << latitude << "," << longitude << ","
+            << altitude << "," << heading << ::std::endl;
 }
 
 } // namespace camera_interface
-} // namespace io
 } // namespace controls
 } // namespace src
