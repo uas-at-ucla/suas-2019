@@ -202,7 +202,7 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
 
   ::std::vector<::lib::Position3D> avoidance_path;
 
-  if (!current_position_) {
+  if (!kObstacleAvoidanceEnabled || !current_position_) {
     avoidance_path.push_back(end);
   } else {
     avoidance_path =
@@ -219,8 +219,6 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
 
     ::lib::mission_manager::Position3D *goto_raw_goal =
         new ::lib::mission_manager::Position3D();
-    ::std::cout << "GOTO: " << goto_step.latitude << " " << goto_step.longitude
-                << ::std::endl;
     goto_raw_goal->set_latitude(goto_step.latitude);
     goto_raw_goal->set_longitude(goto_step.longitude);
     goto_raw_goal->set_altitude(n->goal().altitude());
