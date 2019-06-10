@@ -24,21 +24,21 @@ var droneIP = inDockerContainer ? "192.168.3.20" : "192.168.1.20";
 const pingInterval = 1000 //ms
 const uiSendFrequency = 5; //Hz
 const trackySendFrequency = 5; //Hz
-var telemetry = {};
+var telemetry = { output: {} };
 var flightControllerState = null;
 var droneArmed = null;
 var drone_connected = false;
 
-//TODO decide these
 const ugvWaitAfterUnlatchTime = 15000; //ms
-const ugvStillTimeThreshold = 5000; //ms
-const ugvWaitTimeAfterCut = 10000; // ms
+const ugvStillTimeThreshold = 15000; //ms
+const ugvWaitTimeAfterCut = 15000; // ms
 var droppyReady = false;
 var dropping = false;
 var ugvUnlatchTime = 0;
 var ugvIsStill = false;
 var ugvBecameStillTime = 0;
 var droveUgv = false;
+var ugvDriveTimer = null;
 
 
 // create server
@@ -152,9 +152,9 @@ controls_io.on('connect', (socket) => {
   socket.on('OUTPUT', (output) => {
     if (protobufUtils) {
       telemetry.output = protobufUtils.decodeOutput(output);
-      if (telemetry.output.deploy && !droppyReady) {
-        droppyReady = true;
-        button_panel_io.emit('DROPPY_READY');
+      if (telemetry.output.deploy !== droppyReady) {
+        droppyReady = telemetry.output.deploy;
+        button_panel_io.emit('DROPPY_READY', droppyReady);
       }
     }
   });
@@ -190,9 +190,15 @@ controls_io.on('connect', (socket) => {
       ui_io.emit(local_ui_msg, data);
 
       if (local_ui_msg === 'DROPPY_COMMAND_RECEIVED') {
-        if (data === 'CUT_LINE' && !droveUgv) {
+        if (data === 'RESET_LATCH') {
+          droveUgv = false;
+        } else if (data === 'STOP_CUT' || data === 'CANCEL_DROP') {
+          if (ugvDriveTimer) {
+            clearTimeout(ugvDriveTimer);
+          }
+        } if (data === 'CUT_LINE' && !droveUgv) {
           droveUgv = true;
-          setTimeout(() => {
+          ugvDriveTimer = setTimeout(() => {
             console.log("Driving the UGV!");
             ugv_io.emit('DRIVE_TO_TARGET');
           }, ugvWaitTimeAfterCut);
@@ -223,7 +229,7 @@ ugv_io.on('connect', (socket) => {
     if (config.verbose) console.log(msg);
     ui_io.emit('UGV_MESSAGE', msg);
 
-    if (msg.status && msg.status.is_still != null) {
+    /*if (msg.status && msg.status.is_still != null) {
       let currentTime = Date.now();
       if (currentTime - ugvUnlatchTime > ugvWaitAfterUnlatchTime) {
         if (dropping && !ugvIsStill && msg.status.is_still) {
@@ -236,7 +242,7 @@ ugv_io.on('connect', (socket) => {
           ugvIsStill = false;
         }
       }
-    }
+    }*/
   });
 
   socket.on('disconnect', () => {

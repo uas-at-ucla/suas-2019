@@ -18,14 +18,17 @@ static constexpr double kMotorDeployPower = 0.6;
 } // namespace
 
 struct Input {
+  bool latch;
   int direction;
   bool cut;
+  bool cancel;
 };
 
 struct Output {
   double motor;
   bool latch;
   bool hotwire;
+  bool end_drop;
 };
 
 enum State {
@@ -33,6 +36,7 @@ enum State {
   UNLATCHING = 1,
   MOTOR_ASSISTED_DEPLOYMENT = 2,
   CUT_LINE = 3,
+  END_DROP = 4,
 };
 
 class Deployment {

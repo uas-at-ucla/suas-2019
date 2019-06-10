@@ -14,12 +14,13 @@ void Deployment::RunIteration(struct Input &input, struct Output &output) {
   output.motor = kDefaultMotorOutput;
   output.latch = kDefaultLatchOutput;
   output.hotwire = kDefaultHotwireOutput;
+  output.end_drop = false;
 
   // Handle the current state.
   switch (state_) {
     case LATCHED:
       // Check whether deployment should be initialized.
-      if (input.direction > 0) {
+      if (!input.latch) {
         // Wait a certain amount of time before actually unlatching.
         if (TimerComplete(kWaitTimeBeforeUnlatch)) {
           next_state = UNLATCHING;
@@ -82,9 +83,24 @@ void Deployment::RunIteration(struct Input &input, struct Output &output) {
       }
 
       // Write out hotwire.
-      output.hotwire = !TimerComplete(kMaxHotwireTime);
+      if (!TimerComplete(kMaxHotwireTime)) {
+        output.hotwire = true;
+      } else {
+        next_state = END_DROP;
+      }
 
       TickTimer();
+      break;
+
+    case END_DROP:
+      output.end_drop = true;
+      break;
+  }
+
+  if (input.cancel) {
+    next_state = END_DROP;
+  } else if (input.latch) {
+    next_state = LATCHED;
   }
 
   // Handle any changes in state.

@@ -213,8 +213,12 @@ void UGVDropState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Output &output) {
   (void)sensors;
   (void)goal;
-
-  output.set_deploy(true);
+  if (sensors.done_dropping()) {
+    output.set_deploy(false);
+    output.set_mission_state(GET_NEXT_CMD);
+  } else {
+    output.set_deploy(true);
+  }
 }
 
 void UGVDropState::Reset() {}

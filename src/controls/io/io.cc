@@ -23,8 +23,10 @@ IO::IO() :
     latch_setpoint_(true),
     hotwire_setpoint_(false),
     deployment_manual_override_(false),
+    latch_(true),
     deployment_motor_direction_(0),
     cut_line_(false),
+    cancel_drop_(false),
     running_(true),
     ros_node_handle_(),
     sensors_publisher_(ros_node_handle_.advertise<::src::controls::Sensors>(
@@ -84,6 +86,7 @@ IO::IO() :
   // Set up all actuators and send out initial outputs.
   InitializeActuators();
   ros_to_proto_.SetRunUasMission(false);
+  ros_to_proto_.SetDoneDropping(false);
 
   ::std_msgs::Float32 init_gimbal;
   init_gimbal.data = gimbal_setpoint_;
@@ -151,9 +154,14 @@ void IO::WriterThread() {
     // Calculate deployment output.
     ::lib::deployment::Input deployment_input;
     ::lib::deployment::Output deployment_output;
+    deployment_input.latch = latch_;
     deployment_input.direction = deployment_motor_direction_;
     deployment_input.cut = cut_line_;
+    deployment_input.cancel = cancel_drop_;
     deployment_.RunIteration(deployment_input, deployment_output);
+
+    ros_to_proto_.SetDoneDropping(deployment_output.end_drop);
+    
 
     // if (deployment_manual_override_) {
     //   deployment_output.motor = deployment_motor_setpoint_;
@@ -368,6 +376,7 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
 void IO::DroppyCommandReceived(const ::std_msgs::String droppy_command) {
   if (droppy_command.data == "START_DROP") {
     ROS_INFO_THROTTLE(1, "Initiating UGV Drop");
+    latch_ = false;
     deployment_motor_direction_ = 1;
   } else if (droppy_command.data == "CUT_LINE") {
     ROS_INFO_THROTTLE(1, "Cutting Fishing Line");
@@ -384,8 +393,14 @@ void IO::DroppyCommandReceived(const ::std_msgs::String droppy_command) {
     deployment_motor_direction_ = 0;
   } else if (droppy_command.data == "CANCEL_DROP") {
     ROS_INFO_THROTTLE(1, "Cancel drop");
-    deployment_motor_direction_ = 0;
-    // TODO trigger mission to move on to the next command
+    cancel_drop_ = true;
+  } else if (droppy_command.data == "RESET_LATCH") {
+    ROS_INFO_THROTTLE(1, "Resetting Latch");
+    latch_ = true;
+    cancel_drop_ = false;
+  } else if (droppy_command.data == "STOP_CUT") {
+    ROS_INFO_THROTTLE(1, "Stop Hotwire");
+    cut_line_ = false;
   }
 }
 

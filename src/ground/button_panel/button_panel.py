@@ -81,6 +81,9 @@ stopBtn = topRed
 downBtn = bottomYellow
 upBtn = topYellow
 cutBtn = topRightBlue
+cancelBtn = bottomRed
+resetBtn = leftWhite
+stopCutBtn = rightWhite
 
 pi.set_mode(green, pigpio.INPUT)
 pi.set_pull_up_down(green, pigpio.PUD_UP)
@@ -122,7 +125,8 @@ pi.i2c_write_byte(I2C_BUS, 0) # max contrast
 printLCD("UAS at UCLA")
 
 def receiveDroneState(message):
-    printLCD(h, message)
+    print(message)
+    printLCD(message)
 
     H = 0.0
     S = 1
@@ -157,17 +161,17 @@ def receiveDroneState(message):
     pi.i2c_write_byte(I2C_BUS, 188 + round(B*29)) # blue
     
 
-delay = 0.25
+delay = 0.05
+
+btnProtection = False
 
 readyToDrop = False
 dropping = False
 cut = False
 
-readyToDrop = True #TODO testing
-
-def setReadyToDrop():
+def setReadyToDrop(ready):
     global readyToDrop
-    readyToDrop = True
+    readyToDrop = ready
 
 def setDropping():
     global dropping
@@ -180,11 +184,6 @@ def setCut():
 def setNotDropping():
     global dropping
     dropping = False
-
-def setNotReadyToDrop():
-    global readyToDrop
-    readyToDrop = False
-
 
 server_ip = '192.168.1.10' # static ip of ground station
 if (len(sys.argv) >= 2):
@@ -204,8 +203,8 @@ def on_drone_state(state):
     receiveDroneState(state)
 
 @sio.on('DROPPY_READY', namespace='/button-panel')
-def on_droppy_ready():
-    setReadyToDrop()
+def on_droppy_ready(ready):
+    setReadyToDrop(ready)
 
 @sio.on('DROPPY_COMMAND_RECEIVED', namespace='/button-panel')
 def on_droppy_command_received(cmd):
@@ -213,7 +212,6 @@ def on_droppy_command_received(cmd):
         setDropping()
     elif cmd == "CUT_LINE":
         setCut()
-        setNotReadyToDrop()
 
 print("Attempting to connect to " + 'http://'+server_ip+':8081')
 while True:
@@ -235,7 +233,7 @@ while True:
 
     t = time.time()
     while (not pi.read(autoLowerBtn)):  # 1 = button not pressed, 0 = button pressed
-        if (not readyToDrop) or (dropping):
+        if btnProtection and ((not readyToDrop) or (dropping)):
             break
         time.sleep(flashTime)
         if time.time() > (t + delay):
@@ -244,7 +242,7 @@ while True:
             middleON()
   
     while (not pi.read(stopBtn)):
-        if not dropping:
+        if btnProtection and not dropping:
             break
         time.sleep(flashTime)
         if time.time() > (t + delay):
@@ -253,7 +251,7 @@ while True:
             leftON()
   
     while (not pi.read(upBtn)):
-        if not dropping:
+        if btnProtection and not dropping:
             break
         time.sleep(flashTime)
         if time.time() > (t + delay):
@@ -262,7 +260,7 @@ while True:
             leftON()
 
     while (not pi.read(downBtn)):
-        if not dropping:
+        if btnProtection and not dropping:
             break
         time.sleep(flashTime)
         if time.time() > (t + delay):
@@ -272,12 +270,33 @@ while True:
 
     while (not pi.read(cutBtn)):
         time.sleep(flashTime)
-        if (not dropping) or (cut):
+        if btnProtection and ((not dropping) or (cut)):
             break
         if time.time() > (t + delay):
             print("CUT THE LINE")
             sio.emit('CHANGE_DROPPY_STATE', 'CUT_LINE', namespace='/button-panel')
             middleON()
 
+    while (not pi.read(cancelBtn)):
+        time.sleep(flashTime)
+        if time.time() > (t + delay):
+            print("CANCEL DROP")
+            sio.emit('CHANGE_DROPPY_STATE', 'CANCEL_DROP', namespace='/button-panel')
+            leftON()
+
+    while (not pi.read(resetBtn)):
+        time.sleep(flashTime)
+        if time.time() > (t + delay):
+            print("RESET LATCH")
+            sio.emit('CHANGE_DROPPY_STATE', 'RESET_LATCH', namespace='/button-panel')
+            leftON()
+
+    while (not pi.read(stopCutBtn)):
+        time.sleep(flashTime)
+        if time.time() > (t + delay):
+            print("STOP CUT")
+            sio.emit('CHANGE_DROPPY_STATE', 'STOP_CUT', namespace='/button-panel')
+            leftON()
+            
     leftOFF()
     middleOFF()

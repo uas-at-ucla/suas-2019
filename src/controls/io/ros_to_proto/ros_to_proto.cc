@@ -262,6 +262,11 @@ void RosToProto::SetRunUasMission(bool run) {
   sensors_.set_run_uas_mission(run);
 }
 
+void RosToProto::SetDoneDropping(bool done) {
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
+  sensors_.set_done_dropping(done);
+}
+
 void RosToProto::OutputReceived(::src::controls::Output output) {
   ::std::lock_guard<::std::mutex> lock(output_mutex_);
   output_.CopyFrom(output);
