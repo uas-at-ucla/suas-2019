@@ -16,6 +16,7 @@ MissionStateMachine::MissionStateMachine() :
   state_handlers_[MissionState::TRANSLATE] = new TranslateState();
   state_handlers_[MissionState::UGV_DROP] = new UGVDropState();
   state_handlers_[MissionState::LAND] = new LandState();
+  state_handlers_[MissionState::SLEEP] = new SleepState();
 }
 
 MissionStateMachine::~MissionStateMachine() {
@@ -109,6 +110,10 @@ void MissionStateMachine::StateTransition(::src::controls::Output &output) {
         new_state = MissionState::UGV_DROP;
       } else if (loaded_command.has_land_command()) {
         new_state = MissionState::LAND;
+      } else if (loaded_command.has_sleep_command()) {
+        ((SleepState *)GetStateHandler(MissionState::SLEEP))
+            ->SetSleepPeriod(loaded_command.sleep_command().time());
+        new_state = MissionState::SLEEP;
       }
 
       drone_program_index_++;
@@ -161,6 +166,8 @@ void MissionStateMachine::LoadMission(
       return "UGV_DROP";
     case LAND:
       return "LAND";
+    case SLEEP:
+      return "SLEEP";
   }
   return "UNKNOWN";
 }
@@ -238,7 +245,37 @@ void LandState::Handle(::src::controls::Sensors &sensors,
 
 void LandState::Reset() {}
 
-// UGVReleaseState /////////////////////////////////////////////////////////////
+// SleepState //////////////////////////////////////////////////////////////////
+SleepState::SleepState() : start_(0), was_reset_(true), sleep_period_(0) {}
+
+void SleepState::Handle(::src::controls::Sensors &sensors,
+                        ::src::controls::Goal &goal,
+                        ::src::controls::Output &output) {
+  (void)goal;
+
+  // Record start time, if it is not already set.
+  if (was_reset_) {
+    start_ = sensors.time();
+    was_reset_ = false;
+  }
+
+  // Check whether we have slept for the desired amount of time.
+  if (sensors.time() - start_ > sleep_period_) {
+    output.set_mission_state(GET_NEXT_CMD);
+  }
+}
+
+void SleepState::Reset() {
+  // Reset timer state.
+  start_ = 0;
+  was_reset_ = true;
+}
+
+void SleepState::SetSleepPeriod(double sleep_period) {
+  sleep_period_ = sleep_period;
+}
+
+// UnknownState ////////////////////////////////////////////////////////////////
 UnknownState::UnknownState() {}
 
 void UnknownState::Handle(::src::controls::Sensors &sensors,

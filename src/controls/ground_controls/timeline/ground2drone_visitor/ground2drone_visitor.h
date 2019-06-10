@@ -16,7 +16,9 @@ namespace timeline {
 namespace ground2drone_visitor {
 namespace {
 static constexpr double kFeetPerMeter = 3.28084;
-}
+static constexpr double kWaypointSleepTime = 7.0;
+static const bool kObstacleAvoidanceEnabled = true;
+} // namespace
 
 class Ground2DroneVisitor {
  public:

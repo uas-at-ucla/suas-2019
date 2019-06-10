@@ -37,6 +37,7 @@ enum MissionState {
   TRANSLATE = 1,
   UGV_DROP = 2,
   LAND = 3,
+  SLEEP = 4,
 };
 
 ::std::string StateToString(MissionState state);
@@ -88,6 +89,23 @@ class LandState : public State {
   void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
               ::src::controls::Output &output) override;
   void Reset() override;
+};
+
+class SleepState : public State {
+ public:
+  SleepState();
+  ~SleepState() = default;
+
+  void Handle(::src::controls::Sensors &sensors, ::src::controls::Goal &goal,
+              ::src::controls::Output &output) override;
+  void Reset() override;
+
+  void SetSleepPeriod(double sleep_period);
+
+ private:
+  double start_;
+  bool was_reset_;
+  double sleep_period_;
 };
 
 class UnknownState : public State {

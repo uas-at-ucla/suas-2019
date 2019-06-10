@@ -20,6 +20,7 @@ RRTAvoidance::RRTAvoidance() :
 ::std::vector<Position3D> RRTAvoidance::Process(
     Position3D start, Position3D end,
     ::src::controls::ground_controls::timeline::GroundProgram ground_program) {
+
   if (start.latitude == end.latitude && start.longitude == end.longitude) {
     return ::std::vector<Position3D>();
   }
@@ -29,8 +30,6 @@ RRTAvoidance::RRTAvoidance() :
   int rows = 2 + ground_program.static_obstacles_size();
 
   ::Eigen::MatrixXd m(rows, 3);
-
-  //::std::cout.precision(10);
 
   // Load initial start/end and obstacle values.
   m(0, 0) = start.latitude;

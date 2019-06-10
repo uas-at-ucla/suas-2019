@@ -101,6 +101,14 @@ DroneProgram Ground2DroneVisitor::Visit(WaypointCommand *n) {
     ConcatenateDroneProgramCommands(drone_program, goto_command_program);
   }
 
+  // Wait a bit after reaching this waypoint.
+  {
+    DroneCommand *sleep_cmd = new DroneCommand();
+    sleep_cmd->mutable_sleep_command();
+    sleep_cmd->mutable_sleep_command()->set_time(10);
+    drone_program.mutable_commands()->AddAllocated(sleep_cmd);
+  }
+
   return drone_program;
 }
 
@@ -165,15 +173,12 @@ DroneProgram Ground2DroneVisitor::Visit(LandAtLocationCommand *n) {
 
   // Create a GotoCommand to fly to the waypoint while avoiding obstacles on the
   // field.
+  // TODO(comran): Make this use a waypoint command.
   {
-    GotoCommand *goto_command = new GotoCommand();
-    goto_command->mutable_goal()->CopyFrom(n->goal());
-    goto_command->set_come_to_stop(true);
-    goto_command->mutable_goal()->set_altitude(goto_command->goal().altitude() /
-                                               kFeetPerMeter);
-
-    DroneProgram goto_command_program = Visit(goto_command);
-    ConcatenateDroneProgramCommands(drone_program, goto_command_program);
+    WaypointCommand *waypoint_command = new WaypointCommand();
+    waypoint_command->mutable_goal()->CopyFrom(n->goal());
+    DroneProgram waypoint_command_program = Visit(waypoint_command);
+    ConcatenateDroneProgramCommands(drone_program, waypoint_command_program);
   }
 
   // Land after reaching this waypoint.
@@ -197,7 +202,7 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
 
   ::std::vector<::lib::Position3D> avoidance_path;
 
-  if (!current_position_) {
+  if (!kObstacleAvoidanceEnabled || !current_position_) {
     avoidance_path.push_back(end);
   } else {
     avoidance_path =
@@ -214,8 +219,6 @@ DroneProgram Ground2DroneVisitor::Visit(GotoCommand *n) {
 
     ::lib::mission_manager::Position3D *goto_raw_goal =
         new ::lib::mission_manager::Position3D();
-    ::std::cout << "GOTO: " << goto_step.latitude << " " << goto_step.longitude
-                << ::std::endl;
     goto_raw_goal->set_latitude(goto_step.latitude);
     goto_raw_goal->set_longitude(goto_step.longitude);
     goto_raw_goal->set_altitude(n->goal().altitude());

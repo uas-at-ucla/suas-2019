@@ -35,7 +35,7 @@ void FlightStateMachine::Handle(::src::controls::Sensors &sensors,
                                 ::src::controls::Output &output) {
 
   // Don't run a mission if the current mission told the drone to land.
-  if(mission_commanded_land_) {
+  if (mission_commanded_land_) {
     goal.set_run_mission(false);
   }
 
@@ -79,7 +79,7 @@ void FlightStateMachine::StateTransition(::src::controls::Output &output) {
   GetStateHandler(state_)->Reset();
 
   // Record whether mission commanded the land state.
-  if(output.mission_commanded_land()) {
+  if (output.mission_commanded_land()) {
     mission_commanded_land_ = true;
   }
 }
@@ -314,7 +314,7 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
 
   mission_state_machine_.Handle(sensors, goal, output);
 
-  if(output.mission_commanded_land()) {
+  if (output.mission_commanded_land()) {
     output.set_state(FlightLoopState::LANDING);
   }
 }
