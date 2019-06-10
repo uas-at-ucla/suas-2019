@@ -55,7 +55,7 @@
   max-height: inherit;
 }
 
-.MissionPlanner > .container-fluid {
+.MissionPlanner > .container-fluid, .MissionPlannerContainer .container-fluid {
   padding: 0px;
   max-height: inherit;
   overflow: auto;

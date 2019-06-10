@@ -29,14 +29,14 @@ var flightControllerState = null;
 var droneArmed = null;
 var drone_connected = false;
 
-const ugvWaitAfterUnlatchTime = 15000; //ms
-const ugvStillTimeThreshold = 15000; //ms
+// const ugvWaitAfterUnlatchTime = 15000; //ms
+// const ugvStillTimeThreshold = 15000; //ms
 const ugvWaitTimeAfterCut = 15000; // ms
 var droppyReady = false;
-var dropping = false;
-var ugvUnlatchTime = 0;
-var ugvIsStill = false;
-var ugvBecameStillTime = 0;
+// var dropping = false;
+// var ugvUnlatchTime = 0;
+// var ugvIsStill = false;
+// var ugvBecameStillTime = 0;
 var droveUgv = false;
 var ugvDriveTimer = null;
 
@@ -202,10 +202,10 @@ controls_io.on('connect', (socket) => {
             console.log("Driving the UGV!");
             ugv_io.emit('DRIVE_TO_TARGET');
           }, ugvWaitTimeAfterCut);
-        } else if (data === 'START_DROP') {
+        } /*else if (data === 'START_DROP') {
           dropping = true;
           ugvUnlatchTime = Date.now();
-        }
+        }*/
 
         button_panel_io.emit('DROPPY_COMMAND_RECEIVED', data);
       }
@@ -285,6 +285,34 @@ ui_io.on('connect', (socket) => {
 
   socket.on('TEST', (data) => {
     console.log("TEST " + data);
+  });
+
+  socket.on('UPLOAD_IMAGE', (data) => {
+    if (interopClient && interopData) {
+      let odlc = {
+        "mission": interopData.mission.id,
+        "type": "STANDARD",
+        "latitude": data.latitude, //TODO how is data structured?
+        "longitude": data.longitude,
+        "orientation": data.orientation,
+        "shape": data.shape,
+        "shapeColor": data.shapeColor,
+        "alphanumeric": data.alphanumeric,
+        "alphanumericColor": data.alphanumericColor,
+        "autonomous": false
+      }
+
+      interopClient.postObjectDetails(odlc).then(returnedOdlc => {
+        console.log("Submitted ODLC with id " + returnedOdlc.id);
+        interopClient.postObjectImage(data.imageFile, returnedOdlc.id).then(msg => {
+          console.log(msg);
+        }).catch(error => {
+          console.log(error);
+        });
+      }).catch(error => {
+        console.log(error);
+      });
+    }
   });
 
   socket.on('COMPILE_GROUND_PROGRAM', (commands) => {

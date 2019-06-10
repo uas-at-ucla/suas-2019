@@ -1,6 +1,7 @@
 // See test.js for usage example
 
 const axios = require('axios');
+const fs = require('fs');
 const config = require('../config');
 
 const FEET_PER_METER = 3.28084;
@@ -73,8 +74,12 @@ class InteropClient {
     return this.axiosInstance.post("/odlcs", odlc).then(res => res.data).catch(err => {throw err});
   }
 
-  postObjectImage(image, odlcId) {
-    return this.axiosInstance.post("/odlcs/"+odlcId+"/image", image).then(res => res.data).catch(err => {throw err});
+  postObjectImage(imagePath, odlcId) {
+    let image = fs.readFileSync(imagePath);
+    let config = {
+      headers: {'Content-Type': 'image/jpeg'}
+    };
+    return this.axiosInstance.post("/odlcs/"+odlcId+"/image", image, config).then(res => res.data).catch(err => {throw err});
   }
 
   newTelemetry(telemetry) {

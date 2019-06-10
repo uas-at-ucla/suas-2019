@@ -1,7 +1,5 @@
 // Run this file with `node test.js testName` or `npm test testName`
 
-//TODO test image upload
-
 const tests = {
   interop: () => {
     const loadInteropClient = require('./src/interop_client');
@@ -29,14 +27,20 @@ const tests = {
             console.log("Submitted ODLC with id " + odlc.id);
             console.log();
 
-            interopClient.postTelemetry({
-              latitude: 38.149,
-              longitude: -76.432,
-              altitude: 100,
-              heading: 90
-            }).then(message => {
-              console.log(message);
-              console.log("Test complete");
+            interopClient.postObjectImage("./odlc.jpg", odlc.id).then(msg => {
+              console.log(msg);
+
+              interopClient.postTelemetry({
+                latitude: 38.149,
+                longitude: -76.432,
+                altitude: 100,
+                heading: 90
+              }).then(message => {
+                console.log(message);
+                console.log("Test complete");
+              }).catch(error => {
+                console.log(error);
+              });
             }).catch(error => {
               console.log(error);
             });

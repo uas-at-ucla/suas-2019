@@ -214,7 +214,7 @@ class InteropItems extends Component {
                 Waypoint {index+1}<br/>
                 {coord.altitude} ft AMSL {this.props.homeAltitude != null ? "("+(coord.altitude - this.props.homeAltitude*FEET_PER_METER)+") ft rel" : null}
               </div>
-              <Button size="sm" onClick={() => this.addWaypointCommand(coord.latitude, coord.longitude, coord.altitude)}>
+              <Button size="sm" onClick={() => this.addWaypointCommand(coord.latitude, coord.longitude, this.props.homeAltitude != null ? (coord.altitude - this.props.homeAltitude*FEET_PER_METER) : coord.altitude)}>
                 Add to Mission
               </Button>
             </MapElementWithInfo>

@@ -115,6 +115,7 @@ class MissionPlanner extends Component {
         : null}
         <CommandList 
           commands={this.props.mission.commands}
+          programType={this.props.programType}
           className={this.props.className}
           protoInfo={this.props.protoInfo}
           commandChangers={this.commandChangers}

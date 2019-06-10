@@ -40,6 +40,15 @@ class DroneActions extends Component {
       hotwire: false
     }
   };
+
+  componentDidMount() {
+    document.addEventListener("keypress", (e) => {
+      if (e.keyCode === 13 && this.state.modal) {
+        this.state.action();
+        this.toggle();
+      }
+    });
+  }
   
   toggle = () => {
     this.setState(prevState => ({
