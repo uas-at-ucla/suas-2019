@@ -292,18 +292,19 @@ ui_io.on('connect', (socket) => {
       let odlc = {
         "mission": interopData.mission.id,
         "type": "STANDARD",
-        "latitude": data.latitude, //TODO how is data structured?
-        "longitude": data.longitude,
-        "orientation": data.orientation,
+        "latitude": data.latitude ? data.latitude : 0,
+        "longitude": data.longitude ? data.longitude : 0,
+        "orientation": data.orient,
         "shape": data.shape,
-        "shapeColor": data.shapeColor,
-        "alphanumeric": data.alphanumeric,
-        "alphanumericColor": data.alphanumericColor,
+        "shapeColor": data.shapeCol,
+        "alphanumeric": data.letter,
+        "alphanumericColor": data.letterCol,
         "autonomous": false
       }
 
       interopClient.postObjectDetails(odlc).then(returnedOdlc => {
         console.log("Submitted ODLC with id " + returnedOdlc.id);
+        //TODO maybe imageFile will be a URL instead of a file path?
         interopClient.postObjectImage(data.imageFile, returnedOdlc.id).then(msg => {
           console.log(msg);
         }).catch(error => {

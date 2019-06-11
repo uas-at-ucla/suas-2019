@@ -275,7 +275,7 @@ class Tagging extends Component {
           <div className="Orient">
             <label className="singField">
               {" "}
-              <span className="fieldVal">Orientation: </span>{" "}
+              <span className="fieldVal">Orientation (N, NE, etc.): </span>{" "}
               <span className="curVal">{this.state.annValues["orient"]}</span>
               <br />
               <input
@@ -369,31 +369,32 @@ class Tagging extends Component {
 }
 
 const shapeOptions = [
-  { label: "Circle", value: "Circle" },
-  { label: "Cross", value: "Cross" },
-  { label: "Heptagon", value: "Heptagon" },
-  { label: "Hexagon", value: "Hexagon" },
-  { label: "Octagon", value: "Octagon" },
-  { label: "Pentagon", value: "Pentagon" },
-  { label: "QuarterCircle", value: "QuarterCircle" },
-  { label: "Rectangle", value: "Rectangle" },
-  { label: "SemiCircle", value: "SemiCircle" },
-  { label: "Square", value: "Square" },
-  { label: "Star", value: "Star" },
-  { label: "Trapezoid", value: "Trapezoid" },
-  { label: "Triangle", value: "Triangle" }
+  { label: "Circle", value: "CIRCLE" },
+  { label: "SemiCircle", value: "SEMICIRCLE" },
+  { label: "QuarterCircle", value: "QUARTER_CIRCLE" },
+  { label: "Triangle", value: "TRIANGLE" },
+  { label: "Square", value: "SQUARE" },
+  { label: "Rectangle", value: "RECTANGLE" },
+  { label: "Trapezoid", value: "TRAPEZOID" },
+  { label: "Pentagon", value: "PENTAGON" },
+  { label: "Hexagon", value: "HEXAGON" },
+  { label: "Heptagon", value: "HEPTAGON" },
+  { label: "Octagon", value: "OCTAGON" },
+  { label: "Star", value: "STAR" },
+  { label: "Cross", value: "CROSS" }
 ];
 
 const colorOptions = [
-  { label: "black", value: "black" },
-  { label: "blue", value: "blue" },
-  { label: "brown", value: "brown" },
-  { label: "gray", value: "gray" },
-  { label: "green", value: "green" },
-  { label: "orange", value: "orange" },
-  { label: "purple", value: "purple" },
-  { label: "red", value: "red" },
-  { label: "yellow", value: "yellow" }
+  { label: "white", value: "WHITE" },
+  { label: "black", value: "BLACK" },
+  { label: "gray", value: "GRAY" },
+  { label: "red", value: "RED" },
+  { label: "blue", value: "BLUE" },
+  { label: "green", value: "GREEN" },
+  { label: "yellow", value: "YELLOW" },
+  { label: "purple", value: "PURPLE" },
+  { label: "brown", value: "BROWN" },
+  { label: "orange", value: "ORANGE" }
 ];
 
 const selectStyles = {
