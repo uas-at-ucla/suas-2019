@@ -27,6 +27,7 @@ RUN echo "deb [arch=amd64] http://storage.googleapis.com/bazel-apt " \
 RUN apt-get update -qq                                                      && \
     apt-get upgrade -y -qq                                                  && \
     apt-get install -y                                                         \
+    bash-completion                                                            \
     bmon                                                                       \
     build-essential                                                            \
     ca-certificates-java                                                       \
@@ -55,6 +56,8 @@ RUN apt-get update -qq                                                      && \
     make                                                                       \
     nmap                                                                       \
     openjdk-11-jdk                                                             \
+    openssh-client                                                             \
+    openssh-server                                                             \
     pkg-config                                                                 \
     protobuf-compiler                                                          \
     python2.7                                                                  \
@@ -91,8 +94,6 @@ RUN usermod -aG sudo uas
 
 # User env setup. ##############################################################
 RUN mkdir /external_libs
-
-RUN apt-get install -y openssh-client openssh-server
 
 USER uas
 RUN mkdir -p /home/uas/code_env
@@ -144,16 +145,15 @@ RUN rm -rf /home/uas/mavlink-router
 # Use a stable version of bazel. ###############################################
 WORKDIR /tmp
 USER root
-RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.22.0/bazel_0.22.0-linux-x86_64.deb > bazel_0.22.0-linux-x86_64.deb
-RUN apt-get install -y bash-completion
-RUN dpkg -i bazel_0.22.0-linux-x86_64.deb
+RUN curl -L https://github.com/bazelbuild/bazel/releases/download/0.23.2/bazel_0.23.2-linux-x86_64.deb > bazel_0.23.2-linux-x86_64.deb
+RUN dpkg -i bazel_0.23.2-linux-x86_64.deb
 
 #RUN echo "source /home/uas/.bazel/bin/bazel-complete.bash" > /home/uas/.bashrc
 
 # ROS dependencies.
 RUN sh -c 'echo "deb http://packages.ros.org/ros/ubuntu stretch main" > /etc/apt/sources.list.d/ros-latest.list'
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-key 421C365BD9FF1F717815A3895523BAEEB01FA116
-RUN apt-get update && apt-get install -y ros-melodic-ros-base ros-melodic-mavros
+RUN apt-get update && apt-get install -y --allow-unauthenticated ros-melodic-ros-base ros-melodic-mavros
 
 RUN printf "source /opt/ros/melodic/setup.bash" > /home/uas/.bashrc
 
@@ -165,6 +165,12 @@ RUN wget https://raw.githubusercontent.com/mavlink/mavros/master/mavros/scripts/
 USER uas
 RUN ssh-keygen -t rsa -N '' -f ~/.ssh/id_rsa
 USER root
+
+# Install GeographicLib.
+RUN mkdir /usr/local/share/GeographicLib
+WORKDIR /usr/local/share/GeographicLib
+RUN wget http://downloads.sourceforge.net/project/geographiclib/geoids-distrib/egm96-5.tar.bz2
+RUN tar -xjf egm96-5.tar.bz2 && rm egm96-5.tar.bz2
 
 # Set up working directory and permissions for later scripts to use. ###########
 WORKDIR /home/uas/code_env

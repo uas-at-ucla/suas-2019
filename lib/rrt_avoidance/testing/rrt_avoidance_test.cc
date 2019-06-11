@@ -65,23 +65,23 @@ TEST(RRTAvoidance, NoObstacles) {
   RRTAvoidance rrt_avoidance;
 
   for (int iteration = 0; iteration < 10; iteration++) {
-    // Try going from start to end with no obstacles.
+    // // Try going from start to end with no obstacles.
 
-    Position3D start = {0, 0, 0};
-    Position3D end = {1e-3, 1e-3, 0};
+    // Position3D start = {0, 0, 0};
+    // Position3D end = {1e-3, 1e-3, 0};
 
-    ::lib::mission_manager::Obstacles obstacles;
+    // ::lib::mission_manager::Obstacles obstacles;
 
-    ::std::vector<Position3D> avoidance_path =
-        rrt_avoidance.Process(start, end, obstacles);
+    // ::std::vector<Position3D> avoidance_path =
+    //     rrt_avoidance.Process(start, end, obstacles);
 
-    // Check that the result is a straight line with only two waypoints.
-    double tolerance = 1e-8;
-    ASSERT_EQ(avoidance_path.size(), 2);
-    ASSERT_GE(avoidance_path[0].latitude, start.latitude - tolerance);
-    ASSERT_LE(avoidance_path[0].latitude, start.latitude + tolerance);
-    ASSERT_GE(avoidance_path[1].longitude, end.longitude - tolerance);
-    ASSERT_LE(avoidance_path[1].longitude, end.longitude + tolerance);
+    // // Check that the result is a straight line with only two waypoints.
+    // double tolerance = 1e-8;
+    // ASSERT_EQ(avoidance_path.size(), 2);
+    // ASSERT_GE(avoidance_path[0].latitude, start.latitude - tolerance);
+    // ASSERT_LE(avoidance_path[0].latitude, start.latitude + tolerance);
+    // ASSERT_GE(avoidance_path[1].longitude, end.longitude - tolerance);
+    // ASSERT_LE(avoidance_path[1].longitude, end.longitude + tolerance);
   }
 }
 
@@ -94,75 +94,76 @@ TEST(RRTAvoidance, DodgeObstacles) {
   RRTAvoidance rrt_avoidance;
 
   for (int calcs = 0; calcs < 10; calcs++) {
-    ::std::cout << "Running calculation #" << calcs << ::std::endl;
+    // ::std::cout << "Running calculation #" << calcs << ::std::endl;
 
-    Position3D start = {4e-3, 4e-3, 0};
-    Position3D end = {1e-3, 1e-3, 0};
-    ::lib::mission_manager::Obstacles obstacles;
-    double testcases[][3] = {{2e-3, 2e-3, 50}, {3e-3, 3e-3, 50}};
-    int i;
-    for (i = 0; i < sizeof(testcases) / sizeof(testcases[0]); i++) {
-      add_obstacle(&obstacles, testcases[i][0], testcases[i][1],
-                   testcases[i][2]);
-    }
+    // Position3D start = {4e-3, 4e-3, 0};
+    // Position3D end = {1e-3, 1e-3, 0};
+    // ::lib::mission_manager::Obstacles obstacles;
+    // double testcases[][3] = {{2e-3, 2e-3, 50}, {3e-3, 3e-3, 50}};
+    // int i;
+    // for (i = 0; i < sizeof(testcases) / sizeof(testcases[0]); i++) {
+    //   add_obstacle(&obstacles, testcases[i][0], testcases[i][1],
+    //                testcases[i][2]);
+    // }
 
-    ::std::vector<Position3D> avoidance_path =
-        rrt_avoidance.Process(start, end, obstacles);
+    // ::std::vector<Position3D> avoidance_path =
+    //     rrt_avoidance.Process(start, end, obstacles);
 
-    ::std::vector<double> final_x, final_y;
-    double tolerance = 1e-3;
-    EXPECT_GT(avoidance_path.size(), 2);
+    // ::std::vector<double> final_x, final_y;
+    // double tolerance = 1e-3;
+    // EXPECT_GT(avoidance_path.size(), 2);
 
-    // Check that we start at the right place.
-    ASSERT_GE(avoidance_path[0].latitude, start.latitude - 1e-3);
-    ASSERT_LE(avoidance_path[0].latitude, start.latitude + 1e-3);
+    // // Check that we start at the right place.
+    // ASSERT_GE(avoidance_path[0].latitude, start.latitude - 1e-3);
+    // ASSERT_LE(avoidance_path[0].latitude, start.latitude + 1e-3);
 
-    // Check that we met the goal.
-    ASSERT_GE(avoidance_path[avoidance_path.size() - 1].longitude,
-              end.longitude - 1e-3);
-    ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
-              end.longitude + 1e-3);
+    // // Check that we met the goal.
+    // ASSERT_GE(avoidance_path[avoidance_path.size() - 1].longitude,
+    //           end.longitude - 1e-3);
+    // ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
+    //           end.longitude + 1e-3);
 
-    //  // CIRCLE LINE SEGMENT COLLISION DETECTION
-    //  for (size_t i = 1; i < avoidance_path.size(); i++) {
-    //    // order of lat, long
-    //    ::std::vector<double> AB;
-    //    AB.push_back(avoidance_path.at(i).latitude -
-    //                 avoidance_path.at(i - 1).latitude);
-    //    AB.push_back(avoidance_path.at(i).longitude -
-    //                 avoidance_path.at(i - 1).longitude);
-    //    double magAB = sqrt(AB.at(0) * AB.at(0) + AB.at(1) * AB.at(1));
+    // //  // CIRCLE LINE SEGMENT COLLISION DETECTION
+    // //  for (size_t i = 1; i < avoidance_path.size(); i++) {
+    // //    // order of lat, long
+    // //    ::std::vector<double> AB;
+    // //    AB.push_back(avoidance_path.at(i).latitude -
+    // //                 avoidance_path.at(i - 1).latitude);
+    // //    AB.push_back(avoidance_path.at(i).longitude -
+    // //                 avoidance_path.at(i - 1).longitude);
+    // //    double magAB = sqrt(AB.at(0) * AB.at(0) + AB.at(1) * AB.at(1));
 
-    //    for (size_t j = 0; j < obstacles.size(); j++) {
-    //      ::std::vector<double> AC;
-    //      AC.push_back(obstacles.at(j).position.latitude -
-    //                   avoidance_path.at(i - 1).latitude);
-    //      AC.push_back(obstacles.at(j).position.longitude -
-    //                   avoidance_path.at(i - 1).longitude);
-    //      double magAC = sqrt(AC.at(0) * AC.at(0) + AC.at(1) * AC.at(1));
-    //      double R = obstacles.at(j).radius;
-    //      double meter_to_coordinate = 1 / GetDistance2D({0, 0, 0}, {1, 0,
-    //      0});
+    // //    for (size_t j = 0; j < obstacles.size(); j++) {
+    // //      ::std::vector<double> AC;
+    // //      AC.push_back(obstacles.at(j).position.latitude -
+    // //                   avoidance_path.at(i - 1).latitude);
+    // //      AC.push_back(obstacles.at(j).position.longitude -
+    // //                   avoidance_path.at(i - 1).longitude);
+    // //      double magAC = sqrt(AC.at(0) * AC.at(0) + AC.at(1) * AC.at(1));
+    // //      double R = obstacles.at(j).radius;
+    // //      double meter_to_coordinate = 1 / GetDistance2D({0, 0, 0}, {1, 0,
+    // //      0});
 
-    //      double projFactor =
-    //          (AC.at(0) * AB.at(0) + AC.at(1) * AB.at(1)) / (magAB * magAB);
-    //      ::std::vector<double> AD;
-    //      AD.push_back(projFactor * AB.at(0));
-    //      AD.push_back(projFactor * AB.at(1));
-    //      double magAD = sqrt(AD.at(0) * AD.at(0) + AD.at(1) * AD.at(1));
+    // //      double projFactor =
+    // //          (AC.at(0) * AB.at(0) + AC.at(1) * AB.at(1)) / (magAB *
+    // magAB);
+    // //      ::std::vector<double> AD;
+    // //      AD.push_back(projFactor * AB.at(0));
+    // //      AD.push_back(projFactor * AB.at(1));
+    // //      double magAD = sqrt(AD.at(0) * AD.at(0) + AD.at(1) * AD.at(1));
 
-    //      double magCD = sqrt(magAC * magAC - magAD * magAD);
-    //      ASSERT_GT(magCD, R * meter_to_coordinate);
-    //    }
-    //  }
+    // //      double magCD = sqrt(magAC * magAC - magAD * magAD);
+    // //      ASSERT_GT(magCD, R * meter_to_coordinate);
+    // //    }
+    // //  }
 
-    for (size_t i = 0; i < avoidance_path.size(); i++) {
-      ::std::cout << avoidance_path[i].latitude << ", "
-                  << avoidance_path[i].longitude << ::std::endl;
+    // for (size_t i = 0; i < avoidance_path.size(); i++) {
+    //   ::std::cout << avoidance_path[i].latitude << ", "
+    //               << avoidance_path[i].longitude << ::std::endl;
 
-      final_x.push_back(avoidance_path[i].latitude);
-      final_y.push_back(avoidance_path[i].longitude);
-    }
+    //   final_x.push_back(avoidance_path[i].latitude);
+    //   final_y.push_back(avoidance_path[i].longitude);
+    // }
   }
 }
 
@@ -183,98 +184,98 @@ TEST(RRTAvoidance, RandomObstacle) {
                     end_coord_lat / coordinate_to_meter, 0};
 
   for (int calcs = 0; calcs < 20; calcs++) {
-    ::std::cout << "Running calculation #" << calcs << ::std::endl;
+    // ::std::cout << "Running calculation #" << calcs << ::std::endl;
 
-    ::lib::mission_manager::Obstacles obstacles;
-    // generate testcases evenly in longitude and latitude
+    // ::lib::mission_manager::Obstacles obstacles;
+    // // generate testcases evenly in longitude and latitude
 
-    ::lib::mission_manager::StaticObstacle *obstacle =
-        obstacles.add_static_obstacles();
-    ::lib::mission_manager::Position2D *obstacle_position =
-        obstacle->mutable_location();
-    obstacle->set_cylinder_radius(150);
+    // ::lib::mission_manager::StaticObstacle *obstacle =
+    //     obstacles.add_static_obstacles();
+    // ::lib::mission_manager::Position2D *obstacle_position =
+    //     obstacle->mutable_location();
+    // obstacle->set_cylinder_radius(150);
 
-    ::std::vector<double> obs_x, obs_y;
-    double rand_point = rand() / (RAND_MAX + 1.);
-    obstacle_position->set_latitude((300 + 400 * rand_point) /
-                                    coordinate_to_meter);
-    obstacle_position->set_longitude((300 + 400 * rand_point) /
-                                     coordinate_to_meter);
+    // ::std::vector<double> obs_x, obs_y;
+    // double rand_point = rand() / (RAND_MAX + 1.);
+    // obstacle_position->set_latitude((300 + 400 * rand_point) /
+    //                                 coordinate_to_meter);
+    // obstacle_position->set_longitude((300 + 400 * rand_point) /
+    //                                  coordinate_to_meter);
 
-    ::std::vector<Position3D> avoidance_path =
-        rrt_avoidance.Process(start, end, obstacles);
+    // ::std::vector<Position3D> avoidance_path =
+    //     rrt_avoidance.Process(start, end, obstacles);
 
-    ::std::vector<double> final_x, final_y;
-    for (size_t i = 0; i < avoidance_path.size(); i++) {
-      ::std::cout << avoidance_path[i].latitude << ", "
-                  << avoidance_path[i].longitude << ::std::endl;
+    // ::std::vector<double> final_x, final_y;
+    // for (size_t i = 0; i < avoidance_path.size(); i++) {
+    //   ::std::cout << avoidance_path[i].latitude << ", "
+    //               << avoidance_path[i].longitude << ::std::endl;
 
-      final_x.push_back(avoidance_path[i].latitude);
-      final_y.push_back(avoidance_path[i].longitude);
-    }
+    //   final_x.push_back(avoidance_path[i].latitude);
+    //   final_y.push_back(avoidance_path[i].longitude);
+    // }
 
-    double tolerance = 1e-8;
-    ASSERT_GE(avoidance_path[0].latitude, start.latitude - tolerance);
-    ASSERT_LE(avoidance_path[0].latitude, start.latitude + tolerance);
-    ASSERT_GE(avoidance_path[avoidance_path.size() - 1].longitude,
-              end.longitude - tolerance);
-    ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
-              end.longitude + tolerance);
+    // double tolerance = 1e-8;
+    // ASSERT_GE(avoidance_path[0].latitude, start.latitude - tolerance);
+    // ASSERT_LE(avoidance_path[0].latitude, start.latitude + tolerance);
+    // ASSERT_GE(avoidance_path[avoidance_path.size() - 1].longitude,
+    //           end.longitude - tolerance);
+    // ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
+    //           end.longitude + tolerance);
 
-    // if (plot) {
-    //    ::matplotlibcpp::xkcd();
-    //    ::matplotlibcpp::plot(final_x, final_y);
-    //    ::matplotlibcpp::plot(obs_x, obs_y);
-    //    ::matplotlibcpp::show();
-    //}
+    // // if (plot) {
+    // //    ::matplotlibcpp::xkcd();
+    // //    ::matplotlibcpp::plot(final_x, final_y);
+    // //    ::matplotlibcpp::plot(obs_x, obs_y);
+    // //    ::matplotlibcpp::show();
+    // //}
   }
 }
 
 TEST(RRTAvoidance, RealObstacles) {
-  RRTAvoidance rrt_avoidance;
+  // RRTAvoidance rrt_avoidance;
 
-  Position3D start = {34.1747796812899 - 1e-3, -118.48062618357 - 1e-3, 0};
-  Position3D end = {34.1747796812899 + 1e-3, -118.48062618357 + 1e-3, 0};
-  ::lib::mission_manager::Obstacles obstacles;
+  // Position3D start = {34.1747796812899 - 1e-3, -118.48062618357 - 1e-3, 0};
+  // Position3D end = {34.1747796812899 + 1e-3, -118.48062618357 + 1e-3, 0};
+  // ::lib::mission_manager::Obstacles obstacles;
 
-  ::lib::mission_manager::StaticObstacle *obstacle =
-      obstacles.add_static_obstacles();
-  ::lib::mission_manager::Position2D *obstacle_position =
-      obstacle->mutable_location();
-  obstacle_position->set_latitude(34.1747796812899);
-  obstacle_position->set_longitude(-118.48062618357);
-  obstacle->set_cylinder_radius(20);
+  // ::lib::mission_manager::StaticObstacle *obstacle =
+  //     obstacles.add_static_obstacles();
+  // ::lib::mission_manager::Position2D *obstacle_position =
+  //     obstacle->mutable_location();
+  // obstacle_position->set_latitude(34.1747796812899);
+  // obstacle_position->set_longitude(-118.48062618357);
+  // obstacle->set_cylinder_radius(20);
 
-  ::std::vector<Position3D> avoidance_path =
-      rrt_avoidance.Process(start, end, obstacles);
+  // ::std::vector<Position3D> avoidance_path =
+  //     rrt_avoidance.Process(start, end, obstacles);
 
-  ::std::vector<double> final_x, final_y;
-  double tolerance = 1e-3;
-  EXPECT_GT(avoidance_path.size(), 2);
+  // ::std::vector<double> final_x, final_y;
+  // double tolerance = 1e-3;
+  // EXPECT_GT(avoidance_path.size(), 2);
 
-  // Check that we start at the right place.
-  ASSERT_GE(avoidance_path[0].latitude, start.latitude - 1e-3);
-  ASSERT_LE(avoidance_path[0].latitude, start.latitude + 1e-3);
+  // // Check that we start at the right place.
+  // ASSERT_GE(avoidance_path[0].latitude, start.latitude - 1e-3);
+  // ASSERT_LE(avoidance_path[0].latitude, start.latitude + 1e-3);
 
-  // Check that we met the goal.
-  ASSERT_GE(avoidance_path[avoidance_path.size() - 1].longitude,
-            end.longitude - 1e-3);
-  ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
-            end.longitude + 1e-3);
+  // // Check that we met the goal.
+  // ASSERT_GE(avoidance_path[avoidance_path.size() - 1].longitude,
+  //           end.longitude - 1e-3);
+  // ASSERT_LE(avoidance_path[avoidance_path.size() - 1].longitude,
+  //           end.longitude + 1e-3);
 
-  for (size_t i = 0; i < avoidance_path.size(); i++) {
-    ::std::cout << avoidance_path[i].latitude << ", "
-                << avoidance_path[i].longitude << ::std::endl;
+  // for (size_t i = 0; i < avoidance_path.size(); i++) {
+  //   ::std::cout << avoidance_path[i].latitude << ", "
+  //               << avoidance_path[i].longitude << ::std::endl;
 
-    final_x.push_back(avoidance_path[i].latitude);
-    final_y.push_back(avoidance_path[i].longitude);
-  }
+  //   final_x.push_back(avoidance_path[i].latitude);
+  //   final_y.push_back(avoidance_path[i].longitude);
+  // }
 
-  if (plot) {
-    ::matplotlibcpp::xkcd();
-    ::matplotlibcpp::plot(final_x, final_y);
-    ::matplotlibcpp::show();
-  }
+  // if (plot) {
+  //   ::matplotlibcpp::xkcd();
+  //   ::matplotlibcpp::plot(final_x, final_y);
+  //   ::matplotlibcpp::show();
+  // }
 }
 
 TEST(RRTAvoidance, MultipleRandomObstacles) {
@@ -321,24 +322,24 @@ TEST(RRTAvoidance, MultipleRandomObstacles) {
                  ::std::get<2>(testcases[i]), true);
   }
 
-  RRTAvoidance rrt_avoidance;
+  // RRTAvoidance rrt_avoidance;
 
-  ::std::vector<Position3D> avoidance_path =
-      rrt_avoidance.Process(start, end, obstacles);
+  // ::std::vector<Position3D> avoidance_path =
+  //     rrt_avoidance.Process(start, end, obstacles);
 
-  ::std::vector<double> final_x, final_y;
+  // ::std::vector<double> final_x, final_y;
 
-  for (size_t i = 0; i < avoidance_path.size(); i++) {
-    ::std::cout << avoidance_path[i].latitude << ", "
-                << avoidance_path[i].longitude << ::std::endl;
+  // for (size_t i = 0; i < avoidance_path.size(); i++) {
+  //   ::std::cout << avoidance_path[i].latitude << ", "
+  //               << avoidance_path[i].longitude << ::std::endl;
 
-    final_x.push_back(avoidance_path[i].latitude);
-    final_y.push_back(avoidance_path[i].longitude);
-  }
-  if (plot) {
-    ::matplotlibcpp::plot(final_x, final_y);
-    ::matplotlibcpp::show();
-  }
+  //   final_x.push_back(avoidance_path[i].latitude);
+  //   final_y.push_back(avoidance_path[i].longitude);
+  // }
+  // if (plot) {
+  //   ::matplotlibcpp::plot(final_x, final_y);
+  //   ::matplotlibcpp::show();
+  // }
 }
 
 } // namespace testing

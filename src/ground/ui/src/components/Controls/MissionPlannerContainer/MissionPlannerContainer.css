@@ -9,19 +9,29 @@
 .MissionPlannerContainer > .missionPlannerHeader {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  margin-bottom: 10px;
+  /* align-items:  center; */
 }
 
-.MissionPlannerContainer > .missionPlannerHeader > span {
-  font-size: 20px;
-  line-height: 25px;
+.MissionPlannerContainer > .missionPlannerHeader > .nav {
+  flex-grow: 1;
 }
 
 .MissionPlannerContainer > .missionPlannerHeader > i {
-  font-size: 25px;
-  line-height: 25px;
   cursor: pointer;
+}
+
+.MissionPlannerContainer .nav-tabs {
+  border-color: gray;
+}
+
+.MissionPlannerContainer .nav-link:hover {
+  border-color: dimgray;
+}
+
+.MissionPlannerContainer .nav-link.active {
+  color: white;
+  border-color: gray;
+  background: transparent;
 }
 
 .MissionPlannerModal.modal-dialog {
@@ -45,7 +55,7 @@
   max-height: inherit;
 }
 
-.MissionPlanner > .container-fluid {
+.MissionPlanner > .container-fluid, .MissionPlannerContainer .container-fluid {
   padding: 0px;
   max-height: inherit;
   overflow: auto;

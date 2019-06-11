@@ -5,7 +5,7 @@ import './GoogleMap.css';
 import downloadToBrowser from 'utils/downloadToBrowser';
 
 // UNCOMMENT TO USE MAPS OFFLINE (1/2)
-// import 'google_maps_js_api';
+import 'google_maps_js_api';
 var google;
 
 function getCustomTilesMapType() {
@@ -15,7 +15,7 @@ function getCustomTilesMapType() {
         let url = null;
         try {
           // UNCOMMENT TO USE MAPS OFFLINE (2/2)
-          // url = require(`google_maps_js_api/map_images/${zoom}/mag-${zoom}_x-${coord.x}_y-${coord.y}.jpg`);
+          url = require(`google_maps_js_api/map_images/${zoom}/mag-${zoom}_x-${coord.x}_y-${coord.y}.jpg`);
           if (!url) {
             throw new Error();
           }

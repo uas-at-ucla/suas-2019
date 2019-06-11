@@ -10,16 +10,15 @@ const char *kDownloadPhotosBashScriptLocation =
     "/home/pi/drone_code_deploy/scripts/download_photos.sh";
 #else
 const char *kTakePhotosBashScriptLocation =
-    "./lib/scripts/take_photos_continuously.sh";
+    "/home/uas/code_env/lib/scripts/take_photos_continuously.sh";
 const char *kDownloadPhotosBashScriptLocation =
-    "./lib/scripts/download_photos.sh";
+    "/home/uas/code_env/lib/scripts/download_photos.sh";
 #endif
 
 } // namespace
 
 DSLRInterface::DSLRInterface() :
     state_(STANDBY),
-    thread_(&DSLRInterface::Run, this),
     phased_loop_(25),
     take_photos_triggered_(0),
     photos_available_to_download_(true) {}
@@ -47,12 +46,6 @@ void DSLRInterface::Quit() {
   exit(0);
 }
 
-void DSLRInterface::Run() {
-  while (run_) {
-    RunIteration();
-  }
-}
-
 void DSLRInterface::RunIteration() {
   phased_loop_.SleepUntilNext();
 
@@ -65,6 +58,8 @@ void DSLRInterface::RunIteration() {
       1e-9;
 
   int pid_stat;
+
+  ::std::cout << "DSLR STATE = " << state_ << ::std::endl;
 
   switch (state_) {
     case STANDBY:

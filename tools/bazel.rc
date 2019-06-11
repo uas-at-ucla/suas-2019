@@ -17,4 +17,3 @@ test --test_output=errors
 startup --output_base=tools/cache/bazel
 build --symlink_prefix=/
 
-build --incompatible_remove_native_git_repository=false

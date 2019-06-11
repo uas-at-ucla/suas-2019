@@ -1,6 +1,7 @@
 // See test.js for usage example
 
 const axios = require('axios');
+const fs = require('fs');
 const config = require('../config');
 
 const FEET_PER_METER = 3.28084;
@@ -40,6 +41,13 @@ class InteropClient {
             if (this.telemetryCanUpload) {
               this.telemetryCanUpload = false;
               console.log("Failing to upload telemetry!");
+              if (error.response) {
+                console.log("    Response status " + error.response.status);
+              } else if (error.request) {
+                console.log("    No response received");
+              } else {
+                console.log("    Could not make request");
+              }
               this.ui_io.emit('INTEROP_UPLOAD_FAIL');
             }
           });
@@ -66,8 +74,12 @@ class InteropClient {
     return this.axiosInstance.post("/odlcs", odlc).then(res => res.data).catch(err => {throw err});
   }
 
-  postObjectImage(image, odlcId) {
-    return this.axiosInstance.post("/odlcs/"+odlcId+"/image", image).then(res => res.data).catch(err => {throw err});
+  postObjectImage(imagePath, odlcId) {
+    let image = fs.readFileSync(imagePath);
+    let config = {
+      headers: {'Content-Type': 'image/jpeg'}
+    };
+    return this.axiosInstance.post("/odlcs/"+odlcId+"/image", image, config).then(res => res.data).catch(err => {throw err});
   }
 
   newTelemetry(telemetry) {
@@ -79,6 +91,7 @@ class InteropClient {
         heading: telemetry.sensors.heading
       }
       if (!this.intervalHandle) {
+        console.log("Got new telemetry");
         this.intervalHandle = this.setUploadInterval();
       }
     }

@@ -323,6 +323,17 @@ class Map extends Component {
             </HeatmapLayer>
           </GoogleMap>
         </div>
+        {/* <div className="ImageCrop">
+          <Cropper
+            image={this.state.cropValues.image}
+            crop={this.state.cropValues.crop}
+            zoom={this.state.cropValues.zoom}
+            aspect={this.state.cropValues.aspect}
+            onCropChange={this.onCropChange}
+            onCropComplete={this.onCropComplete}
+            onZoomChange={this.onZoomChange}
+          />
+        </div> */}
       </div>
     );
   }

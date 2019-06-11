@@ -19,7 +19,8 @@ cc_library(
     'ground_controls.h'
   ],
   deps = [
-    '//src/controls/loops:flight_loop_lib',
+    '//src/controls:constants',
+    '//src/controls/flight_loop:flight_loop_lib',
     '//src/controls:messages_cpp',
     '//src/controls/io:io_lib',
     '//src/controls/ground_controls/timeline/ground2drone_visitor:ground2drone_visitor',

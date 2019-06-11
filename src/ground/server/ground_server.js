@@ -6,23 +6,40 @@ try {
   ping = require("net-ping"); //might fail since it needs to be compiled specifically on each platform
 } catch(e) {
   console.log(e);
-  console.log("Can't load net-ping. It either did not install succesfully, or it may be installed for the wrong platform. Uninstall it with:");
+  console.log("Can't load net-ping. It either did not install succesfully, or it may be installed for the wrong platform. Uninstall and reinstall on the desired platform with:");
   console.log("    cd src/ground/server");
-  console.log("    npm uninstall net-ping\n");
+  console.log("    npm uninstall net-ping --no-save");
+  console.log("    npm install net-ping\n");
 }
+
+const inDockerContainer = fs.existsSync("/.dockerenv");
 
 const loadProtobufUtils = require('./src/protobuf_utils');
 const loadInteropClient = require('./src/interop_client');
 const config = require('./config');
 
 const server_port = 8081;
-var droneIP = "192.168.1.20";
+
+var droneIP = inDockerContainer ? "192.168.3.20" : "192.168.1.20";
 const pingInterval = 1000 //ms
 const uiSendFrequency = 5; //Hz
 const trackySendFrequency = 5; //Hz
-var telemetry = {};
-
+var telemetry = { output: {} };
+var flightControllerState = null;
+var droneArmed = null;
 var drone_connected = false;
+
+// const ugvWaitAfterUnlatchTime = 15000; //ms
+// const ugvStillTimeThreshold = 15000; //ms
+const ugvWaitTimeAfterCut = 15000; // ms
+var droppyReady = false;
+// var dropping = false;
+// var ugvUnlatchTime = 0;
+// var ugvIsStill = false;
+// var ugvBecameStillTime = 0;
+var droveUgv = false;
+var ugvDriveTimer = null;
+
 
 // create server
 const io = socketIOServer(server_port);
@@ -31,7 +48,8 @@ const io = socketIOServer(server_port);
 const ui_io = io.of('/ui');
 const controls_io = io.of('/ground-controls');
 const ugv_io = io.of('/ugv');
-const tracky_io = io.of('/tracky');
+// const tracky_io = io.of('/tracky');
+const button_panel_io = io.of('/button-panel');
 const fake_drone_io = io.of('/fake-drone');
 
 // For decoding and encoding drone messages
@@ -50,8 +68,8 @@ if (config.testing) {
   // try our test server
   connectToInterop("134.209.2.203:8000", "testuser", "testpass", 2)
     .catch(error => {
-      if (fs.existsSync("/.dockerenv")) { // If inside Docker container
-        connectToInterop("192.168.1.30:80", "testuser", "testpass", 2);
+      if (inDockerContainer) {
+        connectToInterop("192.168.3.30:80", "testuser", "testpass", 2);
       } else {
         connectToInterop("localhost:8000", "testuser", "testpass", 2);
       }
@@ -87,15 +105,15 @@ function connectToInterop(ip, username, password, missionId) {
 /**************************
  * ANTENNA TRACKER
  **************************/
-const trackySendInterval = 1000 / trackySendFrequency;
-setInterval(() => {
-  if (telemetry.sensors) {
-    tracky_io.emit('DRONE_POS', telemetry.sensors);
-  }
-}, trackySendInterval);
-tracky_io.on('connect', (socket) => {
-  console.log("Antenna tracker connected!");
-});
+// const trackySendInterval = 1000 / trackySendFrequency;
+// setInterval(() => {
+//   if (telemetry.sensors) {
+//     tracky_io.emit('DRONE_POS', telemetry.sensors);
+//   }
+// }, trackySendInterval);
+// tracky_io.on('connect', (socket) => {
+//   console.log("Antenna tracker connected!");
+// });
 
 
 /**************************
@@ -107,25 +125,95 @@ controls_io.on('connect', (socket) => {
   console.log("ground_controls connected");
   function onSensors(sensors) {
     if (protobufUtils) {
-      //TODO receive and cache other data to send along with sensors
       telemetry.sensors = protobufUtils.decodeSensors(sensors);
       if (interopClient) {
         interopClient.newTelemetry(telemetry);
+      }
+      if (telemetry.sensors.autopilot_state !== flightControllerState || telemetry.sensors.armed !== droneArmed) {
+        flightControllerState = telemetry.sensors.autopilot_state;
+        droneArmed = telemetry.sensors.armed;
+        if (telemetry.sensors.armed) {
+          button_panel_io.emit('DRONE_STATE', flightControllerState);
+        } else {
+          button_panel_io.emit('DRONE_STATE', "DISARMED");
+        }
       }
     }
   }
 
   socket.on('SENSORS', (sensors) => {
-    onSensors(sensors, config.droneSensorsFrequency);
+    onSensors(sensors);
   });
 
   socket.on('SENSORS_RFD900', (sensors) => {
-    onSensors(sensors, config.droneSensorsFreqRFD900);
+    onSensors(sensors);
+  });
+
+  socket.on('OUTPUT', (output) => {
+    if (protobufUtils) {
+      telemetry.output = protobufUtils.decodeOutput(output);
+      if (telemetry.output.deploy !== droppyReady) {
+        droppyReady = telemetry.output.deploy;
+        button_panel_io.emit('DROPPY_READY', droppyReady);
+      }
+    }
   });
 
   socket.on('COMPILED_DRONE_PROGRAM', (droneProgram) => {
-    console.log("hello");
-    console.log(droneProgram);
+    if (protobufUtils) {
+      droneProgram = protobufUtils.decodeDroneProgam(droneProgram);
+      console.log(droneProgram)
+      console.log("Received drone program^");
+      ui_io.emit('COMPILED_DRONE_PROGRAM', droneProgram);
+    }
+  });
+
+  socket.on('UPLOADED_DRONE_PROGRAM', (droneProgram) => {
+    console.log("Got acknowledgment that the Drone Program was uploaded")
+    if (protobufUtils) {
+      ui_io.emit('UPLOADED_DRONE_PROGRAM', protobufUtils.decodeDroneProgam(droneProgram));
+    }  
+  });
+
+  let msgs_to_ui = [
+    'MISSION_COMPILE_ERROR', 'MISSION_STATUS',
+    'GIMBAL_SETPOINT',
+    'DEPLOYMENT_MOTOR_SETPOINT',
+    'LATCH_SETPOINT',
+    'HOTWIRE_SETPOINT',
+    'DROPPY_COMMAND_RECEIVED'
+  ];
+  for (let ui_msg of msgs_to_ui) {
+    let local_ui_msg = ui_msg;
+    socket.on(local_ui_msg, (data) => {
+      console.log("received: " + local_ui_msg + ": " + data);
+      ui_io.emit(local_ui_msg, data);
+
+      if (local_ui_msg === 'DROPPY_COMMAND_RECEIVED') {
+        if (data === 'RESET_LATCH') {
+          droveUgv = false;
+        } else if (data === 'STOP_CUT' || data === 'CANCEL_DROP') {
+          if (ugvDriveTimer) {
+            clearTimeout(ugvDriveTimer);
+          }
+        } if (data === 'CUT_LINE' && !droveUgv) {
+          droveUgv = true;
+          ugvDriveTimer = setTimeout(() => {
+            console.log("Driving the UGV!");
+            ugv_io.emit('DRIVE_TO_TARGET');
+          }, ugvWaitTimeAfterCut);
+        } /*else if (data === 'START_DROP') {
+          dropping = true;
+          ugvUnlatchTime = Date.now();
+        }*/
+
+        button_panel_io.emit('DROPPY_COMMAND_RECEIVED', data);
+      }
+    });
+  }
+
+  socket.on('disconnect', () => {
+    console.log("ground_controls disconnected");
   });
 });
 
@@ -138,11 +226,43 @@ ugv_io.on('connect', (socket) => {
   socket.emit('SET_TARGET', {lat: 38.14617, lng: -76.42642}); // Official competition destination
 
   socket.on('UGV_MESSAGE', (msg) => {
-    if (protobufUtils) {
-      msg = protobufUtils.decodeUGV_Message(msg);
-      console.log(msg);
-      ui_io.emit('UGV_MESSAGE', msg);
-    }
+    if (config.verbose) console.log(msg);
+    ui_io.emit('UGV_MESSAGE', msg);
+
+    /*if (msg.status && msg.status.is_still != null) {
+      let currentTime = Date.now();
+      if (currentTime - ugvUnlatchTime > ugvWaitAfterUnlatchTime) {
+        if (dropping && !ugvIsStill && msg.status.is_still) {
+          ugvIsStill = true;
+          ugvBecameStillTime = currentTime;
+        } else if (dropping && msg.status.is_still && (currentTime - ugvBecameStillTime > ugvStillTimeThreshold)) {
+          console.log("I think I should cut the fishing line!");
+          // controls_io.emit('CHANGE_DROPPY_STATE', 'CUT_LINE'); // TODO should we actually do
+        } else if (dropping && ugvIsStill && !msg.status.is_still) {
+          ugvIsStill = false;
+        }
+      }
+    }*/
+  });
+
+  socket.on('disconnect', () => {
+    console.log("UGV controls disconnected");
+  });
+});
+
+
+/**************************
+ * BUTTON PANEL SOCKET
+ **************************/
+button_panel_io.on('connect', (socket) => {
+  console.log("button panel connected!");
+  
+  socket.on('CHANGE_DROPPY_STATE', (state) => {
+    controls_io.emit('CHANGE_DROPPY_STATE', state);
+  });
+
+  socket.on('disconnect', () => {
+    console.log("button panel disconnected");
   });
 });
 
@@ -167,9 +287,32 @@ ui_io.on('connect', (socket) => {
     console.log("TEST " + data);
   });
 
-  socket.on('CHANGE_DRONE_STATE', (state) => {
-    controls_io.emit('CHANGE_DRONE_STATE', state);
-    console.log("THE DRONE is asked to " + state + ". Hey DRONE, are you listening?");
+  socket.on('UPLOAD_IMAGE', (data) => {
+    if (interopClient && interopData) {
+      let odlc = {
+        "mission": interopData.mission.id,
+        "type": "STANDARD",
+        "latitude": data.latitude, //TODO how is data structured?
+        "longitude": data.longitude,
+        "orientation": data.orientation,
+        "shape": data.shape,
+        "shapeColor": data.shapeColor,
+        "alphanumeric": data.alphanumeric,
+        "alphanumericColor": data.alphanumericColor,
+        "autonomous": false
+      }
+
+      interopClient.postObjectDetails(odlc).then(returnedOdlc => {
+        console.log("Submitted ODLC with id " + returnedOdlc.id);
+        interopClient.postObjectImage(data.imageFile, returnedOdlc.id).then(msg => {
+          console.log(msg);
+        }).catch(error => {
+          console.log(error);
+        });
+      }).catch(error => {
+        console.log(error);
+      });
+    }
   });
 
   socket.on('COMPILE_GROUND_PROGRAM', (commands) => {
@@ -183,6 +326,23 @@ ui_io.on('connect', (socket) => {
     }
   });
 
+  let msgs_to_drone = [
+    'UPLOAD_MISSION', 'RUN_MISSION', 'PAUSE_MISSION', 'END_MISSION',
+    'CHANGE_DRONE_STATE', 
+    'GIMBAL_SETPOINT',
+    'DEPLOYMENT_MOTOR_SETPOINT',
+    'LATCH_SETPOINT',
+    'HOTWIRE_SETPOINT',
+    'CHANGE_DROPPY_STATE'
+  ];
+  for (let controls_msg of msgs_to_drone) {
+    let local_controls_msg = controls_msg;
+    socket.on(local_controls_msg, (data) => {
+      console.log("sending: " + local_controls_msg + ": " + data);
+      controls_io.emit(local_controls_msg, data);
+    });
+  }
+
   socket.on('CONNECT_TO_INTEROP', (cred) => {
     console.log('CONNECT TO INTEROP');
     connectToInterop(cred.ip, cred.username, cred.password, cred.missionId);
@@ -190,7 +350,7 @@ ui_io.on('connect', (socket) => {
 
   socket.on('CONFIGURE_TRACKY_POS', (pos) => {
     console.log("Sending Tracky its estimated position");
-    tracky_io.emit('CONFIGURE_POS', pos);
+    // tracky_io.emit('CONFIGURE_POS', pos);
   });
 
   socket.on('SET_UGV_TARGET', (pos) => {
@@ -200,7 +360,16 @@ ui_io.on('connect', (socket) => {
 
   socket.on('DRIVE_UGV', () => {
     console.log("Driving the UGV!");
-    ugv_io.emit('DRIVE_TO_TARGET'); // TODO automatically send to UGV when it hits the ground
+    ugv_io.emit('DRIVE_TO_TARGET');
+  });
+
+  socket.on('DISABLE_UGV', () => {
+    console.log("Disabling the UGV");
+    ugv_io.emit('DISABLE');
+  });
+
+  socket.on('disconnect', () => {
+    console.log("ui disconnected");
   });
 });
 
@@ -226,7 +395,7 @@ if (ping) {
       if (error) {
         ui_io.emit('PING', null);
         if (error instanceof ping.RequestTimedOutError)
-          console.log(droneIP + ": Not alive");
+          if (config.verbose) console.log(droneIP + ": Not alive");
         else
           console.log(droneIP + ": " + error.toString());
       } else {
@@ -260,6 +429,10 @@ fake_drone_io.on('connect', (socket) => {
         interopClient.newTelemetry(telemetry);
       }
     }
+  });
+
+  socket.on('disconnect', () => {
+    console.log("fake drone disconnected");
   });
 });
 

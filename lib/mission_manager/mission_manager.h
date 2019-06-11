@@ -33,7 +33,7 @@ class MissionManager {
                      Position3D drone_position);
 
  private:
-  rrt_avoidance::RRTAvoidance rrt_avoidance_;
+  ::lib::rrt_avoidance::RRTAvoidance rrt_avoidance_;
 
   ::lib::mission_manager::Mission mission_;
   ::lib::mission_manager::Obstacles obstacles_;

@@ -19,8 +19,10 @@ cc_library(
     'ground_communicator.h'
   ],
   deps = [
+    '//src/controls:constants',
     '//src/controls:messages_cpp',
     '//src/controls/io:io_lib',
+    '//src/controls/ground_controls:ground_controls_lib',
     '//lib/ros:ros',
     '//lib/serial_device:serial_device',
     '//lib/proto_comms:proto_comms',

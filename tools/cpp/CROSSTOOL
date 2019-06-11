@@ -269,7 +269,7 @@ toolchain {
   tool_path { name: "objdump" path: "raspi_toolchain/arm-linux-gnueabihf-objdump" }
   tool_path { name: "strip" path: "raspi_toolchain/arm-linux-gnueabihf-strip" }
 
-  compiler_flag: "-DUAS_AT_UCLA_DEPLOYMENT"
+  compiler_flag: "-DRASPI_DEPLOYMENT"
   # compiler_flag: "-DENABLE_PRECOMPILED_HEADERS=OFF"
 
   compiler_flag: "--sysroot=external/raspi_toolchain/arm-linux-gnueabihf"

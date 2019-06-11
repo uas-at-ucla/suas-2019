@@ -7,12 +7,23 @@ import { selector } from 'redux/store';
 import missionActions from 'redux/actions/missionActions';
 import MapElementWithInfo from 'components/utils/MapElementWithInfo';
 
+import camera from './icons/camera.png'
+import person from './icons/Person-Icon.png'
+import bomb from './icons/bomb_drop.png'
+import wheel from './icons/wheel.png'
+import blueMarker from './icons/blue_marker.png'
+
+const FEET_PER_METER = 3.28084;
+
 const mapStateToProps = state => {
   let derivedData = selector(state);
   return {
     interopData: state.mission.interopData,
+    ugvDestination: state.mission.ugvDestination,
     protoInfo: derivedData.mission.protoInfo,
-    mainFlyZone: derivedData.mission.mainFlyZone
+    mainFlyZone: derivedData.mission.mainFlyZone,
+    defaultAltitude: state.mission.defaultAltitude,
+    homeAltitude: state.telemetry.droneTelemetry ? state.telemetry.droneTelemetry.sensors.home_altitude : null
   };
 };
 
@@ -35,6 +46,12 @@ class InteropItems extends Component {
       if (!this.props.mainFlyZone.isClockwise) {
         boundaryCoordinates.reverse();
       }
+
+      var flyZonePolygons = this.props.interopData.mission.flyZones.map((flyZone) => {
+        return flyZone.boundaryPoints.map((coord) => {
+          return {lat: coord.latitude, lng: coord.longitude};
+        });
+      });
 
       var searchCenterLat = 0;
       var searchCenterLng = 0;
@@ -65,12 +82,25 @@ class InteropItems extends Component {
 
     return (
       <span>
+        <MapElementWithInfo
+          Element={Marker} name="ugvDest" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
+          position={this.props.ugvDestination}
+          icon={{
+            url: wheel,
+            scaledSize: {width: 25, height: 25},
+            anchor: {x: 12.5, y: 12.5}
+          }}
+        >
+          <div>UGV Destionation</div>
+          <div>{this.props.ugvDestination.lat}, {this.props.ugvDestination.lng}</div>
+        </MapElementWithInfo>
+
         {this.props.interopData ? <span>
           <MapElementWithInfo
             Element={Marker} name="airDropPosition" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
             position={airDropPos}
             icon={{
-              url: "https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/WA_80_cm_archery_target.svg/180px-WA_80_cm_archery_target.svg.png",
+              url: bomb,
               scaledSize: {width: 25, height: 25},
               anchor: {x: 12.5, y: 12.5}
             }}
@@ -85,7 +115,7 @@ class InteropItems extends Component {
             Element={Marker} name="emergent_last_known_pos" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
             position={emergentPos}
             icon={{
-              url: "https://allenhoole.co.uk/wp-content/uploads/2016/10/Person-Icon.png",
+              url: person,
               scaledSize: {width: 20, height: 20},
               anchor: {x: 10, y: 10}
             }}
@@ -100,7 +130,7 @@ class InteropItems extends Component {
             Element={Marker} name="off_axis_odlc_pos" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
             position={offAxisPos}
             icon={{
-              url: "https://iconsplace.com/wp-content/uploads/_icons/ffa500/256/png/slr-camera-icon-11-256.png",
+              url: camera,
               scaledSize: {width: 20, height: 20},
               anchor: {x: 10, y: 10}
             }}
@@ -112,7 +142,7 @@ class InteropItems extends Component {
           </MapElementWithInfo>
 
           <Polygon
-            paths={[boxCoordinates, boundaryCoordinates]} strokeOpacity={0.8} strokeWeight={2} 
+            paths={[boxCoordinates, boundaryCoordinates]} 
             options={{
               strokeColor: '#FF0000',
               fillColor: '#FF0000',
@@ -120,44 +150,73 @@ class InteropItems extends Component {
               strokeWeight: 1,
               fillOpacity: 0.5
             }}
-          /> 
+          />
 
-          <MapElementWithInfo
+          {flyZonePolygons.map((path) => 
+            <Polygon 
+              path={path}
+              defaultOptions={{
+                strokeColor: '#FF0000',
+                strokeOpacity: 0.8,
+                strokeWeight: 1.5,
+                fillOpacity: 0,
+                clickable: false
+              }}
+            />
+          )}
+
+          <Polygon path={searchGridPoints} defaultOptions={{clickable: false}} />
+          {/* Use this version if SurveyCommand is supported: */}
+          {/* <MapElementWithInfo
             Element={Polygon} name="search" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
-            path={searchGridPoints} strokeOpacity={0.5} strokeWeight={2}
+            path={searchGridPoints}
             infoPosition={{lat: searchCenterLat, lng: searchCenterLng}}
           >
             <div>Search Area</div>
             <Button size="sm" onClick={() => this.addWaypointCommand(searchCenterLat, searchCenterLng)}>
               Add to Mission
             </Button>
-          </MapElementWithInfo>
+          </MapElementWithInfo> */}
 
           {this.props.interopData.mission.stationaryObstacles.map((obstacle, index) => 
-            <MapElementWithInfo 
+            <MapElementWithInfo
+              key={index}
               Element={Circle} name={`obstacle-${index}`} isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
-              options={{
+              defaultOptions={{
                 strokeColor: '#FF0000',
                 strokeOpacity: 0.8,
                 strokeWeight: 2,
                 fillColor: '#FF0000',
                 fillOpacity: 0.5,
               }} 
-              radius={obstacle.radius} center={{lat: obstacle.latitude, lng: obstacle.longitude}}
+              radius={obstacle.radius/FEET_PER_METER} center={{lat: obstacle.latitude, lng: obstacle.longitude}}
               infoPosition={{lat: obstacle.latitude, lng: obstacle.longitude}}
             >
-              Obstacle {"("+obstacle.latitude + " " + obstacle.longitude + ")"}
+              Obstacle {"("+obstacle.latitude + ", " + obstacle.longitude + ")"}
               <br/>
-              {"Height:" + obstacle.height + " Radius: " + obstacle.radius} 
+              {"Height: " + obstacle.height + " ft AMSL"}<br/>
+              {"Radius: " + obstacle.radius + " ft"} 
             </MapElementWithInfo>
           )}
 
           {this.props.interopData.mission.waypoints.map((coord, index) => 
             <MapElementWithInfo
+              key={index}
               Element={Marker} name={`waypoint-${index}`} isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
               position={{lat: coord.latitude, lng: coord.longitude }}
+              icon={{
+                url: blueMarker,
+                scaledSize: {width: 25, height: 25},
+                anchor: {x: 12.5, y: 12.5}
+              }}
             >
-              TODO
+              <div>
+                Waypoint {index+1}<br/>
+                {coord.altitude} ft AMSL {this.props.homeAltitude != null ? "("+(coord.altitude - this.props.homeAltitude*FEET_PER_METER)+") ft rel" : null}
+              </div>
+              <Button size="sm" onClick={() => this.addWaypointCommand(coord.latitude, coord.longitude, this.props.homeAltitude != null ? (coord.altitude - this.props.homeAltitude*FEET_PER_METER) : coord.altitude)}>
+                Add to Mission
+              </Button>
             </MapElementWithInfo>
           )}
         </span> : null }
@@ -165,20 +224,12 @@ class InteropItems extends Component {
     );
   }
 
-  deleteCommand = (event) => {
-    this.props.deleteCommand(event.target.dataset.index);
-  }
-
-  mapDblClick = (event) => {
-    this.addWaypointCommand(event.latLng.lat(), event.latLng.lng());
-  }
-
-  addWaypointCommand = (lat, lng) => {
+  addWaypointCommand = (lat, lng, alt) => {
     let defaultWaypointCommand = {
       goal: {
         latitude: lat,
         longitude: lng,
-        altitude: 100
+        altitude: alt ? alt : this.props.defaultAltitude
       }
     }
     this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);

@@ -1,11 +1,14 @@
 import React, { Component, PureComponent } from 'react';
 import { Button } from 'reactstrap';
 import { connect } from 'react-redux';
-import { Container, Row, Col, Input, InputGroup, InputGroupAddon } from 'reactstrap';
-import { SortableContainer, SortableElement } from 'react-sortable-hoc';
+import { Container } from 'reactstrap';
+import { SortableContainer } from 'react-sortable-hoc';
 
 import missionActions from 'redux/actions/missionActions';
 import { selector } from 'redux/store';
+import CommandList from './CommandList';
+
+const FEET_PER_METER = 3.28084;
 
 const mapStateToProps = state => {
   let derivedData = selector(state);
@@ -13,7 +16,8 @@ const mapStateToProps = state => {
     mission: state.mission,
     protoInfo: derivedData.mission.protoInfo,
     interopData: state.mission.interopData,
-    mainFlyZone: derivedData.mission.mainFlyZone
+    mainFlyZone: derivedData.mission.mainFlyZone,
+    homeAltitude: state.telemetry.droneTelemetry ? state.telemetry.droneTelemetry.sensors.home_altitude : null
   };
 };
 
@@ -23,22 +27,22 @@ class MissionPlanner extends Component {
   render() {
     return (
       <div className="MissionPlanner">
-        <this.CommandList onSortEnd={this.reorderCommand} distance={2}/>
+        <this.Commands onSortEnd={this.reorderCommand} distance={2}/>
       </div>
     );
   }
 
   autoGenerate = () => {
     //console.log(this.props.interopData.mission);
-    var default_alt = 150
+    var default_alt = this.props.mission.defaultAltitude;
     var default_drp_height = default_alt
     var default_height = default_alt
 
-    var i
-    for (i = 0; i < this.props.interopData.mission.waypoints.length; i++){
+    for (let i = 0; i < this.props.interopData.mission.waypoints.length; i++) {
       var lat = this.props.interopData.mission.waypoints[i].latitude
       var long = this.props.interopData.mission.waypoints[i].longitude
-      var alt = this.props.interopData.mission.waypoints[i].altitude 
+      var alt = this.props.interopData.mission.waypoints[i].altitude // ft above MSL
+      alt = alt - (this.props.telemetry.sensors.home_altitude * FEET_PER_METER); // convert to relative alt
       let defaultWaypointCommand = {
         goal: {
           latitude: lat,
@@ -48,76 +52,77 @@ class MissionPlanner extends Component {
       }
       this.props.addWaypointCommand(defaultWaypointCommand, this.props.protoInfo);
     }
-    var search_grid = []
-    
-    for (i = 0; i < this.props.interopData.mission.searchGridPoints.length; i++){
-      var lat = this.props.interopData.mission.searchGridPoints[i].latitude
-      var long = this.props.interopData.mission.searchGridPoints[i].longitude
-      let search_point = {
-        latitude: lat, 
-        longitude: long
-      }
-      search_grid.push(search_point)
-    }
 
-    let search_command = {
-      altitude: default_alt,
-      survey_polygon: search_grid
-    }
-
-    this.props.addCommand("survey_command", search_command, this.props.protoInfo)
+    // If Survey command is supported
+    // var search_grid = []
+    // for (i = 0; i < this.props.interopData.mission.searchGridPoints.length; i++){
+    //   var lat = this.props.interopData.mission.searchGridPoints[i].latitude
+    //   var long = this.props.interopData.mission.searchGridPoints[i].longitude
+    //   let search_point = {
+    //     latitude: lat, 
+    //     longitude: long
+    //   }
+    //   search_grid.push(search_point)
+    // }
+    // let search_command = {
+    //   altitude: default_alt,
+    //   survey_polygon: search_grid
+    // }
+    // this.props.addCommand("survey_command", search_command, this.props.protoInfo)
     
     var lat = this.props.interopData.mission.airDropPos.latitude
     var long = this.props.interopData.mission.airDropPos.longitude
     let airDropCommand = {
-      drop_height: default_drp_height,
-      ground_target: {
+      goal: {
         latitude: lat,
-        longitude: long
+        longitude: long,
+        altitude: default_drp_height
       } 
     }
     this.props.addCommand("ugv_drop_command", airDropCommand, this.props.protoInfo);
     
-    var lat = this.props.interopData.mission.offAxisOdlcPos.latitude
-    var long = this.props.interopData.mission.offAxisOdlcPos.longitude
-    let off_axis_command = {
-      photographer_location: {
-        latitude: lat,
-        longitude: long,
-        altitude: default_height
-      },
-      subject_location: {
-        latitude: lat,
-        longitude: long,
-      }
-    }
-    this.props.addCommand("off_axis_command", off_axis_command, this.props.protoInfo)
+    // If OffAxis command is supported
+    // var lat = this.props.interopData.mission.offAxisOdlcPos.latitude
+    // var long = this.props.interopData.mission.offAxisOdlcPos.longitude
+    // let off_axis_command = {
+    //   photographer_location: {
+    //     latitude: lat,
+    //     longitude: long,
+    //     altitude: default_height
+    //   },
+    //   subject_location: {
+    //     latitude: lat,
+    //     longitude: long,
+    //   }
+    // }
+    // this.props.addCommand("off_axis_command", off_axis_command, this.props.protoInfo)
 
   }
 
-  CommandList = SortableContainer(() => {
+  Commands = SortableContainer(() => {
     return (
       <Container fluid>
         {this.props.mission.interopData ? 
           <div>
-            Mission Altitude Range:&nbsp;
-            {this.props.mainFlyZone.altitudeMin} -&nbsp;
-            {this.props.mainFlyZone.altitudeMax} ft
-          </div> 
+            {"Mission Altitude Range: " +
+            this.props.mainFlyZone.altitudeMin + " - " +
+            this.props.mainFlyZone.altitudeMax + " ft AMSL " +
+            (this.props.homeAltitude != null ? 
+              "(" + (this.props.mainFlyZone.altitudeMin-this.props.homeAltitude*FEET_PER_METER) + " - " +
+              (this.props.mainFlyZone.altitudeMax-this.props.homeAltitude*FEET_PER_METER) + "ft rel)" 
+            : "")}
+          </div>
         : null}
-        {this.props.mission.commands.map((command, index) => 
-          <SortableCommand
-            className={this.props.className}
-            key={command.id}
-            {...this.commandChangers}
-            command={command}
-            index={index}
-            myIndex={index}
-            protoInfo={this.props.protoInfo}
-          ></SortableCommand>
-        )}
+        <CommandList 
+          commands={this.props.mission.commands}
+          programType={this.props.programType}
+          className={this.props.className}
+          protoInfo={this.props.protoInfo}
+          commandChangers={this.commandChangers}
+          mutable={true}
+        />
         <Button onClick={this.addCommand} className="command-btn">Add Command</Button>
-        {this.props.interopData && this.props.mission.commands.length === 0 ? <Button onClick={this.autoGenerate}>Auto-Generate</Button> : null}
+        {this.props.telemetry && this.props.interopData && this.props.mission.commands.length === 0 ? <Button onClick={this.autoGenerate}>Auto-Generate</Button> : null}
       </Container>
     );
   });
@@ -178,130 +183,3 @@ class MissionPlanner extends Component {
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(MissionPlanner);
-
-const SortableCommand = SortableElement(props => <CommandRow {...props}/>);
-// PureComponent improves performance b/c it only re-renders when props change
-class CommandRow extends PureComponent {
-  centerMapOnCommand = () => {
-    this.props.centerMapOnCommand(this.props.myIndex);
-  }
-
-  render() {
-    let command = this.props.command;
-    let index = this.props.myIndex;
-    return (
-      <Row className={`MissionPlanner ${this.props.className}`} onClick={this.centerMapOnCommand}>
-        <Col xs="auto" className="command-column input command-header">
-          <Button className="delete-btn" color="danger" size="sm" data-index={index} onClick={this.props.deleteCommand}>
-            <i className="fa fa-minus"></i>
-          </Button>
-        </Col>
-        <Col xs="auto" className="command-column command-index command-header">{index+1}</Col>
-        <Col xs="auto" className="command-column command-type command-header">
-          <span className="value">
-            {this.props.protoInfo.commandAbbr[command.name]}
-          </span>
-          <Input
-            type="select" className="input" value={command.name}
-            data-index={index} onChange={this.props.changeCommandType}
-          >
-            {this.props.protoInfo.commandNames.map(commandName =>
-              <option value={commandName} key={commandName}>
-                {this.props.protoInfo.commandAbbr[commandName]}
-              </option>
-            )}
-          </Input>
-        </Col>
-        <Col xs="auto" className="command-column">
-          <this.Field
-            dotProp={index + "." + command.name}
-            type={command.type}
-            object={command[command.name]}
-          />
-        </Col>
-      </Row>
-    )
-  }
-
-  // Helper components
-  NumberField = ({name, dotProp, value, units}) => {
-    return (
-      <Row>
-        <Col xs="auto">
-          <InputGroup className="number input">
-            <InputGroupAddon addonType="prepend">{name}</InputGroupAddon>
-            <Input
-              style={{width: Math.min(12, value.toString().length + 3) + "ch"}}
-              value={value} type="number"
-              data-dot-prop={dotProp} onChange={this.props.changeNumberField}
-            ></Input>
-            {units ? <InputGroupAddon addonType="append">{units}</InputGroupAddon> : null}
-          </InputGroup>
-          <span className="value">{Math.round(value*1e4)/1e4} {units}</span>
-        </Col>
-      </Row>
-    );
-  };
-
-  RepeatedField = ({name, dotProp, type, object}) => {
-    return (
-      <span>
-        {object.map((element, index) =>
-          <this.Field
-            name={`${name} ${index+1}`} key={index}
-            dotProp={dotProp + "." + index}
-            type={type}
-            object={element}
-          />
-        )}
-        <Button
-          className="input" data-dot-prop={dotProp}
-          data-type={type} onClick={this.props.addRepeatedField}
-        >+</Button>
-        <Button
-          className="input" data-dot-prop={dotProp}
-          onClick={this.props.popRepeatedField}
-        >-</Button>
-      </span>
-    );
-  }
-
-  Field = ({name, dotProp, type, object}) => {
-    // Recursively create HTML based on protobuf definition
-    let timelineGrammar = this.props.protoInfo.timelineGrammar;
-    if (timelineGrammar[type]) {
-      // object is a protobuf defined object
-      return (
-        <Row>
-          {name ? <Col xs="auto" className="name">{name}:</Col> : null}
-          {Object.keys(timelineGrammar[type].fields).map((fieldName) => {
-            let field = timelineGrammar[type].fields[fieldName];
-            let fieldDotProp = dotProp + "." + fieldName;
-            let fieldProps = {
-              name: fieldName,
-              dotProp: fieldDotProp,
-              type: field.type,
-              object: object[fieldName]
-            };
-            return (
-              <Col xs="auto" className="field-container" key={fieldName}>
-                {field.rule === 'repeated' ?
-                  <this.RepeatedField {...fieldProps}/>
-                : field.rule === 'required' ?
-                  <this.Field {...fieldProps}/>
-                :
-                  (() => {throw new Error("No support for timeline_grammar rule '" + field.rule + "' yet!")})()
-                }
-              </Col>
-            );
-          })}
-        </Row>
-      );
-    } else if (type === "double") {
-      return <this.NumberField name={name} dotProp={dotProp} value={object} 
-        units={this.props.protoInfo.fieldUnits[name]}/>;
-    } else {
-      throw new Error("No support for timeline_grammar type '" + type + "' yet!");
-    }
-  };
-}

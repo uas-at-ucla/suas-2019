@@ -65,6 +65,7 @@ fi
 PLATFORM=$(uname -s)
 DOCKER_RUN_CMD="set -x; \
   echo STARTED > /tmp/uas_init; \
+  getent group $(id -g) || groupadd -g $(id -g) host_group; \
   mkdir -p /tmp/home/uas; \
   usermod -d /tmp/home/uas uas; \
   usermod -u $(id -u) -g $(id -g) uas; \
@@ -75,7 +76,7 @@ DOCKER_RUN_CMD="set -x; \
 docker run \
   --rm \
   -d \
-  --ip 192.168.1.10 \
+  --ip 192.168.3.10 \
   -p 3000:3000 \
   -p 8081:8081 \
   -v $ROOT_PATH:/home/uas/code_env \

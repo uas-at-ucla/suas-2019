@@ -1,26 +1,42 @@
 #pragma once
 
-#include <functional>
+#include <fstream>
+#include <iostream>
 
-#include "ros/ros.h"
-#include "std_msgs/String.h"
+#include <ros/console.h>
+#include <ros/ros.h>
+
+#include <sensor_msgs/NavSatFix.h>
+
+#include "src/controls/constants.h"
+#include "src/controls/messages.pb.h"
 
 namespace src {
 namespace controls {
-namespace io {
 namespace camera_interface {
+namespace {
+static const ::std::string kCameraInterfaceTagFile = "/home/uas/image_tags.csv";
+static constexpr double kCameraTagWriteHz = 4;
+} // namespace
 
 class CameraInterface {
  public:
   CameraInterface();
-  void ImageCaptureRequested(const std_msgs::String &ret);
+  void Quit(int signal);
 
  private:
+  void SensorsReceived(::src::controls::Sensors sensors);
+  void WriteTag(double latitude, double longitude, double altitude,
+                double heading);
+
+  ::std::ofstream tag_file_;
+
+  double last_tag_write_;
+
   ::ros::NodeHandle ros_node_handle_;
-  ::ros::Subscriber take_photo_subscriber_;
+  ::ros::Subscriber sensors_subscriber_;
 };
 
 } // namespace camera_interface
-} // namespace io
 } // namespace controls
 } // namespace src

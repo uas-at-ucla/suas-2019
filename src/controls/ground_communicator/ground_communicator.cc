@@ -5,17 +5,21 @@ namespace controls {
 namespace ground_communicator {
 
 GroundCommunicator::GroundCommunicator() :
-    sensors_subscriber_(ros_node_handle_.subscribe(
-        io::kRosSensorsTopic, io::kRosMessageQueueSize,
-        &GroundCommunicator::SensorsReceived, this)),
-    proto_sender_("tcp://127.0.0.1:6005"),
-    rfd900_("/dev/ttyUSB0", B57600, 0) {
-
-  proto_sender_.Connect();
-}
+    ros_node_handle_(),
+    sensors_subscriber_(
+        ros_node_handle_.subscribe(kRosSensorsTopic, kRosMessageQueueSize,
+                                   &GroundCommunicator::SensorsReceived, this)),
+    rfd900_("/dev/ttyUSB0", B57600, 0),
+    next_rfd900_write_(0) {}
 
 void GroundCommunicator::SensorsReceived(
     const ::src::controls::Sensors sensors) {
+  double current_time = ::ros::Time::now().toSec();
+
+  if (current_time < next_rfd900_write_) {
+    return;
+  }
+  next_rfd900_write_ = current_time + 1.0 / kRfd900SendRate;
 
   ::src::controls::UasMessage uas_message;
   ::src::controls::Sensors *sensors_allocated =
@@ -24,17 +28,8 @@ void GroundCommunicator::SensorsReceived(
   uas_message.set_allocated_sensors(sensors_allocated);
 
   bool required_fields_set = uas_message.IsInitialized();
-
-  static int count = 0;
-  if (count == 0 && required_fields_set) {
-    rfd900_.WritePort(uas_message);
-  }
-
-  count = (count + 1) % 2; // 50/2 = 25 Hz
-
-  // Send the message
   if (required_fields_set) {
-    proto_sender_.Send(uas_message);
+    rfd900_.WritePort(uas_message);
   }
 }
 

@@ -2,9 +2,11 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <fstream>
 #include <iostream>
 #include <mutex>
 #include <signal.h>
+#include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -33,6 +35,7 @@ class DSLRInterface {
 
   void Quit();
   void TakePhotos();
+  void RunIteration();
 
  private:
   State state_;
@@ -43,9 +46,6 @@ class DSLRInterface {
 
   ::std::atomic<bool> exiting_{false};
   ::std::atomic<bool> run_{true};
-
-  void Run();
-  void RunIteration();
 
   pid_t photos_capture_pid_;
   pid_t photos_download_pid_;
