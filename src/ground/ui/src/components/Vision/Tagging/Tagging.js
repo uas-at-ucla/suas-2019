@@ -3,7 +3,8 @@ import Select from "react-select";
 import "./Tagging.css";
 import ReactCrop from "react-easy-crop";
 import { Button, Modal } from "reactstrap";
-import * as path from "path";
+import imageClipper from 'image-clipper';
+import { connect } from 'react-redux';
 
 import testImage from "./testImages/pexels-photo-236047.jpeg";
 
@@ -18,6 +19,7 @@ const List = ({ items, onItemClick }) =>
     </ul>
   ) : null;
 
+const path = window.require('path');
 const electron = window.require("electron");
 const fs = electron.remote.require("fs");
 const imagePath = "../ui/src/components/Vision/Tagging/testImages/";
@@ -35,9 +37,8 @@ class Tagging extends Component {
         letterCol: "",
         orient: ""
       },
-      selectedImage: testImage,
-      croppedImage: null,
-      displayImage: null,
+      selectedImage: null /*testImage*/,
+      // croppedImage: null,
       crop: {
         x: 130,
         y: 50,
@@ -45,7 +46,7 @@ class Tagging extends Component {
         height: 0
       },
       zoom: 1,
-      aspect: 4 / 3,
+      aspect: 1 / 1,
       displayCropper: false,
       croppedAreaPixels: null, //result from image crop
       imageList: images
@@ -68,12 +69,11 @@ class Tagging extends Component {
     });
   }
 
-  handleSelectChange = selectedOption => {
-    let name = selectedOption.label;
+  handleSelectChange = (name, selectedOption) => {
     let value = selectedOption.value;
     let formValues = this.state.formValues;
     formValues[name] = value;
-    console.log(`Option selected:`, value);
+    console.log(name + ` selected:`, value);
     this.setState(state => {
       return {
         formValues //, curValues
@@ -82,17 +82,39 @@ class Tagging extends Component {
   };
   handleRestore = () => {
     this.setState({
-      displayImage: this.state.selectedImage,
-      croppedImage: null,
+      // croppedImage: null,
+      crop: {
+        x: 0,
+        y: 0,
+        width: 0,
+        height: 0
+      },
       zoom: 1
     });
   };
 
-  handleCropComplete() {
-    // let crop = this.state.crop;
+  handleCropComplete = () => {
+    let crop = this.state.croppedAreaPixels;
+    console.log("cropping...")
     // let croppedImg = this.getCroppedImg(this.refImageCrop, crop);
     // console.log("width", croppedImg.width);
-    console.log("Cropped");
+    let self = this;
+    imageClipper(this.state.selectedImage, function() {
+      this.crop(crop.x, crop.y, crop.width, crop.height)
+      .toDataURL((dataURL) => {
+        let base64Data = dataURL.split(';base64,').pop();
+        let extension = path.extname(self.state.imagePath).split(".").pop();
+        let croppedImagePath = self.state.imagePath.split('.')[0] + "_cropped." + extension;
+        fs.writeFile(croppedImagePath, base64Data, {encoding: 'base64'}, (err) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("Saved cropped image", croppedImagePath);
+            self.setState({croppedImagePath: croppedImagePath});
+          }
+        });
+      });
+    });
     // this.setState({ displayImage: croppedImg, croppedImage: croppedImg })
   }
 
@@ -111,9 +133,9 @@ class Tagging extends Component {
   handleOpen = () => {
     // console.log("image cropper opened");
     let displayCropper = !this.state.displayCropper;
-    let displayImage = this.state.selectedImage;
+    // let displayImage = this.state.selectedImage;
     this.setState({ displayCropper: displayCropper });
-    this.setState({ displayImage: displayImage });
+    // this.setState({ displayImage: displayImage });
   };
 
   handleSubmit(event) {
@@ -136,6 +158,16 @@ class Tagging extends Component {
     });
   }
 
+  handleInteropSubmit = () => {
+    this.props.dispatch({
+      type: 'TRANSMIT',
+      payload: {
+        msg: 'UPLOAD_IMAGE',
+        data: {...this.state.annValues, imageFile: this.state.croppedImagePath} // TODO get selected latitude & longitude
+      }
+    });
+  }
+
   onCropChange = crop => {
     this.setState({ crop });
   };
@@ -151,19 +183,24 @@ class Tagging extends Component {
   };
 
   handleListClick = e => {
-    let imageP = imagePath + e.target.innerHTML;
+    let imageName = e.target.innerHTML;
+    let imageP = imagePath + imageName;
     fs.readFile(imageP, (err, data) => {
       if (err) {
         console.error(err);
         return;
       }
-      let extensionName = path.extname(imageP);
+      let extensionName = path.extname(imageP).split(".").pop();
       let base64Image = new Buffer(data, "binary").toString("base64");
-      let imgSrcString = `data:image/${extensionName
-        .split(".")
-        .pop()};base64,${base64Image}`;
-      this.setState({ selectedImage: imgSrcString });
-      this.setState({ displayImage: imgSrcString });
+      let imgSrcString = `data:image/${extensionName};base64,${base64Image}`;
+      this.setState({
+        selectedImage: imgSrcString,
+        croppedImagePath: null,
+        // displayImage: imgSrcString,
+        imagePath: path.resolve(imageP),
+        imageName: imageName,
+        annValues: {...this.state.annValues}
+      });
     });
   };
 
@@ -182,8 +219,7 @@ class Tagging extends Component {
                 name="shape"
                 isSearchable="true"
                 placeholder="Shape"
-                value={this.state.formValues["shape"]}
-                onChange={this.handleSelectChange}
+                onChange={(option) => this.handleSelectChange("shape", option)}
                 options={shapeOptions}
                 styles={selectStyles}
               />
@@ -197,8 +233,7 @@ class Tagging extends Component {
                 name="shapeCol"
                 isSearchable="true"
                 placeholder="Shape Color"
-                value={this.state.formValues["shapeCol"]}
-                onChange={this.handleSelectChange}
+                onChange={(option) => this.handleSelectChange("shapeCol", option)}
                 options={colorOptions}
                 styles={selectStyles}
               />
@@ -230,8 +265,7 @@ class Tagging extends Component {
                 name="letterCol"
                 isSearchable="true"
                 placeholder="Letter Color"
-                value={this.state.formValues["letterCol"]}
-                onChange={this.handleSelectChange}
+                onChange={(option) => this.handleSelectChange("letterCol", option)}
                 options={colorOptions}
                 styles={selectStyles}
               />
@@ -256,29 +290,34 @@ class Tagging extends Component {
 
           <div className="saveButton">
             <input
-              classNaonChange={this.handleSelectChange}
               options={colorOptions}
               styles={selectStyles}
               me="btn btn-primary"
               type="submit"
               value="Save"
             />
-            {this.state.displayCropper ? (
+            {this.state.displayCropper && this.state.selectedImage ? (
               <div>
                 <Button
-                  variant="primary"
-                  primary={true}
+                  color="primary"
                   onClick={this.handleRestore}
                 >
                   Restore
                 </Button>
                 <Button
-                  variant="primary"
-                  primary={true}
+                  color="primary"
                   keyboardFocused={true}
                   onClick={this.handleCropComplete}
                 >
                   Crop
+                </Button>
+                <Button
+                  color="success"
+                  keyboardFocused={true}
+                  onClick={this.handleInteropSubmit}
+                  disabled={!this.state.croppedImagePath}
+                >
+                  {this.state.croppedImagePath ? "Submit to Interop" : "Waiting for Crop"}
                 </Button>
               </div>
             ) : null}
@@ -287,6 +326,7 @@ class Tagging extends Component {
 
         <div className="imageList">
           <div className="scroller">
+            <div>Selected: {this.state.imageName}</div>
             <List
               items={this.state.imageList}
               onItemClick={this.handleListClick}
@@ -295,13 +335,13 @@ class Tagging extends Component {
         </div>
 
         <div className="imageButton">
-          <Button variant="primary" onClick={this.handleOpen}>
-            Toggle image cropper
+          <Button color="primary" onClick={this.handleOpen}>
+            {this.state.selectedImage ? "Toggle image cropper" : "Select an image first"}
           </Button>
-          {this.state.displayCropper ? (
+          {this.state.displayCropper && this.state.selectedImage ? (
             <div className="imageCrop">
               <ReactCrop
-                image={this.state.displayImage}
+                image={this.state.selectedImage}
                 crop={this.state.crop}
                 zoom={this.state.zoom}
                 aspect={this.state.aspect}
@@ -314,7 +354,7 @@ class Tagging extends Component {
             </div>
           ) : null}
           <img
-            src={this.state.displayImage}
+            src={this.state.selectedImage}
             style={{ display: "none" }}
             ref={img => {
               this.refImageCrop = img;
@@ -372,4 +412,4 @@ const selectStyles = {
   menuList: styles => ({ ...styles, height: 200 })
 };
 
-export default Tagging;
+export default connect()(Tagging);

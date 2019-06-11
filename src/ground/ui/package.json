@@ -11,6 +11,7 @@
     "react-websocket": "^2.0.1"
   },
   "devDependencies": {
+    "image-clipper": "^0.4.4",
     "bootstrap": "^4.1.2",
     "check-dependencies": "^1.1.0",
     "concurrently": "^4.0.1",
