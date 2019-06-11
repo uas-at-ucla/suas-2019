@@ -7,7 +7,7 @@ WORKDIR /uas
 
 RUN pip install pipenv
 RUN apt-get update
-RUN apt-get -y install gcc
+RUN apt-get -y install gcc libglib2.0 libsm6 libxrender1 libxext6
 COPY Pipfile Pipfile.lock /uas/
 RUN pipenv install --deploy --ignore-pipfile
 

@@ -11,6 +11,7 @@ channels = "*"
 djangorestframework = "*"
 channels-redis = "*"
 django-cors-headers = "*"
+opencv-python = "*"
 
 [requires]
 python_version = "3.7"
