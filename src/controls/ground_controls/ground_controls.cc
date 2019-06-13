@@ -51,7 +51,7 @@ GroundControls::GroundControls(int argc, char **argv) :
     hotwire_subscriber_(
         ros_node_handle_.subscribe(kRosHotwireTopic, kRosMessageQueueSize,
                                    &GroundControls::HotwireSetpoint, this)),
-    rfd900_connection_("/dev/ttyUSB1", B57600, 0), // TODO
+    rfd900_connection_("/dev/ttyUSB0", B57600, 0), // TODO
     phased_loop_(1e2),
     drone_program_success_(false) {
 
