@@ -155,6 +155,8 @@ class MissionState : public State {
 
  private:
   mission_state_machine::MissionStateMachine mission_state_machine_;
+  double start_;
+  bool was_reset_;
 };
 
 class LandingState : public State {

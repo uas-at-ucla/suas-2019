@@ -299,7 +299,7 @@ void TakenOffState::Reset() {
 }
 
 // MissionState ////////////////////////////////////////////////////////////////
-MissionState::MissionState() {}
+MissionState::MissionState() : start_(0), was_reset_(true) {}
 
 void MissionState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Goal &goal,
@@ -312,6 +312,17 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
     return;
   }
 
+  if (was_reset_) {
+    start_ = sensors.time();
+    was_reset_ = false;
+  }
+
+  bool offboard_trigger = ::std::fmod(sensors.time() - start_, kTriggerPeriod) >
+                     kTriggerPeriod / 2.0;
+  if (offboard_trigger && sensors.autopilot_state() != "OFFBOARD") {
+    output.set_trigger_offboard(offboard_trigger);
+  }
+
   mission_state_machine_.Handle(sensors, goal, output);
 
   if (output.mission_commanded_land()) {
@@ -319,7 +330,10 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
   }
 }
 
-void MissionState::Reset() {}
+void MissionState::Reset() {
+  start_ = 0;
+  was_reset_ = true;
+}
 
 void MissionState::LoadMission(
     ::src::controls::ground_controls::timeline::DroneProgram drone_program) {
