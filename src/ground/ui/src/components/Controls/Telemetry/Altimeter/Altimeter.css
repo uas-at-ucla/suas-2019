@@ -1,6 +1,6 @@
 .Altimeter {
   background: rgba(0, 0, 0, 0.6);
-  width: 50px;
+  width: 70px;
   flex-grow: 1;
   padding: 2px;
   margin-bottom: 1em;
@@ -24,16 +24,16 @@
 }
 
 .Altimeter .filler {
-  background: #2D79A7;
+  background: rgba(45, 121, 167, 0.6);
   width: 100%;
 }
 
 .Altimeter .filler.too-low {
-  background: #F28033;
+  background: rgba(242, 128, 51, 0.6);
 }
 
 .Altimeter .filler.too-high {
-  background: red;
+  background: rgba(255, 0, 0, 0.6);
 }
 
 .Altimeter .filler-min {

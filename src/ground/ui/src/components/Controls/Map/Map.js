@@ -68,7 +68,7 @@ class Map extends Component {
           {this.props.commandPoints.map((commandPoint, index) => 
             commandPoint ?
               <Marker
-              draggable={true}
+                draggable={true} onDragEnd={(event) => this.commandDragged(event, index+'.'+commandPoint.name)}
                 {...commandPoint.marker} key={commandPoint.id} onClick = {()=>this.toggleOpen(commandPoint.id)}
                 animation={(this.props.commandAnimate[commandPoint.id] && window.google) ? window.google.maps.Animation.BOUNCE : null}
               >
@@ -126,6 +126,11 @@ class Map extends Component {
 
   deleteCommand = (event) => {
     this.props.deleteCommand(event.target.dataset.index);
+  }
+
+  commandDragged = (event, dotProp) => {
+    this.props.changeCommandField(dotProp+'.goal.latitude', event.latLng.lat());
+    this.props.changeCommandField(dotProp+'.goal.longitude', event.latLng.lng());
   }
 
   mapDblClick = (event) => {

@@ -10,13 +10,14 @@ class CommandList extends Component {
       CommandRowElement = SortableCommand;
     }
     return (
-      <span>
+      <span class="CommandList">
         {this.props.commands.map((command, index) => 
           <CommandRowElement
             className={this.props.className}
             key={command.id}
             {...this.props.commandChangers}
             command={command}
+            programType={this.props.programType}
             index={index}
             myIndex={index}
             mutable={this.props.mutable}
@@ -151,7 +152,7 @@ class CommandRow extends PureComponent {
       );
     } else if (type === "double") {
       return <this.NumberField name={name} dotProp={dotProp} value={object} 
-        units={this.props.protoInfo.fieldUnits[name]}/>;
+        units={this.props.protoInfo.fieldUnits[this.props.programType][name]}/>;
     } else if (type === "bool") {
       return <span style={{color: object ? null : "dimgray"}}>{name}</span>; // does not support modification because there are no bools in a GroundProgram
     } else {

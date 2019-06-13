@@ -97,8 +97,10 @@ class IO {
   ::std::atomic<bool> latch_setpoint_;
   ::std::atomic<bool> hotwire_setpoint_;
   ::std::atomic<bool> deployment_manual_override_;
+  ::std::atomic<bool> latch_;
   ::std::atomic<int> deployment_motor_direction_;
   ::std::atomic<bool> cut_line_;
+  ::std::atomic<bool> cancel_drop_;
 
   bool did_arm_;
   ::std::string px4_mode_;

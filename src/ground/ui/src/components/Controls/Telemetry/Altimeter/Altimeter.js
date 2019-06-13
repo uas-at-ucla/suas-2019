@@ -29,7 +29,7 @@ class Altimeter extends Component {
       min = this.props.mainFlyZone.altitudeMin - home_alt;
       max = this.props.mainFlyZone.altitudeMax - home_alt;
     }
-    if (max > MAX_ALT) max = MAX_ALT;   
+    if (max > MAX_ALT) max = MAX_ALT;
 
     return (
       <div className="Altimeter"> 

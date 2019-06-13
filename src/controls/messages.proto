@@ -32,6 +32,7 @@ message Sensors {
   required string autopilot_state    = 27; // (link above)
   required float home_altitude       = 28; // Home position altitude in MSL
   required bool run_uas_mission      = 29;
+  required bool done_dropping        = 30;
 }
 
 message Goal {
