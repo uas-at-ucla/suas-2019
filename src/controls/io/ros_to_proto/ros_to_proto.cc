@@ -225,6 +225,10 @@ bool RosToProto::SensorsValid() {
   for (::std::map<::std::string, double>::iterator it =
            ros_topic_last_received_times_.begin();
        it != ros_topic_last_received_times_.end(); it++) {
+    if (it->first == "/mavros/home_position/home") {
+      continue;
+    }
+
     if (it->second < oldest_valid_packet_time) {
       ROS_DEBUG("Outdated ros topic: %s", it->first.c_str());
       return false;

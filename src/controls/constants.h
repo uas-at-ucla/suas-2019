@@ -8,6 +8,9 @@ namespace {
 // WiringPi GPIO identifiers
 static const int kAlarmGPIOPin = 0;
 
+// Time between sending arm triggers to the flight controller.
+static constexpr double kTriggerPeriod = 3.0;
+
 // Pigpio GPIO identifiers (same as BCM)
 static const int kDeploymentEncoderChannelOne = 8;
 static const int kDeploymentEncoderChannelTwo = 7;
@@ -23,10 +26,16 @@ static const int kDeploymentServoClosed = 1600;
 static const int kDeploymentServoOpen = 1000;
 
 // Actuator RC channels.
+static const int kRcInMinimumThreshold = 900;
+static const int kThrottleRcChannel = 1;
 static const int kUasMissionRcChannel = 5;
 static const int kAlarmOverrideRcChannel = 7;
 static const int kDeploymentMotorRcChannel = 8;
 static const int kGimbalMotorRcChannel = 9;
+
+static const int kRcLossAlertTimeout = 5;
+static const int kRcLossRtlTimeout = 20;
+static const int kRcLossTerminateTimeout = 30;
 
 static const int kAlarmOverrideRcSignalThreshold = 1800;
 
@@ -63,6 +72,7 @@ static const ::std::string kRosGlobalPositionTopic =
     "/mavros/global_position/global";
 static const ::std::string kRosSetModeService = "/mavros/set_mode";
 static const ::std::string kRosArmService = "/mavros/cmd/arming";
+static const ::std::string kRosCmdIntService = "/mavros/cmd/command_int";
 static const ::std::string kRosTakeoffService = "/mavros/cmd/takeoff";
 static const ::std::string kRosDiagnosticsTopic = "/diagnostics";
 static const ::std::string kRosVfrHudTopic = "/mavros/vfr_hud";
@@ -86,6 +96,7 @@ static constexpr double kPixhawkGlobalSetpointMaxHz = 10.0;
 // Documentation: https://dev.px4.io/en/concept/flight_modes.html
 // TODO(comran): Use custom mode constants provided internally by Mavros.
 static const ::std::string kPixhawkArmCommand = "ARM";
+static const ::std::string kPixhawkFlightTermCommand = "FLIGHTTERM";
 static const ::std::string kPixhawkCustomModeManual = "MANUAL";
 static const ::std::string kPixhawkCustomModeAcro = "ACRO";
 static const ::std::string kPixhawkCustomModeAltitudeControl = "ALTCTL";

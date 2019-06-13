@@ -76,6 +76,8 @@ IO::IO() :
         kRosSetModeService)),
     arm_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandBool>(
         kRosArmService)),
+    cmd_int_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandInt>(
+        kRosCmdIntService)),
     takeoff_service_(ros_node_handle_.serviceClient<::mavros_msgs::CommandTOL>(
         kRosTakeoffService)),
     last_position_setpoint_(-std::numeric_limits<double>::infinity()),
@@ -139,6 +141,12 @@ void IO::Quit(int signal) {
 
 void IO::WriterThread() {
   while (running_ && ::ros::ok()) {
+    Sensors sensors;
+    bool sensors_valid = ros_to_proto_.SensorsValid();
+    if (sensors_valid) {
+      sensors = ros_to_proto_.GetSensors();
+    }
+
     // Calculate alarm output.
     bool should_override_alarm =
         (should_override_alarm_ &&
@@ -160,32 +168,8 @@ void IO::WriterThread() {
     deployment_input.cancel = cancel_drop_;
     deployment_.RunIteration(deployment_input, deployment_output);
 
+    // Record whether the deployment state machine is done dropping.
     ros_to_proto_.SetDoneDropping(deployment_output.end_drop);
-    
-
-    // if (deployment_manual_override_) {
-    //   deployment_output.motor = deployment_motor_setpoint_;
-    //   deployment_output.latch = latch_setpoint_;
-    //   deployment_output.hotwire = hotwire_setpoint_;
-    // } else {
-    //   // update ROS messages with output from deployment state machine
-    //   if (abs(deployment_output.motor - deployment_motor_setpoint_) > 0.001)
-    //   {
-    //     ::std_msgs::Float32 deployment_motor_setpoint;
-    //     deployment_motor_setpoint.data = deployment_output.motor;
-    //     deployment_motor_publisher_.publish(deployment_motor_setpoint);
-    //   }
-    //   if (deployment_output.latch != latch_setpoint_) {
-    //     ::std_msgs::Bool latch_setpoint;
-    //     latch_setpoint.data = deployment_output.latch;
-    //     latch_publisher_.publish(latch_setpoint);
-    //   }
-    //   if (deployment_output.hotwire != hotwire_setpoint_) {
-    //     ::std_msgs::Bool hotwire_setpoint;
-    //     hotwire_setpoint.data = deployment_output.hotwire;
-    //     hotwire_publisher_.publish(hotwire_setpoint);
-    //   }
-    // }
 
     // Write out actuators.
     WriteAlarm(should_alarm);
@@ -199,16 +183,15 @@ void IO::WriterThread() {
     led_strip_.Render(false);
 
     // Write out sensors protobuf at a slower rate than the write loop.
-    if (::ros::Time::now().toSec() > next_sensors_write_ &&
-        ros_to_proto_.SensorsValid()) {
-      sensors_publisher_.publish(ros_to_proto_.GetSensors());
+    if (::ros::Time::now().toSec() > next_sensors_write_ && sensors_valid) {
+      sensors_publisher_.publish(sensors);
 
       next_sensors_write_ =
           ::ros::Time::now().toSec() + kSensorsPublisherPeriod;
     }
 
-    if (ros_to_proto_.OutputValid() && ros_to_proto_.SensorsValid() &&
-        ros_to_proto_.GetSensors().run_uas_mission()) {
+    if (sensors_valid && SafetyChecks(sensors) && ros_to_proto_.OutputValid() &&
+        sensors.run_uas_mission()) {
       ::src::controls::Output output = ros_to_proto_.GetOutput();
 
       // Only listen to output if safety pilot override is not active.
@@ -250,6 +233,75 @@ void IO::WriterThread() {
     // Wait until next iteration of loop.
     writer_phased_loop_.sleep();
   }
+}
+
+bool IO::SafetyChecks(Sensors &sensors) {
+  // No checks if disarmed.
+  if (!sensors.armed()) {
+    return true;
+  }
+
+  double current_time = ::ros::Time::now().toSec();
+  ::std::cout << current_time - last_rc_in_ << ::std::endl;
+
+  bool everythings_fine = true;
+
+  if (current_time - last_rc_in_ > kRcLossAlertTimeout) {
+    everythings_fine = false;
+  }
+
+  // Alarm to let us know that RC was lost for 5 seconds while armed.
+  // static bool last_alarm_rc_loss = false;
+  // if(current_time - last_rc_in_ > kRcLossAlertTimeout) {
+  //   if(!last_alarm_rc_loss) {
+  //     alarm_.AddAlert({0.2, 0.1});
+  //   }
+  //   last_alarm_rc_loss = true;
+  // } else {
+  //   last_alarm_rc_loss = false;
+  // }
+
+  // RTL if RC is lost for a certain amount of time.
+  // static bool last_lost_rc_rtl = false;
+  // if(current_time - last_rc_in_ > kRcLossRtlTimeout) {
+  //   ROS_ERROR("Lost RC! Performing RTL...");
+
+  //   if(!last_lost_rc_rtl) {
+  //     alarm_.AddAlert({0.1, 0.1});
+  //   }
+  //   last_lost_rc_rtl = true;
+
+  //   bool rtl_trigger = ::std::fmod(sensors.time() - last_rc_in_,
+  //   kTriggerPeriod) >
+  //                     kTriggerPeriod / 2.0 && sensors.autopilot_state() !=
+  //                     kPixhawkCustomModeReturnToLand;
+  //   PixhawkSendModePosedge(kPixhawkCustomModeReturnToLand, rtl_trigger);
+  //   everythings_fine = false;
+  // } else {
+  //   last_lost_rc_rtl = false;
+  // }
+
+  // // Flight term if RC is lost for a certain amount of time.
+  // static bool last_lost_rc_term = false;
+  // if(current_time - last_rc_in_ > kRcLossTerminateTimeout) {
+  //   ROS_ERROR("Lost RC! Performing Term...");
+
+  //   if(!last_lost_rc_term) {
+  //     alarm_.AddAlert({0.1, 0.1});
+  //   }
+  //   last_lost_rc_term = true;
+
+  //   bool term_trigger = ::std::fmod(sensors.time() - last_rc_in_,
+  //   kTriggerPeriod) >
+  //                     kTriggerPeriod / 2.0;
+  //   ::std::cout << "term trig: " << term_trigger << ::std::endl;
+  //   PixhawkSendModePosedge(kPixhawkFlightTermCommand, term_trigger);
+  //   everythings_fine = false;
+  // } else {
+  //   last_lost_rc_term = false;
+  // }
+
+  return everythings_fine;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -294,6 +346,11 @@ void IO::AlarmTriggered(const ::src::controls::AlarmSequence alarm_sequence) {
 
 void IO::RcInReceived(const ::mavros_msgs::RCIn rc_in) {
   bool new_should_override_alarm = should_override_alarm_;
+
+  if (rc_in.channels[kThrottleRcChannel - 1] < kRcInMinimumThreshold) {
+    return;
+  }
+
   last_rc_in_ = ::ros::Time::now().toSec();
 
   // Trigger the alarm if the RC controller override switch was flipped.
@@ -364,14 +421,6 @@ void IO::ImuReceived(const ::sensor_msgs::Imu imu) {
 
   led_strip_.set_last_imu(::ros::Time::now().toSec());
 }
-
-// void IO::DroneProgramReceived(
-//     const ::src::controls::ground_controls::timeline::DroneProgram
-//         drone_program) {
-//   ROS_INFO("Received drone program!");
-//   drone_program_ = drone_program;
-//   should_override_alarm_ = true;
-// }
 
 void IO::DroppyCommandReceived(const ::std_msgs::String droppy_command) {
   if (droppy_command.data == "START_DROP") {
@@ -515,6 +564,29 @@ void IO::PixhawkSendModePosedge(::std::string mode, bool signal) {
       ROS_INFO("Arm sent; got success %d", cmd.response.success);
     } else {
       ROS_ERROR("Arm failed!");
+    }
+
+    return;
+  }
+
+  // Handle case where a flight term command is provided.
+  if (mode == kPixhawkFlightTermCommand) {
+    // Send arm command to Pixhawk.
+    ::mavros_msgs::CommandInt cmd;
+    cmd.request.command = 185;
+    cmd.request.param1 = 1;
+    cmd.request.param2 = 0;
+    cmd.request.param3 = 0;
+    cmd.request.param4 = 0;
+    cmd.request.x = 0;
+    cmd.request.y = 0;
+    cmd.request.z = 0;
+    ::std::cout << "sending!\n";
+
+    if (cmd_int_service_.call(cmd)) {
+      ROS_INFO("Flight Term sent; got success %d", cmd.response.success);
+    } else {
+      ROS_ERROR("Flight Term failed!");
     }
 
     return;
