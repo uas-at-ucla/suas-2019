@@ -195,9 +195,11 @@ controls_io.on('connect', (socket) => {
         } else if (data === 'STOP_CUT' || data === 'CANCEL_DROP') {
           if (ugvDriveTimer) {
             clearTimeout(ugvDriveTimer);
+            droveUgv = false;
           }
         } if (data === 'CUT_LINE' && !droveUgv) {
           droveUgv = true;
+          console.log("Going to drive UGV in "+(ugvWaitTimeAfterCut/1000)+" seconds (unless cancelled)");
           ugvDriveTimer = setTimeout(() => {
             console.log("Driving the UGV!");
             ugv_io.emit('DRIVE_TO_TARGET');

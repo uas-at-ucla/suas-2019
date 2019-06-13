@@ -68,15 +68,17 @@ class MissionPlannerContainer extends Component {
             </div>
           </TabPane>
           <TabPane tabId="drone">
-            <Container fluid className="SmallMissionPlanner">
-              <CommandList 
-                commands={this.props.droneProgram ? this.props.droneProgram.commands : []}
-                programType="DroneProgram"
-                className="SmallMissionPlanner"
-                protoInfo={this.props.protoInfo}
-                commandChangers={{centerMapOnCommand: ()=>{/*TODO*/}}}
-              />
-            </Container>
+            <div className="SmallMissionPlanner">
+              <Container fluid>
+                <CommandList 
+                  commands={this.props.droneProgram ? this.props.droneProgram.commands : []}
+                  programType="DroneProgram"
+                  className="SmallMissionPlanner"
+                  protoInfo={this.props.protoInfo}
+                  commandChangers={{centerMapOnCommand: ()=>{/*TODO*/}}}
+                />
+              </Container>
+            </div>
           </TabPane>
         </TabContent>
         
