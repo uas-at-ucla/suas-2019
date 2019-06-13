@@ -70,7 +70,7 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
   setpoint_altitude_ = output.setpoint_altitude();
   setpoint_yaw_ = output.setpoint_yaw();
 
-  output.set_trigger_offboard(true);
+  // output.set_trigger_offboard(true);
   output.set_send_setpoint(true);
 }
 
