@@ -184,7 +184,7 @@ class Tagging extends Component {
 
   handleListClick = e => {
     let imageName = e.target.innerHTML;
-    let imageP = imagePath + imageName;
+    let imageP = /*imagePath + */imageName;
     fs.readFile(imageP, (err, data) => {
       if (err) {
         console.error(err);
