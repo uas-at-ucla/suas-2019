@@ -6,7 +6,7 @@ import { Button, Modal } from "reactstrap";
 import imageClipper from 'image-clipper';
 import { connect } from 'react-redux';
 
-import testImage from "./testImages/pexels-photo-236047.jpeg";
+// import testImage from "./testImages/pexels-photo-236047.jpeg";
 
 const ListItem = ({ value, onClick }) => <li onClick={onClick}>{value}</li>;
 
@@ -22,8 +22,8 @@ const List = ({ items, onItemClick }) =>
 const path = window.require('path');
 const electron = window.require("electron");
 const fs = electron.remote.require("fs");
-const imagePath = "../ui/src/components/Vision/Tagging/testImages/";
-let images = fs.readdirSync(imagePath);
+// const imagePath = "../ui/src/components/Vision/Tagging/testImages/";
+let images = [];//fs.readdirSync(imagePath);
 
 class Tagging extends Component {
   constructor(props) {
