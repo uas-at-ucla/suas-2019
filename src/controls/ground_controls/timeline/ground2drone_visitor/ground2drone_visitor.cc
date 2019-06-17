@@ -75,7 +75,7 @@ DroneProgram Ground2DroneVisitor::Visit(FlyThroughCommand *n) {
     GotoCommand *goto_command = new GotoCommand();
     goto_command->mutable_goal()->CopyFrom(n->goal());
     goto_command->set_come_to_stop(false);
-    goto_command->mutable_goal()->set_altitude(goto_command->goal().altitude() /
+    goto_command->mutable_goal()->set_altitude((goto_command->goal().altitude()) /
                                                kFeetPerMeter);
 
     DroneProgram goto_command_program = Visit(goto_command);
