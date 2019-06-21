@@ -222,81 +222,85 @@ while True:
         print("Can't connect to ground server. Retrying in 2 seconds...")
         sio.sleep(2)
 
+def run():
+    while True:
+        if readyToDrop and dropping:
+            rightFLASH()
+        elif readyToDrop:
+            rightON()
+        else:
+            rightOFF()
 
-while True:
-    if readyToDrop and dropping:
-        rightFLASH()
-    elif readyToDrop:
-        rightON()
-    else:
-        rightOFF()
+        t = time.time()
+        while (not pi.read(autoLowerBtn)):  # 1 = button not pressed, 0 = button pressed
+            if btnProtection and ((not readyToDrop) or (dropping)):
+                break
+            time.sleep(flashTime)
+            if time.time() > (t + delay):
+                print("BEGIN LOWERING THE UGV")
+                sio.emit('CHANGE_DROPPY_STATE', 'START_DROP', namespace='/button-panel')
+                middleON()
+    
+        while (not pi.read(stopBtn)):
+            if btnProtection and not dropping:
+                break
+            time.sleep(flashTime)
+            if time.time() > (t + delay):
+                print("STOP LOWERING THE UGV")
+                sio.emit('CHANGE_DROPPY_STATE', 'MOTOR_STOP', namespace='/button-panel')
+                leftON()
+    
+        while (not pi.read(upBtn)):
+            if btnProtection and not dropping:
+                break
+            time.sleep(flashTime)
+            if time.time() > (t + delay):
+                print("RAISE THE UGV")
+                sio.emit('CHANGE_DROPPY_STATE', 'MOTOR_UP', namespace='/button-panel')
+                leftON()
 
-    t = time.time()
-    while (not pi.read(autoLowerBtn)):  # 1 = button not pressed, 0 = button pressed
-        if btnProtection and ((not readyToDrop) or (dropping)):
-            break
-        time.sleep(flashTime)
-        if time.time() > (t + delay):
-            print("BEGIN LOWERING THE UGV")
-            sio.emit('CHANGE_DROPPY_STATE', 'START_DROP', namespace='/button-panel')
-            middleON()
-  
-    while (not pi.read(stopBtn)):
-        if btnProtection and not dropping:
-            break
-        time.sleep(flashTime)
-        if time.time() > (t + delay):
-            print("STOP LOWERING THE UGV")
-            sio.emit('CHANGE_DROPPY_STATE', 'MOTOR_STOP', namespace='/button-panel')
-            leftON()
-  
-    while (not pi.read(upBtn)):
-        if btnProtection and not dropping:
-            break
-        time.sleep(flashTime)
-        if time.time() > (t + delay):
-            print("RAISE THE UGV")
-            sio.emit('CHANGE_DROPPY_STATE', 'MOTOR_UP', namespace='/button-panel')
-            leftON()
+        while (not pi.read(downBtn)):
+            if btnProtection and not dropping:
+                break
+            time.sleep(flashTime)
+            if time.time() > (t + delay):
+                print("LOWER THE UGV")
+                sio.emit('CHANGE_DROPPY_STATE', 'MOTOR_DOWN', namespace='/button-panel')
+                leftON()
 
-    while (not pi.read(downBtn)):
-        if btnProtection and not dropping:
-            break
-        time.sleep(flashTime)
-        if time.time() > (t + delay):
-            print("LOWER THE UGV")
-            sio.emit('CHANGE_DROPPY_STATE', 'MOTOR_DOWN', namespace='/button-panel')
-            leftON()
+        while (not pi.read(cutBtn)):
+            time.sleep(flashTime)
+            if btnProtection and ((not dropping) or (cut)):
+                break
+            if time.time() > (t + delay):
+                print("CUT THE LINE")
+                sio.emit('CHANGE_DROPPY_STATE', 'CUT_LINE', namespace='/button-panel')
+                middleON()
 
-    while (not pi.read(cutBtn)):
-        time.sleep(flashTime)
-        if btnProtection and ((not dropping) or (cut)):
-            break
-        if time.time() > (t + delay):
-            print("CUT THE LINE")
-            sio.emit('CHANGE_DROPPY_STATE', 'CUT_LINE', namespace='/button-panel')
-            middleON()
+        while (not pi.read(cancelBtn)):
+            time.sleep(flashTime)
+            if time.time() > (t + delay):
+                print("CANCEL DROP")
+                sio.emit('CHANGE_DROPPY_STATE', 'CANCEL_DROP', namespace='/button-panel')
+                leftON()
 
-    while (not pi.read(cancelBtn)):
-        time.sleep(flashTime)
-        if time.time() > (t + delay):
-            print("CANCEL DROP")
-            sio.emit('CHANGE_DROPPY_STATE', 'CANCEL_DROP', namespace='/button-panel')
-            leftON()
+        while (not pi.read(resetBtn)):
+            time.sleep(flashTime)
+            if time.time() > (t + delay):
+                print("RESET LATCH")
+                sio.emit('CHANGE_DROPPY_STATE', 'RESET_LATCH', namespace='/button-panel')
+                    middleON()
 
-    while (not pi.read(resetBtn)):
-        time.sleep(flashTime)
-        if time.time() > (t + delay):
-            print("RESET LATCH")
-            sio.emit('CHANGE_DROPPY_STATE', 'RESET_LATCH', namespace='/button-panel')
-            leftON()
+        while (not pi.read(stopCutBtn)):
+            time.sleep(flashTime)
+            if time.time() > (t + delay):
+                print("STOP CUT")
+                sio.emit('CHANGE_DROPPY_STATE', 'STOP_CUT', namespace='/button-panel')
+                    middleON()
+                
+        leftOFF()
+        middleOFF()
 
-    while (not pi.read(stopCutBtn)):
-        time.sleep(flashTime)
-        if time.time() > (t + delay):
-            print("STOP CUT")
-            sio.emit('CHANGE_DROPPY_STATE', 'STOP_CUT', namespace='/button-panel')
-            leftON()
-            
-    leftOFF()
-    middleOFF()
+
+sio.start_background_task(run)
+sio.wait()
