@@ -30,9 +30,6 @@ namespace controls {
 namespace flight_loop {
 namespace flight_state_machine {
 namespace {
-// Time between sending arm triggers to the flight controller.
-static constexpr double kTriggerPeriod = 5.0;
-
 // Time for propellers to spin up before taking off, in seconds.
 static constexpr double kSpinupTime = 5.0;
 

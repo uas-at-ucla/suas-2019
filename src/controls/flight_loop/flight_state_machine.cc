@@ -318,11 +318,11 @@ void MissionState::Handle(::src::controls::Sensors &sensors,
   }
 
   bool offboard_trigger = ::std::fmod(sensors.time() - start_, kTriggerPeriod) >
-                     kTriggerPeriod / 2.0;
+                          kTriggerPeriod / 2.0;
   if (sensors.autopilot_state() != "OFFBOARD") {
     output.set_trigger_offboard(offboard_trigger);
   }
-  
+
   mission_state_machine_.Handle(sensors, goal, output);
 
   if (output.mission_commanded_land()) {

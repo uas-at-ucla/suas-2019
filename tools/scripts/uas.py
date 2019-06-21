@@ -501,11 +501,11 @@ def run_simulate(args):
     tmux_new_window("GROUND")
     tmux_split("horizontal", 2)
     tmux_split("vertical", 2)
-    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_controls:ground_controls 192.168.3.10")
+    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_controls:ground_controls 192.168.3.1")
     tmux_move_pane("down")
     tmux_cmd("./src/ground/ground.py run ui")
     tmux_move_pane("right")
-    tmux_cmd("./uas ground run server")
+    tmux_cmd("python3 src/ground/ground.py run server")
 
     tmux_select_window(2)
 
@@ -559,11 +559,11 @@ def run_production(args):
     tmux_rename_pane("GROUND")
     tmux_split("horizontal", 2)
     tmux_split("vertical", 2)
-    tmux_cmd(DOCKER_EXEC_SCRIPT + "bazel run //src/controls/ground_controls:ground_controls 192.168.3.10")
+    tmux_cmd("./tools/scripts/controls/run_ground_controls.sh")
     tmux_move_pane("down")
     tmux_cmd("./src/ground/ground.py run ui")
     tmux_move_pane("right")
-    tmux_cmd("./uas ground run server")
+    tmux_cmd("python3 src/ground/ground.py run server")
 
     print_update("\n\nProduction groundstation running! \n" \
             "Run \"tmux a -t uas_env\" in another bash window to see everything working. Use `Ctrl-B n` to cycle between windows.", \

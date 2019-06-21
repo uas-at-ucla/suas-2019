@@ -18,6 +18,7 @@
 #endif
 
 #include <mavros_msgs/CommandBool.h>
+#include <mavros_msgs/CommandInt.h>
 #include <mavros_msgs/CommandTOL.h>
 #include <mavros_msgs/GlobalPositionTarget.h>
 #include <mavros_msgs/RCIn.h>
@@ -82,6 +83,8 @@ class IO {
 
   void TakePhotos();
 
+  bool SafetyChecks(Sensors &sensors);
+
   ::lib::alarm::Alarm alarm_;
   ::lib::deployment::Deployment deployment_;
   ::src::controls::io::led_strip::LedStrip led_strip_;
@@ -136,6 +139,7 @@ class IO {
 
   ::ros::ServiceClient set_mode_service_;
   ::ros::ServiceClient arm_service_;
+  ::ros::ServiceClient cmd_int_service_;
   ::ros::ServiceClient takeoff_service_;
 
   ::std::map<::std::string, bool> last_mode_signals_;
