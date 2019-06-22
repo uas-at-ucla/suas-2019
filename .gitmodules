@@ -1,0 +1,8 @@
+[submodule "px4-sitl-wrapper"]
+	path = px4-sitl-wrapper
+	url = https://github.com/uas-at-ucla/px4-sitl-wrapper.git
+	branch = master
+[submodule "modules/px4-sitl-wrapper"]
+	path = modules/px4-sitl-wrapper
+	url = https://github.com/uas-at-ucla/px4-sitl-wrapper.git
+	branch = master
