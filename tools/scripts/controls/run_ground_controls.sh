@@ -160,22 +160,16 @@ DOCKER_BUILD_CMD="set -x; \
   sudo -u uas bash -c \" \
   source /home/uas/.bashrc; \
   export ROS_MASTER_URI=http://192.168.1.20:11311; \
-  export ROS_IP=192.168.1.21; \
+  export ROS_IP=192.168.1.10; \
   env; \
-  bash\""
-  # bazel run //src/controls/ground_controls:ground_controls 192.168.1.21\""
+  bazel run //src/controls/ground_controls:ground_controls\""
 
 docker run                                    \
-  -it                                          \
+  -t                                          \
   --rm                                        \
   --cap-add=SYS_PTRACE                        \
   --security-opt seccomp=unconfined           \
   --network host                              \
-  --privileged                      \
-  -v /dev:/dev                      \
-  --device=/dev/ttyUSB0             \
-  --device=/dev/ttyUSB1             \
-  --device=/dev/ttyUSB2             \
   -v $ROOT_PATH:/home/uas/code_env            \
   -v ~/.ssh:/home/uas/.ssh                    \
   -e DISPLAY=$DISPLAY                         \

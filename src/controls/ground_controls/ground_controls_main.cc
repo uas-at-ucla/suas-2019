@@ -8,15 +8,13 @@ int main(int argc, char **argv) {
   ::ros::init(argc, argv, "uasatucla_ground_controls");
   ::ros::start();
 
-  ::std::cout << "ROS STARTED\n";
   ::src::controls::ground_controls::GroundControls ground_controls(argc, argv);
-  // ::std::thread rfd900_thread(
-  //     &::src::controls::ground_controls::GroundControls::ReadRFD900,
-  //     &ground_controls);
-  ::std::cout << "HERE!\n";
+  ::std::thread rfd900_thread(
+      &::src::controls::ground_controls::GroundControls::ReadRFD900,
+      &ground_controls);
   ::ros::spin();
   ground_controls.running_ = false;
-  // rfd900_thread.join();
+  rfd900_thread.join();
 
   return 0;
 }

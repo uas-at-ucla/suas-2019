@@ -213,7 +213,6 @@ void IO::WriterThread() {
     }
 
     // Log the current GPIO outputs.
-    /*
     ROS_DEBUG_STREAM_THROTTLE(
         1.0 / kActuatorLogHz,
         "Writer thread iteration: "
@@ -230,7 +229,6 @@ void IO::WriterThread() {
             << "led_strip[" << led_strip_.GetStrip() << ::std::endl
 #endif
             << "]");
-    */
 
     // Wait until next iteration of loop.
     writer_phased_loop_.sleep();
@@ -244,15 +242,13 @@ bool IO::SafetyChecks(Sensors &sensors) {
   }
 
   double current_time = ::ros::Time::now().toSec();
+  ::std::cout << current_time - last_rc_in_ << ::std::endl;
 
   bool everythings_fine = true;
 
-  (void) current_time;
-#ifdef RASPI_DEPLOYMENT
   if (current_time - last_rc_in_ > kRcLossAlertTimeout) {
     everythings_fine = false;
   }
-#endif
 
   // Alarm to let us know that RC was lost for 5 seconds while armed.
   // static bool last_alarm_rc_loss = false;

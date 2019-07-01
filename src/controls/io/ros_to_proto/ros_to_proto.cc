@@ -90,7 +90,7 @@ void RosToProto::GlobalPositionReceived(
 
   sensors_.set_latitude(global_position.latitude);
   sensors_.set_longitude(global_position.longitude);
-  // sensors_.set_altitude(global_position.altitude);
+  sensors_.set_altitude(global_position.altitude);
 
   /*
      In the position_covariance 3x3 matrix
