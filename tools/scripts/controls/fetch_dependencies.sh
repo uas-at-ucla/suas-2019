@@ -14,7 +14,7 @@ fi
 if [ -n "$JENKINS_URL" ] && [ -n "$JENKINS_NODE_COOKIE" ]
 then
   echo "Caching to jenkins slave!"
-  BAZEL_FETCH_FLAGS="$BAZEL_FETCH_FLAGS --repository_cache=/tmp/bazel_downloaded "
+  BAZEL_FETCH_FLAGS="$BAZEL_FETCH_FLAGS --repository_cache=/tmp/uasatucla/bazel_downloaded "
 fi
   
 

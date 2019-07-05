@@ -153,8 +153,9 @@ docker run                          \
   --ip 192.168.3.20                 \
   -v $ROOT_PATH:/home/uas/code_env  \
   -v ~/.ssh:/home/uas/.ssh          \
-  -e DISPLAY=$DISPLAY               \
   -v /tmp/.X11-unix:/tmp/.X11-unix  \
+  -v /tmp/uasatucla:/tmp/uasatucla  \
+  -e DISPLAY=$DISPLAY               \
   --privileged                      \
   -v /dev:/dev                      \
   --device=/dev/ttyUSB0             \
