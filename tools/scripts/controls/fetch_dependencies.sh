@@ -16,7 +16,7 @@ do
     continue
   fi
   bazel fetch //lib/...
-  if [ $? -nq 0 ]
+  if [ $? -ne 0 ]
   then
     sleep $FAIL_WAIT
     continue
