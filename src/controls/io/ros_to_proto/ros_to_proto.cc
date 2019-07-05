@@ -90,7 +90,7 @@ void RosToProto::GlobalPositionReceived(
 
   sensors_.set_latitude(global_position.latitude);
   sensors_.set_longitude(global_position.longitude);
-  sensors_.set_altitude(global_position.altitude);
+  // sensors_.set_altitude(global_position.altitude);
 
   /*
      In the position_covariance 3x3 matrix
@@ -225,6 +225,10 @@ bool RosToProto::SensorsValid() {
   for (::std::map<::std::string, double>::iterator it =
            ros_topic_last_received_times_.begin();
        it != ros_topic_last_received_times_.end(); it++) {
+    if (it->first == "/mavros/home_position/home") {
+      continue;
+    }
+
     if (it->second < oldest_valid_packet_time) {
       ROS_DEBUG("Outdated ros topic: %s", it->first.c_str());
       return false;
@@ -260,6 +264,11 @@ void RosToProto::GotRosMessage(::std::string ros_topic) {
 void RosToProto::SetRunUasMission(bool run) {
   ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
   sensors_.set_run_uas_mission(run);
+}
+
+void RosToProto::SetDoneDropping(bool done) {
+  ::std::lock_guard<::std::mutex> lock(sensors_mutex_);
+  sensors_.set_done_dropping(done);
 }
 
 void RosToProto::OutputReceived(::src::controls::Output output) {

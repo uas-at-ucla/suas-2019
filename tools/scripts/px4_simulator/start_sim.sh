@@ -63,4 +63,4 @@ docker run \
   export PX4_HOME_LAT=$LATITUDE
   export PX4_HOME_LON=$LONGITUDE
   export PX4_HOME_ALT=$ALTITUDE
-  make px4_sitl_default jmavsim\""
+  bash\""

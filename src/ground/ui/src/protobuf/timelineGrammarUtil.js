@@ -9,7 +9,7 @@ if (electronRequire) protobuf.Root.prototype.resolvePath = (origin, target) => {
 
 //TODO copy .proto files to app when packaging with Electron and use those files when not electron-is-dev
 
-var root = new protobuf.Root();
+var root = electronRequire ? new protobuf.Root() : null;
 var packageNames = [];
 
 function loadRootFromJson(dispatch) {

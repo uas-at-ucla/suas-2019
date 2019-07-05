@@ -26,8 +26,12 @@ selectors.protoInfo = createSelector(
       commandNames: groundCommandNames,
       commandAbbr: commandAbbr,
       fieldUnits: {
-        altitude: "ft",
-        drop_height: "ft"
+        DroneProgram: {
+          altitude: "m",
+        },
+        GroundProgram: {
+          altitude: "ft",
+        }
       },
       locationFields: ["goal", "ground_target", "photographer_location"]
     };
@@ -55,9 +59,22 @@ selectors.commandMarkers = createObjectSelector(
             text: '\uf192',
             fontSize: '15px'
           }
+        } else if (cmd.type === 'UgvDropCommand') {
+          label = {
+            fontFamily: 'Fontawesome',
+            text: '\uf187',
+            fontSize: '15px'
+          }
+        } else if (cmd.type === 'LandAtLocationCommand') {
+          label = {
+            fontFamily: 'Fontawesome',
+            text: '\uf063',
+            fontSize: '15px'
+          }
         }
         let location = cmd[cmd.name][locationField];
         return {
+          altitude: location.altitude,
           position: {
             lat: location.latitude,
             lng: location.longitude
@@ -71,8 +88,8 @@ selectors.commandMarkers = createObjectSelector(
 );
 
 selectors.commandPoints = createSelector(
-  [state => state.mission.commands, selectors.commandMarkers],
-  (commands, commandMarkers) => {
+  [state => state.mission.commands, selectors.commandMarkers, selectors.protoInfo],
+  (commands, commandMarkers, protoInfo) => {
     return commands.map((cmd, index) => {
       let marker = commandMarkers[cmd.id];
       if (!marker) {
@@ -80,10 +97,12 @@ selectors.commandPoints = createSelector(
       }
       return {
         id: cmd.id,
+        name: cmd.name,
         marker: marker,
         infobox: {
           position: marker.position,
-          content: (index+1)
+          title: (index+1) + ": " + protoInfo.commandAbbr[cmd.name],
+          content: "Altitude: " + marker.altitude + " ft rel"
         }
       }
     });

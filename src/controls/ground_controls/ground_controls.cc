@@ -12,7 +12,6 @@ void on_fail() { socketio_ground_controls->OnFail(); }
 
 GroundControls::GroundControls(int argc, char **argv) :
     running_(false),
-    ros_node_handle_(),
     sensors_subscriber_(
         ros_node_handle_.subscribe(kRosSensorsTopic, kRosMessageQueueSize,
                                    &GroundControls::SensorsReceived, this)),
@@ -51,7 +50,7 @@ GroundControls::GroundControls(int argc, char **argv) :
     hotwire_subscriber_(
         ros_node_handle_.subscribe(kRosHotwireTopic, kRosMessageQueueSize,
                                    &GroundControls::HotwireSetpoint, this)),
-    rfd900_connection_("/dev/ttyUSB1", B57600, 0), // TODO
+    // rfd900_connection_("/dev/ttyUSB0", B57600, 0), // TODO
     phased_loop_(1e2),
     drone_program_success_(false) {
 
@@ -108,7 +107,7 @@ void GroundControls::ReadRFD900() {
   while (running_) {
     // Get the connection's uas messages
     ::src::controls::UasMessage uas_message1;
-    bool rfd900_res = rfd900_connection_.GetLatestProto(uas_message1);
+    bool rfd900_res = false; // rfd900_connection_.GetLatestProto(uas_message1);
 
     if (rfd900_res) {
       ROS_INFO("Got RFD900: lat(%f) lng(%f) alt(%f) hdg(%f)",
@@ -318,7 +317,8 @@ void GroundControls::OnConnect() {
 
 void GroundControls::OnFail() { ::std::cout << "socketio failed! :(\n"; }
 
-GroundControls::~GroundControls() { rfd900_connection_.Quit(); }
+GroundControls::~GroundControls() { /* rfd900_connection_.Quit(); */
+}
 
 } // namespace ground_controls
 } // namespace controls

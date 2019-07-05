@@ -70,7 +70,7 @@ void MissionStateMachine::Handle(::src::controls::Sensors &sensors,
   setpoint_altitude_ = output.setpoint_altitude();
   setpoint_yaw_ = output.setpoint_yaw();
 
-  output.set_trigger_offboard(true);
+  // output.set_trigger_offboard(true);
   output.set_send_setpoint(true);
 }
 
@@ -220,8 +220,12 @@ void UGVDropState::Handle(::src::controls::Sensors &sensors,
                           ::src::controls::Output &output) {
   (void)sensors;
   (void)goal;
-
-  output.set_deploy(true);
+  if (sensors.done_dropping()) {
+    output.set_deploy(false);
+    output.set_mission_state(GET_NEXT_CMD);
+  } else {
+    output.set_deploy(true);
+  }
 }
 
 void UGVDropState::Reset() {}

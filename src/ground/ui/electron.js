@@ -24,7 +24,10 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 800,
     height: 600,
-    icon: path.join(__dirname, 'icon.png')
+    icon: path.join(__dirname, 'icon.png'),
+    webPreferences: {
+      nodeIntegration: true
+    }
   });
 
   // and load the url of the app.
@@ -42,14 +45,12 @@ function createWindow() {
     mainWindow = null;
   });
 
-  // Allow viewing devtools in packaged app:
+  // Allow viewing devtools, copying, pasting, etc. in packaged app:
   if (!isDev) {
+    const menuRoles = ['toggledevtools', 'undo', 'redo', 'cut', 'copy', 'paste', 'pasteandmatchstyle', 'delete', 'selectall', 'reload', 'forcereload', 'resetzoom', 'zoomin', 'zoomout', 'togglefullscreen', 'window', 'minimize', 'close', 'help', 'about', 'services', 'hide', 'hideothers', 'unhide', 'quit', 'startspeaking', 'stopspeaking', 'close', 'minimize', 'zoom', 'front'];
     const template = [{
       label: "Application",
-      submenu: [
-        { role: 'toggledevtools' },
-        { label: "Copy", accelerator: "CmdOrCtrl+C", selector: "copy:" }
-      ]
+      submenu: menuRoles.map(role => {return {role: role};})
     }];
     const menu = Menu.buildFromTemplate(template);
     Menu.setApplicationMenu(menu);

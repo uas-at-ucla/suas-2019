@@ -42,6 +42,7 @@ class RosToProto {
   Sensors GetSensors();
   bool SensorsValid();
   void SetRunUasMission(bool run);
+  void SetDoneDropping(bool done);
   bool OutputValid();
   ::src::controls::Output GetOutput();
 

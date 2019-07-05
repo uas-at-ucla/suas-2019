@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Modal, ModalHeader, ModalBody, TabContent, TabPane, Nav, NavItem, NavLink } from 'reactstrap';
+import { Modal, ModalHeader, ModalBody, TabContent, TabPane, Nav, NavItem, NavLink, Container } from 'reactstrap';
 import { connect } from 'react-redux';
 
 import { selector } from 'redux/store';
@@ -59,22 +59,25 @@ class MissionPlannerContainer extends Component {
         </div>
 
         <TabContent activeTab={this.state.activeTab}>
-          <div>Drop Status: {this.props.lastDroppyCommand != null ? this.props.lastDroppyCommand : this.props.dropReady != null ? (this.props.dropReady ? "READY TO DROP" : "NOT READY") : "NONE"}</div>
+          <div>Drop Status: {this.props.lastDroppyCommand} ({this.props.dropReady ? "Ready" : "Not ready"})</div>
           <div>UGV is Still? {this.props.ugvStatus ? this.props.ugvStatus.is_still != null ? (this.props.ugvStatus.is_still ? "YES" : "NO") : "UNKNOWN" : "UNKNOWN"}</div>
           {/* <span>Mission Status: {this.props.missionStatus}</span> */}
           <TabPane tabId="plan">
             <div className="SmallMissionPlanner">
-              <MissionPlanner className="SmallMissionPlanner"/>
+              <MissionPlanner className="SmallMissionPlanner" programType="GroundProgram"/>
             </div>
           </TabPane>
           <TabPane tabId="drone">
             <div className="SmallMissionPlanner">
-              <CommandList 
-                commands={this.props.droneProgram ? this.props.droneProgram.commands : []}
-                className="SmallMissionPlanner"
-                protoInfo={this.props.protoInfo}
-                commandChangers={{centerMapOnCommand: ()=>{/*TODO*/}}}
-              />
+              <Container fluid>
+                <CommandList 
+                  commands={this.props.droneProgram ? this.props.droneProgram.commands : []}
+                  programType="DroneProgram"
+                  className="SmallMissionPlanner"
+                  protoInfo={this.props.protoInfo}
+                  commandChangers={{centerMapOnCommand: ()=>{/*TODO*/}}}
+                />
+              </Container>
             </div>
           </TabPane>
         </TabContent>
@@ -83,7 +86,7 @@ class MissionPlannerContainer extends Component {
           <ModalHeader toggle={this.close}>Mission Planner</ModalHeader>
           <ModalBody>
             <div className="BigMissionPlanner">
-              <MissionPlanner className="BigMissionPlanner"/>
+              <MissionPlanner className="BigMissionPlanner" programType="GroundProgram"/>
             </div>
           </ModalBody>
         </Modal>

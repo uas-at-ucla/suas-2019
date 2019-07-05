@@ -30,7 +30,6 @@ class DroneMarker extends Component {
             />
             <Marker
               position={pos}
-              draggable={true}
               icon={{
                 path: window.google ? window.google.maps.SymbolPath.FORWARD_CLOSED_ARROW : null,
                 strokeColor: '#FFFFFF',

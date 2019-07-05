@@ -40,6 +40,15 @@ class DroneActions extends Component {
       hotwire: false
     }
   };
+
+  componentDidMount() {
+    document.addEventListener("keypress", (e) => {
+      if (e.keyCode === 13 && this.state.modal) {
+        this.state.action();
+        this.toggle();
+      }
+    });
+  }
   
   toggle = () => {
     this.setState(prevState => ({
@@ -98,7 +107,6 @@ class DroneActions extends Component {
           } */}
           {/* <button id="failsafeButton" onClick={()=>this.toggleWithName("End Mission", this.props.endMission)}>End Mission</button> */}
           <button id="landButton" disabled={disableBtns && !this.props.dropReady} onClick={()=>this.toggleWithName("Start UGV Drop", this.props.droppyStart)}>Start Drop</button>
-          <button id="throttleCutButton" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={()=>this.toggleWithName("Cancel Drop", this.props.droppyCancel)}>{"Cancel Drop"}</button>
           <button id="takeoffButton" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={()=>this.toggleWithName("Cut Wire & Drive", this.props.droppyCut)}>{"Cut Wire & Drive"}</button>
 
           {/* <button id="takeoffButton" onClick={()=>this.toggleWithName("Takeoff", this.props.droneTakeoff)}>Takeoff</button> */}
@@ -146,10 +154,18 @@ class DroneActions extends Component {
               <br/>
               <Row>
                 <Col>
-                  <span>Deployment Commands:</span>
-                  <Button color="warning" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyUp}>Up</Button>
-                  <Button color="success" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyDown}>Down</Button>
-                  <Button color="danger" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyStop}>Stop</Button>
+                  <div>Deployment Commands:</div>
+                  <div>
+                    <Button color="warning" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyUp}>Up</Button>
+                    <Button color="success" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyDown}>Down</Button>
+                    <Button color="danger" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyStop}>Stop</Button>
+                  </div>
+                  <br/>
+                  <div>
+                    <Button color="warning" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyStopCut}>Stop Cutting</Button>
+                    <Button color="primary" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyResetLatch}>Reset Latch</Button>
+                    <Button color="danger" disabled={disableBtns && this.props.lastDroppyCommand != null} onClick={this.props.droppyCancel}>Cancel Drop</Button>
+                  </div>
                 </Col>
               </Row>
             </Container>

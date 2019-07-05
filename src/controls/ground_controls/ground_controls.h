@@ -84,8 +84,8 @@ class GroundControls {
   ::ros::Subscriber latch_subscriber_;
   ::ros::Subscriber hotwire_subscriber_;
 
-  ::lib::serial_device::SerialDevice<::src::controls::UasMessage>
-      rfd900_connection_;
+  //   ::lib::serial_device::SerialDevice<::src::controls::UasMessage>
+  //       rfd900_connection_;
 
   ::sio::client client_;
 
