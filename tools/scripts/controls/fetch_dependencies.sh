@@ -3,7 +3,7 @@
 ATTEMPTS=0
 FAIL_WAIT=5
 
-BAZEL_FETCH_FLAGS="--noshow_loading_progress "
+BAZEL_FETCH_FLAGS=""
 if [ -n "$CONTINUOUS_INTEGRATION" ]
 then
   # Don't do parallel downloads in CI since it is unreliable on some machines.
