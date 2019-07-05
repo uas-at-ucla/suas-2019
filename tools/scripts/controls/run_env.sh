@@ -120,10 +120,12 @@ pwd
 #       the UAS@UCLA docker environment, the root will need to be set to the
 #       path that is used by wherever dockerd is running.
 ROOT_PATH=$(pwd)
+GLOBAL_FOLDER=$(pwd)
 if [ ! -z $HOST_ROOT_SEARCH ] && [ ! -z $HOST_ROOT_REPLACE ]
 then
   # Need to use path of the host container running dockerd.
   ROOT_PATH=${ROOT_PATH/$HOST_ROOT_SEARCH/$HOST_ROOT_REPLACE}
+  GLOBAL_FOLDER=$HOST_ROOT_REPLACE/global
 fi
 
 echo "Root path is $ROOT_PATH"
@@ -154,7 +156,7 @@ docker run                                          \
   -v $ROOT_PATH:/home/uas/code_env                  \
   -v ~/.ssh:/home/uas/.ssh                          \
   -v /tmp/.X11-unix:/tmp/.X11-unix                  \
-  -v /tmp/uasatucla:/tmp/uasatucla                  \
+  -v $GLOBAL_FOLDER:/tmp/uasatucla                  \
   -e DISPLAY=$DISPLAY                               \
   -e CONTINUOUS_INTEGRATION=$CONTINUOUS_INTEGRATION \
   --privileged                                      \
