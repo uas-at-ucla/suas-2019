@@ -107,7 +107,7 @@ void GroundControls::ReadRFD900() {
   while (running_) {
     // Get the connection's uas messages
     ::src::controls::UasMessage uas_message1;
-    bool rfd900_res = false;//rfd900_connection_.GetLatestProto(uas_message1);
+    bool rfd900_res = false; // rfd900_connection_.GetLatestProto(uas_message1);
 
     if (rfd900_res) {
       ROS_INFO("Got RFD900: lat(%f) lng(%f) alt(%f) hdg(%f)",
@@ -317,7 +317,8 @@ void GroundControls::OnConnect() {
 
 void GroundControls::OnFail() { ::std::cout << "socketio failed! :(\n"; }
 
-GroundControls::~GroundControls() { /* rfd900_connection_.Quit(); */ }
+GroundControls::~GroundControls() { /* rfd900_connection_.Quit(); */
+}
 
 } // namespace ground_controls
 } // namespace controls

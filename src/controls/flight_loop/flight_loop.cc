@@ -41,9 +41,9 @@ void FlightLoop::RunIteration(::src::controls::Sensors sensors) {
 
   // Log protobufs.
   if (sensors.time() > last_proto_log_ + 1.0 / kProtobufLogHz) {
-    //LogProtobufMessage("Sensors", sensors);
-    //LogProtobufMessage("Goal", goal);
-    //LogProtobufMessage("Output", output);
+    // LogProtobufMessage("Sensors", sensors);
+    // LogProtobufMessage("Goal", goal);
+    // LogProtobufMessage("Output", output);
     last_proto_log_ = sensors.time();
   }
 

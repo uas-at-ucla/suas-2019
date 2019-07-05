@@ -247,7 +247,7 @@ bool IO::SafetyChecks(Sensors &sensors) {
 
   bool everythings_fine = true;
 
-  (void) current_time;
+  (void)current_time;
 #ifdef RASPI_DEPLOYMENT
   if (current_time - last_rc_in_ > kRcLossAlertTimeout) {
     everythings_fine = false;
