@@ -85,7 +85,7 @@ class InteropItems extends Component {
         <MapElementWithInfo
           Element={Marker} name="ugvDest" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
           position={this.props.ugvDestination}
-          icon={{
+          defaultIcon={{
             url: wheel,
             scaledSize: {width: 25, height: 25},
             anchor: {x: 12.5, y: 12.5}
@@ -99,7 +99,7 @@ class InteropItems extends Component {
           <MapElementWithInfo
             Element={Marker} name="airDropPosition" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
             position={airDropPos}
-            icon={{
+            defaultIcon={{
               url: bomb,
               scaledSize: {width: 25, height: 25},
               anchor: {x: 12.5, y: 12.5}
@@ -114,7 +114,7 @@ class InteropItems extends Component {
           <MapElementWithInfo  
             Element={Marker} name="emergent_last_known_pos" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
             position={emergentPos}
-            icon={{
+            defaultIcon={{
               url: person,
               scaledSize: {width: 20, height: 20},
               anchor: {x: 10, y: 10}
@@ -129,7 +129,7 @@ class InteropItems extends Component {
           <MapElementWithInfo
             Element={Marker} name="off_axis_odlc_pos" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
             position={offAxisPos}
-            icon={{
+            defaultIcon={{
               url: camera,
               scaledSize: {width: 20, height: 20},
               anchor: {x: 10, y: 10}
@@ -143,12 +143,13 @@ class InteropItems extends Component {
 
           <Polygon
             paths={[boxCoordinates, boundaryCoordinates]} 
-            options={{
+            defaultOptions={{
               strokeColor: '#FF0000',
               fillColor: '#FF0000',
               strokeOpacity: 0.8,
               strokeWeight: 1,
-              fillOpacity: 0.5
+              fillOpacity: 0.5,
+              zIndex: -1
             }}
           />
 
@@ -160,17 +161,18 @@ class InteropItems extends Component {
                 strokeOpacity: 0.8,
                 strokeWeight: 1.5,
                 fillOpacity: 0,
-                clickable: false
+                clickable: false,
+                zIndex: -1
               }}
             />
           )}
 
-          <Polygon path={searchGridPoints} defaultOptions={{clickable: false}} />
+          <Polygon path={searchGridPoints} defaultOptions={{clickable: false, zIndex: -1}} />
           {/* Use this version if SurveyCommand is supported: */}
           {/* <MapElementWithInfo
             Element={Polygon} name="search" isOpen={this.props.isOpen} toggleOpen={this.props.toggleOpen}
             path={searchGridPoints}
-            infoPosition={{lat: searchCenterLat, lng: searchCenterLng}}
+            infoPosition={{lat: searchCenterLat, lng: searchCenterLng}} defaultZIndex={-1}
           >
             <div>Search Area</div>
             <Button size="sm" onClick={() => this.addWaypointCommand(searchCenterLat, searchCenterLng)}>
