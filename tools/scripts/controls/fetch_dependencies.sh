@@ -1,21 +1,26 @@
 #!/bin/bash
 
 ATTEMPTS=0
-while [ $ATTEMPTS -le 20 ]
+FAIL_WAIT=5
+
+while [ $ATTEMPTS -le 30 ]
 do
   ((ATTEMPTS++))
 
   echo "Attempting dependencies fetch..."
 
-  sleep 1
   bazel fetch //src/...
   if [ $? -ne 0 ]
   then
+    sleep $FAIL_WAIT
     continue
   fi
   bazel fetch //lib/...
-  if [ $? -eq 0 ]
+  if [ $? -nq 0 ]
   then
-    break
+    sleep $FAIL_WAIT
+    continue
   fi
+
+  break
 done
