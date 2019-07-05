@@ -39,6 +39,7 @@ DOCKER_EXEC_KILL_SCRIPT = "./tools/scripts/controls/exec_kill.sh "
 VISION_DOCKER_BUILD_SCRIPT  = "./tools/scripts/docker/vision/docker_build.sh "
 VISION_DOCKER_RUN_SCRIPT    = "./tools/scripts/docker/vision/docker_run.sh "
 
+CONTROLS_FETCH_DEPENDENCIES = "./tools/scripts/controls/fetch_dependencies.sh "
 CONTROLS_DEPLOY_SCRIPT = "./tools/scripts/controls/deploy.sh "
 CONTROLS_TEST_RRT_AVOIDANCE_SCRIPT = "./bazel-out/k8-fastbuild/bin/lib/rrt_avoidance/rrt_avoidance_test --plot"
 CONTROLS_MAVROS_SCRIPT = "./tools/scripts/controls/run_mavros.sh"
@@ -360,6 +361,7 @@ def run_controls_build(args=None, show_complete=True, raspi=True):
     run_controls_docker_start(None, show_complete=False)
 
     print_update("Building src/lib directory for AMD64...")
+    run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + CONTROLS_FETCH_DEPENDENCIES)
     run_cmd_exit_failure(DOCKER_EXEC_SCRIPT + BAZEL_BUILD + "//src/... //lib/...")
 
     if raspi:
