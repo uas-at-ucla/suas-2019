@@ -125,6 +125,9 @@ if [ ! -z $HOST_ROOT_SEARCH ] && [ ! -z $HOST_ROOT_REPLACE ]
 then
   # Need to use path of the host container running dockerd.
   ROOT_PATH=${ROOT_PATH/$HOST_ROOT_SEARCH/$HOST_ROOT_REPLACE}
+
+  # Set up global folder.
+  mkdir -p $HOST_ROOT_SEARCH/global
   GLOBAL_FOLDER=$HOST_ROOT_REPLACE/global
 fi
 
