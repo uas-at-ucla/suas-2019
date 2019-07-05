@@ -251,3 +251,9 @@ http_archive(
   urls = ['https://github.com/Sciumo/GeographicLib/archive/v1.43.zip'],
   strip_prefix='GeographicLib-1.43',
 )
+
+http_archive(
+  name = "com_google_absl",
+  urls = ["https://github.com/abseil/abseil-cpp/archive/master.zip"],
+  strip_prefix = "abseil-cpp-master",
+)

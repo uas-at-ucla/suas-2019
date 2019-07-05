@@ -3,6 +3,8 @@
 ATTEMPTS=0
 while [ $ATTEMPTS -le 20 ]
 do
+  ((ATTEMPTS++))
+
   echo "Attempting dependencies fetch..."
 
   sleep 1
