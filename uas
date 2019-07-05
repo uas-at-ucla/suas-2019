@@ -1,4 +1,11 @@
 #!/bin/sh
 
 cd "$(dirname "$0")";
+
+# Check if submodules need to be cloned.
+if [ ! -d "$PX4_FIRMWARE_PATH" ]
+then
+  git submodule update --init --recursive
+fi
+
 python2.7 -u ./tools/scripts/uas.py $@

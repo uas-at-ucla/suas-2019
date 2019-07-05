@@ -29,6 +29,8 @@ UAS_AT_UCLA_TEXT = '\033[96m' + \
 # Script locations.
 GROUND_DOCKER_EXEC_SCRIPT = "./tools/scripts/ground/exec.sh "
 
+SIMULATOR_SCRIPT = "./modules/px4-sitl-wrapper/run.sh "
+
 DOCKER_RUN_ENV_SCRIPT   = "./tools/scripts/controls/run_env.sh "
 DOCKER_RUN_SIM_SCRIPT   = "./tools/scripts/px4_simulator/start_sim.sh "
 DOCKER_EXEC_SCRIPT      = "./tools/scripts/controls/exec.sh "
@@ -220,8 +222,8 @@ def run_and_die_if_error(command):
         sys.exit(1)
 
 
-def run_cmd_exit_failure(cmd):
-    if processes.spawn_process_wait_for_code(cmd, allow_input=False) > 0:
+def run_cmd_exit_failure(cmd, allow_input=False):
+    if processes.spawn_process_wait_for_code(cmd, allow_input=allow_input) > 0:
         status = "ERROR when running command: " + cmd + "\n" \
                 "Killing all spawned processes\n"
 
@@ -440,8 +442,6 @@ def run_simulate(args):
     shutdown_functions.append(kill_tmux_session_uas_env)
     shutdown_functions.append(kill_ground)
 
-    run_controls_docker_start(None, show_complete=False)
-
     # Make sure the simulator is not already running.
     if processes.spawn_process_wait_for_code( \
             "tmux has-session -t uas_env > /dev/null 2>&1") == 0:
@@ -449,14 +449,20 @@ def run_simulate(args):
                 msg_type="FAILURE")
         sys.exit(1)
 
+    print_update("Building UAS@UCLA software env docker...")
+    run_controls_docker_start(None, show_complete=False)
+
+    kill_running_simulators()
+
+    print_update("Building PX4 simulator")
+    run_cmd_exit_failure(SIMULATOR_SCRIPT + "build", allow_input=True)
+
     run_cmd_exit_failure("tmux kill-session " \
             "-t uas_env " \
             "> /dev/null 2>&1 || true")
 
-    kill_running_simulators()
 
-    # Build the docker image for our PX4 simulator environment.
-    print_update("Building UAS@UCLA software env docker...")
+    print_update("Starting tmux session...")
 
     # Set up tmux panes.
     run_cmd_exit_failure("tmux start-server")
@@ -473,16 +479,11 @@ def run_simulate(args):
     sim_command = DOCKER_RUN_SIM_SCRIPT
     mavlink_router_command = "./tools/scripts/px4_simulator/exec_mavlink_router.sh"
     io_command = "bazel run //src/controls/io:io 0.0.0.0"
-    if args.lite:
-        sim_command = "echo 'Not running simulator'"
-        mavlink_router_command = "echo 'Not running mavlink router'"
-        io_command = "bazel run //src/controls/io_sim:io_sim"
 
     tmux_split("horizontal", 2)
-    tmux_cmd(sim_command)
-
+    tmux_cmd(SIMULATOR_SCRIPT + "simulate_headless plane apollo_practice")
     tmux_move_pane("right")
-    tmux_cmd(mavlink_router_command)
+    tmux_cmd(SIMULATOR_SCRIPT + "mavlink_router")
 
     tmux_new_window("MAVROS")
     tmux_cmd(DOCKER_EXEC_SCRIPT + CONTROLS_MAVROS_SCRIPT)
