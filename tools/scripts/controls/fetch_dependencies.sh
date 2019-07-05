@@ -3,19 +3,20 @@
 ATTEMPTS=0
 FAIL_WAIT=5
 
-while [ $ATTEMPTS -le 30 ]
+BAZEL_FETCH_FLAGS="--noshow_loading_progress "
+if [ -n "$CONTINUOUS_INTEGRATION" ]
+then
+  # Don't do parallel downloads in CI since it is unreliable on some machines.
+  BAZEL_FETCH_FLAGS="$BAZEL_FETCH_FLAGS --loading_phase_threads=1 "
+fi
+
+while [ $ATTEMPTS -le 5 ]
 do
   ((ATTEMPTS++))
 
   echo "Attempting dependencies fetch..."
 
-  bazel fetch //src/...
-  if [ $? -ne 0 ]
-  then
-    sleep $FAIL_WAIT
-    continue
-  fi
-  bazel fetch //lib/...
+  bazel fetch $BAZEL_FETCH_FLAGS //tools/cpp/... //src/... //lib/...
   if [ $? -ne 0 ]
   then
     sleep $FAIL_WAIT
