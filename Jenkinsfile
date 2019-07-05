@@ -29,6 +29,11 @@ pipeline {
         }
       }
     }
+    stage('FETCH') {
+      steps {
+        sh './tools/scripts/controls/exec.sh ./tools/scripts/controls/fetch_dependencies.sh'
+      }
+    }
     stage('BUILD') {
       parallel {
         stage('BUILD CONTROLS') {

@@ -1,9 +1,10 @@
 #!/bin/bash
 
 ATTEMPTS=0
+MAX_ATTEMPTS=5
 FAIL_WAIT=5
 
-BAZEL_FETCH_FLAGS="--repository_cache=$(pwd)/tools/cache/downloaded "
+BAZEL_FETCH_FLAGS=""
 if [ -n "$CONTINUOUS_INTEGRATION" ]
 then
   # Don't do parallel downloads in CI since it is unreliable on some machines.
@@ -19,16 +20,22 @@ fi
 
 while [ $ATTEMPTS -le 5 ]
 do
-  ((ATTEMPTS++))
-
   echo "Attempting dependencies fetch..."
 
   bazel fetch $BAZEL_FETCH_FLAGS //tools/cpp/... //src/... //lib/...
-  if [ $? -ne 0 ]
+  if [ $? -ne $MAX_ATTEMPTS ]
   then
     sleep $FAIL_WAIT
+
+    ((ATTEMPTS++))
     continue
   fi
 
   break
 done
+
+if [ $ATTEMPTS -ge $MAX_ATTEMPTS ]
+then
+  exit 1
+fi
+
