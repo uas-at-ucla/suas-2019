@@ -29,6 +29,11 @@ pipeline {
         }
       }
     }
+    stage('FETCH') {
+      steps {
+        sh './tools/scripts/controls/exec.sh ./tools/scripts/controls/fetch_dependencies.sh'
+      }
+    }
     stage('BUILD') {
       parallel {
         stage('BUILD CONTROLS') {
@@ -48,21 +53,21 @@ pipeline {
         }
       }
     }
-    stage('TEST') {
-      parallel {
+//  stage('TEST') {
+//    parallel {
 //      stage('SITL TESTS') {
 //        steps {
 //          sh './uas controls sitl'
 //        }
 //      }
-        stage('UNIT TESTS') {
-          steps {
-            echo 'unit tests'
-            sh './uas unittest'
-          }
-        }
-      }
-    }
+//      stage('UNIT TESTS') {
+//        steps {
+//          echo 'unit tests'
+//          sh './uas unittest'
+//        }
+//      }
+//    }
+//  }
   }
   environment {
     PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"

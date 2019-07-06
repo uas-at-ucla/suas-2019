@@ -120,10 +120,15 @@ pwd
 #       the UAS@UCLA docker environment, the root will need to be set to the
 #       path that is used by wherever dockerd is running.
 ROOT_PATH=$(pwd)
+GLOBAL_FOLDER=$(pwd)
 if [ ! -z $HOST_ROOT_SEARCH ] && [ ! -z $HOST_ROOT_REPLACE ]
 then
   # Need to use path of the host container running dockerd.
   ROOT_PATH=${ROOT_PATH/$HOST_ROOT_SEARCH/$HOST_ROOT_REPLACE}
+
+  # Set up global folder.
+  mkdir -p $HOST_ROOT_SEARCH/global
+  GLOBAL_FOLDER=$HOST_ROOT_REPLACE/global
 fi
 
 echo "Root path is $ROOT_PATH"
@@ -144,25 +149,27 @@ DOCKER_BUILD_CMD="set -x; \
   /opt/ros/melodic/bin/roscore &> /dev/null; \
   sleep infinity\""
 
-docker run                          \
-  -d                                \
-  --rm                              \
-  --cap-add=SYS_PTRACE              \
-  --security-opt seccomp=unconfined \
-  --net uas_bridge                  \
-  --ip 192.168.3.20                 \
-  -v $ROOT_PATH:/home/uas/code_env  \
-  -v ~/.ssh:/home/uas/.ssh          \
-  -e DISPLAY=$DISPLAY               \
-  -v /tmp/.X11-unix:/tmp/.X11-unix  \
-  --privileged                      \
-  -v /dev:/dev                      \
-  --device=/dev/ttyUSB0             \
-  --device=/dev/ttyUSB1             \
-  --device=/dev/ttyUSB2             \
-  --dns 8.8.8.8                     \
-  --name uas-at-ucla_controls       \
-  uas-at-ucla_controls              \
+docker run                                          \
+  -d                                                \
+  --rm                                              \
+  --cap-add=SYS_PTRACE                              \
+  --security-opt seccomp=unconfined                 \
+  --net uas_bridge                                  \
+  --ip 192.168.3.20                                 \
+  -v $ROOT_PATH:/home/uas/code_env                  \
+  -v ~/.ssh:/home/uas/.ssh                          \
+  -v /tmp/.X11-unix:/tmp/.X11-unix                  \
+  -v $GLOBAL_FOLDER:/tmp/uasatucla                  \
+  -e DISPLAY=$DISPLAY                               \
+  -e CONTINUOUS_INTEGRATION=$CONTINUOUS_INTEGRATION \
+  --privileged                                      \
+  -v /dev:/dev                                      \
+  --device=/dev/ttyUSB0                             \
+  --device=/dev/ttyUSB1                             \
+  --device=/dev/ttyUSB2                             \
+  --dns 8.8.8.8                                     \
+  --name uas-at-ucla_controls                       \
+  uas-at-ucla_controls                              \
   bash -c "$DOCKER_BUILD_CMD"
 
 echo "Started uas-at-ucla_controls docker image. Waiting for it to boot..."
