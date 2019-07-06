@@ -164,6 +164,7 @@ git_repository(
 http_archive(
   name         = 'raspi_toolchain',
   build_file   = 'compilers/raspi_toolchain.BUILD',
+  sha256       = '2dfeb5e8f9d7b2e9c67152440435c909e9196a86a7d294a5a15088cba732ba67',
   urls         = ['https://github.com/uas-at-ucla/raspi-toolchain/releases/download/1.1/raspi_toolchain.zip'],
   strip_prefix = 'raspi_toolchain',
 )
@@ -171,6 +172,7 @@ http_archive(
 http_archive(
   name         = "eigen",
   build_file   = 'third_party/eigen.BUILD',
+  sha256       = '3f1726bde240923e786b003fa5f87874cfdc61251e964002e0e03781186e92f1',
   urls         = ['https://github.com/PX4/eigen/archive/3.3.4.zip'],
   strip_prefix = 'eigen-3.3.4',
 )
@@ -178,6 +180,7 @@ http_archive(
 http_archive(
   name         = "cppzmq",
   build_file   = 'third_party/cppzmq.BUILD',
+  sha256       = 'ee77e9e7bef2d3942edad4717d5ddd53e95b899757bc06c636e49ba42ef83eae',
   urls         = ['https://github.com/zeromq/cppzmq/archive/v4.3.0.zip'],
   strip_prefix = 'cppzmq-4.3.0',
 )
@@ -185,6 +188,7 @@ http_archive(
 http_archive(
   name         = "flann",
   build_file   = 'third_party/flann.BUILD',
+  sha256       = '45420be368a76d1ea1d4337e8bd9b031d75a1abc01a1120a7ab9ea72a922e45f',
   urls         = ['https://github.com/mariusmuja/flann/archive/1.9.1.zip'],
   strip_prefix = 'flann-1.9.1',
 )
@@ -199,6 +203,7 @@ http_archive(
 http_archive(
   name         = "com_google_protobuf",
   build_file   = 'third_party/com_google_protobuf.BUILD',
+  sha256       = '9510dd2afc29e7245e9e884336f848c8a6600a14ae726adb6befdb4f786f0be2',
   urls         = ['https://github.com/google/protobuf/archive/v3.6.1.3.zip'],
   strip_prefix = 'protobuf-3.6.1.3',
 )
@@ -230,6 +235,7 @@ http_archive(
 http_archive(
   name         = 'GeographicLib',
   build_file   = 'third_party/GeographicLib.BUILD',
+  sha256       = '7cafd8d9e3a95de81bff5b967157af474a64cc2507757facf8362a58d6aaf3b3',
   urls         = ['https://github.com/Sciumo/GeographicLib/archive/v1.43.zip'],
   strip_prefix = 'GeographicLib-1.43',
 )
@@ -237,13 +243,15 @@ http_archive(
 http_archive(
   name         = "com_google_absl",
   urls         = ["https://github.com/abseil/abseil-cpp/archive/master.zip"],
+  sha256       = '8b47c06f6e30920fc90018827bfa54bc649cc61b35a25a261629c9edc2a14611',
   strip_prefix = "abseil-cpp-master",
 )
 
 http_archive(
   name         = "websocketpp",
-  urls         = ["https://github.com/zaphoyd/websocketpp/archive/0.8.1.zip"],
   build_file   = 'third_party/websocketpp.BUILD',
+  sha256       = '80f49469f1702ec64ef5d8e71302f6b781dca8ae06e560421cab42961c8c7ce6',
+  urls         = ["https://github.com/zaphoyd/websocketpp/archive/0.8.1.zip"],
   strip_prefix = "websocketpp-0.8.1",
 )
 
@@ -257,6 +265,7 @@ http_archive(
 http_archive(
   name         = "lz4",
   urls         = ["https://github.com/lz4/lz4/archive/v1.9.1.zip"],
+  sha256       = '5d36605398d1379bde0444513b6db13d4d8a7819fb72436fa270c19ade5a388c',
   build_file = "third_party/lz4.BUILD",
   strip_prefix = "lz4-1.9.1",
 )
