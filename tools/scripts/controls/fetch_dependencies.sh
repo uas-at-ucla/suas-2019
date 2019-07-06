@@ -17,8 +17,13 @@ do
   echo "Attempting dependencies fetch..."
 
   bazel fetch $BAZEL_FETCH_FLAGS //tools/cpp/... //src/... //lib/...
-  if [ $? -ne $MAX_ATTEMPTS ]
+  if [ $? -ne 0 ]
   then
+    if [ $ATTEMPTS -ge $MAX_ATTEMPTS ]
+    then
+      exit 1
+    fi
+
     sleep $FAIL_WAIT
 
     ((ATTEMPTS++))
@@ -27,9 +32,4 @@ do
 
   break
 done
-
-if [ $ATTEMPTS -ge $MAX_ATTEMPTS ]
-then
-  exit 1
-fi
 
