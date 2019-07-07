@@ -276,7 +276,7 @@ http_archive(
 http_archive(
   name         = "libzmq",
   urls         = ["https://github.com/uas-at-ucla/libzmq/archive/4.2.3_1.zip"],
-  sha256       = '9f626dc58e345c5cc15cb3d88969fe334d3c881b07eed5d1e94865bde137b290',
+  sha256       = '9f830d07b3e455662390917b831f0ff718169ebe089eec0c86de5422fd35852d',
   build_file   = "third_party/libzmq.BUILD",
   strip_prefix = "libzmq-4.2.3_1",
 )
