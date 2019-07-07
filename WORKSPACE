@@ -26,76 +26,6 @@ local_repository(
   path = "./src/ground/ui/node_modules/rxjs/src",
 )
 
-new_git_repository(
-  name = 'mavlink_v1',
-  remote = 'https://github.com/mavlink/c_library_v1.git',
-  build_file = 'third_party/mavlink_v1.BUILD',
-  commit = 'c0e0ebf80ce0e0d497245f94869eb9c5e817114f',
-)
-
-new_git_repository(
-  name = 'mavlink_v2',
-  remote = 'https://github.com/mavlink/c_library_v2.git',
-  build_file = 'third_party/mavlink_v2.BUILD',
-  commit = '748192f661d0df3763501cfc432861d981952921',
-)
-
-new_git_repository(
-  name = 'libmavconn',
-  remote = 'https://github.com/mavlink/mavros.git',
-  build_file = 'third_party/libmavconn.BUILD',
-  commit = '306f7ee6e0d90fa2c63f4a821b8f09b0f02219b9',
-)
-
-new_git_repository(
-  name = 'console_bridge',
-  remote = 'https://github.com/uas-at-ucla/console_bridge.git',
-  build_file = 'third_party/console_bridge.BUILD',
-  commit = '57f9d41e3402d317fec85b3cc531d9dc4437bf45',
-)
-
-new_git_repository(
-  name = "libzmq",
-  commit = "b1fd3b2740f4b18ee25aefe193b31e319fcfbbe5",
-  build_file = "third_party/libzmq.BUILD",
-  remote = "https://github.com/uas-at-ucla/libzmq.git",
-)
-
-new_git_repository(
-  name = "WiringPi",
-  commit = "0f7d03d9f04c226192c299dafe03e1d56ec219c9",
-  remote = "https://github.com/WiringPi/WiringPi.git",
-  build_file = "third_party/WiringPi.BUILD",
-)
-
-new_git_repository(
-  name = "pigpio",
-  commit = "2125680045f54bed198636222999d053b738b1bf",
-  remote = "https://github.com/uas-at-ucla/pigpio.git",
-  build_file = "third_party/pigpio.BUILD",
-)
-
-new_git_repository(
-  name = "libgphoto2",
-  commit = "a9f979459f0a64ff356318cd48b6f5b817850ec5",
-  remote = "https://github.com/uas-at-ucla/libgphoto2.git",
-  build_file = "third_party/libgphoto2.BUILD",
-)
-
-new_git_repository(
-  name = "gphoto2pp",
-  commit = "da6db6f79edc4291f7a5ff38d825b8f3102d6270",
-  remote = "https://github.com/maldworth/gphoto2pp.git",
-  build_file = "third_party/gphoto2pp.BUILD"
-)
-
-new_git_repository(
-  name = "ros_bazel",
-  commit = "9435753c27f9f3c5fa5790e5fa3da382259fda2f",
-  remote = "https://github.com/uas-at-ucla/ros_bazel.git",
-  build_file = "third_party/ros_bazel.BUILD"
-)
-
 http_archive(
   name         = 'raspi_toolchain',
   build_file   = 'compilers/raspi_toolchain.BUILD',
@@ -277,6 +207,94 @@ http_archive(
   sha256       = '63ab2ed1121e6e00b8410a889a39a34d9dec6ce5b7cc8c6b3d5047f83c20126d',
   build_file   = "third_party/matplotlibcpp.BUILD",
   strip_prefix = "matplotlib-cpp-1.0",
+)
+
+http_archive(
+  name         = "ros_bazel",
+  urls         = ["https://github.com/uas-at-ucla/matplotlib-cpp/archive/1.0.zip"],
+  sha256       = '35f57c5a3dfa6f548e28fa13266c10cacad509ce0ad2b6666f137596ccbc985c',
+  build_file   = "third_party/ros_bazel.BUILD",
+  strip_prefix = "ros_bazel-1.0",
+)
+
+http_archive(
+  name         = "gphoto2pp",
+  urls         = ["https://github.com/uas-at-ucla/gphoto2pp/archive/1.0.zip"],
+  sha256       = '318e4df8647b0acc18bb6b46e836b4c8e88e337ab53fa40f101db45db14a3957',
+  build_file   = "third_party/gphoto2pp.BUILD",
+  strip_prefix = "gphoto2pp-1.0",
+)
+
+http_archive(
+  name         = "ros_bazel",
+  urls         = ["https://github.com/uas-at-ucla/ros_bazel/archive/1.0.zip"],
+  sha256       = '35f57c5a3dfa6f548e28fa13266c10cacad509ce0ad2b6666f137596ccbc985c',
+  build_file   = "third_party/ros_bazel.BUILD",
+  strip_prefix = "ros_bazel-1.0",
+)
+
+http_archive(
+  name         = "libgphoto2",
+  urls         = ["https://github.com/uas-at-ucla/libgphoto2/archive/1.0.zip"],
+  sha256       = '8212cc5e8ee75cbfe1b500b8a85ae9515437487afa070eefba5a5e36c6638112',
+  build_file   = "third_party/libgphoto2.BUILD",
+  strip_prefix = "libgphoto2-1.0",
+)
+
+http_archive(
+  name         = 'mavlink_v1',
+  urls         = ["https://github.com/uas-at-ucla/c_library_v1/archive/1.0.zip"],
+  sha256       = '554fe114d91726905ef526cf62dca19824b9d6c148db9a9315116b28dea5c617',
+  build_file   = 'third_party/mavlink_v1.BUILD',
+  strip_prefix = "c_library_v1-1.0",
+)
+
+http_archive(
+  name         = 'mavlink_v2',
+  urls         = ["https://github.com/uas-at-ucla/c_library_v2/archive/1.0.zip"],
+  sha256       = '0d83e01bdb53676c672823dcbb525301af293336befd01b21291a2edca5a5723',
+  build_file   = 'third_party/mavlink_v2.BUILD',
+  strip_prefix = "c_library_v2-1.0",
+)
+
+http_archive(
+  name         = 'libmavconn',
+  urls         = ["https://github.com/mavlink/mavros/archive/0.31.0.zip"],
+  sha256       = '13ab9f8b8a7866801e91a5f7e5702057b82ccfe86ef375835d5bc34ac6631118',
+  build_file   = 'third_party/libmavconn.BUILD',
+  strip_prefix = "mavros-0.31.0",
+)
+
+http_archive(
+  name         = 'console_bridge',
+  urls         = ["https://github.com/uas-at-ucla/console_bridge/archive/0.4.0_1.zip"],
+  sha256       = 'bff636571a63b0415be89bc3f24856a44cc7ffe2b05139e416f9d2063844b4c1',
+  build_file   = 'third_party/console_bridge.BUILD',
+  strip_prefix = "console_bridge-0.4.0_1",
+)
+
+http_archive(
+  name         = "libzmq",
+  urls         = ["https://github.com/uas-at-ucla/libzmq/archive/4.2.3_1.zip"],
+  sha256       = '9f626dc58e345c5cc15cb3d88969fe334d3c881b07eed5d1e94865bde137b290',
+  build_file   = "third_party/libzmq.BUILD",
+  strip_prefix = "libzmq-4.2.3_1",
+)
+
+http_archive(
+  name         = "WiringPi",
+  urls         = ["https://github.com/uas-at-ucla/WiringPi/archive/1.0.zip"],
+  sha256       = '2ace0b5f1a38d1a8ab9a0c48ed451633f32c90f453ccbe02a03c28db2707f3c1',
+  build_file   = "third_party/WiringPi.BUILD",
+  strip_prefix = "WiringPi-1.0",
+)
+
+http_archive(
+  name         = "pigpio",
+  urls         = ["https://github.com/uas-at-ucla/pigpio/archive/1.0.zip"],
+  sha256       = 'ca0d1d03546f4c2f315185fa00382256ae018dd5181583479472fb8376c0b8ef',
+  build_file   = "third_party/pigpio.BUILD",
+  strip_prefix = "pigpio-1.0",
 )
 
 load("@com_github_nelhage_rules_boost//:boost/boost.bzl", "boost_deps")
