@@ -29,16 +29,16 @@ pipeline {
         }
       }
     }
-    stage('FETCH') {
-      steps {
-        sh './tools/scripts/controls/exec.sh ./tools/scripts/controls/fetch_dependencies.sh'
-      }
-    }
     stage('STATIC ANALYSIS') {
       steps {
         withSonarQubeEnv('UAS@UCLA SonarQube') {
           sh "/home/jenkins_uasatucla/sonar-scanner-4.0.0.1744-linux/bin/sonar-scanner"
         }
+      }
+    }
+    stage('FETCH') {
+      steps {
+        sh './tools/scripts/controls/exec.sh ./tools/scripts/controls/fetch_dependencies.sh'
       }
     }
     stage('BUILD') {
