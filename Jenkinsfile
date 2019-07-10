@@ -37,7 +37,7 @@ pipeline {
     stage('STATIC ANALYSIS') {
       steps {
         withSonarQubeEnv('UAS@UCLA SonarQube') {
-          sh "/home/jenkins_uasatucla/sonar-scanner-4.0.0.1744-linux/bin/sonar-scanner -Dsonar.projectKey=drone_code -Dsonar.host.url=https://uasatucla.org/sonarqube -Dsonar.sources=src,lib,tools/scripts "
+          sh "/home/jenkins_uasatucla/sonar-scanner-4.0.0.1744-linux/bin/sonar-scanner"
         }
       }
     }
