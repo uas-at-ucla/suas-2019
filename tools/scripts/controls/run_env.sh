@@ -162,6 +162,7 @@ docker run                                          \
   -v $GLOBAL_FOLDER:/tmp/uasatucla                  \
   -e DISPLAY=$DISPLAY                               \
   -e CONTINUOUS_INTEGRATION=$CONTINUOUS_INTEGRATION \
+  -e JENKINS_URL=$JENKINS_URL                       \
   --privileged                                      \
   -v /dev:/dev                                      \
   --device=/dev/ttyUSB0                             \
