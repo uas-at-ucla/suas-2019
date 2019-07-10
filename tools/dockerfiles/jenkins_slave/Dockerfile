@@ -68,6 +68,10 @@ WORKDIR /home/jenkins_uasatucla/
 RUN curl -o /home/jenkins_uasatucla/jenkins-cli.jar \
   https://uasatucla.org/jenkins/jnlpJars/jenkins-cli.jar
 
+RUN curl -o /home/jenkins_uasatucla/sonar-scanner.zip \
+  https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-4.0.0.1744-linux.zip &&
+  unzip sonar-scanner.zip
+
 # Set user to root so that we can set the appropriate permissions for file #####
 # access later on. #############################################################
 USER root

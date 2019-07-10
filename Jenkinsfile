@@ -29,6 +29,17 @@ pipeline {
         }
       }
     }
+    stage('STATIC ANALYSIS') {
+      when{
+        branch 'master'
+      }
+      steps {
+        sh "cppcheck --xml --xml-version=2 --enable=all . -i modules -i tools -i src/ground -i src/vision 2> /tmp/cppcheck-report.xml"
+        withSonarQubeEnv('UAS@UCLA SonarQube') {
+          sh "/home/jenkins_uasatucla/sonar-scanner-4.0.0.1744-linux/bin/sonar-scanner"
+        }
+      }
+    }
     stage('FETCH') {
       steps {
         sh './tools/scripts/controls/exec.sh ./tools/scripts/controls/fetch_dependencies.sh'
@@ -53,21 +64,20 @@ pipeline {
         }
       }
     }
-//  stage('TEST') {
-//    parallel {
-//      stage('SITL TESTS') {
-//        steps {
-//          sh './uas controls sitl'
-//        }
-//      }
-//      stage('UNIT TESTS') {
-//        steps {
-//          echo 'unit tests'
-//          sh './uas unittest'
-//        }
-//      }
-//    }
-//  }
+    stage('TEST') {
+      parallel {
+        stage('SITL TESTS') {
+          steps {
+            sh 'echo fix this'
+          }
+        }
+        stage('UNIT TESTS') {
+          steps {
+            sh 'echo fix this'
+          }
+        }
+      }
+    }
   }
   environment {
     PATH = "/usr/local/bin:/usr/bin:/bin:$PATH"

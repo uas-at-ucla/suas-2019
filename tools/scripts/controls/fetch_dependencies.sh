@@ -5,7 +5,7 @@ MAX_ATTEMPTS=5
 FAIL_WAIT=5
 
 BAZEL_FETCH_FLAGS=""
-if [ -n "$CONTINUOUS_INTEGRATION" ]
+if [ -n "$CONTINUOUS_INTEGRATION" ] && [ -n "$JENKINS_URL" ]
 then
   # Don't do parallel downloads in CI since it is unreliable on some machines.
   BAZEL_FETCH_FLAGS="$BAZEL_FETCH_FLAGS --loading_phase_threads=1 --noshow_progress "

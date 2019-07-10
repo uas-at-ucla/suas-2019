@@ -104,7 +104,6 @@ class ProcessManager:
                     os.killpg(os.getpgid(proc.pid), signal.SIGINT)
                 except:
                     process_already_killed = True
-                    pass
 
                 if proc.poll() == None:
                     time.sleep(0.1)
