@@ -31,6 +31,7 @@ pipeline {
     }
     stage('STATIC ANALYSIS') {
       steps {
+        sh "cppcheck --xml --xml-version=2 --enable=all . -i modules -i tools -i src/ground -i src/vision 2> /tmp/cppcheck-report.xml"
         withSonarQubeEnv('UAS@UCLA SonarQube') {
           sh "/home/jenkins_uasatucla/sonar-scanner-4.0.0.1744-linux/bin/sonar-scanner"
         }
