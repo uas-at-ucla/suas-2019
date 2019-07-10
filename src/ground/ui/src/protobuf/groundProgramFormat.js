@@ -23,7 +23,10 @@ var SurveyCommand = { surveyPolygon: Position2D, altitude: 14.3 };
 // OffAxisCommand
 var Position3D = { latitude: 1.23, longitude: 1.57, altitude: 14.3 };
 var Position2D = { latitude: 1.23, longitude: 1.57 };
-var OffAxisCommand = { photographerLocation: Position3D, subjectLocation: Position2D };
+var OffAxisCommand = {
+  photographerLocation: Position3D,
+  subjectLocation: Position2D
+};
 
 // WaitCommand
 var WaitCommand = { time: 60.0 };
@@ -39,103 +42,115 @@ var Command = { command: UgvDropCommand };
 
 // StaticObstacle
 var Position2D = { latitude: 1.23, longitude: 1.57 };
-var StaticObstacle = { location: Position2D, cylinderRadius: 2.54, cylinderHeight: 2.54 };
+var StaticObstacle = {
+  location: Position2D,
+  cylinderRadius: 2.54,
+  cylinderHeight: 2.54
+};
 
 // GroundProgram (using SurveyCommand here as example)
 var Position2D = { latitude: 1.23, longitude: 1.57 };
 var SurveyCommand = { surveyPolygon: [Position2D, Position2D], altitude: 14.3 };
 var Command = { command: SurveyCommand };
-var StaticObstacle = { location: Position2D, cylinderRadius: 2.54, cylinderHeight: 2.54 };
-var GroundProgram = { commands: [Command, Command], staticObstacles: [StaticObstacle, StaticObstacle], fieldBoundary: [Position2D, Position2D] };
+var StaticObstacle = {
+  location: Position2D,
+  cylinderRadius: 2.54,
+  cylinderHeight: 2.54
+};
+var GroundProgram = {
+  commands: [Command, Command],
+  staticObstacles: [StaticObstacle, StaticObstacle],
+  fieldBoundary: [Position2D, Position2D]
+};
 
 var sampleGroundPRogram = {
-  "commands": [
+  commands: [
     {
-      "WaypointCommand": {
-        "goal": {
-          "latitude": 1.23,
-          "longitude": 1.57,
-          "altitude": 14.3
+      WaypointCommand: {
+        goal: {
+          latitude: 1.23,
+          longitude: 1.57,
+          altitude: 14.3
         }
       }
     },
     {
-      "UgvDropCommand": {
-        "groundTarget": {
-          "latitude": 1.23,
-          "longitude": 1.57
+      UgvDropCommand: {
+        groundTarget: {
+          latitude: 1.23,
+          longitude: 1.57
         },
-        "dropHeight": 14.3
+        dropHeight: 14.3
       }
     },
     {
-      "SurveyCommand": {
-        "surveyPolygon": [
+      SurveyCommand: {
+        surveyPolygon: [
           {
-            "latitude": 1.23,
-            "longitude": 1.57
+            latitude: 1.23,
+            longitude: 1.57
           },
           {
-            "latitude": 1.23,
-            "longitude": 1.57
+            latitude: 1.23,
+            longitude: 1.57
           }
         ],
-        "altitude": 14.3
+        altitude: 14.3
       }
     },
     {
-      "OffAxisCommand": {
-        "photographerLocation": {
-          "latitude": 1.23,
-          "longitude": 1.57,
-          "altitude": 14.3
+      OffAxisCommand: {
+        photographerLocation: {
+          latitude: 1.23,
+          longitude: 1.57,
+          altitude: 14.3
         },
-        "subjectLocation": {
-          "latitude": 1.23,
-          "longitude": 1.57
+        subjectLocation: {
+          latitude: 1.23,
+          longitude: 1.57
         }
       }
     },
     {
-      "WaitCommand": {
-        "time": 60
+      WaitCommand: {
+        time: 60
       }
     }
   ],
-  "staticObstacles": [
+  staticObstacles: [
     {
-      "location": {
-        "latitude": 1.23,
-        "longitude": 1.57
+      location: {
+        latitude: 1.23,
+        longitude: 1.57
       },
-      "cylinderRadius": 2.54,
-      "cylinderHeight": 2.54
+      cylinderRadius: 2.54,
+      cylinderHeight: 2.54
     },
     {
-      "location": {
-        "latitude": 1.23,
-        "longitude": 1.57
+      location: {
+        latitude: 1.23,
+        longitude: 1.57
       },
-      "cylinderRadius": 2.54,
-      "cylinderHeight": 2.54
+      cylinderRadius: 2.54,
+      cylinderHeight: 2.54
     }
   ],
-  "fieldBoundary": [
+  fieldBoundary: [
     {
-      "latitude": 1.23,
-      "longitude": 1.57
+      latitude: 1.23,
+      longitude: 1.57
     },
     {
-      "latitude": 1.23,
-      "longitude": 1.57
+      latitude: 1.23,
+      longitude: 1.57
     },
     {
-      "latitude": 1.23,
-      "longitude": 1.57
+      latitude: 1.23,
+      longitude: 1.57
     },
     {
-      "latitude": 1.23,
-      "longitude": 1.57
+      latitude: 1.23,
+      longitude: 1.57
     }
   ]
-}
+};
