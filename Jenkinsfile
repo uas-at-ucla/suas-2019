@@ -31,7 +31,7 @@ pipeline {
     }
     stage('STATIC ANALYSIS') {
       when{
-        branch 'master'
+        branch 'origin/master'
       }
       steps {
         sh "cppcheck --xml --xml-version=2 --enable=all . -i modules -i tools -i src/ground -i src/vision 2> /tmp/cppcheck-report.xml"
