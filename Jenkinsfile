@@ -31,7 +31,9 @@ pipeline {
     }
     stage('STATIC ANALYSIS') {
       when{
-        branch 'origin/master'
+        expression {
+          return env.GIT_BRANCH != 'origin/master';
+        }
       }
       steps {
         sh "cppcheck --xml --xml-version=2 --enable=all . -i modules -i tools -i src/ground -i src/vision 2> /tmp/cppcheck-report.xml"
