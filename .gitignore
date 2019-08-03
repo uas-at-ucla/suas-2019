@@ -40,3 +40,8 @@ core
 /external/downloaded
 /output
 /src/ground/ui/src/protobuf/timeline_grammar.proto.json
+
+src/vision/targets/source_grass_tiles
+src/vision/models
+src/vision/localizer/built_graph/yolo-auvsi.pb
+

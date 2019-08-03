@@ -4,3 +4,5 @@ data/
 seg/
 *.hdf5
 
+__pycache__
+
