@@ -1,4 +1,9 @@
+<<<<<<< HEAD
 output/
 images/
 data/*
 
+=======
+images/
+output/
+>>>>>>> update-workers
